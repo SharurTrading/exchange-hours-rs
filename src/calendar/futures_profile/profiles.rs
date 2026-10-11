@@ -9,16 +9,16 @@ use crate::calendar::schedules::ALWAYS_OPEN_RULE;
 use crate::calendar::schedules::futures::international::{
     EUREX_CURRENT_EXTENDED, EUREX_CURRENT_ORDER_ENTRY, EUREX_CURRENT_REGULAR,
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
-    EUREX_FIXED_INCOME_REGULAR_CURRENT, OANDA_FX_REGULAR, OANDA_TRY_FX_REGULAR,
-    SGX_CURRENT_EXTENDED, SGX_CURRENT_ORDER_ENTRY, SGX_CURRENT_REGULAR,
-    SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT, SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT,
-    SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT, SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT,
-    SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
-    SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT, SGX_EQUITY_INDEX_NTR_USD_ORDER_ENTRY_CURRENT,
-    SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT, SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT,
-    SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
-    SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT,
-    SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
+    EUREX_FIXED_INCOME_REGULAR_CURRENT, OANDA_BRENT_REGULAR, OANDA_FX_REGULAR,
+    OANDA_METALS_REGULAR, OANDA_TRY_FX_REGULAR, OANDA_US_CONTINUOUS_REGULAR, SGX_CURRENT_EXTENDED,
+    SGX_CURRENT_ORDER_ENTRY, SGX_CURRENT_REGULAR, SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
+    SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT,
+    SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT, SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT,
+    SGX_EQUITY_INDEX_NTR_USD_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT, SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT,
+    SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT, SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT,
+    SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
 };
 use crate::calendar::schedules::futures::us::{
     BITCOIN_EVENT_CONTRACTS_EXTENDED_CURRENT, BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
@@ -56,6 +56,42 @@ static FUTURES_OANDA_FX: FuturesSessionProfile = FuturesSessionProfile {
 static FUTURES_OANDA_TRY_FX: FuturesSessionProfile = FuturesSessionProfile {
     tz: Europe::Berlin,
     regular: OANDA_TRY_FX_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_OANDA_METALS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: OANDA_METALS_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_OANDA_US_INDEX: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: OANDA_US_CONTINUOUS_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_OANDA_US_COMMODITY: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: OANDA_US_CONTINUOUS_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_OANDA_BRENT: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Europe::London,
+    regular: OANDA_BRENT_REGULAR,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
@@ -452,6 +488,10 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::GlobexPalladiumTas => &FUTURES_GLOBEX_PALLADIUM_TAS,
         MarketHoursKey::OandaFx => &FUTURES_OANDA_FX,
         MarketHoursKey::OandaTryFx => &FUTURES_OANDA_TRY_FX,
+        MarketHoursKey::OandaMetals => &FUTURES_OANDA_METALS,
+        MarketHoursKey::OandaUsIndexCfd => &FUTURES_OANDA_US_INDEX,
+        MarketHoursKey::OandaUsCommodityCfd => &FUTURES_OANDA_US_COMMODITY,
+        MarketHoursKey::OandaBrent => &FUTURES_OANDA_BRENT,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

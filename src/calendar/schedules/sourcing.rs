@@ -527,6 +527,18 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // 2026-10-10; every earlier day is carried, and the holiday page
         // states no TRY arrangement either way (docs/evidence/oanda_try_fx.md).
         MarketHoursKey::OandaTryFx => DeclaredSourcing::carried_below(horizon!(2026, 10, 10)),
+        // The remaining books share the FX horizon: the operator's archived
+        // 2024-02-21 page print states each current grid (metals 18:05-16:59,
+        // the US clock 17:01-15:59 CT, Brent's London dagger note), and the
+        // 2022 capture's exchange-exact grids are the recorded gap below
+        // (docs/evidence/oanda_metals.md, oanda_us_index_cfd.md,
+        // oanda_us_commodity_cfd.md, oanda_brent.md).
+        MarketHoursKey::OandaMetals => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        MarketHoursKey::OandaUsIndexCfd => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        MarketHoursKey::OandaUsCommodityCfd => {
+            DeclaredSourcing::carried_below(horizon!(2024, 2, 21))
+        }
+        MarketHoursKey::OandaBrent => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         // `—`: closed before the sourced 2024-07-29 launch.
         MarketHoursKey::Sgx => DeclaredSourcing::nothing_carried(),
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.

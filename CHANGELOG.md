@@ -17,6 +17,17 @@
   2025-01-01..2026-10-30 audited window, and the venue's table mirrors it —
   the first wave of the OANDA-listed market coverage programme
   (SharurPlatform#1046, oanda-rs#30).
+- Four more OANDA-book keys, completing the UK hours page's book listings:
+  `oanda_metals` (XAU/XAG and crosses, Sunday 18:05 to Friday 16:59 New York
+  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (the fourteen
+  US-anchored listings on one continuous clock — Chicago 17:01 to 15:59, the
+  same instants as New York 18:01 to 16:59 — split into two keys because the
+  operator's holiday page gives the two groups different early closes), and
+  `oanda_brent` (London-anchored by the page's own dagger note, Sunday 23:01
+  to Friday 21:59 with its two stated breaks). Holiday tables ship each
+  group's printed rows from the operator's 2025-01-01..2026-10-30 dated
+  sections, including typed withholdings where the page's own
+  regular-hours vocabulary makes its silence a gap.
 
 ## [1.0.2] - 2026-10-10
 

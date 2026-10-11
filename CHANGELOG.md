@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-11
+
 ### Changed
 
 - Three identities turned **served** under the OANDA programme's consumer

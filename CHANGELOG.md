@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
+  2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
+  including Thanksgiving and Christmas reopens. Earlier normal-week history
+  remains unresolved under #332.
+
+- Archived OANDA UK US-index and Treasury-CFD holiday arrangements for 2024,
+  preserving literal reopens and retaining the omitted Treasury Christmas Eve
+  arrangement as a typed gap.
+
 ### Fixed
 
 - LSE's five withheld 2025 spring/summer holiday dates now answer as sourced

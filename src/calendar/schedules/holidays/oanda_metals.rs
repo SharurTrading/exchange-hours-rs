@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! OANDA holiday data, 2025-01-01..2026-10-30. Evidence: `docs/evidence/oanda_metals.md`.
+//! OANDA holiday data, 2024-02-21..2026-10-30. Evidence: `docs/evidence/oanda_metals.md`.
 
 use super::fences::early_close;
 use crate::calendar::ExceptionBlock;
@@ -28,8 +28,36 @@ static GROUP_1801_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 18 
 /// The book's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/oanda_metals.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2025, 1, 1) ..= (2026, 10, 30)],
+    coverage: [(2024, 2, 21) ..= (2026, 10, 30)],
     rows: [
+        // 2024-03-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Good Friday
+        (2024, 3, 29, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-27 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day 14:30 close
+        (2024, 5, 27, early_close(14 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day 18:00 reopen
+        (2024, 5, 28, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-19 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth 14:30 close
+        (2024, 6, 19, early_close(14 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth 18:00 reopen
+        (2024, 6, 20, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-04 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence Day 14:30 close
+        (2024, 7, 4, early_close(14 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-05 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence Day 18:00 reopen
+        (2024, 7, 5, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day 14:30 close
+        (2024, 9, 2, early_close(14 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-03 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day 18:00 reopen
+        (2024, 9, 3, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving 14:30 close
+        (2024, 11, 28, early_close(14 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving 18:00 reopen and 14:45 close
+        (2024, 11, 29, ReplacementBlocks(&THANKSGIVING_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-24 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Eve 13:44 close
+        (2024, 12, 24, early_close(13 * 3_600 + 44 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-25 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Day until evening reopen
+        (2024, 12, 25, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-26 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Day 18:04 reopen
+        (2024, 12, 26, ReplacementBlocks(&NEW_YEAR_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2025-01-01 - T1 - OANDA-UK-HOLIDAYS - New Year's Day: US holiday groups reopen at the evening open
         (2025, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-02 - T1 - OANDA-UK-HOLIDAYS - Previous holiday's literal metals group reopen

@@ -164,33 +164,27 @@ fn oanda_fx_refuses_dates_outside_its_sourced_and_audited_spans() {
 }
 
 #[test]
-fn oanda_fx_bridge_day_answers_sessions_while_its_holiday_layer_refuses() {
-    // 2024-12-31 sits below the first audited holiday window (which starts
-    // 2025-01-01) with the normal week sourced from the 2024-02-21 witness:
-    // the one-flank bridged residual of the 2026-10-07 ruling (#296). Its
-    // session questions answer from the sourced week; its holiday
-    // classification refuses typed.
+fn oanda_fx_2024_new_years_eve_has_audited_holiday_classification() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
-    let bridge = chrono::NaiveDate::from_ymd_opt(2024, 12, 31).expect("valid date");
+    let new_years_eve = chrono::NaiveDate::from_ymd_opt(2024, 12, 31).expect("valid date");
     assert!(
         calendar
             .is_open(et((2024, 12, 31), (12, 0, 0)))
-            .expect("the bridged span answers its session questions"),
+            .expect("the 2024 holiday window answers its session questions"),
         "New Year's Eve midday trades on the sourced week",
     );
     assert!(
         !calendar
             .is_open(et((2024, 12, 31), (17, 0, 0)))
-            .expect("the bridged span answers its session questions"),
+            .expect("the 2024 holiday window answers its session questions"),
         "the 16:59-17:05 break answers on the sourced week",
     );
-    assert!(
-        calendar
-            .is_closed_trade_date(bridge, SessionKind::Both)
-            .is_err(),
-        "the bridge day's holiday classification refuses, never answers a bool",
+    assert_eq!(
+        calendar.is_closed_trade_date(new_years_eve, SessionKind::Both),
+        Ok(false),
+        "the operator prints normal 16:59 FX closing on New Year's Eve 2024",
     );
-    // The first holiday row's own date answers: its prior-evening opening day
+    // New Year's Day also answers: its prior-evening opening day
     // is inside the sourced span, so no resolution edge reaches it.
     assert!(
         calendar
@@ -303,4 +297,27 @@ fn oanda_wire_forms_are_snake_case_and_stable() {
         MarketHoursKey::OandaTryFx,
     );
     assert!("oanda_fx_book".parse::<MarketHoursKey>().is_err());
+}
+
+#[test]
+fn oanda_2024_christmas_and_thanksgiving_preserve_literal_broker_bounds() {
+    let fx = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
+    assert_eq!(
+        fx.is_closed_trade_date(
+            chrono::NaiveDate::from_ymd_opt(2024, 12, 25).unwrap(),
+            SessionKind::Both
+        ),
+        Ok(true)
+    );
+    assert_eq!(fx.is_open(et((2024, 12, 25), (17, 4, 59))), Ok(false));
+    assert_eq!(fx.is_open(et((2024, 12, 25), (17, 5, 0))), Ok(true));
+    let metals = calendar_for_market_hours_key(MarketHoursKey::OandaMetals);
+    assert_eq!(metals.is_open(et((2024, 11, 28), (17, 59, 59))), Ok(false));
+    assert_eq!(metals.is_open(et((2024, 11, 28), (18, 0, 0))), Ok(true));
+    assert_eq!(metals.is_open(et((2024, 11, 29), (14, 44, 59))), Ok(true));
+    assert_eq!(metals.is_open(et((2024, 11, 29), (14, 45, 0))), Ok(false));
+    assert_eq!(metals.is_open(et((2024, 12, 24), (13, 43, 59))), Ok(true));
+    assert_eq!(metals.is_open(et((2024, 12, 24), (13, 44, 0))), Ok(false));
+    assert_eq!(metals.is_open(et((2024, 12, 25), (18, 3, 59))), Ok(false));
+    assert_eq!(metals.is_open(et((2024, 12, 25), (18, 4, 0))), Ok(true));
 }

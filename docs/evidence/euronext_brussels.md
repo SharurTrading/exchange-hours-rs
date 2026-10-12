@@ -78,7 +78,7 @@ certifies an ordinary session or a guessed early close. This audited window is
 Dates without a Brussels exception in this window retain the existing named
 normal profile. No historical holiday window, normal-week cutover, 2027 calendar
 or minute-level half-day claim is introduced. The normal-profile horizon and the
-pre-floor baseline gap above remain unchanged; older holiday calendars and the
+earlier normal-week baseline gap above remain unchanged; older holiday calendars and the
 unpublished half-day appendix would close the corresponding residual gaps.
 
 The linked annual cash-calendar PDF (`EURONEXT-IF-2026`), independently
@@ -93,5 +93,5 @@ only to disclose this lineage conflict.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | 2026 cash calendar; named Brussels column | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-10-12 00:42 UTC | T1 | `f4f3d2ee85e88557db2aa6a29bf9ec23d1d2d82eaaa1a8cca2d91175c94fc831` |
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | 2026 cash calendar; named market columns | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-10-12 00:42 UTC | T1 | `f4f3d2ee85e88557db2aa6a29bf9ec23d1d2d82eaaa1a8cca2d91175c94fc831` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |

@@ -642,8 +642,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
-        "**Date-aware queries answer or refuse explicitly — never a silent guess.**"
-            .to_string(),
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**".to_string(),
         format!(
             "`{history_gap_rows} of {}` exchange rows still name a Basis gap in the ledger, each with its disclosed residual or external closer",
             real_exchange_rows.len()

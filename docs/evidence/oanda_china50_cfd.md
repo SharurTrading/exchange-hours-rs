@@ -18,9 +18,9 @@ None. The module carries one sourced grid and no `revisions!` block; the witness
 ## The normal week
 
 OANDA Europe Limited's UK hours page lists `China A50`, timezone `Singapore`,
-with `Mon - Fri 09:01 - 16:29; 17:01 - 04:44`. The 2026-10-10 captured
-HTML and maintainer-rendered PDF witness this grid; fresh 2026-10-12 HTML
-corroborates it. Singapore is UTC+08:00 with no seasonal offset.
+with `Mon - Fri 09:01 - 16:29; 17:01 - 04:44`. The archived 2024-02-21 UK hours page already prints this exact grid. The
+2026-10-10 captured HTML and maintainer-rendered PDF, and fresh 2026-10-12
+HTML, corroborate it. Singapore is UTC+08:00 with no seasonal offset.
 The first block is daytime and the second opens on each Monday–Friday and
 wraps into the next civil day. Friday night therefore ends on Saturday.
 The containing block's closing civil day supplies its trade date; Monday night and Tuesday daytime both carry Tuesday's
@@ -48,10 +48,13 @@ No blank year-end publication is treated as normal beyond October 30.
 
 ## Dated selectors
 
-There is no dated revision: 2026-10-10 dates the witness, not a broker cutover.
-Earlier dates remain carried and date-aware queries refuse them. Historical
-normal-week and holiday proof remains disclosed in #332; closing evidence is
-a UK-scoped broker artifact establishing the missing earlier sessions.
+There is no dated revision: 2024-02-21 dates the earliest cited witness of
+this current grid, not a broker cutover. Earlier normal weeks remain carried.
+The older UK captures print different grids but do not state an unconditional
+changeover day. Holiday dates below the current audited window remain
+unclassified; the coverage bridge does not certify them as ordinary trading.
+Historical normal-week and holiday proof remains disclosed in #332; closing
+evidence is a UK-scoped broker artifact establishing the missing earlier sessions.
 After October 30, date-aware queries refuse until a sufficiently specified
 UK holiday publication extends the audited window. This scope is dormant
 until the consumer selects it; source review is on demand before activation.
@@ -64,12 +67,14 @@ The operator UK normal-hours and holiday pages are the monitoring entry points.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
 | `OANDA-UK-HOURS-CURRENT-2026-10-12` | current observation 2026-10-12; no cutover asserted | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | retrieved 2026-10-12 00:39 UTC | T1 | `1c986aee21fdd7b76d04cabc2a8846fe00e08bb28257a27cfada828291c7e063` |
 | `OANDA-UK-HOLIDAYS-CURRENT-2026-10-12` | published changes through 2026-10-30; current observation 2026-10-12 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | retrieved 2026-10-12 00:39 UTC | T1 | `ce7cd4c3d4db0e32ec629715ee321bdd4d48455845894bee1eb8df768d066eff` |
 
-Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF;
+Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF and
+`oanda-uk-hours-of-operation@2024-02-21-wayback.html` historical corroboration;
 `normal-weeks/oanda-current-source-audit-2026-10-12/uk-hours.html` and
 `uk-holidays.html` for the fresh corroboration and current holiday audit.
 

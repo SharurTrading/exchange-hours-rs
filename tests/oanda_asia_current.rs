@@ -4,7 +4,7 @@
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, ExchangeCalendar, MarketHoursKey as K,
-    SessionState, session_profile,
+    SessionKind, SessionState, session_profile,
 };
 
 #[expect(
@@ -120,8 +120,18 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
                 .coverage_on(NaiveDate::from_ymd_opt(2026, 10, 12).expect("current date")),
             DateCoverage::Covered
         );
+        let unaudited = NaiveDate::from_ymd_opt(2026, 10, 9).expect("unaudited holiday date");
+        assert_eq!(
+            c.coverage().coverage_on(unaudited),
+            DateCoverage::OutsideCoveredRange
+        );
+        assert_eq!(c.is_open(utc("2026-10-09T02:00:00Z")), Ok(true));
         assert!(matches!(
-            c.is_open(utc("2026-10-09T02:00:00Z")),
+            c.is_closed_trade_date(unaudited, SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { .. })
+        ));
+        assert!(matches!(
+            c.is_open(utc("2024-02-20T02:00:00Z")),
             Err(CalendarQueryError::OutsideCoveredRange { .. })
         ));
         assert!(matches!(

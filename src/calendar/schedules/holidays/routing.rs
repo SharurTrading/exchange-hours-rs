@@ -200,11 +200,7 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         MarketHoursKey::GlobexPlatinumTas => None,
         MarketHoursKey::GlobexPalladiumTas => None,
         MarketHoursKey::OandaFx => Some(super::oanda_fx::TABLE),
-        // No built-in holiday table: the operator's holiday page states no
-        // TRY-specific arrangement, and whether its `Forex` rows reach the TRY
-        // book is unworked up. The evidence file records the question and its
-        // closing condition.
-        MarketHoursKey::OandaTryFx => None,
+        MarketHoursKey::OandaTryFx => Some(super::oanda_try_fx::TABLE),
         MarketHoursKey::OandaMetals => Some(super::oanda_metals::TABLE),
         MarketHoursKey::OandaUsIndexCfd => Some(super::oanda_us_index_cfd::TABLE),
         MarketHoursKey::OandaUsBondCfd => Some(super::oanda_us_bond_cfd::TABLE),

@@ -39,7 +39,9 @@ as each source is re-verified.
 - **Scope.** The profile represents Nasdaq Copenhagen principal shares, whose continuous session is shorter than Stockholm's: pre-open from 08:00, continuous trading to 16:55, closing call to 17:00, Trading@Closing Price to 17:10 and post-trading through 17:20. The three Nordic books synchronise on CET, but Helsinki publishes one-hour-later local values and Copenhagen has a shorter continuous session, so each has its own profile.
 - **Interpretive step, empty order-entry slice.** `order_entry` is empty: the opening call window is modelled `extended` because its uncross prints, and post-trading covers cancellation, limited order updates and manual trades, which print.
 - **Horizon.** The baseline grid rests on Market Model 1.1 dated 21 January 2010 together with the migration notices' statement that the February-2010 INET migration did not materially change Nordic trading hours. The first three weeks of January 2010 are therefore covered by the operator's own assertion of continuity rather than by an artifact dated inside them; the horizon is recorded as the January-2010 floor on that basis.
-- **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+- **Served identity.** Reviewed monthly after current-scope activation on
+  2026-10-12 UTC; historical gaps remain tracked in #332 under the dated
+  current OANDA scope exception in AGENTS.md.
 
 > Shared module. [`nasdaq_nordics.rs`](../../src/calendar/schedules/equities/europe/nasdaq_nordics.rs) also carries
 > [`nasdaq_stockholm`](nasdaq_stockholm.md) and [`nasdaq_helsinki`](nasdaq_helsinki.md).
@@ -94,4 +96,4 @@ The saved artifact at `captures/nasdaq-current-2026-10-12/nasdaq-trading-hours.w
 |---|---|---|---|---|---|
 | `NASDAQ-NORDIC-CASH-2026-2027` | 2026-01-01..2027-12-31 | <https://www.nasdaq.com/european-market-activity/trading-hours> | 2026-10-12 00:49:43 UTC | T1 | `9f8fe49d65db294d48e7bd94e7b4b6b098dac44f102ad74dd71c89b5aa9bff4c` |
 
-Source: <https://www.nasdaq.com/european-market-activity/trading-hours>. Calendar omissions inside these fully published annual columns are audited ordinary weekdays; no substitutes are invented for weekend holidays. Above 2027 the publication horizon remains unannounced. The identity remains dormant and reviewed on demand; the pre-2026 holiday gap remains disclosed before activation.
+Source: <https://www.nasdaq.com/european-market-activity/trading-hours>. Calendar omissions inside these fully published annual columns are audited ordinary weekdays; no substitutes are invented for weekend holidays. Above 2027 the publication horizon remains unannounced. The identity is served and reviewed monthly after the 2026-10-12 current-scope activation; its pre-2026 holiday gap remains disclosed in #332 under the dated AGENTS.md exception.

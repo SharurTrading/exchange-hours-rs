@@ -642,7 +642,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**"
             .to_string(),
         format!(
             "`{history_gap_rows} of {}` exchange rows still name a Basis gap in the ledger, each with its disclosed residual or external closer",
@@ -1042,7 +1042,7 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let readme = flowed(README);
     for claim in [
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**"
         .to_string(),
         "**sourced** (dated primary sources run the whole way back to January 2010)".to_string(),
         "**verified carried**".to_string(),

@@ -81,6 +81,36 @@ It is not an archive of exchange history for its own sake and it is not a public
 reference work; every rule below is judged against those five questions and
 the cost of keeping them true.
 
+## Current OANDA release scope — 2026-10-12 UTC
+
+For the 1.1.0 OANDA activation, the maintainer prioritizes verified current
+operation and sufficiently specified published future arrangements. The
+historical research still missing for this activation is consolidated in
+[#332](https://github.com/SharurTrading/exchange-hours-rs/issues/332); it does
+not block this release or activation under LAW-SERVICE-TIERS,
+LAW-HOLIDAY-SCOPE and LAW-BOUNDED-WORK. This is a release-scope exception,
+not a complete-history claim or a change to the permanent 2010-01-01 floor.
+It applies to the nine reached OANDA book keys and the seven newly reached
+cash-equity scopes recorded in the ledger's 2026-10-12 activation note.
+
+Keep their actual sourced horizons, audited holiday windows, `Partial`
+labels and typed coverage behavior. Unaudited history remains unaudited;
+the existing sourced-intersection bridge may answer session questions while
+holiday classification refuses. No capture date becomes an exchange
+cutover. Current source or implementation defects still block release.
+OANDA's native current holiday audit ends at trade date 2026-10-30;
+unpublished later dates and insufficiently specified future exceptions
+remain typed refusals, never inferred ordinary trading. Extending an
+operator publication requires source review before claiming the added dates.
+
+The maintainer's chosen inheritance from an equivalent calendar selected
+by product timezone is caller policy, disclosed as user customization.
+Explicit OANDA exceptions take precedence. This assumption does not improve
+the library's operator evidence or completeness verdict. Independent review,
+source digests, exact-head verification, consumer checks, monthly monitoring
+for these holiday-bearing served scopes and tagged-release pinning remain
+required. Historical completion remains the target tracked in #332.
+
 ## Laws
 
 - **LAW-DETERMINISM** — library code never reads a clock, performs I/O, or uses

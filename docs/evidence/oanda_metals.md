@@ -19,8 +19,8 @@ including 2025 closes at 13:00 and 14:30; no uniform futures inset is assumed.
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and a dormant identity owes its current
-schedule rather than a worked-up history (LAW-BOUNDED-WORK).
+no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
+remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 

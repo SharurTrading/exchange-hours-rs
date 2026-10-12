@@ -65,8 +65,9 @@ date is beyond the holiday audit. The night close and later instant queries like
 certify the unaudited Saturday or next opening;
 a monthly candle begun in October also refuses when it needs October 31.
 A sufficiently specified UK holiday publication must extend the audited
-window before those classifications or later sessions can answer. This scope is dormant
-until the consumer selects it; source review is on demand before activation.
+window before those classifications or later sessions can answer. This scope
+is served and reviewed monthly after current-scope activation on 2026-10-12 UTC
+under the dated AGENTS.md exception; historical gaps remain #332.
 
 ## Sources
 

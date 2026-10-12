@@ -15,7 +15,14 @@ the terminal state of every tracked gap — lives in the research store's
 document: the verification ledger (`docs/schedules/verification.md`), the
 schedule-documentation fences in `tests/schedule_documentation/`, and the
 full verification chain below are the gate. An unresolved in-window gap in
-any served scope blocks a release. Dormant incompleteness and broad venue
+any served scope blocks a release, subject to the dated
+[current OANDA release-scope exception](AGENTS.md#current-oanda-release-scope--2026-10-12-utc).
+For 1.1.0, the activated scopes retain their historical gaps in #332 and
+actual coverage errors; current defects still block publication. Native
+OANDA holiday coverage stops at trade date 2026-10-30, so check the published
+horizon before relying on later sessions. Unpublished or insufficiently
+specified dates stay refused; caller inheritance is disclosed user policy
+and does not certify operator completeness. Dormant incompleteness and broad venue
 intersections do not block it; their limitations remain explicit.
 
 Check both repository tags and crates.io before choosing the version.

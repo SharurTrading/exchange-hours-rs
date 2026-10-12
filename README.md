@@ -38,10 +38,12 @@ quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Coverage:** served instrument scopes carry complete
-calendars from the permanent 2010-01-01 floor, including special holiday
-sessions and explicit coverage errors; the coverage figures below describe
-the shipped implementation.
+**Coverage:** the target is complete served calendars from the permanent
+2010-01-01 floor. Actual sourced ranges, special sessions and typed coverage
+errors are recorded below. The dated
+[current OANDA release-scope exception](AGENTS.md#current-oanda-release-scope--2026-10-12-utc)
+permits 1.1.0 activation with historical gaps retained in #332; it does not
+certify those gaps as ordinary trading.
 
 - **96 source-backed market identities**, plus the synthetic `Exchange::Unknown`
   fallback (97 `Exchange` variants total) — covering US equities/options, US and
@@ -287,22 +289,27 @@ same pass and carry their own basis labels in the ledger.
 `Exchange` identities, within each row's documented normal-week scope.
 
 The broker-native `oanda_china50_cfd` and `oanda_singapore30_cfd` keys expose
-the published Singapore day/night grids with current coverage from 2026-10-10
-through 2026-10-30; earlier history remains disclosed in #332. The last
-Friday night session retains its full running bounds into local October 31,
-when queried on Friday. Its closing trade-date classification and instant
-queries from Singapore midnight on the unaudited Saturday refuse beyond
-the holiday horizon.
+the published Singapore day/night grids, witnessed from 2024-02-21, with
+current holiday coverage from 2026-10-10 through 2026-10-30; earlier history
+remains disclosed in #332. The last Friday night session retains its full
+running bounds into local October 31, when queried on Friday. Its closing
+trade-date classification and instant queries from Singapore midnight on the
+unaudited Saturday refuse beyond the holiday horizon.
 
 OANDA profiles describe the published trading windows and timed session
 phases. OANDA also permits customers to store or modify pending orders while
 markets are closed. `is_accepting_orders` does not describe that broker-side
 facility or the availability of its order-placement API. The NZD-specific
 06:59–07:05 Auckland break requires a caller overlay. The OANDA rows remain
-dormant and partial; these keys do not certify complete coverage of every
-OANDA listing or the six planned derivatives families (#332, #333).
+partial. The nine reached book keys are served and reviewed monthly; the
+broad OANDA venue remains dormant. Native current holiday coverage ends at
+trade date 2026-10-30; later unpublished arrangements remain refused.
+Equivalent-calendar inheritance is disclosed consumer user policy, with
+explicit OANDA exceptions taking precedence. These keys do not certify
+complete coverage of every OANDA listing or the six planned derivatives
+families; historical gaps remain #332.
 
-**Every date inside a scope's published horizon answers — never a silent guess.**
+**Date-aware queries answer or refuse explicitly — never a silent guess.**
 The normal-week grid is either **sourced** (dated primary sources run the whole
 way back to January 2010) or **verified carried** (the operator's own archived
 pages and notices were swept across the interval and show no change, so the
@@ -362,10 +369,10 @@ primary evidence cannot date. The basis vocabulary is closed at four values —
 defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
 is not one of the 96 source-backed identities.
 
-Every row also states its **service tier** (LAW-SERVICE-TIERS): 36 of the 143
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 52 of the 143
 rows are `served` — a consumer instrument can reach them, so they owe dated
-history to the January-2010 floor and a monthly or quarterly review — and 107
-are `dormant`, kept correct as of their last review and re-reviewed on demand.
+history to the January-2010 floor and a monthly or quarterly review, with
+the dated current OANDA scope exception retaining historical gaps in #332 — and 91 are `dormant`, kept correct as of their last review and re-reviewed on demand.
 Each row carries its evidence tier, the horizon below which its grid is carried
 rather than sourced, its review cadence, and a link to the evidence file holding
 the quotations and URLs behind it.

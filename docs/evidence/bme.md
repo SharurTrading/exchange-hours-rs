@@ -36,7 +36,9 @@ as each source is re-verified.
 - **Scope.** The profile represents the general trading segment for principal shares. The separate Fixing system, which Operating Instruction 47/2023 excludes from the Trading-at-Last phase, is not modelled.
 - **Interpretive step, auction calls and uncrosses (corrected 2026-10-11 UTC).** Circular 1/2001 sections 3.2.1.1 and 3.2.1.4 expressly state that orders can be entered, modified and cancelled but no trades can be made during the 08:30–09:00 opening call and 17:30–17:35 closing call. Those calls are `order_entry`; they accept orders and `is_open` is false. The operator's randomized uncross can print during 09:00–09:00:30 and 17:35–17:35:30, so those conservative venue-level windows are `extended`. Regular trading starts at 09:00:30 and ends at 17:30; Circular 1/2023 section 3.2.1.5 states TAL lasts ten minutes until 17:45 after the closing auction (eight minutes for securities with an extended auction). The nominal 17:35–17:45 TAL and randomized uncross therefore share one executable extended union; no artificial 17:35:30 TAL start is asserted.
 - **Interpretive step, randomized auction edge.** The deterministic profile uses the latest possible opening edge, 09:00:30, so it never reports continuous trading while the opening auction can still run; the closing auction likewise runs through 17:35:30.
-- **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+- **Served identity.** Reviewed monthly after current-scope activation on
+  2026-10-12 UTC; historical gaps remain tracked in #332 under the dated
+  current OANDA scope exception in AGENTS.md.
 
 ## Module narrative (moved from src/calendar/schedules/equities/europe/bme.rs on 2026-10-02 UTC)
 
@@ -64,7 +66,8 @@ instructions publish each annual SIBE cash calendar independently; this is not
 holiday inheritance from MEFF or another exchange. There are 106 rows: 86 full
 closures, 18 complete replacement sessions and two `Unsourced` 2026 year-end
 sessions. Dates without rows are audited normal within this window. The runtime
-identity remains dormant until its consumer scope is admitted.
+identity is served after current-scope activation on 2026-10-12 UTC;
+historical gaps remain #332 under the dated AGENTS.md exception.
 
 ### Scope and half-day interpretation
 
@@ -118,8 +121,9 @@ contains no later 2026 timetable or 2027 annual cash calendar. The two known
 current general calendar page cannot establish the missing phase details.
 Closing condition: the operator's detailed 2026 `ACCIONES (EQ)` timetable.
 The absence of a 2027 publication ends the audited window at 2026-12-31; no
-2027 date is asserted normal. Dormant follow-up is recorded here under
-LAW-FOLLOW-UPS-ARE-ISSUES.
+2027 date is asserted normal. The unresolved detailed timetable remains
+disclosed in #332; these future
+eves stay typed refusals under LAW-HOLIDAY-SCOPE.
 
 ### Per-date derivation
 

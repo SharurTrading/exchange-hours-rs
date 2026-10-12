@@ -16,8 +16,8 @@ maintenance.
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and a dormant identity owes its current
-schedule rather than a worked-up history (LAW-BOUNDED-WORK).
+no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
+remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 
@@ -101,7 +101,7 @@ audit are in `normal-weeks/oanda-current-source-audit-2026-10-12/`,
 
 - **Every day before the 2026-10-10 capture is carried** — the TRY grid's
   only witness is the living page. The date-aware surface refuses the whole
-  carried span; activation requires a Wayback sweep or an operator statement
+  carried span; historical completion in #332 requires a Wayback sweep or an operator statement
   dating the grid.
 - The TRY carve-out exists because of the pair set's restricted schedule;
   if OANDA widens or narrows the TRY pair list the grid may change, and the

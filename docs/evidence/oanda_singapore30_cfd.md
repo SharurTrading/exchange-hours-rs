@@ -55,8 +55,17 @@ changeover day. Holiday dates below the current audited window remain
 unclassified; the coverage bridge does not certify them as ordinary trading.
 Historical normal-week and holiday proof remains disclosed in #332; closing
 evidence is a UK-scoped broker artifact establishing the missing earlier sessions.
-After October 30, date-aware queries refuse until a sufficiently specified
-UK holiday publication extends the audited window. This scope is dormant
+The last audited Friday night opens on 2026-10-30 and closes on the local
+Saturday 2026-10-31. On the audited Friday, `is_open` answers and `session_bounds` returns the
+complete running block through its Saturday end-exclusive close. Instant
+queries at and after Singapore midnight on the unaudited Saturday refuse,
+even while that returned Friday block is still running.
+`trade_date` refuses its October 31 closing-date classification because that
+date is beyond the holiday audit. The night close and later instant queries likewise refuse rather than
+certify the unaudited Saturday or next opening;
+a monthly candle begun in October also refuses when it needs October 31.
+A sufficiently specified UK holiday publication must extend the audited
+window before those classifications or later sessions can answer. This scope is dormant
 until the consumer selects it; source review is on demand before activation.
 
 ## Sources

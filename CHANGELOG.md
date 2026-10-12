@@ -6,6 +6,10 @@
 
 ### Fixed
 
+- OANDA TRY-pair date-aware queries now answer the witnessed current grid within
+  the operator's Forex holiday audit, 2026-10-10 through 2026-10-30. Earlier
+  history and unpublished later dates retain explicit coverage errors.
+
 - Correct the Brent evidence comparison to ICE's printed trading hours;
   its settlement calculation is not a session close. OANDA rules are unchanged.
 

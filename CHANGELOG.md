@@ -22,6 +22,9 @@
 ### Added
 
 - Nasdaq Copenhagen, Helsinki and Stockholm cash holiday tables for 2026–2027, including Stockholm's half-day phases through 13:30 local time.
+- Broker-native OANDA China A50 and Singapore 30 CFD keys with sourced
+  Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
+  holiday window; historical and later unpublished dates remain typed refusals.
 
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,

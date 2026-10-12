@@ -745,6 +745,16 @@ oanda_brent | regular  | --TuWeThFr---- | 01:01:00-21:59:00
 oanda_brent | regular  | MoTuWeTh------ | 22:05:00-22:59:00
 oanda_brent | extended | (none)
 oanda_brent | order-en | (none)
+oanda_china50_cfd | tz Asia/Singapore | week_open_seconds 345300
+oanda_china50_cfd | regular  | (none)
+oanda_china50_cfd | extended | MoTuWeThFr---- | 09:01:00-16:29:00
+oanda_china50_cfd | extended | MoTuWeThFr---- | 17:01:00-04:44:00 +1d
+oanda_china50_cfd | order-en | (none)
+oanda_singapore30_cfd | tz Asia/Singapore | week_open_seconds 363300
+oanda_singapore30_cfd | regular  | (none)
+oanda_singapore30_cfd | extended | MoTuWeThFr---- | 08:31:00-17:19:00
+oanda_singapore30_cfd | extended | MoTuWeThFr---- | 17:51:00-05:14:00 +1d
+oanda_singapore30_cfd | order-en | (none)
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

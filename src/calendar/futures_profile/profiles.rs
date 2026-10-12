@@ -9,9 +9,10 @@ use crate::calendar::schedules::ALWAYS_OPEN_RULE;
 use crate::calendar::schedules::futures::international::{
     EUREX_CURRENT_EXTENDED, EUREX_CURRENT_ORDER_ENTRY, EUREX_CURRENT_REGULAR,
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
-    EUREX_FIXED_INCOME_REGULAR_CURRENT, OANDA_BRENT_REGULAR, OANDA_FX_REGULAR,
-    OANDA_METALS_REGULAR, OANDA_TRY_FX_REGULAR, OANDA_US_CONTINUOUS_REGULAR, SGX_CURRENT_EXTENDED,
-    SGX_CURRENT_ORDER_ENTRY, SGX_CURRENT_REGULAR, SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
+    EUREX_FIXED_INCOME_REGULAR_CURRENT, OANDA_BRENT_REGULAR, OANDA_CHINA50_EXTENDED,
+    OANDA_FX_REGULAR, OANDA_METALS_REGULAR, OANDA_SINGAPORE30_EXTENDED, OANDA_TRY_FX_REGULAR,
+    OANDA_US_CONTINUOUS_REGULAR, SGX_CURRENT_EXTENDED, SGX_CURRENT_ORDER_ENTRY,
+    SGX_CURRENT_REGULAR, SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
     SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
     SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT,
     SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT, SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT,
@@ -44,6 +45,22 @@ use crate::calendar::schedules::futures::us::{
 };
 
 // OANDA's own book: one grid each, no dated change, no seasonal switch.
+static FUTURES_OANDA_CHINA50: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: &[],
+    extended: OANDA_CHINA50_EXTENDED,
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+static FUTURES_OANDA_SINGAPORE30: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: &[],
+    extended: OANDA_SINGAPORE30_EXTENDED,
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
 static FUTURES_OANDA_FX: FuturesSessionProfile = FuturesSessionProfile {
     tz: America::New_York,
     regular: OANDA_FX_REGULAR,
@@ -492,6 +509,8 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::OandaUsIndexCfd | MarketHoursKey::OandaUsBondCfd => &FUTURES_OANDA_US_INDEX,
         MarketHoursKey::OandaUsCommodityCfd => &FUTURES_OANDA_US_COMMODITY,
         MarketHoursKey::OandaBrent => &FUTURES_OANDA_BRENT,
+        MarketHoursKey::OandaChina50Cfd => &FUTURES_OANDA_CHINA50,
+        MarketHoursKey::OandaSingapore30Cfd => &FUTURES_OANDA_SINGAPORE30,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

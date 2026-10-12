@@ -13,6 +13,7 @@ mod ice_canada;
 mod ice_endex;
 mod ice_europe;
 mod oanda;
+mod oanda_asia;
 mod sgx;
 
 mod eurex_fixed_income;
@@ -42,6 +43,10 @@ pub(crate) use oanda::{
     OANDA_US_CONTINUOUS_REGULAR, oanda_brent_profile_at, oanda_fx_profile_at,
     oanda_metals_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
     oanda_us_index_profile_at,
+};
+pub(crate) use oanda_asia::{
+    OANDA_CHINA50_EXTENDED, OANDA_SINGAPORE30_EXTENDED, oanda_china50_profile_at,
+    oanda_singapore30_profile_at,
 };
 pub(crate) use sgx::SGX_CURRENT_ORDER_ENTRY;
 pub(crate) use sgx::{SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR, sgx_profile_at};

@@ -37,8 +37,11 @@ capture corroborates with its own footnote form:
 The 2022 capture shows the earlier regime — `Sun - Fri 20:00 - 18:00*` with
 `*Brent Crude Oil closes an hour earlier on Fridays` — which the horizon
 excludes (see Dated selectors). The current shape is OANDA's own, not the
-ICE clock: ICE's own Brent futures day runs to 19:00 London with its own
-window structure, and no ICE statement keys a row here.
+ICE clock: the ICE specification prints weekday trading 01:00–23:00
+London and 20:00–18:00 New York, with temporary US/UK DST arrangements
+published separately. The 19:28 London settlement calculation is not a
+session close. These underlying-contract statements do not replace
+OANDA's printed blocks or key an operator-verified OANDA holiday row.
 
 ## Holidays
 
@@ -139,13 +142,25 @@ served.
 
 ### Documents
 
-The Documents table governing this row is
-[`oanda_fx.md`](oanda_fx.md)'s, which cites the hours page (PDF and HTML),
-the holiday page, and the 2024 and 2022 Wayback captures; the digests there
-govern here too. The archived 2024 rows additionally resolve
-`OANDA-UK-CARTER-2025-WAYBACK` through
-[`oanda_us_index_cfd.md`](oanda_us_index_cfd.md)'s Documents table,
-sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
+The shared OANDA artifacts below retain the canonical document rows from
+[`oanda_fx.md`](oanda_fx.md) and
+[`oanda_us_index_cfd.md`](oanda_us_index_cfd.md). Their recorded digests
+resolve the native Brent schedule and holiday citations in this file.
+
+The underlying comparison additionally cites the following primary artifact,
+saved as `normal-weeks/oanda-underlying-policy-2026-10-12/ice-brent-product-219.html`
+in the research store. It establishes ICE contract hours, not OANDA hours.
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `OANDA-STATIC-HOURS-252` | undated earlier grids; no effective day asserted | <https://www.oanda.com/assets/documents/252/Hours_of_Operation.pdf> | retrieved 2026-10-11 UTC | T1 | `778ea39e0f71005015a111963061cd86f8d7fce7b589af0279316992239244ba` |
+| `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
+| `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
+| `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
+| `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
+| `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
+| `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20250326184653`, retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+| `ICE-BRENT-SPEC-2026-10-12` | current specification observed 2026-10-12; no historical cutover claimed | <https://www.ice.com/products/219/Brent-Crude-Futures> | 2026-10-12 UTC | T1 | `8b9ca9b5ddfbfe482e33f6a5f5055a5e803988a5ca84a01d613e36106c711f0b` |
 
 ## Gaps and residual risks
 

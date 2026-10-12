@@ -25,6 +25,9 @@
 - Broker-native OANDA China A50 and Singapore 30 CFD keys with sourced
   Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
   holiday window; historical and later unpublished dates remain typed refusals.
+- Euronext Brussels cash holidays for 2026: five sourced closures and two
+  withheld year-end half days whose hours remain unpublished. Earlier holiday
+  history and 2027 are outside this audit.
 
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,

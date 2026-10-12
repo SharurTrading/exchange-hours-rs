@@ -37,8 +37,11 @@ capture corroborates with its own footnote form:
 The 2022 capture shows the earlier regime — `Sun - Fri 20:00 - 18:00*` with
 `*Brent Crude Oil closes an hour earlier on Fridays` — which the horizon
 excludes (see Dated selectors). The current shape is OANDA's own, not the
-ICE clock: ICE's own Brent futures day runs to 19:00 London with its own
-window structure, and no ICE statement keys a row here.
+ICE clock: the ICE specification prints weekday trading 01:00–23:00
+London and 20:00–18:00 New York, with temporary US/UK DST arrangements
+published separately. The 19:28 London settlement calculation is not a
+session close. These underlying-contract statements do not replace
+OANDA's printed blocks or key an operator-verified OANDA holiday row.
 
 ## Holidays
 
@@ -146,6 +149,14 @@ govern here too. The archived 2024 rows additionally resolve
 `OANDA-UK-CARTER-2025-WAYBACK` through
 [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md)'s Documents table,
 sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
+
+The underlying comparison additionally cites the following primary artifact,
+saved as `normal-weeks/oanda-underlying-policy-2026-10-12/ice-brent-product-219.html`
+in the research store. It establishes ICE contract hours, not OANDA hours.
+
+| Document ID | Window | URL | Retrieved | Tier | SHA256 |
+|---|---|---|---|---|---|
+| `ICE-BRENT-SPEC-2026-10-12` | current specification observed 2026-10-12; no historical cutover claimed | <https://www.ice.com/products/219/Brent-Crude-Futures> | 2026-10-12 UTC | T1 | `8b9ca9b5ddfbfe482e33f6a5f5055a5e803988a5ca84a01d613e36106c711f0b` |
 
 ## Gaps and residual risks
 

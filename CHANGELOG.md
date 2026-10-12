@@ -6,6 +6,9 @@
 
 ### Fixed
 
+- Correct the Brent evidence comparison to ICE's printed trading hours;
+  its settlement calculation is not a session close. OANDA rules are unchanged.
+
 - BME opening and closing auction calls now accept orders without reporting
   the market open, on normal days and half days. The sourced uncross windows
   and Trading-at-Last remain executable.

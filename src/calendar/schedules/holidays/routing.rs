@@ -210,6 +210,8 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         MarketHoursKey::OandaUsBondCfd => Some(super::oanda_us_bond_cfd::TABLE),
         MarketHoursKey::OandaUsCommodityCfd => Some(super::oanda_us_commodity_cfd::TABLE),
         MarketHoursKey::OandaBrent => Some(super::oanda_brent::TABLE),
+        MarketHoursKey::OandaChina50Cfd => Some(super::oanda_china50_cfd::TABLE),
+        MarketHoursKey::OandaSingapore30Cfd => Some(super::oanda_singapore30_cfd::TABLE),
         MarketHoursKey::Sgx => None,
         MarketHoursKey::AlwaysOpen => None,
     }

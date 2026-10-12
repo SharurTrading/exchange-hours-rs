@@ -29,8 +29,9 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at, oanda_fx_profile_at,
-    oanda_metals_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
+    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at,
+    oanda_china50_profile_at, oanda_fx_profile_at, oanda_metals_profile_at,
+    oanda_singapore30_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
     oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
     sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
     sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
@@ -483,6 +484,12 @@ market_hours_keys! {
         /// names New York, but the note states the London clock and the
         /// evidence file records that reading.
         OandaBrent => "oanda_brent",
+        /// OANDA China A50 CFD day and overnight trading in Singapore time.
+        /// This is the broker calendar, distinct from SGX futures.
+        OandaChina50Cfd => "oanda_china50_cfd",
+        /// OANDA Singapore 30 CFD day and overnight trading in Singapore time.
+        /// This is the broker calendar, distinct from SGX futures.
+        OandaSingapore30Cfd => "oanda_singapore30_cfd",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -569,6 +576,8 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         }
         MarketHoursKey::OandaUsCommodityCfd => oanda_us_commodity_profile_at(as_of),
         MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
+        MarketHoursKey::OandaChina50Cfd => oanda_china50_profile_at(as_of),
+        MarketHoursKey::OandaSingapore30Cfd => oanda_singapore30_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

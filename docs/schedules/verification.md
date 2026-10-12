@@ -114,10 +114,10 @@ was worked.
 
 **Classification complete, 2026-09-01; revised 2026-09-02, 2026-09-05, 2026-09-06, 2026-09-09, 2026-09-12 and 2026-09-30.**
 Every `Partial` row states its gap kind in its Basis cell.
-Of the 65, **36 are order-entry** — the trading session
+Of the 67, **36 are order-entry** — the trading session
 is sourced and what is undated is a queue or post-close phase in which no trade
-can print — and **29 are executable**, where the uncertainty touches a window
-where trades print. The executable twenty-nine are the six ICE Futures U.S. keys
+can print — and **31 are executable**, where the uncertainty touches a window
+where trades print. The executable thirty-one are the six ICE Futures U.S. keys
 (their pre-August-2011 grid is carried back, bounded by document availability),
 the five SGX equity-index keys (a sourced intersection, sessionless
 before the first surviving calendar edition), `nyse` and `nyse_american`,
@@ -130,12 +130,13 @@ from CME's 2025 and 2026 statements of it to the family's 2022 launch, and
 the sourced intersection of two CME primaries that disagree by an hour, and
 `small_exchange`, added on 2026-09-09, whose 2024 move to 08:30–15:00 CT is
 undated inside 2024-11-04..2024-11-21 and served as the sourced intersection, the three OANDA wave-one rows — `oanda`, `oanda_fx` and `oanda_try_fx`, added on 2026-10-10, whose pre-2024 history carries an earlier grid with an undated changeover — and the four OANDA wave-two book keys — `oanda_metals`, `oanda_us_index_cfd`, `oanda_us_commodity_cfd` and `oanda_brent`, added the same day on the same shape, plus `oanda_us_bond_cfd`, separated from the index scope on 2026-10-11,
+and `oanda_china50_cfd` and `oanda_singapore30_cfd`, witnessed from 2026-10-10,
 and the five metals TAS keys added on 2026-09-12 — `globex_gold_tas`,
 `globex_silver_tas` and `globex_copper_tas`, whose closes are carried across
 the 2015-03-22 to 2019-11-18 exhaustion of CME's metals hours page, and
 `globex_platinum_tas` and `globex_palladium_tas`, whose windows are carried
 across a five-year archive gap in the only channel that survives for them.
-None of the twenty-nine serves hours it cannot support; each is conservative in
+None of the thirty-one serves hours it cannot support; each is conservative in
 the direction of `Closed`. The counts fell from 47/35/12 on 2026-09-02, when `nyse_arca`
 closed its gap and left the `Partial` set, and from 57/35/22 to 56/35/21 on
 2026-09-30 (UTC), when `globex_nikkei_225_dollar`'s floor-era 2010 grid shipped
@@ -516,5 +517,7 @@ keys, and venue defaults must not be substituted for a different family.
 | `oanda_us_bond_cfd` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | [CFD-OANDA](sources.md#cfd-oanda) | Partial / executable | T1 | dormant | 2024-02-21 | 2024-01-01..2024-12-31, 2025-01-01..2026-10-30 | 2026-10-11 | on demand | OANDA's four US Treasury CFD listings share the 18:01–16:59 New York normal week with the index book but have their own fifty holiday rows, including the incomplete Memorial reopen, missing 2024 Christmas Eve and three pre-witness 2024 final-close withholdings. Carter's Day closes at 13:15 ET and Good Friday 2026 at 11:14 ET, without borrowing the narrower index window. Earlier normal weeks, earlier holidays remain explicit activation gaps (#332). | [evidence](../evidence/oanda_us_bond_cfd.md) |
 | `oanda_us_commodity_cfd` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | [CFD-OANDA](sources.md#cfd-oanda) | Partial / executable | T1 | dormant | 2024-02-21 | 2024-02-21..2026-10-30 | 2026-10-11 | on demand | OANDA's five US energy and commodity-metals listings use the 18:01–16:59 New York continuous grid. Forty-one holiday rows preserve the formerly missing MLK 2025 close, the 18:04 New Year reopen, literal 18:00 holiday reopens and Holy Thursday's 17:00 close through complete replacements. Earlier normal weeks and pre-2024-02-21 holidays remain explicit activation gaps (#332). | [evidence](../evidence/oanda_us_commodity_cfd.md) |
 | `oanda_brent` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | [CFD-OANDA](sources.md#cfd-oanda) | Partial / executable | T1 | dormant | 2024-02-21 | 2024-02-21..2026-10-30 | 2026-10-11 | on demand | OANDA's London-anchored Brent book opens Sunday 23:01, with Monday's daytime bounds retaining that opening and Tuesday–Friday daytime rules beginning at 01:01. Forty-seven holiday rows include the literal 2025 20:00 ET reopens, converted to 01:00 London on the following trade date; seventeen ambiguous or silent dates remain withheld. Earlier normal weeks, holidays and the withheld dates remain activation gaps (#332). | [evidence](../evidence/oanda_brent.md) |
+| `oanda_china50_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | [CFD-OANDA](sources.md#cfd-oanda) | Partial / executable | T1 | dormant | 2026-10-10 | 2026-10-10..2026-10-30 | 2026-10-12 | on demand | OANDA Europe Limited China A50 CFD on its own Singapore day/night grid, with no separately declared regular or order-entry phase. The witnessed current week and zero-exception current holiday window answer; pre-witness history remains withheld in #332 and later dates stay outside publication coverage. | [evidence](../evidence/oanda_china50_cfd.md) |
+| `oanda_singapore30_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | [CFD-OANDA](sources.md#cfd-oanda) | Partial / executable | T1 | dormant | 2026-10-10 | 2026-10-10..2026-10-30 | 2026-10-12 | on demand | OANDA Europe Limited Singapore 30 CFD on its own Singapore day/night grid, with no separately declared regular or order-entry phase. The witnessed current week and zero-exception current holiday window answer; pre-witness history remains withheld in #332 and later dates stay outside publication coverage. | [evidence](../evidence/oanda_singapore30_cfd.md) |
 | `sgx` | [sgx.rs](../../src/calendar/schedules/futures/international/sgx.rs) | [APAC-SGX-DERIVATIVES](sources.md#apac-sgx-derivatives) | Primary | T1 | dormant | — | — | 2026-08-22 | on demand | The SGX key carries the same Three-Month SORA Futures schedule as the SGX exchange row, including its closed-before-launch history through the dated key API. It is closed before the sourced 2024-07-29 launch, and its current T and T+1 routines come from SGX's own product specification and rulebook. A venue namespace reaches an exchange and never a key, so this key is dormant under LAW-SERVICE-TIERS. | [evidence](../evidence/sgx_key.md) |
 | `always_open` | [profiles.rs](../../src/calendar/futures_profile/profiles.rs) | [SYNTHETIC-24X7](sources.md#synthetic-24x7) | Synthetic | — | dormant | — | — | — | on demand | Library-defined UTC 24x7 profile, not a venue schedule: `FUTURES_ALWAYS_OPEN` in `profiles.rs` is one `ALWAYS_OPEN_RULE` on UTC with `has_daily_close` and `has_weekend_close` both false. It has no final daily close, so its key calendar returns `None` for `trade_date`. Nothing about it is sourced from an operator, so it carries no evidence tier, no horizon and no review date. | [evidence](../evidence/always_open.md) |

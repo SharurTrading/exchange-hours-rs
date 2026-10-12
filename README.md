@@ -288,7 +288,11 @@ same pass and carry their own basis labels in the ledger.
 
 The broker-native `oanda_china50_cfd` and `oanda_singapore30_cfd` keys expose
 the published Singapore day/night grids with current coverage from 2026-10-10
-through 2026-10-30; earlier history remains disclosed in #332.
+through 2026-10-30; earlier history remains disclosed in #332. The last
+Friday night session retains its full running bounds into local October 31,
+when queried on Friday. Its closing trade-date classification and instant
+queries from Singapore midnight on the unaudited Saturday refuse beyond
+the holiday horizon.
 
 OANDA profiles describe the published trading windows and timed session
 phases. OANDA also permits customers to store or modify pending orders while

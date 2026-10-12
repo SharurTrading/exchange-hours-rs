@@ -144,3 +144,50 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
         );
     }
 }
+
+#[test]
+fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
+    for (key, open, close) in [
+        (
+            K::OandaChina50Cfd,
+            "2026-10-30T09:01:00Z",
+            "2026-10-30T20:44:00Z",
+        ),
+        (
+            K::OandaSingapore30Cfd,
+            "2026-10-30T09:51:00Z",
+            "2026-10-30T21:14:00Z",
+        ),
+    ] {
+        let c = ExchangeCalendar::for_market_hours_key(key);
+        let saturday = NaiveDate::from_ymd_opt(2026, 10, 31).expect("closing civil date");
+        for instant in [utc(open), utc("2026-10-30T15:59:59Z")] {
+            assert_eq!(c.is_open(instant), Ok(true));
+            assert_eq!(c.session_bounds(instant), Ok(Some((utc(open), utc(close)))));
+            assert!(
+                matches!(c.trade_date(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            );
+        }
+        for instant in [
+            utc("2026-10-30T16:00:00Z"),
+            utc(close) - Duration::seconds(1),
+            utc(close),
+        ] {
+            assert!(
+                matches!(c.is_open(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            );
+            assert!(
+                matches!(c.session_bounds(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            );
+        }
+        assert!(
+            matches!(c.is_open(utc(close)), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+        );
+        assert!(
+            matches!(c.session_bounds(utc(close)), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+        );
+        assert!(
+            matches!(c.candle_end(utc("2026-10-12T02:00:00Z"), CalendarResolution::Monthly), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+        );
+    }
+}

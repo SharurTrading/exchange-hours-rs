@@ -1111,12 +1111,12 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // `ALL_EXCHANGES` / `EXCHANGE_VARIANT_COUNT`
     // (`tests/contract/session_invariants/identity_expectations.rs`), every
     // `MarketHoursKey` the ledger names must resolve, and the verification
-    // ledger states one row per identity. This count is that ledger's 140 rows
+    // ledger states one row per identity. This count is that ledger's 143 rows
     // less the five sourced trade-date conventions the sweep excludes.
     assert_eq!(
         close_dated_calendars().len(),
-        135,
-        "140 ledger identities less this fence's five excluded conventions"
+        138,
+        "143 ledger identities less this fence's five excluded conventions"
     );
     assert_eq!(
         swept_identities,

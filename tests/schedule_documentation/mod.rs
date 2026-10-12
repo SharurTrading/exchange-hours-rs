@@ -25,7 +25,7 @@ const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
 const DATABENTO_VENUES: &str = include_str!("../../docs/schedules/databento-venues.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 43] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 46] = [
     "globex_equity_index",
     "globex_energy",
     "globex_silver_100oz",
@@ -65,8 +65,11 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 43] = [
     "oanda_try_fx",
     "oanda_metals",
     "oanda_us_index_cfd",
+    "oanda_us_bond_cfd",
     "oanda_us_commodity_cfd",
     "oanda_brent",
+    "oanda_china50_cfd",
+    "oanda_singapore30_cfd",
     "sgx",
     "always_open",
 ];
@@ -639,8 +642,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
-            .to_string(),
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**".to_string(),
         format!(
             "`{history_gap_rows} of {}` exchange rows still name a Basis gap in the ledger, each with its disclosed residual or external closer",
             real_exchange_rows.len()
@@ -1039,14 +1041,18 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let readme = flowed(README);
     for claim in [
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**"
         .to_string(),
         "**sourced** (dated primary sources run the whole way back to January 2010)".to_string(),
         "**verified carried**".to_string(),
         "the crate serves the window that holds under every sourced state".to_string(),
         "the crate refuses with an explicit typed error rather than claiming hours it cannot support".to_string(),
         "Where a residual uncertainty survives, it is **instant-level and disclosed**".to_string(),
-        "Per-family holiday and early-close tables ship for 49 of the 140 ledger rows".to_string(),
+        format!(
+            "Per-family holiday and early-close tables ship for {} of the {} ledger rows",
+            exchange_rows.iter().chain(&key_rows).filter(|row| row_cells(row)[7] != "—").count(),
+            exchange_rows.len() + key_rows.len()
+        ),
         format!("All {real} current profiles are primary-supported"),
         format!("The {primary} **Primary** rows have no known modeled-history gap"),
         format!("{partial} **Partial** rows name"),

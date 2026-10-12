@@ -42,15 +42,10 @@ const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 
 /// The one venue-local date the completeness verdicts are compared on.
 ///
-/// It has to be a date the inventory's own columns say is *inside* every scope's
-/// audit — not a withheld `Unsourced` date and not before a window opens — or the
-/// comparison would be measuring something other than the verdict. 2025-06-10 is
-/// a **Tuesday** inside every shipped audited window (`2025-01-01..2027-12-31`
-/// reaches it for the fourteen scopes that answer 2025, and the two that open
-/// later are asserted below to answer it as incomplete anyway), and it is not a
-/// date any served table withholds:
-/// `inventory_sample_date_is_inside_every_scopes_audit` re-derives both claims
-/// from the shipped tables rather than resting on this comment.
+/// The unchanged historical sample remains inside each pre-existing scope's
+/// audited window and is not a withheld date. The eight scopes activated on
+/// 2026-10-12 whose holiday windows start later explicitly deny this sample;
+/// the sample audit below pins that list and its negative completeness verdicts.
 const SAMPLE: (i32, u32, u32) = (2025, 6, 10);
 
 /// The support floor LAW-COVERAGE fixes at 2010-01-01 (the 2026-09-27
@@ -617,6 +612,12 @@ fn multi_block_bindings() -> &'static [(&'static str, &'static str)] {
         ("nasdaq", "NASDAQ_REVISIONS"),
         ("nyse", "NYSE_REVISIONS"),
         ("euronext_paris", "PARIS_REVISIONS"),
+        ("euronext_amsterdam", "AMSTERDAM_REVISIONS"),
+        ("euronext_brussels", "BRUSSELS_REVISIONS"),
+        ("euronext_lisbon", "LISBON_REVISIONS"),
+        ("nasdaq_stockholm", "STO_REVISIONS"),
+        ("nasdaq_helsinki", "HEL_REVISIONS"),
+        ("nasdaq_copenhagen", "CPH_REVISIONS"),
         // The fixed-income module carries the family's dated revisions and the
         // two seasonal selectors' own revision lists beside them.
         ("eurex_fixed_income", "EUREX_FIXED_INCOME_REVISIONS"),
@@ -767,7 +768,7 @@ enum Verdict {
     /// `complete to <date>`: this scope answers the sample date completely.
     Complete,
     /// `**no 2025 coverage**`: the scope's audit opens after the sample date, so
-    /// it cannot answer it at all.
+    /// its holiday audit cannot classify that date as complete.
     NoCoverage,
     /// `**incomplete**`: the scope denies the interval verdict, and this fence
     /// re-derives which of the two statements about the *sample date* that
@@ -860,12 +861,16 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // remaining withheld date is the family's own 2023-01-16 marker.
         ("cbot", 1),
         ("euronext_paris", 2),
+        ("euronext_amsterdam", 2),
+        ("bme", 2),
+        ("oanda_us_index_cfd", 4),
+        ("oanda_us_bond_cfd", 5),
+        ("oanda_brent", 17),
         // 42 since the 2026-10-09 notices-service sweep (41 at HEAD): the four
         // notices it yielded moved eight family-level dates onto stated rows,
         // and the Independence Day notice's Cotton 2025-07-07 late open added
         // one new disagreement date to the venue intersection.
         ("iceus", 42),
-        ("lse", 5),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.
@@ -1009,8 +1014,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (30, 6, 0),
-        "the inventory's verdict shapes: thirty complete, six incomplete, none with no 2025 \
+        (34, 10, 8),
+        "the inventory's verdict shapes: thirty-four complete, ten incomplete, eight with no 2025 \
          coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
@@ -1037,7 +1042,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          to the 2010-01-01 floor the same day (the operator's own SEC filings and archived Trading \
          Hours page — #231's last half discharged); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
-         the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
+         the LSE public mirror closes its five 2025 withheld dates on 2026-10-11 UTC, \
          euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
@@ -1458,9 +1463,10 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "asx",
             "nzx",
             "globex_grains",
-            "globex_nikkei_225_dollar"
+            "globex_nikkei_225_dollar",
+            "oanda_fx"
         ],
-        "these accept orders inside the disputed window: their grids state a 16:00 CT onset"
+        "these accept orders inside the disputed window: their grids are already open at 16:05 CT"
     );
     assert_eq!(
         closed_at_both,
@@ -1479,6 +1485,13 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "xetra",
             "six",
             "euronext_paris",
+            "euronext_amsterdam",
+            "euronext_brussels",
+            "euronext_lisbon",
+            "bme",
+            "nasdaq_stockholm",
+            "nasdaq_helsinki",
+            "nasdaq_copenhagen",
             "borsa_istanbul",
             "tsx",
             "tadawul",
@@ -1487,13 +1500,21 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "globex_cryptocurrency",
             "eurex",
             "ice_us_sugar",
-            "eurex_fixed_income"
+            "eurex_fixed_income",
+            "oanda_try_fx",
+            "oanda_metals",
+            "oanda_us_index_cfd",
+            "oanda_us_bond_cfd",
+            "oanda_us_commodity_cfd",
+            "oanda_brent",
+            "oanda_china50_cfd",
+            "oanda_singapore30_cfd"
         ],
         "these are closed at both instants: a different grid, not a served intersection"
     );
 }
 
-/// The sample date is a date every scope's audit actually reaches.
+/// The historical sample retains its audits and pins the eight later windows.
 ///
 /// The comparison above is only meaningful if the sample is not itself a
 /// withheld `Unsourced` date and falls inside a window the scope audited: either
@@ -1515,7 +1536,18 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
     );
 
     let mut checked = 0_usize;
-    for (name, _) in inventory_rows() {
+    let later = [
+        "euronext_brussels",
+        "euronext_lisbon",
+        "nasdaq_stockholm",
+        "nasdaq_helsinki",
+        "nasdaq_copenhagen",
+        "oanda_try_fx",
+        "oanda_china50_cfd",
+        "oanda_singapore30_cfd",
+    ];
+    let mut later_checked = 0_usize;
+    for (name, row) in inventory_rows() {
         let calendar = calendar_for(&name).expect("the inventory names a known identity");
         if calendar
             .holiday_coverage()
@@ -1527,11 +1559,30 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
                 "{name} withholds the sample date as Unsourced"
             );
         }
+        if later.contains(&name.as_str()) {
+            let audit = calendar.holiday_coverage().expect("later audited window");
+            assert!(audit.first() > day, "{name} must start after the sample");
+            assert!(matches!(verdict_of(&name, &row[8]), Verdict::NoCoverage));
+            assert!(!calendar.coverage().is_complete_on(day));
+            later_checked += 1;
+        } else {
+            assert!(
+                calendar
+                    .holiday_coverage()
+                    .is_some_and(|audit| audit.contains(day)),
+                "{name} must retain its pre-existing sample audit"
+            );
+        }
         checked += 1;
     }
     assert_eq!(
-        checked, 36,
-        "the inventory carries one row per served scope, and all thirty-six are checked"
+        later_checked,
+        later.len(),
+        "every later-window exception is checked"
+    );
+    assert_eq!(
+        checked, 52,
+        "the inventory carries one row per served scope, and all fifty-two are checked"
     );
 }
 

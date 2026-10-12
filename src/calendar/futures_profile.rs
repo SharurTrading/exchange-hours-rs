@@ -29,8 +29,9 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at, oanda_fx_profile_at,
-    oanda_metals_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
+    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at,
+    oanda_china50_profile_at, oanda_fx_profile_at, oanda_metals_profile_at,
+    oanda_singapore30_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
     oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
     sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
     sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
@@ -87,7 +88,8 @@ impl FuturesSessionProfile {
             .is_order_entry_only(t)
     }
 
-    /// True when orders may be entered, amended or cancelled at `t`.
+    /// True during a tradeable session or a published order-entry phase at `t`.
+    /// Broker-side pending-order storage outside those phases is not modelled.
     #[must_use]
     pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
         self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
@@ -455,17 +457,18 @@ market_hours_keys! {
         /// an additional 06:59-07:05 Auckland break that is caller catalog
         /// data: no rule in this grid states it.
         OandaMetals => "oanda_metals",
-        /// OANDA's US-anchored index and bond book — US SPX 500, US Nas 100,
-        /// US Russ 2000, US Wall St 30, Japan 225 (USD and JPY) and the four
-        /// US Treasury listings — on one continuous Sunday-to-Friday clock:
+        /// OANDA's US-anchored index book — US SPX 500, US Nas 100,
+        /// US Russ 2000 and US Wall St 30 —
+        /// on one continuous Sunday-to-Friday clock:
         /// Chicago 17:01 to 15:59, the same instants as New York 18:01 to
         /// 16:59, with the printed 16:59-18:01 daily gap and no other
-        /// maintenance. The operator's holiday page treats this as the "US
-        /// indices and bonds" group, distinct from
-        /// [`OandaUsCommodityCfd`](Self::OandaUsCommodityCfd); Japan 225 is
-        /// included because every dated section that prints it separately
-        /// gives it the US indices' own arrangement.
+        /// maintenance. US Treasury CFDs use
+        /// [`OandaUsBondCfd`](Self::OandaUsBondCfd), whose holidays can differ.
         OandaUsIndexCfd => "oanda_us_index_cfd",
+        /// OANDA's four US Treasury CFD listings on the same normal-week
+        /// clock as [`OandaUsIndexCfd`](Self::OandaUsIndexCfd), with their
+        /// own holiday closes (including Good Friday 2026 at 11:14 ET).
+        OandaUsBondCfd => "oanda_us_bond_cfd",
         /// OANDA's US-anchored energy and commodity-metals book — Natural
         /// Gas, West Texas Oil, Platinum, Palladium and Copper — on the same
         /// continuous clock as [`OandaUsIndexCfd`](Self::OandaUsIndexCfd):
@@ -481,6 +484,12 @@ market_hours_keys! {
         /// names New York, but the note states the London clock and the
         /// evidence file records that reading.
         OandaBrent => "oanda_brent",
+        /// OANDA China A50 CFD day and overnight trading in Singapore time.
+        /// This is the broker calendar, distinct from SGX futures.
+        OandaChina50Cfd => "oanda_china50_cfd",
+        /// OANDA Singapore 30 CFD day and overnight trading in Singapore time.
+        /// This is the broker calendar, distinct from SGX futures.
+        OandaSingapore30Cfd => "oanda_singapore30_cfd",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -562,9 +571,13 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::OandaFx => oanda_fx_profile_at(as_of),
         MarketHoursKey::OandaTryFx => oanda_try_fx_profile_at(as_of),
         MarketHoursKey::OandaMetals => oanda_metals_profile_at(as_of),
-        MarketHoursKey::OandaUsIndexCfd => oanda_us_index_profile_at(as_of),
+        MarketHoursKey::OandaUsIndexCfd | MarketHoursKey::OandaUsBondCfd => {
+            oanda_us_index_profile_at(as_of)
+        }
         MarketHoursKey::OandaUsCommodityCfd => oanda_us_commodity_profile_at(as_of),
         MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
+        MarketHoursKey::OandaChina50Cfd => oanda_china50_profile_at(as_of),
+        MarketHoursKey::OandaSingapore30Cfd => oanda_singapore30_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

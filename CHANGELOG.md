@@ -4,15 +4,60 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-12
+
+### Fixed
+
+- OANDA TRY-pair date-aware queries now answer the witnessed current grid within
+  the operator's Forex holiday audit, 2026-10-10 through 2026-10-30. Earlier
+  history and unpublished later dates retain explicit coverage errors.
+
+- Correct the Brent evidence comparison to ICE's printed trading hours;
+  its settlement calculation is not a session close. OANDA rules are unchanged.
+
+- BME opening and closing auction calls now accept orders without reporting
+  the market open, on normal days and half days. The sourced uncross windows
+  and Trading-at-Last remain executable.
+- LSE's five withheld 2025 spring/summer holiday dates now answer as sourced
+  closures, recovered from a verbatim public mirror of the operator table.
+
+### Added
+
+- Nasdaq Copenhagen, Helsinki and Stockholm cash holiday tables for 2026–2027, including Stockholm's half-day phases through 13:30 local time.
+- Broker-native OANDA China A50 and Singapore 30 CFD keys with sourced
+  Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
+  holiday window. Earlier normal-week gaps, unaudited holiday classification
+  and later unpublished dates remain explicit; the sourced-intersection bridge
+  may answer pre-window session questions.
+- Euronext Brussels and Lisbon cash holidays for 2026: five sourced closures
+  and two withheld year-end half days per market whose hours remain unpublished.
+  Earlier holiday history and 2027 are outside these audits.
+
+- Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
+  2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
+  including Thanksgiving and Christmas reopens. Earlier normal-week history
+  remains unresolved under #332.
+- Archived OANDA UK US-index and Treasury-CFD holiday arrangements for 2024,
+  preserving literal reopens and retaining the omitted Treasury Christmas Eve
+  arrangement as a typed gap.
+- Archived OANDA UK commodity and Brent holiday arrangements from
+  2024-02-21 through 2024-12-31, preserving the separate group scopes and
+  retaining unpublished Brent reopenings and special-day hours as typed gaps.
+- Euronext Amsterdam's own 2010-2026 holiday table: 108 rows, with the
+  two 2026 December half-day instants explicitly withheld until publication.
+- BME principal-share cash holidays from 2010 through 2026, with complete
+  half-day phase replacements and typed gaps for unpublished 2026 year-end
+  timetables.
+
 ### Changed
 
-- Three identities turned **served** under the OANDA programme's consumer
-  admission (SharurPlatform#1046): the `eurex` and `eurex_fixed_income` keys —
-  Germany 40 / Euro 50 and Germany 10Y Bund — whose tables the Eurex venue's
-  calendar work already ships at the same audited depth, and `ice_us_sugar`,
-  whose table the IFUS notices waves had already built. Review cadence moves
-  to monthly for all three; the served-scope inventory gains their rows and
-  the verdict tally moves to thirty complete and six incomplete.
+- Activate the three previously admitted Eurex/IFUS keys plus nine reached
+  OANDA book keys and seven reached cash-equity scopes. Holiday-bearing served
+  scopes receive monthly review. The ledger now records 52 served and 91 dormant
+  rows; the unchanged 2025 inventory sample records 34 complete, 10 incomplete
+  and eight without 2025 holiday coverage. The dated OANDA release-scope
+  exception prioritizes current/published future operation while retaining
+  historical gaps in the single issue #332 and preserving typed coverage errors.
 
 ### Added
 
@@ -22,22 +67,54 @@
   Monday–Friday 08:00–17:00 Central European session with an overnight gap).
   The books trade straight through the daily maintenance halts of the futures
   clocks they hedge on, so they are book keys, not futures mappings. The
-  `oanda_fx` holiday table ships the operator's three stated trade-date
-  closures (2025-01-01, 2025-12-25, 2026-01-01) over its
-  2025-01-01..2026-10-30 audited window, and the venue's table mirrors it —
+  `oanda_fx` holiday table ships four sourced trade-date closures
+  (2024-12-25, 2025-01-01, 2025-12-25, 2026-01-01) over its
+  2024-02-21..2026-10-30 audited window, and the venue's table mirrors it —
   the first wave of the OANDA-listed market coverage programme
   (SharurPlatform#1046, oanda-rs#30).
-- Four more OANDA-book keys, completing the UK hours page's book listings:
+- Four additional OANDA-book keys for the UK hours page's spot metals,
+  US-anchored CFDs and Brent listings:
   `oanda_metals` (XAU/XAG and crosses, Sunday 18:05 to Friday 16:59 New York
-  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (the fourteen
-  US-anchored listings on one continuous clock — Chicago 17:01 to 15:59, the
-  same instants as New York 18:01 to 16:59 — split into two keys because the
-  operator's holiday page gives the two groups different early closes), and
+  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (four US indices and five
+  US energy/commodity-metals listings on one continuous clock — Chicago
+  17:01 to 15:59, the same instants as New York 18:01 to 16:59 — split into
+  two keys because the operator's holiday page gives different early closes), and
   `oanda_brent` (London-anchored by the page's own dagger note, Sunday 23:01
-  to Friday 21:59 with its two stated breaks). Holiday tables ship each
-  group's printed rows from the operator's 2025-01-01..2026-10-30 dated
-  sections, including typed withholdings where the page's own
-  regular-hours vocabulary makes its silence a gap.
+  to Friday 21:59 with its two stated breaks). The broker-family holiday tables include archived 2024 arrangements
+  and current published rows through 2026-10-30, within each key's documented
+  audited windows; unpublished arrangements retain typed withholdings.
+
+- `oanda_us_bond_cfd` separates the four Treasury listings from the index
+  book. Good Friday 2026 closes bonds at 11:14 ET and indices at 09:14 ET;
+  Carter's Day 2025 closes bonds at 13:15 ET. Historical OANDA gaps remain
+  disclosed in #332 under the dated current-operation activation scope.
+
+### Fixed
+
+- The US-index key's exact holiday scope is restricted to its four US
+  indices. Japan 225's two listings share the normal clock but require
+  independent holiday-scope evidence before exact consumer routing (#332).
+- The current OANDA `***` instruction follows each row's named local zone:
+  Sydney for Australia 200's marked close and Frankfurt for the German,
+  Euro 50 and Bund marked openings. The older guide's US-season Australian
+  selector belongs to its older grid; its historical change date stays
+  unsourced (#332).
+- Carter's Day 2025 index close resolves to 09:30 ET from the UK page's
+  dated 24-hour context and stated 18:00 reopening. The following trade
+  date preserves that literal 18:00 open; Memorial's incomplete minute
+  and the remaining historical/scope gaps stay withheld (#332).
+- OANDA holiday instants now preserve the operator's exact minutes: the
+  missing MLK 2025 closes, New Year 18:04 reopens, 2025 US 18:00 and Brent
+  20:00 ET reopens, and Holy Thursday's 17:00 ET close (#330).
+- Bond CFDs retain ordinary trading on the index-only Independence Eve
+  notice. The incomplete Memorial Day 2026 reopen refuses the following
+  index/bond trade date until the operator clarifies it (#332).
+- Brent's Monday session bounds include the Sunday 23:01 London opening
+  (#331). Replacement-session searches select the nearest chronological
+  occurrence across normal rules and replacement blocks (#329).
+
+- The OANDA order-acceptance scope is explicit: off-hours pending-order
+  storage is a broker facility outside the published session phases (#333).
 
 ## [1.0.2] - 2026-10-10
 

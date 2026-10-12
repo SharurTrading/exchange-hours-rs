@@ -13,12 +13,9 @@
 //! its table through a match with no catch-all arm, so a new `Exchange` or
 //! `MarketHoursKey` cannot silently acquire or lose a table.
 //!
-//! **Tables ship for the served CME families and the 2026 venue block.**
-//! `table_for` answers with a table for the eight CME product families, for
-//! CFE, Eurex, ICE Futures U.S., Coinbase Derivatives and the two US
-//! cash-equity venues `nyse` and `nasdaq`, for the OANDA FX, metals, US
-//! index/bond, US commodity and Brent books, and `None`
-//! for every other identity; where it answers `None` the caller's `DayPolicy`
+//! `table_for` resolves every published table through the exhaustive routing
+//! match, including the three Nordic principal-share calendars. Where it
+//! answers `None` the caller's `DayPolicy`
 //! overlay remains the only holiday layer. Each table declares the trade-date
 //! window it audited, so a date outside that window is "no answer", not
 //! "normal".
@@ -41,10 +38,14 @@
 
 mod asx;
 mod b3;
+mod bme;
 mod borsa_istanbul;
 mod cfe;
 mod coinbase_derivatives;
 mod eurex;
+mod euronext_amsterdam;
+mod euronext_brussels;
+mod euronext_lisbon;
 mod euronext_paris;
 pub(crate) mod fences;
 mod globex_cryptocurrency;
@@ -59,12 +60,19 @@ mod hkex;
 mod ice_us;
 mod lse;
 mod nasdaq;
+mod nasdaq_copenhagen;
+mod nasdaq_helsinki;
+mod nasdaq_stockholm;
 mod nse_india;
 mod nyse;
 mod nzx;
 mod oanda_brent;
+mod oanda_china50_cfd;
 mod oanda_fx;
 mod oanda_metals;
+mod oanda_singapore30_cfd;
+mod oanda_try_fx;
+mod oanda_us_bond_cfd;
 mod oanda_us_commodity_cfd;
 mod oanda_us_index_cfd;
 mod routing;

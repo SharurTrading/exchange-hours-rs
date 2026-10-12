@@ -535,10 +535,14 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // oanda_us_commodity_cfd.md, oanda_brent.md).
         MarketHoursKey::OandaMetals => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         MarketHoursKey::OandaUsIndexCfd => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        MarketHoursKey::OandaUsBondCfd => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         MarketHoursKey::OandaUsCommodityCfd => {
             DeclaredSourcing::carried_below(horizon!(2024, 2, 21))
         }
         MarketHoursKey::OandaBrent => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        MarketHoursKey::OandaChina50Cfd | MarketHoursKey::OandaSingapore30Cfd => {
+            DeclaredSourcing::carried_below(horizon!(2024, 2, 21))
+        }
         // `—`: closed before the sourced 2024-07-29 launch.
         MarketHoursKey::Sgx => DeclaredSourcing::nothing_carried(),
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.

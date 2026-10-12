@@ -47,6 +47,7 @@ mod cfe;
 mod coinbase_derivatives;
 mod eurex;
 mod euronext_amsterdam;
+mod euronext_lisbon;
 mod euronext_paris;
 pub(crate) mod fences;
 mod globex_cryptocurrency;

@@ -17,6 +17,10 @@
 
 ### Added
 
+- Euronext Lisbon cash holidays for 2026: five sourced closures and two
+  withheld year-end half days whose hours remain unpublished. Earlier holiday
+  history and 2027 are outside this audit.
+
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
   including Thanksgiving and Christmas reopens. Earlier normal-week history

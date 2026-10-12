@@ -47,3 +47,51 @@ as each source is re-verified.
 > [`euronext_paris`](euronext_paris.md), [`euronext_amsterdam`](euronext_amsterdam.md), [`euronext_brussels`](euronext_brussels.md), [`euronext_milan`](euronext_milan.md).
 > The anchor identity for this module is [`euronext_paris`](euronext_paris.md), which receives the
 > module narrative when LAW-EVIDENCE-FILES moves it; the module is not yet migrated.
+
+
+## Holidays
+
+**Coverage:** 2026-01-01..2026-12-31 (inclusive Lisbon cash-market trade dates; T1).
+
+### 2026
+
+The operator’s current trading-hours page states: “The Euronext Cash Markets and the
+Euronext Derivatives Markets will be open Monday to Friday throughout 2026 except
+on the following days”. Its cash table names Amsterdam, Brussels, Dublin, Lisbon,
+Milan, Oslo and Paris separately. This identity uses only the **Lisbon** column,
+not a same-timezone inference or another market’s dates.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2026-01-01 | closed | Lisbon `Closed` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | own named market column; no clock conversion |
+| 2026-04-03 | closed | Lisbon `Closed` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | own named market column; no clock conversion |
+| 2026-04-06 | closed | Lisbon `Closed` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | own named market column; no clock conversion |
+| 2026-05-01 | closed | Lisbon `Closed` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | own named market column; no clock conversion |
+| 2026-12-24 | unsourced | Lisbon `**Half Trading Day` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | announced half day; hours withheld pending appendix |
+| 2026-12-25 | closed | Lisbon `Closed` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | own named market column; no clock conversion |
+| 2026-12-31 | unsourced | Lisbon `**Half Trading Day` | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | T1 | announced half day; hours withheld pending appendix |
+
+The page says the exact half-day hours will be announced in an end-of-year
+appendix to the trading manuals. Neither December 24 nor December 31 therefore
+certifies an ordinary session or a guessed early close. This audited window is
+2026-01-01 through 2026-12-31, with seven rows: five `Closed` and two `Unsourced`.
+Dates without a Lisbon exception in this window retain the existing named
+normal profile. No historical holiday window, normal-week cutover, 2027 calendar
+or minute-level half-day claim is introduced. The normal-profile horizon and the
+earlier normal-week baseline gap above remain unchanged; older holiday calendars and the
+unpublished half-day appendix would close the corresponding residual gaps.
+
+The linked annual cash-calendar PDF (`EURONEXT-IF-2026`), independently
+retrieved again on 2026-10-12 00:44 UTC, prints “Date: 07 November 2026”, which is
+later than this review’s UTC date. Its closure and half-day cells agree with the
+current webpage, but that anomalous printed date is not treated as an effective
+date or evidence that a future publication has already happened. Runtime rows
+use the separately retrieved current operator webpage at T1. The PDF is retained
+only to disclose this lineage conflict.
+
+### Documents
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | 2026 cash calendar; named market columns | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-10-12 00:42 UTC | T1 | `f4f3d2ee85e88557db2aa6a29bf9ec23d1d2d82eaaa1a8cca2d91175c94fc831` |
+| `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |

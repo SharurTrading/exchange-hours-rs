@@ -80,3 +80,59 @@ Evidence: docs/evidence/nasdaq_copenhagen.md
 > this file on 2026-09-12, so the migration LAW-EVIDENCE-FILES requires is complete
 > for this module: `nasdaq_nordics.rs` now carries rule data, citation lines and
 > evidence links only.
+
+## Holidays
+
+**Coverage:** 2026-01-01..2027-12-31
+
+Reviewed 2026-10-12 UTC. `NASDAQ-NORDIC-CASH-2026-2027` is the operator's current European Markets Trading Hours page, specifically the **Equity/Equity derivatives** column for Stockholm. The Fixed Income column is excluded. The audited holiday window is 2026-01-01..2027-12-31; earlier holidays have no new claim from this capture. The normal-week profiles and existing phase classification are unchanged.
+
+The half-day equity row states 09:00–13:00 and post-trading 13:00–13:30 CET. The page's equity footnote reserves the last five minutes for the closing call, with final uncross in its last thirty seconds. Replacement blocks therefore preserve the existing 08:00 opening-call phase and five-second 09:00:05 boundary, end continuous regular trading at 12:55, retain the closing call to 13:00, and end the existing extended post-trading classification at 13:30. These are venue envelopes, not exact security uncross times. No order-entry phase is invented.
+
+### 2026
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2026-01-01 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-01-05 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2026-01-06 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-04-02 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2026-04-03 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-04-06 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-04-30 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2026-05-01 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-05-13 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2026-05-14 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-06-19 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-10-30 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2026-12-24 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-12-25 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2026-12-31 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-01-05 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2027-01-06 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-03-25 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2027-03-26 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-03-29 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-04-30 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2027-05-05 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2027-05-06 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-06-25 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-11-05 | replacement blocks | Equity close 13:00; post-trade 13:00–13:30 CET | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date; normal opening phases retained; final-five-minute closing call, existing extended post-trading classification |
+| 2027-12-24 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+| 2027-12-31 | closed | Closed | `NASDAQ-NORDIC-CASH-2026-2027` | T1 | Stockholm Equity/Equity derivatives column; same civil trade date |
+
+### Documents
+
+The saved artifact at `captures/nasdaq-current-2026-10-12/nasdaq-trading-hours.web-extract.txt` is explicitly the web retrieval tool's extracted operator representation, **not original HTML or PDF bytes**. Direct HTTP retrieval failed with transport errors/timeouts; no original-byte hash is claimed. The saved representation retains the operator's named columns, annual headings, date lists and half-day clock language. `parse_nordic.py` selects the first (equity) column using those printed lines; its parsed output records all rows. The page has no stated issue date; 2026-10-12 is the UTC retrieval/review date, not a schedule effective date.
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `NASDAQ-NORDIC-CASH-2026-2027` | 2026-01-01..2027-12-31 | <https://www.nasdaq.com/european-market-activity/trading-hours> | 2026-10-12 00:49:43 UTC | T1 | `9f8fe49d65db294d48e7bd94e7b4b6b098dac44f102ad74dd71c89b5aa9bff4c` |
+
+Source: <https://www.nasdaq.com/european-market-activity/trading-hours>. Calendar omissions inside these fully published annual columns are audited ordinary weekdays; no substitutes are invented for weekend holidays. Above 2027 the publication horizon remains unannounced. The identity remains dormant and reviewed on demand; the pre-2026 holiday gap remains disclosed before activation.

@@ -25,7 +25,7 @@ const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
 const DATABENTO_VENUES: &str = include_str!("../../docs/schedules/databento-venues.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 44] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 46] = [
     "globex_equity_index",
     "globex_energy",
     "globex_silver_100oz",
@@ -68,6 +68,8 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 44] = [
     "oanda_us_bond_cfd",
     "oanda_us_commodity_cfd",
     "oanda_brent",
+    "oanda_china50_cfd",
+    "oanda_singapore30_cfd",
     "sgx",
     "always_open",
 ];
@@ -640,8 +642,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
-            .to_string(),
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**".to_string(),
         format!(
             "`{history_gap_rows} of {}` exchange rows still name a Basis gap in the ledger, each with its disclosed residual or external closer",
             real_exchange_rows.len()
@@ -1040,7 +1041,7 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let readme = flowed(README);
     for claim in [
-        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+        "**Date-aware queries answer or refuse explicitly — never a silent guess.**"
         .to_string(),
         "**sourced** (dated primary sources run the whole way back to January 2010)".to_string(),
         "**verified carried**".to_string(),

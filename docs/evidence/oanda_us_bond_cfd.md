@@ -21,8 +21,8 @@ and no other maintenance.
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and a dormant identity owes its current
-schedule rather than a worked-up history (LAW-BOUNDED-WORK).
+no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
+remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 
@@ -188,8 +188,7 @@ changes from New Year's Day through New Year's Eve. Its page-wide
 Eastern-Time instruction governs every printed instant. The audited window
 is 2024-01-01..2024-12-31; December coverage rests on its expressly dated
 2024 Christmas and New Year sections. The existing normal-week coverage gate still applies
-before its 2024-02-21 witness. Earlier holiday history remains activation
-work tracked in #332.
+before its 2024-02-21 witness. Earlier holiday history remains historical completion work tracked in #332.
 
 The archive states `US indices open late 6 pm` and `US bonds open late 6 pm`
 for 2024-01-01. The holiday trade date is closed and the literal 18:00 ET

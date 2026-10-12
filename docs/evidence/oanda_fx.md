@@ -19,8 +19,8 @@ maintainer's 2026-10-10 decision recorded in SharurPlatform#1046.
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and a dormant identity owes its current
-schedule rather than a worked-up history (LAW-BOUNDED-WORK).
+no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
+remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 
@@ -122,7 +122,7 @@ The spans, and what each rests on:
   from 06:58 Auckland), so the changeover to the current grid is undated and
   the crate refuses the span rather than serving either grid there. Dating
   the changeover, or closing the hunts for it negative and serving the two
-  grids' intersection per the 2026-10-04 rule, is the activation obligation.
+  grids' intersection per the 2026-10-04 rule, remains historical completion work tracked in #332.
 
 ## Sources
 

@@ -17,6 +17,8 @@
 
 ### Added
 
+- Nasdaq Copenhagen, Helsinki and Stockholm cash holiday tables for 2026–2027, including Stockholm's half-day phases through 13:30 local time.
+
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
   including Thanksgiving and Christmas reopens. Earlier normal-week history

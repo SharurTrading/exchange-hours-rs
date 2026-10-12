@@ -13,12 +13,9 @@
 //! its table through a match with no catch-all arm, so a new `Exchange` or
 //! `MarketHoursKey` cannot silently acquire or lose a table.
 //!
-//! **Tables ship for the served CME families and the 2026 venue block.**
-//! `table_for` answers with a table for the eight CME product families, for
-//! CFE, Eurex, ICE Futures U.S., Coinbase Derivatives and the two US
-//! cash-equity venues `nyse` and `nasdaq`, for the OANDA FX, metals, US
-//! index/bond, US commodity and Brent books, and `None`
-//! for every other identity; where it answers `None` the caller's `DayPolicy`
+//! `table_for` resolves every published table through the exhaustive routing
+//! match, including the three Nordic principal-share calendars. Where it
+//! answers `None` the caller's `DayPolicy`
 //! overlay remains the only holiday layer. Each table declares the trade-date
 //! window it audited, so a date outside that window is "no answer", not
 //! "normal".
@@ -61,6 +58,9 @@ mod hkex;
 mod ice_us;
 mod lse;
 mod nasdaq;
+mod nasdaq_copenhagen;
+mod nasdaq_helsinki;
+mod nasdaq_stockholm;
 mod nse_india;
 mod nyse;
 mod nzx;

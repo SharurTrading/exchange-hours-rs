@@ -329,7 +329,7 @@ intersection of two CME statements that disagree by an hour,
 `globex_silver_tas` and `globex_copper_tas`, whose closes are carried across the
 2015–2019 exhaustion of CME's metals hours page, and `globex_platinum_tas` and
 `globex_palladium_tas`, whose windows rest on one archived capture each between
-2021 and 2026 — plus `oanda_china50_cfd` and `oanda_singapore30_cfd`, whose grids are witnessed only from 2026-10-10, and the eight earlier OANDA book rows — `oanda`, `oanda_fx`, `oanda_try_fx`,
+2021 and 2026 — plus `oanda_china50_cfd` and `oanda_singapore30_cfd`, whose current grids are witnessed from 2024-02-21 but whose holiday audit starts on 2026-10-10, and the eight earlier OANDA book rows — `oanda`, `oanda_fx`, `oanda_try_fx`,
 `oanda_metals`, `oanda_us_index_cfd`, `oanda_us_bond_cfd`, `oanda_us_commodity_cfd` and
 `oanda_brent`, whose pre-2024 history carries an earlier grid with an
 undated changeover — are each served

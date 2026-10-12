@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-12
+
 ### Fixed
 
 - OANDA TRY-pair date-aware queries now answer the witnessed current grid within
@@ -25,10 +27,10 @@
 - Broker-native OANDA China A50 and Singapore 30 CFD keys with sourced
   Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
   holiday window; historical and later unpublished dates remain typed refusals.
-- Euronext Brussels cash holidays for 2026: five sourced closures and two
-- Euronext Lisbon cash holidays for 2026: five sourced closures and two
-  withheld year-end half days whose hours remain unpublished. Earlier holiday
-  history and 2027 are outside this audit.
+- Euronext Brussels and Lisbon cash holidays for 2026: five sourced closures
+  and two withheld year-end half days per market whose hours remain unpublished.
+  Earlier holiday history and 2027 are outside these audits.
+
 
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
@@ -46,17 +48,15 @@
   half-day phase replacements and typed gaps for unpublished 2026 year-end
   timetables.
 
-## [1.1.0] - 2026-10-11
-
 ### Changed
 
-- Three identities turned **served** under the OANDA programme's consumer
-  admission (SharurPlatform#1046): the `eurex` and `eurex_fixed_income` keys —
-  Germany 40 / Euro 50 and Germany 10Y Bund — whose tables the Eurex venue's
-  calendar work already ships at the same audited depth, and `ice_us_sugar`,
-  whose table the IFUS notices waves had already built. Review cadence moves
-  to monthly for all three; the served-scope inventory gains their rows and
-  the verdict tally moves to thirty complete and six incomplete.
+- Activate the three previously admitted Eurex/IFUS keys plus nine reached
+  OANDA book keys and seven reached cash-equity scopes. Holiday-bearing served
+  scopes receive monthly review. The ledger now records 52 served and 91 dormant
+  rows; the unchanged 2025 inventory sample records 34 complete, 10 incomplete
+  and eight without 2025 holiday coverage. The dated OANDA release-scope
+  exception prioritizes current/published future operation while retaining
+  historical gaps in the single issue #332 and preserving typed coverage errors.
 
 ### Added
 
@@ -86,8 +86,8 @@
 
 - `oanda_us_bond_cfd` separates the four Treasury listings from the index
   book. Good Friday 2026 closes bonds at 11:14 ET and indices at 09:14 ET;
-  Carter's Day 2025 closes bonds at 13:15 ET. This does not activate any
-  incomplete OANDA scope or certify the remaining product programme (#332).
+  Carter's Day 2025 closes bonds at 13:15 ET. Historical OANDA gaps remain
+  disclosed in #332 under the dated current-operation activation scope.
 
 ### Fixed
 

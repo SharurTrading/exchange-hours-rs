@@ -59,6 +59,58 @@ fn oanda_metals_daily_gap_runs_1659_to_1805() {
 }
 
 #[test]
+fn oanda_metals_answers_the_witnessed_eras_on_their_own_opening_days() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaMetals);
+    // The legacy USD-pair grid `18:03 - 16:58`, witnessed
+    // 2021-12-08..2023-06-05.
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 7), (18, 2, 59))),
+        Ok(false),
+        "one second before the legacy open"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 7), (18, 3, 0))),
+        Ok(true),
+        "the legacy open instant"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 8), (16, 57, 59))),
+        Ok(true),
+        "the legacy week's last minute"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 8), (16, 58, 0))),
+        Ok(false),
+        "the legacy close is end-exclusive"
+    );
+    // The undated changeover's intersection: the later 18:05 open, the
+    // earlier 16:58 close.
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 8), (18, 4, 59))),
+        Ok(false),
+        "one second before the intersection open"
+    );
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 8), (18, 5, 0))),
+        Ok(true),
+        "the intersection open instant"
+    );
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 9), (16, 58, 0))),
+        Ok(false),
+        "the intersection close is end-exclusive"
+    );
+    assert_refused_variant(
+        &calendar.is_closed_trade_date(
+            chrono::NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date"),
+            SessionKind::Both,
+        ),
+        DateCoverage::UnresolvedGap,
+        "the witnessed span below the first audited window has no holiday bracket",
+    );
+}
+
+#[test]
 fn oanda_metals_group_closes_at_the_printed_instants() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaMetals);
     // The gold/silver book closes with the US group at its printed instant:
@@ -336,22 +388,106 @@ fn oanda_book_wire_forms_are_snake_case_and_stable() {
 }
 
 #[test]
-fn oanda_us_books_refuse_their_carried_history() {
+fn oanda_us_books_answer_the_witnessed_eras_on_their_own_opening_days() {
+    // All three US books share the clock: whole-hour `18:00 - 17:00` New York
+    // through the witnessed legacy era, then the current `18:01 - 16:59`
+    // grid — which nests inside the legacy print, so it is also the undated
+    // changeover's sourced intersection.
     for key in [
-        MarketHoursKey::OandaMetals,
         MarketHoursKey::OandaUsIndexCfd,
+        MarketHoursKey::OandaUsBondCfd,
         MarketHoursKey::OandaUsCommodityCfd,
-        MarketHoursKey::OandaBrent,
+    ] {
+        let calendar = calendar_for_market_hours_key(key);
+        // Legacy era, witnessed 2021-08-04 (index) and 2021-03-03 (bond,
+        // commodity) through 2023-06-05.
+        assert_eq!(
+            calendar.is_open(et((2022, 6, 7), (17, 59, 59))),
+            Ok(false),
+            "{key:?}: one second before the legacy open"
+        );
+        assert_eq!(
+            calendar.is_open(et((2022, 6, 7), (18, 0, 0))),
+            Ok(true),
+            "{key:?}: the legacy open instant"
+        );
+        assert_eq!(
+            calendar.is_open(et((2022, 6, 8), (16, 59, 59))),
+            Ok(true),
+            "{key:?}: the legacy week's last minute"
+        );
+        assert_eq!(
+            calendar.is_open(et((2022, 6, 8), (17, 0, 0))),
+            Ok(false),
+            "{key:?}: the legacy close is end-exclusive"
+        );
+        // The undated span serves the intersection (the current grid).
+        assert_eq!(
+            calendar.is_open(et((2023, 8, 8), (18, 0, 59))),
+            Ok(false),
+            "{key:?}: one second before the intersection open"
+        );
+        assert_eq!(
+            calendar.is_open(et((2023, 8, 8), (18, 1, 0))),
+            Ok(true),
+            "{key:?}: the intersection open instant"
+        );
+        assert_eq!(
+            calendar.is_open(et((2023, 8, 9), (16, 58, 59))),
+            Ok(true),
+            "{key:?}: the intersection's last minute"
+        );
+        assert_eq!(
+            calendar.is_open(et((2023, 8, 9), (16, 59, 0))),
+            Ok(false),
+            "{key:?}: the intersection close is end-exclusive"
+        );
+        // The witnessed span sits below the first audited window, so the
+        // holiday classification refuses typed while sessions answer.
+        assert_refused_variant(
+            &calendar.is_closed_trade_date(
+                chrono::NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date"),
+                SessionKind::Both,
+            ),
+            DateCoverage::UnresolvedGap,
+            "{key:?}: the witnessed span below the first audited window has no holiday bracket",
+        );
+    }
+}
+
+#[test]
+fn oanda_books_refuse_below_their_own_witnesses() {
+    // Below each book's first witness the grid is carried and every
+    // date-aware query refuses. The witnesses differ per book: metals'
+    // exact rows are first printed 2021-12-08, the index clock 2021-08-04,
+    // the bond/commodity clocks 2021-03-03, and Brent's London dagger grid
+    // 2024-02-21 — leaving its whole earlier history carried.
+    for (key, carried) in [
+        (MarketHoursKey::OandaMetals, (2021, 6, 16)),
+        (MarketHoursKey::OandaUsIndexCfd, (2021, 6, 16)),
+        (MarketHoursKey::OandaUsBondCfd, (2021, 2, 15)),
+        (MarketHoursKey::OandaUsCommodityCfd, (2021, 2, 15)),
     ] {
         let calendar = calendar_for_market_hours_key(key);
         assert_refused(
             calendar.is_closed_trade_date(
-                chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
+                chrono::NaiveDate::from_ymd_opt(carried.0, carried.1, carried.2)
+                    .expect("valid date"),
                 SessionKind::Both,
             ),
             DateCoverage::OutsideCoveredRange,
             calendar,
-            et((2023, 6, 7), (12, 0, 0)),
+            et((carried.0, carried.1, carried.2), (12, 0, 0)),
         );
     }
+    let brent = calendar_for_market_hours_key(MarketHoursKey::OandaBrent);
+    assert_refused(
+        brent.is_closed_trade_date(
+            chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
+            SessionKind::Both,
+        ),
+        DateCoverage::OutsideCoveredRange,
+        brent,
+        et((2023, 6, 7), (12, 0, 0)),
+    );
 }

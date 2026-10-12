@@ -48,13 +48,38 @@ No blank year-end publication is treated as normal beyond October 30.
 
 ## Dated selectors
 
-There is no dated revision: 2024-02-21 dates the earliest cited witness of
-this current grid, not a broker cutover. Earlier normal weeks remain carried.
-The older UK captures print different grids but do not state an unconditional
-changeover day. Holiday dates below the current audited window remain
-unclassified; the coverage bridge does not certify them as ordinary trading.
-Historical normal-week and holiday proof remains disclosed in #332; closing
-evidence is a UK-scoped broker artifact establishing the missing earlier sessions.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+Singapore opening day to its era. `sourcing.rs` declares the normal week
+witnessed from **2021-03-03**, the operator's archived page print that first
+lists the China A50 row.
+
+The spans, and what each rests on (the module's era-bound constants are
+keyed observations, not effective days — LAW-NO-FABRICATED-DATES):
+
+- 2023-06-06 — T1 — the 2023-06-05 05:35 UTC page print (`OANDA-UK-HOURS-2023-JUN-WAYBACK`) is the last earlier-grid observation, taken 13:35 Singapore inside that day's day session; the era-bound constant keys the following opening day.
+- 2024-02-21 — T1 — the 2024-02-21 00:55 UTC page print (`OANDA-UK-HOURS-2024-WAYBACK`) is the first current-grid observation, taken 08:55 Singapore inside that day's day session; the era-bound constant keys this opening day.
+- **Opening days 2021-03-03 through 2023-06-05 — the earlier grid
+  `Mon - Fri 09:00 - 16:30; 17:00 - 04:45`.** The 2021-03-03 capture prints
+  it (`OANDA-UK-HOURS-2021-WAYBACK`); the 2023-06-05 capture — taken 05:35
+  UTC, 13:35 Singapore, inside that day's day session — still prints it
+  (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening replay prints
+  the identical grid.
+- **Opening days 2023-06-06 through 2024-02-20 — the sourced intersection.**
+  The changeover is undated (last earlier-grid print 2023-06-05, first
+  current-grid print 2024-02-21 00:55 UTC = 08:55 Singapore, inside that
+  day's day session; no Wayback capture sits between). The current grid
+  nests inside the legacy print, so the intersection is the current grid's
+  own shape — the span serves `09:01 - 16:29; 17:01 - 04:44` per the
+  charter's 2026-10-04 rule; the residual is disclosed below.
+- **Opening days from 2024-02-21 — the current grid** (the 2024-02-21
+  capture, `OANDA-UK-HOURS-2024-WAYBACK`; the 2026-10-10 capture
+  corroborates).
+- **Holiday dates below the current audited window remain unclassified**;
+  the coverage bridge answers their session questions from the served week
+  while the classification refuses typed. Historical normal-week proof below
+  the 2021-03-03 witness and holiday history remain disclosed in #332;
+  closing evidence is a UK-scoped broker artifact establishing the missing
+  earlier sessions.
 The last audited Friday night opens on 2026-10-30 and closes on the local
 Saturday 2026-10-31. On the audited Friday, `is_open` answers and `session_bounds` returns the
 complete running block through its Saturday end-exclusive close. Instant
@@ -77,6 +102,9 @@ The operator UK normal-hours and holiday pages are the monitoring entry points.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `OANDA-UK-HOURS-2021-WAYBACK` | 2021-03-03 | <https://web.archive.org/web/20210303210448id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20210303210448`, retrieved 2026-10-10 UTC; prints no Forex table | T1 | `ec5987239f2c79dd29fcfc40abe5a0d58c6e4ed446fa7dea653f1791b186cbed` |
+| `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
+| `OANDA-UK-HOURS-2023-JUN-WAYBACK` | 2023-06-05 observation; not a cutover | <https://web.archive.org/web/20230605093523id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2023-06-05; retrieved 2026-10-11 UTC | T1 | `98ddc07cf38727b2a861fd1f48c503b1b597054cbec9d1dde4b3dde1801ffb56` |
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
@@ -90,4 +118,12 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
 
 ## Gaps and residual risks
 
+- **The undated changeover's disputed remainder (2023-06-06..2024-02-20
+  opening days) is a disclosed residual.** What is served: the sourced
+  intersection, which here is the current grid (it nests inside the legacy
+  print). The disputed remainder: the legacy state's extra minutes — day
+  open 09:00, day close 16:30, night open 17:00, night close 04:45. Named
+  closer: a dated OANDA UK operator artifact or desk answer; the sweep that
+  closed the hunts negative is recorded in
+  [`oanda_fx.md`](oanda_fx.md).
 Pre-witness history and the forward publication horizon remain explicit in #332.

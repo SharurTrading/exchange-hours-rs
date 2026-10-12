@@ -131,7 +131,7 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
             Err(CalendarQueryError::UnresolvedGap { .. })
         ));
         assert!(matches!(
-            c.is_open(utc("2024-02-20T02:00:00Z")),
+            c.is_open(utc("2021-02-15T02:00:00Z")),
             Err(CalendarQueryError::OutsideCoveredRange { .. })
         ));
         assert!(matches!(
@@ -189,5 +189,78 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
         assert!(
             matches!(c.candle_end(utc("2026-10-12T02:00:00Z"), CalendarResolution::Monthly), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
         );
+    }
+}
+
+#[test]
+fn witnessed_eras_answer_on_their_own_opening_days() {
+    for (key, legacy, intersection_open_day_close, current) in [
+        (
+            K::OandaChina50Cfd,
+            // Legacy `09:00 - 16:30; 17:00 - 04:45`, witnessed
+            // 2021-03-03..2023-06-05.
+            ("2022-06-07T01:00:00Z", "2022-06-07T08:30:00Z"),
+            "2023-08-09T08:29:00Z",
+            // The current grid nests inside the legacy print, so it is also
+            // the undated changeover's sourced intersection.
+            ("2023-08-08T01:01:00Z", "2023-08-09T08:44:00Z"),
+        ),
+        (
+            K::OandaSingapore30Cfd,
+            // Legacy `08:30 - 17:20; 17:50 - 04:45`.
+            ("2022-06-07T00:30:00Z", "2022-06-07T09:20:00Z"),
+            // The intersection keeps the earlier night close: 04:45, not the
+            // current 05:14 (04:45 SGT on Aug 9 = 20:45 UTC on Aug 8).
+            "2023-08-08T20:45:00Z",
+            ("2023-08-08T00:31:00Z", "2023-08-09T09:19:00Z"),
+        ),
+    ] {
+        let c = ExchangeCalendar::for_market_hours_key(key);
+        let (legacy_open, legacy_close) = legacy;
+        assert_eq!(
+            c.is_open(utc(legacy_open)),
+            Ok(true),
+            "{key:?}: the legacy day open instant"
+        );
+        assert_eq!(
+            c.is_open(utc(legacy_close)),
+            Ok(false),
+            "{key:?}: the legacy day close is end-exclusive"
+        );
+        let (current_open, current_close) = current;
+        assert_eq!(
+            c.is_open(utc(current_open)),
+            Ok(true),
+            "{key:?}: the intersection open instant"
+        );
+        assert_eq!(
+            c.is_open(utc(current_close)),
+            Ok(false),
+            "{key:?}: the intersection close is end-exclusive"
+        );
+        assert_eq!(
+            c.is_open(utc(intersection_open_day_close)),
+            Ok(false),
+            "{key:?}: the intersection day close instant stays closed"
+        );
+        // The witnessed span sits below the first audited window, so the
+        // holiday classification refuses typed while sessions answer.
+        let legacy_day = NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date");
+        assert!(matches!(
+            c.is_closed_trade_date(legacy_day, SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { .. })
+        ));
+    }
+}
+
+#[test]
+fn books_refuse_below_their_2021_witness() {
+    for key in [K::OandaChina50Cfd, K::OandaSingapore30Cfd] {
+        let c = ExchangeCalendar::for_market_hours_key(key);
+        let carried = NaiveDate::from_ymd_opt(2021, 2, 15).expect("valid date");
+        assert!(matches!(
+            c.is_closed_trade_date(carried, SessionKind::Both),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
     }
 }

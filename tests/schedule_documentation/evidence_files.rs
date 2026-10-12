@@ -3102,6 +3102,12 @@ fn evidence_files_for_dated_constants(
     }
     match stem {
         "vienna" => vec!["vienna.md".to_owned(), "vienna_equities.md".to_owned()],
+        // `oanda_asia.rs` carries two owners' era bounds: the China A50 and
+        // Singapore 30 books.
+        "oanda_asia" => vec![
+            "oanda_china50_cfd.md".to_owned(),
+            "oanda_singapore30_cfd.md".to_owned(),
+        ],
         // `europe.rs` carries two owners' cutovers: Eurex's Asian-hours change and
         // EEX's Nordic Zonal Power launch.
         "europe" => vec!["eurex.md".to_owned(), "eex.md".to_owned()],
@@ -3200,7 +3206,7 @@ fn the_dated_constant_fence_reads_every_shipped_constant() {
         .collect::<std::collections::BTreeSet<_>>();
     assert_eq!(
         constants.len(),
-        15,
+        19,
         "the fence collects every dated constant the crate ships; found {} in {modules:?}. \
          A drop means the matcher stopped seeing a spelling, not that a constant was removed",
         constants.len()

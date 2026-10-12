@@ -90,8 +90,11 @@ historical research still missing for this activation is consolidated in
 not block this release or activation under LAW-SERVICE-TIERS,
 LAW-HOLIDAY-SCOPE and LAW-BOUNDED-WORK. This is a release-scope exception,
 not a complete-history claim or a change to the permanent 2010-01-01 floor.
-It applies to the nine reached OANDA book keys and the seven newly reached
-cash-equity scopes recorded in the ledger's 2026-10-12 activation note.
+It applies to the nine reached OANDA book keys, the seven newly reached
+cash-equity scopes recorded in the ledger's 2026-10-12 activation note, and
+the three already admitted OANDA donor keys `eurex`, `eurex_fixed_income`
+and `ice_us_sugar`. Their earlier incomplete spans also remain disclosed
+in #332; admission never improves their evidence or actual coverage.
 
 Keep their actual sourced horizons, audited holiday windows, `Partial`
 labels and typed coverage behavior. Unaudited history remains unaudited;

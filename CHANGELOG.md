@@ -26,11 +26,12 @@
 - Nasdaq Copenhagen, Helsinki and Stockholm cash holiday tables for 2026–2027, including Stockholm's half-day phases through 13:30 local time.
 - Broker-native OANDA China A50 and Singapore 30 CFD keys with sourced
   Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
-  holiday window; historical and later unpublished dates remain typed refusals.
+  holiday window. Earlier normal-week gaps, unaudited holiday classification
+  and later unpublished dates remain explicit; the sourced-intersection bridge
+  may answer pre-window session questions.
 - Euronext Brussels and Lisbon cash holidays for 2026: five sourced closures
   and two withheld year-end half days per market whose hours remain unpublished.
   Earlier holiday history and 2027 are outside these audits.
-
 
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
@@ -66,9 +67,9 @@
   Monday–Friday 08:00–17:00 Central European session with an overnight gap).
   The books trade straight through the daily maintenance halts of the futures
   clocks they hedge on, so they are book keys, not futures mappings. The
-  `oanda_fx` holiday table ships the operator's three stated trade-date
-  closures (2025-01-01, 2025-12-25, 2026-01-01) over its
-  2025-01-01..2026-10-30 audited window, and the venue's table mirrors it —
+  `oanda_fx` holiday table ships four sourced trade-date closures
+  (2024-12-25, 2025-01-01, 2025-12-25, 2026-01-01) over its
+  2024-02-21..2026-10-30 audited window, and the venue's table mirrors it —
   the first wave of the OANDA-listed market coverage programme
   (SharurPlatform#1046, oanda-rs#30).
 - Four additional OANDA-book keys for the UK hours page's spot metals,
@@ -79,10 +80,9 @@
   17:01 to 15:59, the same instants as New York 18:01 to 16:59 — split into
   two keys because the operator's holiday page gives different early closes), and
   `oanda_brent` (London-anchored by the page's own dagger note, Sunday 23:01
-  to Friday 21:59 with its two stated breaks). Holiday tables ship each
-  group's printed rows from the operator's 2025-01-01..2026-10-30 dated
-  sections, including typed withholdings where the page's own
-  regular-hours vocabulary makes its silence a gap.
+  to Friday 21:59 with its two stated breaks). The broker-family holiday tables include archived 2024 arrangements
+  and current published rows through 2026-10-30, within each key's documented
+  audited windows; unpublished arrangements retain typed withholdings.
 
 - `oanda_us_bond_cfd` separates the four Treasury listings from the index
   book. Good Friday 2026 closes bonds at 11:14 ET and indices at 09:14 ET;

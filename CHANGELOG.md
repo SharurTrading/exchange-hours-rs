@@ -26,6 +26,7 @@
   Singapore day/night blocks and a zero-exception 2026-10-10..2026-10-30
   holiday window; historical and later unpublished dates remain typed refusals.
 - Euronext Brussels cash holidays for 2026: five sourced closures and two
+- Euronext Lisbon cash holidays for 2026: five sourced closures and two
   withheld year-end half days whose hours remain unpublished. Earlier holiday
   history and 2027 are outside this audit.
 

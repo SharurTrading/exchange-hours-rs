@@ -154,7 +154,7 @@ The underlying comparison additionally cites the following primary artifact,
 saved as `normal-weeks/oanda-underlying-policy-2026-10-12/ice-brent-product-219.html`
 in the research store. It establishes ICE contract hours, not OANDA hours.
 
-| Document ID | Window | URL | Retrieved | Tier | SHA256 |
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `ICE-BRENT-SPEC-2026-10-12` | current specification observed 2026-10-12; no historical cutover claimed | <https://www.ice.com/products/219/Brent-Crude-Futures> | 2026-10-12 UTC | T1 | `8b9ca9b5ddfbfe482e33f6a5f5055a5e803988a5ca84a01d613e36106c711f0b` |
 

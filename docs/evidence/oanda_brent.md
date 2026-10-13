@@ -125,12 +125,13 @@ groups' rows and nothing for Brent **withholds** rather than affirms — six
 
 ## Dated selectors
 
-None. One sourced grid; `sourcing.rs` declares the normal week witnessed from
+One sourced grid; `sourcing.rs` declares the normal week witnessed from
 **2024-02-21**, the operator's archived page print whose footnote states the
-current London grid. The 2022-05-18 capture prints the earlier `20:00 -
-18:00` New-York regime with its Friday-early-close asterisk, so the
-changeover is undated and the span below the 2024 witness is carried, not
-served.
+current London grid. The 2021-03-03 through 2023-06-05 captures print the
+earlier `20:00 - 18:00` New-York regime with its Friday-early-close
+asterisk, so the changeover is undated and the span below the 2024 witness
+stays carried — see the residual below for why the 2026-10-04 intersection
+rule does not serve it.
 
 ## Sources
 
@@ -164,11 +165,21 @@ in the research store. It establishes ICE contract hours, not OANDA hours.
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022
-  regime (`20:00 - 18:00`, Friday an hour early) differs and its changeover
-  is undated; the span refuses on the date-aware surface. Closing condition:
-  dated operator artifacts, or hunts closed negative (then the 2026-10-04
-  intersection rule applies).
+- **The pre-2024-02-21 normal week is carried, not sourced, and the
+  2026-10-04 intersection rule cannot serve it.** The 2021-03-03..2023-06-05
+  regime (`20:00 - 18:00`, Friday an hour early) is anchored to New York
+  while the current grid is the London dagger schedule, and the two grids
+  are not nested: during the roughly five weeks a year when the United
+  States and the United Kingdom disagree on daylight saving, the legacy
+  state's London-equivalent boundaries shift by an hour, so the current
+  grid's 22:05-22:59 later block would be wrong under the legacy state in
+  those weeks and the legacy shape would be wrong under the current one in
+  others. No single static grid holds under both witnessed states, so the
+  span refuses on the date-aware surface. The changeover hunts themselves
+  closed negative in the 2026-10-12 sweep (see
+  [`oanda_fx.md`](oanda_fx.md)); named closers: a dated OANDA UK operator
+  artifact stating the changeover, or a separately reviewed per-era
+  cross-zone selector build for the intersection.
 - The seventeen `Unsourced` dates close with UK-scoped operator artifacts
   printing the book's arrangements (#332); the page's own regular-hours
   vocabulary is the affirmative form to look for.

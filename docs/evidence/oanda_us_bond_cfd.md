@@ -124,11 +124,30 @@ context (`OANDA-UK-CARTER-2025-WAYBACK`), while bonds explicitly close at
 
 ## Dated selectors
 
-None. One sourced grid; `sourcing.rs` declares the normal week witnessed from
-**2024-02-21**, the operator's archived page print of the current `17:01 -
-15:59` grid. The 2022-05-18 capture prints the futures-exact `17:00 - 16:00`
-pair (no one-minute inset), so the changeover is undated and the span below
-the 2024 witness is carried, not served.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+opening day to its era. `sourcing.rs` declares the normal week witnessed from
+**2021-03-03**, the operator's archived page print that first lists the four
+US Treasury rows.
+
+The spans, and what each rests on:
+
+- **Opening days 2021-03-03 through 2023-06-04 — the whole-hour clock
+  `17:00 - 16:00` Chicago** (the same instants as New York `18:00 - 17:00`,
+  the clock the book serves in New York terms). The 2021-03-03 capture
+  prints it (`OANDA-UK-HOURS-2021-WAYBACK`); the 2023-06-05 capture still
+  prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening
+  replay prints the identical grid — this book's legacy era has no interior
+  change.
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover to `17:01 - 15:59` is undated (last earlier-grid print
+  2023-06-05, first current-grid print 2024-02-21, no Wayback capture
+  between). The current grid nests inside the legacy print, so the span
+  serves `18:01 - 16:59` New York per the charter's 2026-10-04 rule; the
+  residual is disclosed below.
+- **Opening days from 2024-02-20 — the current grid `17:01 - 15:59`
+  Chicago** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
+  replays corroborate).
+- **Below the 2021-03-03 witness**: carried (#332).
 
 ## Sources
 
@@ -144,6 +163,8 @@ the 2024 witness is carried, not served.
 |---|---|---|---|---|---|
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
 | `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
+| `OANDA-UK-HOURS-2021-WAYBACK` | 2021-03-03 | <https://web.archive.org/web/20210303210448id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20210303210448`, retrieved 2026-10-10 UTC; prints no Forex table | T1 | `ec5987239f2c79dd29fcfc40abe5a0d58c6e4ed446fa7dea653f1791b186cbed` |
+| `OANDA-UK-HOURS-2023-JUN-WAYBACK` | 2023-06-05 observation; not a cutover | <https://web.archive.org/web/20230605093523id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2023-06-05; retrieved 2026-10-11 UTC | T1 | `98ddc07cf38727b2a861fd1f48c503b1b597054cbec9d1dde4b3dde1801ffb56` |
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
 
@@ -151,11 +172,13 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022
-  capture prints the futures-exact `17:00 - 16:00` Treasury grid; the
-  changeover is undated and the span refuses on the date-aware surface.
-  Closing condition: dated operator artifacts, or hunts closed negative
-  (then the 2026-10-04 intersection rule applies).
+- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
+  opening days) is a disclosed residual.** What is served: the sourced
+  intersection, which here is the current `18:01 - 16:59` New York grid (it
+  nests inside the whole-hour legacy print). The disputed remainder: the
+  legacy state's extra minutes — open 18:00 and close 17:00 New York. Named
+  closer: a dated OANDA UK operator artifact or desk answer; the sweep is
+  recorded in [`oanda_fx.md`](oanda_fx.md).
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - US Share CFD and ETF arrangements (`Closed` on US holidays) are
   caller-side listings of equities and stay out of this book.

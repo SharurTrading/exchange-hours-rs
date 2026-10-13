@@ -39,7 +39,15 @@ schedule rather than a worked-up history (LAW-BOUNDED-WORK).
 
 ## Dated selectors
 
-None — see [`oanda_fx.md`](oanda_fx.md).
+The venue clock mirrors [`oanda_fx.md`](oanda_fx.md)'s eras; the module's
+era-bound constants are keyed observations, not effective days
+(LAW-NO-FABRICATED-DATES):
+
+- 2023-06-05 — T1 — the 2023-06-05 05:35 UTC page print (`OANDA-UK-HOURS-2023-JUN-WAYBACK`) — the last observation of the earlier `17:03-16:58` grid, taken inside the session opened 2023-06-04; the era-bound constant keys this observation.
+- 2024-02-20 — T1 — the 2024-02-21 00:55 UTC page print (`OANDA-UK-HOURS-2024-WAYBACK`) — the first observation of the current `17:05-16:59` grid, taken inside the session opened 2024-02-20; the era-bound constant keys this observation.
+
+See [`oanda_fx.md`](oanda_fx.md) for the spans, the sourced intersection and
+the sweep record.
 
 ### Documents
 
@@ -53,9 +61,10 @@ This row cites the operator's own pages through [`oanda_fx.md`](oanda_fx.md)'s
 
 ## Gaps and residual risks
 
-See [`oanda_fx.md`](oanda_fx.md): the carried pre-2024-02-21 normal week,
-the pre-2024-02-21 historical gap, and the holiday window's edges
-are the family's gaps and stay the family's.
+See [`oanda_fx.md`](oanda_fx.md): the family's witnessed normal-week eras
+(the earlier grids served from each book's first witness, the undated
+changeovers as sourced intersections), the carried pre-witness weeks, and
+the holiday window's edges are the family's gaps and stay the family's.
 
 Pending-order storage outside the printed trading windows is a broker facility,
 not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).

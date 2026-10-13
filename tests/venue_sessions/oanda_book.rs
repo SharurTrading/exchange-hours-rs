@@ -139,17 +139,16 @@ fn oanda_fx_holiday_rows_close_their_trade_dates() {
 #[test]
 fn oanda_fx_refuses_dates_outside_its_sourced_and_audited_spans() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
-    // Below the sourced span (the 2024-02-21 witness) the grid is carried,
-    // so the date-aware surface refuses rather than answering on carried
-    // data.
+    // Below the 2021-12-08 witness the grid is carried, so the date-aware
+    // surface refuses rather than answering on carried data.
     assert_refused(
         calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
+            chrono::NaiveDate::from_ymd_opt(2021, 11, 15).expect("valid date"),
             SessionKind::Both,
         ),
         DateCoverage::OutsideCoveredRange,
         calendar,
-        et((2023, 6, 7), (12, 0, 0)),
+        et((2021, 11, 15), (12, 0, 0)),
     );
     // Beyond the audited holiday window (2026-10-30) the table has no answer.
     assert_refused(
@@ -160,6 +159,92 @@ fn oanda_fx_refuses_dates_outside_its_sourced_and_audited_spans() {
         DateCoverage::OutsideCoveredRange,
         calendar,
         et((2026, 12, 25), (12, 0, 0)),
+    );
+}
+
+#[test]
+fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
+    // The legacy `17:03 - 16:58` grid, witnessed 2021-12-08..2023-06-05.
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 7), (17, 2, 59))),
+        Ok(false),
+        "one second before the legacy open"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 7), (17, 3, 0))),
+        Ok(true),
+        "the legacy open instant"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 8), (16, 57, 59))),
+        Ok(true),
+        "the legacy week's last minute"
+    );
+    assert_eq!(
+        calendar.is_open(et((2022, 6, 8), (16, 58, 0))),
+        Ok(false),
+        "the legacy close is end-exclusive"
+    );
+    // The undated changeover's intersection: the later 17:05 open, the
+    // earlier 16:58 close — the window both witnessed states held.
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 8), (17, 4, 59))),
+        Ok(false),
+        "one second before the intersection open"
+    );
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 8), (17, 5, 0))),
+        Ok(true),
+        "the intersection open instant"
+    );
+    assert_eq!(
+        calendar.is_open(et((2023, 8, 9), (16, 58, 0))),
+        Ok(false),
+        "the intersection close is end-exclusive"
+    );
+    // The boundary sessions: opening day 2023-06-04 is the legacy grid's last
+    // witnessed opening day; opening day 2023-06-05 already opens at the
+    // intersection's 17:05.
+    let last_legacy = calendar
+        .session_bounds(et((2023, 6, 5), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Monday sits in the session opened Sunday");
+    assert_eq!(
+        last_legacy,
+        (et((2023, 6, 4), (17, 3, 0)), et((2023, 6, 5), (16, 58, 0))),
+        "the legacy era's final session"
+    );
+    let first_intersection = calendar
+        .session_bounds(et((2023, 6, 6), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Tuesday sits in the session opened Monday");
+    assert_eq!(
+        first_intersection,
+        (et((2023, 6, 5), (17, 5, 0)), et((2023, 6, 6), (16, 58, 0))),
+        "the intersection era's first session"
+    );
+}
+
+#[test]
+fn oanda_fx_witnessed_history_refuses_its_holiday_classification() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
+    // 2023-06-07 sits in the span the normal week now answers: session
+    // questions answer from the sourced intersection, while the holiday
+    // classification refuses typed — a one-flank date below the first
+    // audited window has no bracket (the charter's 2026-10-07 ruling).
+    assert_eq!(
+        calendar.is_open(et((2023, 6, 7), (12, 0, 0))),
+        Ok(true),
+        "Wednesday 2023-06-07 midday trades on the intersection grid"
+    );
+    assert_refused_variant(
+        &calendar.is_closed_trade_date(
+            chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
+            SessionKind::Both,
+        ),
+        DateCoverage::UnresolvedGap,
+        "the witnessed span below the first audited window has no holiday bracket",
     );
 }
 

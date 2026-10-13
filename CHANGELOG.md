@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Seven OANDA books now answer their witnessed normal-week history instead of
+  refusing everything below the 2024-02-21 page print: `oanda_fx` and the
+  venue default from 2021-12-08, `oanda_metals` from 2021-12-08,
+  `oanda_us_index_cfd` from 2021-08-04, `oanda_us_bond_cfd` and
+  `oanda_us_commodity_cfd` from 2021-03-03, and `oanda_china50_cfd` with
+  `oanda_singapore30_cfd` from 2021-03-03. The undated changeovers between
+  the operator's last earlier-grid print (2023-06-05) and first current-grid
+  print (2024-02-21) serve the two witnessed grids' sourced intersection per
+  the charter's 2026-10-04 rule, with each disputed remainder disclosed in
+  its evidence file; dates in the witnessed spans sit below the first audited
+  holiday windows, so their holiday classification refuses typed while
+  session questions answer. `oanda_brent` keeps its carried span: its
+  New-York-anchored legacy grid and London dagger grid are not nested, so no
+  single static grid holds under both states.
+
 ## [1.1.0] - 2026-10-12
 
 ### Fixed

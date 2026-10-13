@@ -109,11 +109,29 @@ rows agree.
 
 ## Dated selectors
 
-None. One sourced grid; `sourcing.rs` declares the normal week witnessed from
-**2024-02-21**, the operator's archived page print of the current grid. The
-2022-05-18 capture prints the futures-exact `17:00 - 16:00` /
-`18:00 - 17:00` pairs (no one-minute inset), so the changeover is undated and
-the span below the 2024 witness is carried, not served.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+opening day to its era. `sourcing.rs` declares the normal week witnessed from
+**2021-03-03**, the operator's archived page print that first lists the five
+US energy and commodity-metals rows.
+
+The spans, and what each rests on:
+
+- **Opening days 2021-03-03 through 2023-06-04 — the whole-hour clock
+  `18:00 - 17:00` New York** (Natural Gas, West Texas Oil, Platinum and
+  Palladium print it under New York; Copper prints the same instants as
+  Chicago `17:00 - 16:00`). The 2021-03-03 capture prints it
+  (`OANDA-UK-HOURS-2021-WAYBACK`, resolving through
+  [`oanda_fx.md`](oanda_fx.md)'s Documents table); the 2023-06-05 capture
+  still prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening
+  replay prints the identical grid.
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover to `18:01 - 16:59` is undated, the current grid nests
+  inside the legacy print, and the span serves the current grid's shape per
+  the charter's 2026-10-04 rule; the residual is disclosed below.
+- **Opening days from 2024-02-20 — the current grid `18:01 - 16:59` New
+  York** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
+  replays corroborate).
+- **Below the 2021-03-03 witness**: carried (#332).
 
 ## Sources
 
@@ -135,7 +153,14 @@ sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022
+- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
+  opening days) is a disclosed residual.** What is served: the sourced
+  intersection, which here is the current `18:01 - 16:59` grid (it nests
+  inside the whole-hour legacy print). The disputed remainder: the legacy
+  state's extra minutes — open 18:00 and close 17:00 New York. Named closer:
+  a dated OANDA UK operator artifact or desk answer; the sweep is recorded
+  in [`oanda_fx.md`](oanda_fx.md).
+- **The pre-2024-02-21 partial witness: the 2022
   capture's futures-exact instants and the undated changeover refuse the
   span on the date-aware surface. Closing condition: dated operator
   artifacts, or hunts closed negative (then the 2026-10-04 intersection

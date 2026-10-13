@@ -129,12 +129,38 @@ Artifact: `normal-weeks/oanda-history-audit-2026-10-11/oanda-uk-holidays-2025032
 | 2026-09-08 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
 ## Dated selectors
 
-None. One sourced grid; `sourcing.rs` declares the normal week witnessed from
-**2024-02-21**, the operator's archived page print of the current `18:05 -
-16:59` grid. The 2022-05-18 capture prints a different grid per instrument
-(`XAU/USD` at `18:03 - 16:58`, the crosses at `18:10 - 16:58`, XPT/XPD at
-`18:00 - 17:00`), so the changeovers are undated and the span below the 2024
-witness is carried, not served.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+opening day to its era. `sourcing.rs` declares the normal week witnessed from
+**2021-12-08**, the operator's archived page print that first lists the exact
+`XAU/USD` and `XAG/USD` pair rows.
+
+The spans, and what each rests on:
+
+- **Opening days 2021-12-08 through 2023-06-04 — the earlier USD-pair grid
+  `18:03 - 16:58`.** The 2021-12-08 capture prints
+  `Gold (XAU/USD) ... Sun-Fri: 18:03 - 16:58*` and the matching silver row
+  (`OANDA-UK-HOURS-2021-DEC-WAYBACK`); the 2023-06-05 capture still prints
+  `XAU/USD ... 18:03 - 16:58` (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and the
+  audit's intervening replays print the identical pair grid. The era's cross
+  rows print an `18:10` open (XAU/NZD with its Auckland break): those
+  per-instrument minutes stay caller instrument data, disclosed here as the
+  era's residual.
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover to `18:05 - 16:59` is undated (the 2023-06-05 print is the
+  last earlier-grid observation, the 2024-02-21 print the first current-grid
+  one, and no Wayback capture sits between them). The span serves the window
+  both witnessed USD-pair states hold — open `18:05`, close `16:58` — per
+  the charter's 2026-10-04 rule; the disputed remainder is the residual
+  below.
+- **Opening days from 2024-02-20 — the current grid `18:05 - 16:59`.** The
+  2024-02-21 capture prints it (`OANDA-UK-HOURS-2024-WAYBACK`), and every
+  later replay and the 2026-10-10 capture corroborate; all rows share one
+  grid again.
+- **Below the 2021-12-08 witness**: carried. The 2021-03-03..2021-08-18 page
+  generation prints coarser `All gold instruments (XAU)` /
+  `All silver instruments (XAG)` rows at `18:00 - 17:00` — a different table
+  scope, not the book's exact pair rows — so the book's first complete
+  witness stays 2021-12-08 (#332).
 
 ## Sources
 
@@ -153,16 +179,22 @@ witness is carried, not served.
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
 | `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | capture 2025-03-26; retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+| `OANDA-UK-HOURS-2021-DEC-WAYBACK` | 2021-12-08 observation; not a cutover | <https://web.archive.org/web/20211208123011id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2021-12-08; retrieved 2026-10-11 UTC | T1 | `63e6d54029b72e0ef1ec32f92b8c3412bd24edf05df9fda9fa2b4dce98cb78fb` |
+| `OANDA-UK-HOURS-2023-JUN-WAYBACK` | 2023-06-05 observation; not a cutover | <https://web.archive.org/web/20230605093523id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2023-06-05; retrieved 2026-10-11 UTC | T1 | `98ddc07cf38727b2a861fd1f48c503b1b597054cbec9d1dde4b3dde1801ffb56` |
 
 Store paths: see [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022
-  capture's per-instrument grids differ (`18:03`, `18:10`, `18:00` opens),
-  with undated changeovers; the crate refuses that span rather than serving
-  any of them. Closing condition: a dated operator artifact, or the hunts
-  closing negative (then the 2026-10-04 intersection rule applies).
+- **The undated changeover's disputed remainder (2023-06-05..2024-02-20
+  opening days) is a disclosed residual.** What is served: the sourced
+  intersection — open 18:05, close 16:58 New York. The disputed remainder:
+  the earlier state may have opened 18:03 (and the era's crosses 18:10) and
+  the current state closes 16:59. Named closer: a dated OANDA UK operator
+  artifact or desk answer stating the changeover's effective day. The sweep
+  that closed the hunts negative is recorded in
+  [`oanda_fx.md`](oanda_fx.md); the 2021-03-03..2021-08-18 coarse
+  gold/silver rows and the era's cross opens stay #332 residuals.
 - Dates where the page prints no US-group row at all are audited normal for
   this book: the page's US vocabulary is rows-only, so its silence affirms no
   change.

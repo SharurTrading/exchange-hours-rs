@@ -105,24 +105,37 @@ trading hours for upcoming holidays".
 
 ## Dated selectors
 
-None. The module has one sourced grid and `profile_at` returns it at every
-instant; `sourcing.rs` declares the normal week witnessed from **2024-02-21**,
-the operator's own archived page print of the current `Sun-Fri: 17:05 - 16:59`
-grid with the six-minute break, corroborated by the 2026-10-10 capture.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+opening day to its era. `sourcing.rs` declares the normal week witnessed from
+**2021-12-08**, the operator's own archived page print of the earlier grid.
 
 The spans, and what each rests on:
 
-- **From 2024-02-21**: the 2024 Wayback capture prints the current grid, and
-  the 2026-10-10 capture corroborates it.
-- **From 2024-02-21 through 2024-12-31**: the 2025-03-26 holiday replay
-  now supplies the holiday layer. New Year's Eve is explicitly normal FX
-  trading through 16:59 and Christmas Day is closed until the 17:05 reopen.
-- **Below 2024-02-21**: carried. The 2022-05-18 capture prints the earlier
-  `Sun-Fri: 17:03 - 16:58` grid (five-minute 16:58-17:03 break, NZD break
-  from 06:58 Auckland), so the changeover to the current grid is undated and
-  the crate refuses the span rather than serving either grid there. Dating
-  the changeover, or closing the hunts for it negative and serving the two
-  grids' intersection per the 2026-10-04 rule, remains historical completion work tracked in #332.
+- **Opening days 2021-12-08 through 2023-06-04 — the earlier grid.** The
+  2021-12-08 capture prints `Sun-Fri: 17:03 - 16:58*` with the five-minute
+  `16:58 - 17:03` break (`OANDA-UK-HOURS-2021-DEC-WAYBACK`), and the
+  2023-06-05 capture — taken 05:35 UTC, inside the session opened Sunday
+  2023-06-04 — still prints those endpoints
+  (`OANDA-UK-HOURS-2023-JUN-WAYBACK`). The audit's intervening replays
+  (2022-05-18, 2022-07-24, 2022-10-02, 2022-11-27, 2023-02-01, 2023-03-16,
+  2023-04-25) all print the identical grid.
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover is undated: the last earlier-grid observation is the
+  2023-06-05 print and the first current-grid observation the 2024-02-21
+  print, and the Wayback index holds no capture between them (verified
+  2026-10-12 against the uncollapsed CDX). The span serves the window both
+  witnessed states hold — open `17:05`, close `16:58` — per the charter's
+  2026-10-04 rule; the disputed remainder is the residual below.
+- **Opening days from 2024-02-20 — the current grid.** The 2024-02-21
+  capture, taken 00:55 UTC inside the session opened 2024-02-20, prints
+  `Sun-Fri: 17:05 - 16:59*` (`OANDA-UK-HOURS-2024-WAYBACK`); the 2024-05-07,
+  2024-06-20 and 2024-09-19 replays and the 2026-10-10 capture corroborate.
+- **Holiday layer, 2024-02-21 through 2024-12-31**: the 2025-03-26 holiday
+  replay supplies the 2024 arrangements. New Year's Eve is explicitly normal
+  FX trading through 16:59 and Christmas Day is closed until the 17:05
+  reopen.
+- **Below the 2021-12-08 witness**: carried. The 2021-03-03 capture prints
+  no Forex table, and earlier complete FX evidence remains absent (#332).
 
 ## Sources
 
@@ -158,6 +171,9 @@ The spans, and what each rests on:
 | `OANDA-UK-LIVE-2012-AUG` | 2012-08-05 observation; live fxTrade scope | <https://web.archive.org/web/20120805032236id_/http://fxtrade.oanda.co.uk:80/trade-forex/fxtrade/> | capture 2012-08-05; retrieved 2026-10-11 UTC | T1 | `3cf4867c0e012c0758de4ac9c013499540110906c46be02a6e2126a9b72ba775` |
 | `OANDA-WEEKEND-2012-MIRROR` | 2012-07-04 article; calibrated release reproduction | <https://www.forexcrunch.com/blog/2012/07/04/oanda-closes-weekend-trading/> | retrieved 2026-10-11 UTC | T3 | `e66a5c3106fbdcfde1786548458b0dd53eb2b25c8e46ec335bb6372b3805d736` |
 | `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | capture 2025-03-26; retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+| `OANDA-UK-HELP-FAQ-2024-JUN-WAYBACK` | undated FAQ; no schedule statement | <https://web.archive.org/web/20240619014415id_/https://help.oanda.com/uk/en/faqs/hours-of-operation.htm> | capture 2024-06-19; retrieved 2026-10-12 UTC | T1 | `1bd08fc0d32ec55698e69d6e37bcf805c633b29b261724c58ac16e40383e1fbe` |
+| `OANDA-UK-HELP-FAQ-2024-NOV-WAYBACK` | undated FAQ; no schedule statement | <https://web.archive.org/web/20241107102830id_/https://help.oanda.com/uk/en/faqs/hours-of-operation.htm> | capture 2024-11-07; retrieved 2026-10-12 UTC | T1 | `b01b0bd93258460c79c761beb14fca664e3cab5723efcc176b0b4a5f514c3d47` |
+| `OANDA-UK-HELP-FAQ` | live FAQ; no schedule statement | <https://help.oanda.com/uk/en/faqs/hours-of-operation.htm> | retrieved 2026-10-12 UTC | T1 | `3a42f46d4a4c3f6f165c3815fe122cc0e47faed305b293c93a8c0eca9a985332` |
 | `OANDA-PRESS-2010-FX` | 2010 operator press release; corporate platform scope | <https://www.prnewswire.com/news-releases/oanda-deems-cftc-leverage-proposal-unfair-and-non-competitive-88598687.html> | retrieved 2026-10-11 UTC | T1 | `3e8a805537a3ddf2a54f7b47d326c04b562f1f1223a6ea1da6edcd652e9ef695` |
 | `OANDA-PRESS-2011-FX` | 2011-07-16 operator press release; corporate platform scope | <https://www.prnewswire.com/news-releases/oanda-listens-to-growing-client-base-expands-cross-pair-coverage-125675218.html> | retrieved 2026-10-11 UTC | T1 | `080ea8716db2e93948b0d6a1ed6e591c600b405aa4a2ab3d207cacfed9f74247` |
 | `OANDA-EUROPE-2011-MIRROR` | 2011-06-22 launch release reproduction; uncalibrated original | <https://www.financemagnates.com/forex/brokers/oanda-officially-announces-the-establishment-of-european-headquarters-in-london/> | retrieved 2026-10-11 UTC | T3 | `cce0a5398e17377ce24f98a0d6c63718bf35f42bef332ad716784f0ff5420ec2` |
@@ -172,15 +188,21 @@ Store paths (research store, wave-1 capture):
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022-05-18
-  capture prints the earlier `17:03 - 16:58` grid, so the changeover to the
-  current grid is undated and the crate refuses that span on the date-aware
-  surface rather than serving either grid. Closing condition: a dated
-  operator artifact for the changeover, or the hunts closing negative (then
-  the 2026-10-04 intersection rule applies). Activation (served tier)
-  requires this to close. The 2021-03-03 capture prints no Forex table, so
-  the 2021-12-08 capture now witnesses the earlier grid; earlier complete FX
-  evidence remains absent (see the 2026-10-11 audit below).
+- **The undated changeover's disputed remainder (2023-06-05..2024-02-20
+  opening days) is a disclosed residual, not a refused span.** What is
+  served: the sourced intersection — open 17:05, close 16:58 New York — the
+  window that holds under both witnessed grids. The disputed remainder: if
+  the earlier state was still in force, trading may have opened at 17:03 and
+  closed at 16:58 with the five-minute break; if the current state, the
+  close may extend to 16:59. Under-reporting a possibly-earlier open and a
+  possibly-later close is the conservative direction the 2026-10-04 rule
+  requires. Named closer: a dated OANDA UK operator artifact or desk answer
+  stating the changeover's effective day, which replaces the span with exact
+  data as a normal schedule fix.
+- **The pre-2021-12-08 normal week is carried, not sourced.** The
+  2021-03-03 capture prints no Forex table, so the 2021-12-08 capture is the
+  book's first complete witness; earlier complete FX evidence remains absent
+  (see the 2026-10-11 audit below).
 - **The holiday window begins at the current week's knowledge boundary.**
   The archived holiday page supplies 2024 arrangements; dates before
   2024-02-21 still require normal-week evidence, and 2026-10-31 onward is
@@ -192,6 +214,39 @@ Store paths (research store, wave-1 capture):
 - Intraday-quote holidays for specific FX pairs beyond the page's rows (for
   example reduced liquidity on US holidays) are not closures and ship no
   row; the page states none.
+
+## Changeover sweep closed negative — 2026-10-12 UTC
+
+The 2026-10-11 historical audit recorded that no UK-scoped unconditional day
+for the minute-endpoint change was found, while noting it had not claimed
+every operator channel closed negative. This sweep closes the enumeration:
+
+- **The help-centre FAQ** (`help.oanda.com/uk/en/faqs/hours-of-operation.htm`,
+  "Hours of operation in OANDA Europe Limited") was the one indexed channel
+  whose captures the audit had not retrieved. Both Wayback replays
+  (2024-06-19 and 2024-11-07) and the live page, retrieved 2026-10-12, print
+  no session grid at all — only the boilerplate that trading hours "are
+  subject to change during daylight saving time and certain public
+  holidays". Two captures with differing digests are layout drift, not a
+  schedule statement (`OANDA-UK-HELP-FAQ-2024-JUN-WAYBACK`,
+  `OANDA-UK-HELP-FAQ-2024-NOV-WAYBACK`, `OANDA-UK-HELP-FAQ`).
+- **The hours page's Wayback index is complete inside the bracket**: the
+  uncollapsed CDX query of 2026-10-12 returns zero captures between
+  2023-06-06 and 2024-02-20, and the audit's eight twice-refused replays all
+  postdate the 2024-02-21 current-grid witness, so none can narrow the
+  changeover.
+- The 2026-10-11 audit's other channels — the static hours guides 252 and
+  402 (both undated), the OEL execution policy (no schedule boundary), the
+  corporate news and press releases (the 2012 weekend-close era), and the
+  demo/live fxTrade pages (marketing statements, removed 2012-08) — closed
+  negative there and are unchanged by this sweep.
+
+No operator channel enumerated by either pass names a date for the
+minute-endpoint change. Per the charter's 2026-10-04 rule the hunts stand
+closed negative and the undated span serves the sourced intersection; a
+dated artifact or desk answer remains the named closer that would replace
+the residual with exact data. Contact was not attempted, per the
+maintainer's standing instruction recorded in #332.
 
 ## Pending orders and session scope — 2026-10-11 UTC
 
@@ -287,7 +342,9 @@ declaration is unchanged. Closing condition: admissible UK-scoped artifacts
 establishing those states and their day-level boundaries, or a separately
 reviewed application of the charter's sourced-intersection rule after its
 negative-hunt conditions are met. This audit does not claim every operator
-channel has closed negative.
+channel has closed negative. (2026-10-12: the help-centre sweep above closed
+the last indexed channel negative and the intersection now ships — see
+"Changeover sweep closed negative".)
 
 `OANDA-OEL-EXECUTION-2023`, section 5.4, expressly says OANDA's trading hours
 for some products may differ from the instrument exchanges' operating hours.

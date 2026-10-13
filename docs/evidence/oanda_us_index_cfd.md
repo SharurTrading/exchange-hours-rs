@@ -129,11 +129,35 @@ consumer routing can claim it is native/exact (#332).
 
 ## Dated selectors
 
-None. One sourced grid; `sourcing.rs` declares the normal week witnessed from
-**2024-02-21**, the operator's archived page print of the current `17:01 -
-15:59` grid. The 2022-05-18 capture prints the futures-exact `17:00 - 16:00`
-pair (no one-minute inset), so the changeover is undated and the span below
-the 2024 witness is carried, not served.
+The module serves the witnessed normal-week eras; `profile_at` keys each
+opening day to its era. `sourcing.rs` declares the normal week witnessed from
+**2021-08-04**, the operator's archived page print that first lists the four
+US index rows on the continuous whole-hour clock.
+
+The spans, and what each rests on:
+
+- **Opening days 2021-08-04 through 2023-06-04 — the whole-hour clock
+  `18:00 - 17:00` New York** (the 2022-era prints label the rows New York
+  `Sun - Fri 18:00 - 17:00`; the 2024 page relabels the same clock Chicago).
+  The 2021-08-04 capture prints it (`OANDA-UK-HOURS-2021-AUG-WAYBACK`); the
+  2023-06-05 capture still prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`),
+  and the audit's intervening replays print the identical grid.
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover to `17:01 - 15:59` is undated (last earlier-grid print
+  2023-06-05, first current-grid print 2024-02-21, no Wayback capture
+  between). The current grid nests inside the legacy print, so the
+  intersection is the current grid's own shape — the span serves
+  `18:01 - 16:59` per the charter's 2026-10-04 rule, under-reporting the
+  legacy state's extra boundary minutes; the residual is disclosed below.
+- **Opening days from 2024-02-20 — the current grid `17:01 - 15:59`
+  Chicago** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
+  replays and the 2026-10-10 capture corroborate).
+- **Below the 2021-08-04 witness**: carried. The 2021-03-03 and 2021-05-08
+  prints list the same instruments at the futures-exact `18:00 - 16:15;
+  16:30 - 17:00` pair — a real witnessed arrangement, but one that would
+  model the CME maintenance halt inside a broker book, which the shipped
+  book shape does not do; it stays a recorded #332 residual with its own
+  build as the named closer.
 
 ## Sources
 
@@ -152,6 +176,8 @@ the 2024 witness is carried, not served.
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
 | `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20250326184653`, retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+| `OANDA-UK-HOURS-2021-AUG-WAYBACK` | 2021-08-04 observation; not a cutover | <https://web.archive.org/web/20210804085600id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2021-08-04; retrieved 2026-10-12 UTC | T1 | `a4962cdf91f4acd0c2149a2bb1a6d6bfdc81bcfd0523eb3fdb72dcee381d8256` |
+| `OANDA-UK-HOURS-2023-JUN-WAYBACK` | 2023-06-05 observation; not a cutover | <https://web.archive.org/web/20230605093523id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2023-06-05; retrieved 2026-10-11 UTC | T1 | `98ddc07cf38727b2a861fd1f48c503b1b597054cbec9d1dde4b3dde1801ffb56` |
 | `OANDA-UK-CARTER-2026-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20260217213704id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20260217213704`, retrieved 2026-10-11 UTC | T1 | `33988f4e6cd9603250923da1660ce71dc3ee1e1a66610b7734b1ad0cbfbaa0c9` |
 
 Store paths: see [`oanda_fx.md`](oanda_fx.md). The additional Carter replays are
@@ -160,12 +186,14 @@ and `20260217213704.html` in that directory.
 
 ## Gaps and residual risks
 
-- **The pre-2024-02-21 normal week is carried, not sourced.** The 2022
-  capture prints the futures-exact `17:00 - 16:00` grid and Japan 225 on the
-  CME maintenance structure (`18:00 - 16:15; 16:30 - 17:00` New York); the
-  changeovers are undated and the span refuses on the date-aware surface.
-  Closing condition: dated operator artifacts, or hunts closed negative
-  (then the 2026-10-04 intersection rule applies).
+- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
+  opening days) is a disclosed residual.** What is served: the sourced
+  intersection, which here is the current `18:01 - 16:59` grid (it nests
+  inside the whole-hour legacy print). The disputed remainder: the legacy
+  state's extra minutes — open 18:00 (one minute earlier) and close 17:00
+  (one minute later). Named closer: a dated OANDA UK operator artifact or
+  desk answer stating the changeover's effective day; the sweep that closed
+  the hunts negative is recorded in [`oanda_fx.md`](oanda_fx.md).
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - **Japan 225 holiday scope is unresolved.** Its two listings share the normal
   Chicago grid, but the source separately names JP225 on only some dates.

@@ -329,9 +329,7 @@ December-half-day and 2012-2013 dates stand withheld. The latter eight are
 `nasdaq_helsinki`, `nasdaq_copenhagen`, `oanda_try_fx`,
 `oanda_china50_cfd` and `oanda_singapore30_cfd`: their first holiday audits
 start later. Current activation under the dated AGENTS.md exception retains
-historical work in #332 and never upgrades these 2025 verdicts. Native OANDA
-holiday coverage ends at trade date 2026-10-30; underlying-calendar caller
-policy does not extend that operator completeness claim.
+historical work in #332 and never upgrades these 2025 verdicts.
 
 Amended 2026-10-14 UTC: the MEFF IBEX and ICE Europe gilt families join as
 served rows. The inventory now has 56 rows: **thirty-six complete, twelve
@@ -344,6 +342,15 @@ week below its 2026-03-11 horizon, its shipped 2010-2014, 2021 and
 2022-2023 holiday rows answering only through `holiday_on`, and its eight
 announced-but-untimed Christmas eves shipping `Unsourced`. The same #332
 retained-work rules govern both.
+
+Amended 2026-10-14 UTC: the wave-2 builds add the ASX SPI 200 and HKEX
+index-futures families. The inventory now has 58 rows: **thirty-seven
+complete, thirteen incomplete and eight with no 2025 coverage** at the
+unchanged 2025-06-10 sample. ASX reads complete to 2027-12-31 over its
+audited window; HKEX reads **incomplete** on its 2013-2016 UK/US
+AHT-suspension instantiation gap. Native OANDA
+holiday coverage ends at trade date 2026-10-30; underlying-calendar caller
+policy does not extend that operator completeness claim.
 
 ## What “complete” means here
 
@@ -449,7 +456,9 @@ served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE
 | `oanda_brent` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | no `revisions!` timeline | 2024-02-21 | 2024-02-21..2026-10-30 | 47 | 17 | 17 `Unsourced` dates in the audited windows remain typed refusals; no missing or insufficiently specified arrangement is reported as ordinary trading | **incomplete**: 17 withheld dates, although the 2025 sample itself is covered | #332 |
 | `oanda_china50_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | no `revisions!` timeline | 2021-03-03 | 2026-10-10..2026-10-30 | 0 | 0 | the first audited holiday window starts after the 2025 sample; historical holiday classification remains unaudited, with sourced session bridges only where the API permits them | **no 2025 coverage**: current audited windows only | #332 |
 | `oanda_singapore30_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | no `revisions!` timeline | 2021-03-03 | 2026-10-10..2026-10-30 | 0 | 0 | the first audited holiday window starts after the 2025 sample; historical holiday classification remains unaudited, with sourced session bridges only where the API permits them | **no 2025 coverage**: current audited windows only | #332 |
+| `asx_spi_200` | [asx_spi_200.rs](../../src/calendar/schedules/futures/international/asx_spi_200.rs)<br>[holidays/asx_spi_200.rs](../../src/calendar/schedules/holidays/asx_spi_200.rs) | — | 2010-01-01 | 2010-01-01..2027-12-31, 2028-01-01..2028-01-01 | 303 | 0 | no withheld date inside the audited window; the 2016 night-open witness confined to two holiday rows of one capture is a session-level residual in the evidence file, not a holiday gap | complete to 2027-12-31 over the audited window; earlier history answers from the floor-sourced constant grid | — |
 | `bme_ibex` | [bme_ibex.rs](../../src/calendar/schedules/futures/international/bme_ibex.rs) | 2017-01-23 … 2025-06-23 (2 rows) | 2010-06-18 | 2010-01-01..2011-12-31, 2014-01-01..2026-12-31 | 90 | 0 | the 2010-01-01..2010-06-17 span below the sourced 2010-06-18 grid refuses as carried, and the 2012-2013 holiday-window gap sits between the audited windows: both spans answer their session questions where the sourced week reaches (the carried span below the horizon refuses) and the holiday classification refuses with them, disclosed as residuals with closing conditions in the evidence file; the sample date answers inside the second audited window | complete to 2026-12-31 in 2025+; **incomplete across 2010-2027**: the carried floor span and the 2012-2013 window gap | — |
+| `hkex_index_futures` | [hkex_index_futures.rs](../../src/calendar/schedules/futures/international/hkex_index_futures.rs)<br>[holidays/hkex_index_futures.rs](../../src/calendar/schedules/holidays/hkex_index_futures.rs) | 2011-03-07 … 2026-10-12 (6 rows) | 2010-01-01 | 2010-01-01..2027-12-31, 2028-01-01..2028-01-01 | 309 | 0 | the circular's own rule suspends the T+1 session on a bank holiday in both the UK and the United States, but the operator's per-year notes instantiating it are captured only from 2017, so the 2013-2016 spring bank-holiday/Memorial-Day evenings ship no row and answer from the normal week (#332); the bracketed after-hours cutovers are session-level residuals served from the sourced intersection, not holiday gaps | **incomplete**: those 2013-2016 evenings may have run no AHT session while answering from the normal week, although the 2025 sample itself is covered | #332 |
 | `ice_europe_gilts` | [ice_europe_gilts.rs](../../src/calendar/schedules/futures/international/ice_europe_gilts.rs) | 2026-07-06 … 2026-07-06 (1 row) | 2026-03-11 | 2010-12-24..2014-12-31, 2021-01-01..2021-12-31, 2022-12-23..2023-01-02, 2024-01-01..2026-12-31 | 89 | 8 | everything below the 2026-03-11 horizon that witnesses the shared 08:00-18:00 grid refuses as carried — the shipped 2010-2014, 2021 and 2022-2023 rows answer only through `holiday_on` — the eight announced-but-untimed Christmas eves (2014, 2021, 2024, 2026) ship `Unsourced`, and the 2015-2020 editions, the 2010 full-year notice and the mid-2022/2023 months sit inside no window; closing conditions in the evidence file (#332) | **incomplete**: the carried normal week below the 2026-03-11 horizon and the windowed holiday audit | #332 |
 
 ## Consumer routing

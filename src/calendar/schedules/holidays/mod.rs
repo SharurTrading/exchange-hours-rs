@@ -37,6 +37,7 @@
 //! `DayPolicy`.
 
 mod asx;
+mod asx_spi_200;
 mod b3;
 mod bme;
 mod bme_ibex;
@@ -60,6 +61,7 @@ mod globex_interest_rates;
 mod globex_livestock;
 mod globex_nikkei_225_dollar;
 mod hkex;
+mod hkex_index_futures;
 mod ice_europe_gilts;
 mod ice_us;
 mod lse;

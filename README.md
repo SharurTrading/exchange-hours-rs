@@ -52,7 +52,7 @@ certify those gaps as ordinary trading.
   fenced point-in-time revisions wherever primary evidence states an
   unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 49 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 51 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid on any built-in profile, for the
@@ -190,7 +190,7 @@ non-`Unknown` identities. See the checked
 labels, stable enum variants, canonical wire names, and each ledger basis.
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 50 variants—49 operator-derived product-family keys plus
+`MarketHoursKey` has 52 variants—51 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. `session_profile` exposes each family's fixed-current static table;
 `hours_for_market_hours_key` selects the sourced snapshot at the caller's
@@ -327,9 +327,9 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is in its Basis cell, and the split is
-**37 order-entry to 34 executable** across the 71 rows in the ledger. The order-entry majority is
+**37 order-entry to 36 executable** across the 73 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable thirty-four — the ICE Futures U.S. keys,
+session itself sourced. The executable thirty-six — the ICE Futures U.S. keys,
 the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
 2026-09-02, `globex_event_contracts`, whose daily close is carried back to its
@@ -345,7 +345,10 @@ intersection of two CME statements that disagree by an hour,
 `oanda_brent`, whose pre-2024 history carries an earlier grid with an
 undated changeover — and `bme_ibex` and `ice_europe_gilts`, whose floor grids
 are carried below their earliest witnessing captures with the intervening
-changeovers served as sourced intersections — are each served
+changeovers served as sourced intersections, and `asx_spi_200`, whose 2016
+night-open witness is confined to two holiday rows of one capture, and
+`hkex_index_futures`, whose after-hours cutovers are bracketed by the
+operator's own page stamps — are each served
 conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
 sixteen US futures product families found none of them withholding executable
@@ -356,7 +359,7 @@ Where a residual uncertainty survives, it is **instant-level and disclosed**, no
 a withheld day: the ledger's Basis cell states what is uncertain (typically the
 exact day an operator system setting changed, where every other fact is sourced)
 and the crate serves the window that holds under every sourced state around it.
-Per-family holiday and early-close tables ship for 64 of the 147 ledger rows,
+Per-family holiday and early-close tables ship for 66 of the 149 ledger rows,
 each over its own audited trade-date window; scopes without a built-in table
 reach holidays through the caller's `DayPolicy`.
 
@@ -371,7 +374,7 @@ primary evidence cannot date. The basis vocabulary is closed at four values —
 defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
 is not one of the 96 source-backed identities.
 
-Every row also states its **service tier** (LAW-SERVICE-TIERS): 56 of the 147
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 58 of the 149
 rows are `served` — a consumer instrument can reach them, so they owe dated
 history to the January-2010 floor and a monthly or quarterly review, with
 the dated current OANDA scope exception retaining historical gaps in #332 — and 91 are `dormant`, kept correct as of their last review and re-reviewed on demand.
@@ -380,10 +383,10 @@ rather than sourced, its review cadence, and a link to the evidence file holding
 the quotations and URLs behind it.
 
 The key surface was audited separately:
-**Hours verified at the review date for each product family:** `49 of 49` operator-derived
+**Hours verified at the review date for each product family:** `51 of 51` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Seven key
-rows are **Primary** and forty-two are **Partial**, because a named historical
+rows are **Primary** and forty-four are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 
@@ -399,7 +402,7 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude holidays, half-days, one-off closures or halts, severe-weather
 exceptions, and product-specific variations outside a row's stated scope:
-per-family holiday and early-close tables ship for 64 of the 147 ledger rows,
+per-family holiday and early-close tables ship for 66 of the 149 ledger rows,
 each over the trade-date window its Holidays cell names, and none of that data
 is included in the counts above, which are about normal weeks. A change confined to a
 single trade date — an early final close, a late first open, or a full
@@ -720,7 +723,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 97 `Exchange` rows (96
-  non-synthetic plus `Unknown`) and 50 `MarketHoursKey` rows (49
+  non-synthetic plus `Unknown`) and 52 `MarketHoursKey` rows (51
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

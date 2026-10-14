@@ -764,10 +764,21 @@ oanda_singapore30_cfd | regular  | (none)
 oanda_singapore30_cfd | extended | MoTuWeThFr---- | 08:31:00-17:19:00
 oanda_singapore30_cfd | extended | MoTuWeThFr---- | 17:51:00-05:14:00 +1d
 oanda_singapore30_cfd | order-en | (none)
+asx_spi_200 | tz Australia/Sydney | week_open_seconds 418800
+asx_spi_200 | regular  | MoTuWeThFr---- | 09:50:00-16:30:00
+asx_spi_200 | extended | MoTuWeThFr--Su | 17:10:00-07:00:00 +1d
+asx_spi_200 | order-en | MoTuWeThFr---- | 09:40:00-09:50:00
+asx_spi_200 | order-en | MoTuWeThFr--Su | 17:00:00-17:10:00
 bme_ibex | tz Europe/Madrid | week_open_seconds 252000
 bme_ibex | regular  | MoTuWeThFr---- | 08:00:00-22:00:00
 bme_ibex | extended | (none)
 bme_ibex | order-en | MoTuWeThFr---- | 07:55:00-08:00:00
+hkex_index_futures | tz Asia/Hong_Kong | week_open_seconds 229500
+hkex_index_futures | regular  | MoTuWeThFr---- | 09:15:00-12:00:00
+hkex_index_futures | regular  | MoTuWeThFr---- | 13:00:00-16:30:00
+hkex_index_futures | extended | MoTuWeThFr---- | 17:15:00-23:45:00
+hkex_index_futures | order-en | MoTuWeThFr---- | 08:45:00-09:15:00
+hkex_index_futures | order-en | MoTuWeThFr---- | 12:30:00-13:00:00
 ice_europe_gilts | tz Europe/London | week_open_seconds 360000
 ice_europe_gilts | regular  | MoTuWeThFr---- | 01:00:00-21:00:00
 ice_europe_gilts | extended | (none)

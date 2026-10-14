@@ -2,15 +2,17 @@
 
 //! Fixed-current profile values behind [`super::session_profile`].
 
-use chrono_tz::{America, Asia, Europe, US, UTC};
+use chrono_tz::{America, Asia, Australia, Europe, US, UTC};
 
 use super::{FuturesSessionProfile, MarketHoursKey};
 use crate::calendar::schedules::ALWAYS_OPEN_RULE;
 use crate::calendar::schedules::futures::international::{
+    ASX_SPI_200_EXTENDED_DST, ASX_SPI_200_ORDER_ENTRY, ASX_SPI_200_REGULAR,
     BME_IBEX_ORDER_ENTRY_CURRENT, BME_IBEX_REGULAR_CURRENT, EUREX_CURRENT_EXTENDED,
     EUREX_CURRENT_ORDER_ENTRY, EUREX_CURRENT_REGULAR, EUREX_FIXED_INCOME_EXTENDED_CURRENT,
     EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT, EUREX_FIXED_INCOME_REGULAR_CURRENT,
     EUREX_SMI_ORDER_ENTRY_CURRENT, EUREX_SMI_REGULAR_CURRENT, EURONEXT_INDEX_FUTURES_REGULAR,
+    HKEX_INDEX_1630_REGULAR, HKEX_INDEX_AHT_0300_EXTENDED, HKEX_INDEX_PHASE2_ORDER_ENTRY,
     ICE_EUROPE_GILTS_ORDER_ENTRY_CURRENT, ICE_EUROPE_GILTS_REGULAR_CURRENT, OANDA_BRENT_REGULAR,
     OANDA_CHINA50_EXTENDED, OANDA_FX_REGULAR, OANDA_METALS_REGULAR, OANDA_SINGAPORE30_EXTENDED,
     OANDA_TRY_FX_REGULAR, OANDA_US_CONTINUOUS_REGULAR, SGX_CURRENT_EXTENDED,
@@ -55,6 +57,24 @@ static FUTURES_OANDA_CHINA50: FuturesSessionProfile = FuturesSessionProfile {
     has_daily_close: true,
     has_weekend_close: true,
 };
+static FUTURES_ASX_SPI_200: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Australia::Sydney,
+    regular: ASX_SPI_200_REGULAR,
+    extended: ASX_SPI_200_EXTENDED_DST,
+    order_entry: ASX_SPI_200_ORDER_ENTRY,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_HKEX_INDEX: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Hong_Kong,
+    regular: HKEX_INDEX_1630_REGULAR,
+    extended: HKEX_INDEX_AHT_0300_EXTENDED,
+    order_entry: HKEX_INDEX_PHASE2_ORDER_ENTRY,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 static FUTURES_OANDA_SINGAPORE30: FuturesSessionProfile = FuturesSessionProfile {
     tz: Asia::Singapore,
     regular: &[],
@@ -551,7 +571,9 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::OandaBrent => &FUTURES_OANDA_BRENT,
         MarketHoursKey::OandaChina50Cfd => &FUTURES_OANDA_CHINA50,
         MarketHoursKey::OandaSingapore30Cfd => &FUTURES_OANDA_SINGAPORE30,
+        MarketHoursKey::AsxSpi200 => &FUTURES_ASX_SPI_200,
         MarketHoursKey::BmeIbex => &FUTURES_BME_IBEX,
+        MarketHoursKey::HkexIndexFutures => &FUTURES_HKEX_INDEX,
         MarketHoursKey::IceEuropeGilts => &FUTURES_ICE_EUROPE_GILTS,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,

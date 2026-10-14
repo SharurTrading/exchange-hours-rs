@@ -6,9 +6,11 @@
 //! public exchange default is therefore scoped to a named liquid contract
 //! family in its owner module rather than sharing a generic venue envelope.
 
+mod asx_spi_200;
 mod binance;
 mod bme_ibex;
 mod europe;
+mod hkex_index_futures;
 mod ice_abu_dhabi;
 mod ice_canada;
 mod ice_endex;
@@ -26,6 +28,9 @@ mod sgx_equity_index;
 
 mod sgx_equity_index_more;
 
+pub(crate) use asx_spi_200::{
+    ASX_SPI_200_EXTENDED_DST, ASX_SPI_200_ORDER_ENTRY, ASX_SPI_200_REGULAR, asx_spi_200_profile_at,
+};
 pub(crate) use binance::profile_at as binance_profile_at;
 pub(crate) use bme_ibex::bme_ibex_profile_at;
 pub(crate) use bme_ibex::{BME_IBEX_ORDER_ENTRY_CURRENT, BME_IBEX_REGULAR_CURRENT};
@@ -43,6 +48,10 @@ pub(crate) use euronext_index_futures::{
 pub(crate) use europe::EUREX_CURRENT_ORDER_ENTRY;
 pub(crate) use europe::{
     EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, eex_profile_at, eurex_profile_at,
+};
+pub(crate) use hkex_index_futures::{
+    HKEX_INDEX_1630_REGULAR, HKEX_INDEX_AHT_0300_EXTENDED, HKEX_INDEX_PHASE2_ORDER_ENTRY,
+    hkex_index_futures_profile_at,
 };
 pub(crate) use ice_abu_dhabi::ice_abu_dhabi_profile_at;
 pub(crate) use ice_canada::ice_canada_profile_at;

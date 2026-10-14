@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-14
+
 ### Added
 
 - The 2026-10-31 Saturday maintenance-window extension for the 24/7 markets

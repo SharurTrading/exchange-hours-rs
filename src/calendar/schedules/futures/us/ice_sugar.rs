@@ -104,9 +104,9 @@ static SUGAR_2012_JAN: StaticHoursProfile = StaticHoursProfile {
 };
 
 // Baseline before 2012-01-30: ICE's AUGUST 2011 master hours table, carried
-// back. No primary source gives a January 2010 close, and the 2010-2011
-// interval cannot be sourced because ICE sets these hours administratively
-// rather than by rule.
+// back and witnessed in-gap by the operator's own Sugar brochure of 22 March
+// 2010 (`HOURS  0330 EST TO 1400EST`) and re-witnessed 12 December 2011.
+// January to mid-March 2010 and the pre-window holiday layer stay unwitnessed.
 // Narrative: docs/evidence/ice_us_sugar.md
 static SUGAR_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_FRI,

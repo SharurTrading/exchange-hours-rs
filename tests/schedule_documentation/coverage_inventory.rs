@@ -1014,9 +1014,14 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (34, 10, 8),
-        "the inventory's verdict shapes: thirty-four complete, ten incomplete, eight with no 2025 \
-         coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
+        (35, 11, 8),
+        "the inventory's verdict shapes: thirty-five complete, eleven incomplete, eight with no 2025 \
+         coverage (eurex_smi joined the complete group on 2026-10-13 UTC: its 2010-2026 window \
+         carries no Unsourced date and its 2010-07-05 revision sources the grid from the floor, so \
+         only its order-entry windows are carried; euronext_index_futures joined the incomplete \
+         group the same day — its grid is witnessed only by the 2026-10-11 contract pages, so dates \
+         below the retrieval refuse as carried, and its 34 Unsourced dates stand withheld; \
+         eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
          the all-derivatives rows; hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
@@ -1501,6 +1506,8 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "eurex",
             "ice_us_sugar",
             "eurex_fixed_income",
+            "eurex_smi",
+            "euronext_index_futures",
             "oanda_try_fx",
             "oanda_metals",
             "oanda_us_index_cfd",
@@ -1581,8 +1588,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         "every later-window exception is checked"
     );
     assert_eq!(
-        checked, 52,
-        "the inventory carries one row per served scope, and all fifty-two are checked"
+        checked, 54,
+        "the inventory carries one row per served scope, and all fifty-four are checked"
     );
 }
 

@@ -9,8 +9,9 @@ use crate::calendar::schedules::ALWAYS_OPEN_RULE;
 use crate::calendar::schedules::futures::international::{
     EUREX_CURRENT_EXTENDED, EUREX_CURRENT_ORDER_ENTRY, EUREX_CURRENT_REGULAR,
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
-    EUREX_FIXED_INCOME_REGULAR_CURRENT, OANDA_BRENT_REGULAR, OANDA_CHINA50_EXTENDED,
-    OANDA_FX_REGULAR, OANDA_METALS_REGULAR, OANDA_SINGAPORE30_EXTENDED, OANDA_TRY_FX_REGULAR,
+    EUREX_FIXED_INCOME_REGULAR_CURRENT, EUREX_SMI_ORDER_ENTRY_CURRENT, EUREX_SMI_REGULAR_CURRENT,
+    EURONEXT_INDEX_FUTURES_REGULAR, OANDA_BRENT_REGULAR, OANDA_CHINA50_EXTENDED, OANDA_FX_REGULAR,
+    OANDA_METALS_REGULAR, OANDA_SINGAPORE30_EXTENDED, OANDA_TRY_FX_REGULAR,
     OANDA_US_CONTINUOUS_REGULAR, SGX_CURRENT_EXTENDED, SGX_CURRENT_ORDER_ENTRY,
     SGX_CURRENT_REGULAR, SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
     SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
@@ -383,6 +384,24 @@ static FUTURES_EUREX_FIXED_INCOME: FuturesSessionProfile = FuturesSessionProfile
     has_weekend_close: true,
 };
 
+static FUTURES_EUREX_SMI: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Europe::Zurich,
+    regular: EUREX_SMI_REGULAR_CURRENT,
+    extended: &[],
+    order_entry: EUREX_SMI_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_EURONEXT_INDEX_FUTURES: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Europe::Paris,
+    regular: EURONEXT_INDEX_FUTURES_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 static FUTURES_SGX_EQUITY_INDEX_JAPAN: FuturesSessionProfile = FuturesSessionProfile {
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
@@ -488,6 +507,8 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::IceUsDollarIndex => &FUTURES_ICE_USDX,
         MarketHoursKey::GlobexNikkei225Dollar => &FUTURES_NKD,
         MarketHoursKey::EurexFixedIncome => &FUTURES_EUREX_FIXED_INCOME,
+        MarketHoursKey::EurexSmi => &FUTURES_EUREX_SMI,
+        MarketHoursKey::EuronextIndexFutures => &FUTURES_EURONEXT_INDEX_FUTURES,
         MarketHoursKey::SgxEquityIndexJapan => &FUTURES_SGX_EQUITY_INDEX_JAPAN,
         MarketHoursKey::SgxEquityIndexChina => &FUTURES_SGX_EQUITY_INDEX_CHINA,
         MarketHoursKey::SgxEquityIndexSingapore => &FUTURES_SGX_EQUITY_INDEX_SINGAPORE,

@@ -32,6 +32,11 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
         "globex_nikkei_225_dollar",
     ),
     (MarketHoursKey::EurexFixedIncome, "eurex_fixed_income"),
+    (MarketHoursKey::EurexSmi, "eurex_smi"),
+    (
+        MarketHoursKey::EuronextIndexFutures,
+        "euronext_index_futures",
+    ),
     (
         MarketHoursKey::SgxEquityIndexJapan,
         "sgx_equity_index_japan",

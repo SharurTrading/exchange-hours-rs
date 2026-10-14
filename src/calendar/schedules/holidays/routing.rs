@@ -179,6 +179,17 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         // never fixed income, so the German-scope rows `Exchange::Eurex` and
         // the `eurex` key carry do not reach this family.
         MarketHoursKey::EurexFixedIncome => Some(super::eurex::FIXED_INCOME),
+        // The SMI family owns the all-derivatives rows plus the Swiss-scope
+        // rows: the operator's recurring Swiss clause closes "Swiss fixed
+        // income as well as equity and equity index derivatives", which FSMI
+        // is. The German-scope rows never name this family, and the sibling
+        // `eurex` tables carry them alone.
+        MarketHoursKey::EurexSmi => Some(super::eurex_smi::SMI),
+        // The index-futures family reads the operator's shared cash and
+        // derivatives holiday calendar (the Paris cell where the calendar is
+        // per-market), whose December half days ship `Unsourced` because no
+        // banked artifact states the index futures' own half-day instants.
+        MarketHoursKey::EuronextIndexFutures => Some(super::euronext_index_futures::TABLE),
         MarketHoursKey::SgxEquityIndexJapan => None,
         MarketHoursKey::SgxEquityIndexChina => None,
         MarketHoursKey::SgxEquityIndexSingapore => None,

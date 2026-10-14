@@ -29,12 +29,13 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at,
-    oanda_china50_profile_at, oanda_fx_profile_at, oanda_metals_profile_at,
-    oanda_singapore30_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
-    oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
-    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
-    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+    eurex_fixed_income_profile_at, eurex_profile_at, eurex_smi_profile_at,
+    euronext_index_futures_profile_at, oanda_brent_profile_at, oanda_china50_profile_at,
+    oanda_fx_profile_at, oanda_metals_profile_at, oanda_singapore30_profile_at,
+    oanda_try_fx_profile_at, oanda_us_commodity_profile_at, oanda_us_index_profile_at,
+    sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
+    sgx_equity_index_ntr_usd_profile_at, sgx_equity_index_singapore_profile_at,
+    sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
@@ -236,6 +237,29 @@ market_hours_keys! {
         GlobexNikkei225Dollar => "globex_nikkei_225_dollar",
         /// Eurex fixed-income futures (`FGBL`/`FGBM`/`FGBS`/`FGBX`).
         EurexFixedIncome => "eurex_fixed_income",
+        /// Eurex SMI® index futures (`FSMI`) on the Zurich clock: continuous
+        /// trading 07:50-17:27 CET from the January-2010 floor until the
+        /// operator's Contract Specifications amendment of 2010-07-05 extended
+        /// it to 07:50-22:00, with the Pre-Trading and Post-Trading order-entry
+        /// phases beside it. The Trading Calendar editions 2011-2026 reprint
+        /// the extended row every year. Excludes SMI options and SMIM/SLI
+        /// futures, whose option grids and per-product closes the operator
+        /// states separately, and every German-scope closure the sibling
+        /// [`Eurex`](Self::Eurex) key carries, which the operator's Swiss
+        /// clause never reaches.
+        EurexSmi => "eurex_smi",
+        /// Euronext CAC 40 Index futures (`FCE`, Paris) and AEX Index futures
+        /// (`FTI`, Amsterdam) on their shared Central Order Book grid:
+        /// 08:00-22:00 CET/CEST Monday to Friday, one identical row on the
+        /// operator's own contract-specification pages for both products. The
+        /// Large-in-Scale Facility beside that grid is an off-book wholesale
+        /// facility and is not modelled. No banked artifact dates any earlier
+        /// grid state, so the ledger records the horizon at the 2026-10-11
+        /// contract-page retrieval and the holiday table ships the operator's
+        /// shared cash-and-derivatives calendar with the December half days
+        /// `Unsourced` (the derivatives appendices that state their instants
+        /// are not banked).
+        EuronextIndexFutures => "euronext_index_futures",
         /// SGX Japan equity-index derivatives (Nikkei 225 suite).
         SgxEquityIndexJapan => "sgx_equity_index_japan",
         /// SGX China equity-index derivatives (FTSE China A50/H50).
@@ -553,6 +577,8 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::IceUsDollarIndex => ice_usdx_profile_at(as_of),
         MarketHoursKey::GlobexNikkei225Dollar => nkd_profile_at(as_of),
         MarketHoursKey::EurexFixedIncome => eurex_fixed_income_profile_at(as_of),
+        MarketHoursKey::EurexSmi => eurex_smi_profile_at(as_of),
+        MarketHoursKey::EuronextIndexFutures => euronext_index_futures_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexJapan => sgx_equity_index_japan_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexChina => sgx_equity_index_china_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexSingapore => sgx_equity_index_singapore_profile_at(as_of),

@@ -17,6 +17,8 @@ mod oanda_asia;
 mod sgx;
 
 mod eurex_fixed_income;
+mod eurex_smi;
+mod euronext_index_futures;
 
 mod sgx_equity_index;
 
@@ -27,6 +29,12 @@ pub(crate) use eurex_fixed_income::EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT;
 pub(crate) use eurex_fixed_income::{
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_REGULAR_CURRENT,
     eurex_fixed_income_profile_at,
+};
+pub(crate) use eurex_smi::{
+    EUREX_SMI_ORDER_ENTRY_CURRENT, EUREX_SMI_REGULAR_CURRENT, eurex_smi_profile_at,
+};
+pub(crate) use euronext_index_futures::{
+    EURONEXT_INDEX_FUTURES_REGULAR, euronext_index_futures_profile_at,
 };
 pub(crate) use europe::EUREX_CURRENT_ORDER_ENTRY;
 pub(crate) use europe::{

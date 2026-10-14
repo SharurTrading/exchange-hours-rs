@@ -6,6 +6,14 @@
 
 ### Added
 
+- LSE holiday-table extension through the operator's published 2028 rows and
+  2029-01-01: the audited window moves from 2010-01-01..2027-12-31 to
+  2010-01-01..2029-01-01 with eleven new rows — 2028-01-03, 2028-04-14,
+  2028-04-17, 2028-05-01, 2028-05-29, 2028-08-28, 2028-12-25 and 2028-12-26
+  closed, 2028-12-22 and 2028-12-29 half days closing at 12:30 London time,
+  and 2029-01-01 closed — read from the operator's own business-days table,
+  which the 2026-10-13 monitoring sweep re-read live byte-identically (2026
+  and 2027 rows unchanged).
 - Two served product-family keys. `eurex_smi` serves Eurex SMI® index
   futures (`FSMI`) on the Zurich clock: continuous trading 07:50-17:27 CET
   from the January-2010 floor until the operator's Contract Specifications

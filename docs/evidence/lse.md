@@ -38,7 +38,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates in `Europe/London`; tier T1
+**Coverage:** 2010-01-01..2029-01-01 (inclusive trade dates in `Europe/London`; tier T1
 throughout).
 
 LSE's holiday statement is the operator's own holiday table, which has shipped under four
@@ -80,6 +80,29 @@ The original PDF is saved at
 store. Text extraction omits the screenshot: verify its page pixels.
 The archived-channel negative searches remain history below; this additional
 channel closes their five date-level gaps.
+
+**2028-2029 window extension, encoded 2026-10-14 UTC.** The operator's rolling
+table had already grown past the 2027 year-end before any 2028 row was worked
+up: the 2026-06-17 capture's print runs to 2029-01-01 and the live retrieval
+of 2026-09-28 (`LSE-BUSDAYS-LIVE-2026-09-28`) carried the same rows, and the
+2026-10-13 forward-monitoring sweep re-read the live API **byte-identically**
+(sha256 `4f9f6f3aef9ab02874112c05c0c07ac4529e6c38e7ad74d0aa41735853a87a7f`,
+store `holidays/raw/europe-forward-2026-10-13/lse/lse_business_days_api.live-20261013T232722Z.html`,
+retrieved 2026-10-13 23:27 UTC; 27 rows, 2026-08-31 through 2029-01-01), so the
+2028 arrangements are the operator's standing publication and not a slipped or
+cancelled change. Every 2026 and 2027 cell of that capture matches the shipped
+rows byte for byte. The eleven new dates encode in the same session language:
+2028-01-03 closed (the New-Year-Day substitute; the final row the 2025-12-18
+capture's table already printed), 2028-04-14, 2028-04-17, 2028-05-01,
+2028-05-29, 2028-08-28, 2028-12-25 and 2028-12-26 closed, 2028-12-22 and
+2028-12-29 half days (`Markets closing process commences from 12:30 London
+time.`), and 2029-01-01 closed. The ten rows from 2028-04-14 through
+2029-01-01 key to `LSE-BUSDAYS-2026-06-17`, the earliest artifact that prints
+them; 2028-12-26 encodes the trading arrangement the sheet prints —
+`NON-trading day.` — while its separate OTC/SI service-availability cell reads
+`To be confirmed`; that column is service availability, not the trading
+arrangement, so it does not withhold the closure (re-confirm the cell at the
+next review).
 
 ### 2010
 
@@ -354,6 +377,27 @@ channel closes their five date-level gaps.
 | 2027-12-28 | closed | `Boxing Day (substitute)` — `Tuesday 28 December 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own substitute-day print; corroborated by the live table |
 | 2027-12-31 | early close | `New Year's Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 31 December 2027; the day's final close is the printed 12:30 London time |
 
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-01-03 | closed | `New Year's Day (substitute)` — `Monday 3 January 2028` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own substitute-day print (1 January 2028 is a Sunday); the final row the 2025-12-18 capture's table prints, keyed to its earliest print; corroborated by the 2026-06-17 capture and the live table |
+| 2028-04-14 | closed | `Good Friday` — `Friday 14 April 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-04-17 | closed | `Easter Monday` — `Monday 17 April 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-05-01 | closed | `Early May Bank Holiday` — `Monday 1 May 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-05-29 | closed | `Spring Bank Holiday` — `Monday 29 May 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-08-28 | closed | `Summer Bank Holiday` — `Monday 28 August 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-12-22 | early close | `Christmas Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2026-06-17` | T1 | the printed event date 22 December 2028; the day's final close is the printed 12:30 London time |
+| 2028-12-25 | closed | `Christmas Day` — `Monday 25 December 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-12-26 | closed | `Boxing Day` — `Tuesday 26 December 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; the trading arrangement prints `NON-trading day.` while the OTC/SI service-availability cell reads `To be confirmed` — that column is not the trading column; corroborated by the live table re-read byte-identically 2026-10-13 |
+| 2028-12-29 | early close | `New Year's Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2026-06-17` | T1 | the printed event date 29 December 2028; the day's final close is the printed 12:30 London time |
+
+### 2029
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2029-01-01 | closed | `New Year's Day` — `Monday 1 January 2029` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; the last date the rolling table prints; corroborated by the live table re-read byte-identically 2026-10-13 |
+
 **Interpretive step — the half-day scalar.** The sheet states "Markets closing process
 commences from 12:30 London time." for each half day. On a full day the same printed boundary
 kind — the closing-process start — sits at 16:30, so the 12:30 statement is the day's final
@@ -400,7 +444,7 @@ no other half days are printed in any audited year.
 | `LSE-BUSDAYS-2024-02-07` | 2024-03-29 .. 2025-01-01 | <https://web.archive.org/web/20240207115235id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20240207115235`, retrieved 2026-09-28 01:28 UTC | T1 | `4730c509be75be779d106ccad036eae4f515bc6524613951126b33491b40a90b` |
 | `LSE-BUSDAYS-2024-03-08` | 2024-03-29 .. 2025-01-01 | <https://web.archive.org/web/20240308200156id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20240308200156`, retrieved 2026-09-28 01:36 UTC | T1 | `dbcdccd7ef5bae333856d86819ad9f1908df3b5bab4fa6354e891d3ce99300db` |
 | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | 2025-04-18 .. 2025-12-31 | <https://ekoninfochecker.efri.uniri.hr/wp-content/uploads/2025/07/Karla-Mijic-1.pdf> | Verbatim screenshot of operator Business Days table, PDF page 14; retrieved 2026-10-11 UTC | T1 | `f1b0cb2dd0280e0c6e7c69f201558cc337c6aa6b12a93fb7a695abce5709434f` |
-| `LSE-BUSDAYS-2025-12-18` | 2025-12-24 .. 2027-12-31 | <https://web.archive.org/web/20251218172240id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20251218172240`, retrieved 2026-09-28 01:30 UTC | T1 | `e7d81b189bd75137b2e51136b2d6979d780dd3d50b95c111ef5acbdd38d49a11` |
+| `LSE-BUSDAYS-2025-12-18` | 2025-12-24 .. 2028-01-03 | <https://web.archive.org/web/20251218172240id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20251218172240`, retrieved 2026-09-28 01:30 UTC | T1 | `e7d81b189bd75137b2e51136b2d6979d780dd3d50b95c111ef5acbdd38d49a11` |
 | `LSE-BUSDAYS-2026-06-17` | 2026-05-04 .. 2029-01-01 | <https://web.archive.org/web/20260617134453id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20260617134453`, retrieved 2026-09-28 01:30 UTC | T1 | `1759a375014f079d7725ac0c08293073d9d27c8d9a28e1999d7f611d7145270a` |
 | `LSE-BUSDAYS-LIVE-2026-09-28` | 2026-08-31 .. 2029-01-01 | <https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days> | retrieved 2026-09-28 01:16 | T1 | `4f9f6f3aef9ab02874112c05c0c07ac4529e6c38e7ad74d0aa41735853a87a7f` |
 
@@ -416,9 +460,18 @@ the 2015 half days and pointing at `www.lseg.com/businessdays`, the pointer that
 lseg.com channel. `LSE-BUSDAYS-2021-01-21` and `LSE-BUSDAYS-2022-07-07` corroborate the
 December captures before them. `LSE-BUSDAYS-2024-03-08`
 keys no row: it confirms the February capture's 2025-01-01 endpoint and that no further 2025
-rows were listed at that date. `LSE-BUSDAYS-2026-06-17` and `LSE-BUSDAYS-LIVE-2026-09-28` key
-no row either: they corroborate the 2025-12-18 capture's rows on every date they share, which
-is what lets one document id carry 2026 and 2027. The store's `holidays/raw/equities/lse/
+rows were listed at that date. `LSE-BUSDAYS-2026-06-17` keys the ten rows its table first
+prints, 2028-04-14 through 2029-01-01 — the operator extended the rolling table's horizon
+past the 2027 year-end between the December 2025 and June 2026 captures, so the June
+capture is the earliest artifact those dates answer from; the 2028-01-03 substitute row
+is keyed one document earlier, to `LSE-BUSDAYS-2025-12-18`, whose own table ends with it.
+`LSE-BUSDAYS-LIVE-2026-09-28` keys no row: it corroborates the two captures' rows on
+every date they share — which is what lets one document id carry 2026 and 2027 — and the
+2026-10-13 forward-monitoring sweep re-read the live API byte-identically (same sha256;
+store `holidays/raw/europe-forward-2026-10-13/lse/lse_business_days_api.live-20261013T232722Z.html`,
+retrieved 2026-10-13 23:27 UTC), the re-check that confirmed the 2028 arrangements
+unchanged and moved the audited window to 2029-01-01. The store's
+`holidays/raw/equities/lse/
 2025-2027/` holds the 2025-2027 artifacts with its own index,
 `holidays/raw/equities/lse/2010-2024/` holds the fourteen 2010-2024 `.htm`/SPA/API artifacts
 above, and `holidays/raw/equities/lse/evidence-thread/` holds the lseg.com captures and the
@@ -446,7 +499,7 @@ https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-
 
 ## Holiday module narrative moved 2026-10-11 UTC
 
-London Stock Exchange (SETS) holiday rows, 2010-2027 in one audited
+London Stock Exchange (SETS) holiday rows, 2010-2029 in one audited
 window.
 
 Keyed by the crate's own venue-local trade date in `Europe/London`. LSE runs
@@ -481,8 +534,8 @@ will close from 12:30 London time onwards`), so the day's final close is
 12:30 and the closing-auction phase that would follow disappears rather
 than being invented. The half days are not always 24/31 December: 2011's
 fell on Friday 23 and Friday 30 December, 2016's on Friday 23 and Friday
-30, 2017's on Friday 22 and Friday 29 and 2022's on Friday 23 and Friday
-30 December, as printed. No other date carries an early close in any
+30, 2017's on Friday 22 and Friday 29, 2022's on Friday 23 and Friday
+30 December and 2028's on Friday 22 and Friday 29 December, as printed. No other date carries an early close in any
 audited year.
 
 Five 2025 dates — 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and

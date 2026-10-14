@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! London Stock Exchange SETS holiday rows, 2010-2027.
+//! London Stock Exchange SETS holiday rows, 2010-2029.
 //!
 //! Evidence and derivations: `docs/evidence/lse.md`.
 
@@ -19,7 +19,7 @@ const HALF_DAY_12_30: u32 = 12 * 3_600 + 30 * 60;
 /// LSE's built-in holiday rows and their audited window.
 // Evidence: docs/evidence/lse.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2029, 1, 1)],
     rows: [
         // 2010-01-01 - T1 - LSE-BUSDAYS-2010-01-30 - New Year:
         // `Friday 1 January`.
@@ -504,5 +504,40 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-12-31 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Holiday half
         // day, closing process from 12:30 London time.
         (2027, 12, 31, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2028-01-03 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Day
+        // (substitute): `NON-trading day.`; the final row that capture's
+        // table prints, keyed to its earliest print.
+        (2028, 1, 3, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2028-04-14 - T1 - LSE-BUSDAYS-2026-06-17 - Good Friday:
+        // `NON-trading day.`; first stated by the 2026-06-17 capture.
+        (2028, 4, 14, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-04-17 - T1 - LSE-BUSDAYS-2026-06-17 - Easter Monday:
+        // `NON-trading day.`
+        (2028, 4, 17, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-05-01 - T1 - LSE-BUSDAYS-2026-06-17 - Early May Bank Holiday:
+        // `NON-trading day.`
+        (2028, 5, 1, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-05-29 - T1 - LSE-BUSDAYS-2026-06-17 - Spring Bank Holiday:
+        // `NON-trading day.`
+        (2028, 5, 29, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-08-28 - T1 - LSE-BUSDAYS-2026-06-17 - Summer Bank Holiday:
+        // `NON-trading day.`
+        (2028, 8, 28, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-22 - T1 - LSE-BUSDAYS-2026-06-17 - Christmas Holiday half
+        // day: `Markets closing process commences from 12:30 London time.`
+        (2028, 12, 22, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-25 - T1 - LSE-BUSDAYS-2026-06-17 - Christmas Day:
+        // `NON-trading day.`
+        (2028, 12, 25, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-26 - T1 - LSE-BUSDAYS-2026-06-17 - Boxing Day:
+        // `NON-trading day.` (the trading arrangement; the capture's
+        // OTC/SI service-availability cell reads `To be confirmed`).
+        (2028, 12, 26, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-29 - T1 - LSE-BUSDAYS-2026-06-17 - New Year's Holiday half
+        // day: `Markets closing process commences from 12:30 London time.`
+        (2028, 12, 29, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2029-01-01 - T1 - LSE-BUSDAYS-2026-06-17 - New Year's Day:
+        // `NON-trading day.`
+        (2029, 1, 1, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
     ],
 };

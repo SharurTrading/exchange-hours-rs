@@ -487,6 +487,19 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // operator's archived Contract Specifications amendments of
         // 2009-09-14 .. 2017-08-28 each print the FGBL/FGBM/FGBS/FGBX row.
         MarketHoursKey::EurexFixedIncome => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        // Sourced from the floor: the 2009-10-26 amendment prints the FSMI row
+        // (07:50-17:27 continuous, 07:30-07:50 pre-trading, 17:27-20:30
+        // post-trading) and the 2010-07-05 amendment dates the extension to
+        // 22:00, so nothing is carried.
+        MarketHoursKey::EurexSmi => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        // The family's 08:00-22:00 grid is witnessed only by the two banked
+        // contract pages retrieved 2026-10-11; no banked artifact dates any
+        // earlier state, so every date below the retrieval refuses as carried
+        // (the Amsterdam normal-week floor gap #332 records) instead of
+        // serving an inferred history.
+        MarketHoursKey::EuronextIndexFutures => {
+            DeclaredSourcing::carried_below(horizon!(2026, 10, 11))
+        }
         MarketHoursKey::SgxEquityIndexJapan => {
             DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
         }

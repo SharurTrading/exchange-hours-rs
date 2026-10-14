@@ -314,7 +314,17 @@ the current tally is **thirty-one complete and five incomplete**.
 Amended 2026-10-12 UTC: current OANDA activation adds sixteen reached
 scopes without altering their windows or source-review dates. The inventory
 now has 52 rows: **thirty-four complete, ten incomplete and eight with no
-2025 coverage** at its unchanged 2025-06-10 sample. The latter eight are
+2025 coverage** at its unchanged 2025-06-10 sample. Amended 2026-10-13 UTC:
+the wave-2 activation adds two served futures families. The inventory now has
+54 rows: **thirty-five complete, eleven incomplete and eight with no 2025
+coverage** at the same sample. `eurex_smi` joins the complete group — its
+2010-2026 holiday window carries no `Unsourced` date and its one dated
+revision sources the grid from the floor — with the carried Pre-Trading and
+Post-Trading windows disclosed as the ledger's Partial / order-entry basis.
+`euronext_index_futures` reads incomplete: its grid is witnessed only by the
+2026-10-11 contract pages, so dates below the retrieval refuse as carried
+(the Amsterdam normal-week floor gap #332 records), and its 34 `Unsourced`
+December-half-day and 2012-2013 dates stand withheld. The latter eight are
 `euronext_brussels`, `euronext_lisbon`, `nasdaq_stockholm`,
 `nasdaq_helsinki`, `nasdaq_copenhagen`, `oanda_try_fx`,
 `oanda_china50_cfd` and `oanda_singapore30_cfd`: their first holiday audits
@@ -416,6 +426,8 @@ served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE
 | `ice_us_sugar` | [ice_sugar.rs](../../src/calendar/schedules/futures/us/ice_sugar.rs) | 2012-01-30 … 2018-10-08 (4 rows) | 2011-08-01 | 2025-01-01..2028-01-03 | 40 | 0 | every date in the window ships a sourced row from the ICE Exchange Notices and the IFUS calendars the softs waves retrieved; the baseline below the 2011-08-01 horizon is the operator's August 2011 master table carried back, and the executable gap is the carried pre-2012 era the notices cannot date | complete to 2028-01-03 | #116 |
 | `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2010-01-01 … 2015-09-20 (6 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 |  229  | 17 | none in 2025+; the 2011-2015 span was backfilled 2026-09-29 UTC from the operator's own per-holiday sheets (62 T1 rows), the post-changeover 2010 rows keyed to the notice-dated 2010-04-11 grid start, and the #225 remainder closed 2026-09-30 UTC: the old daytime-anchored grid is modelled from the operator's own equities-hours page (captures 2009-04-06 and 2010-04-02, byte-identical, both DST spellings) with rows at the floor and at the 2010-03-14 DST entry, and the 2010-01-01 venue-wide New Year closure keyed the first window to the floor, so no unaudited interval remains and 17 `Unsourced` dates remain across 2019-2024 (the 2026-10-09 work-up deleted the three Juneteenth markers); the five 2025 merged trade dates shipped as rows 2026-10-04 UTC (#162), moving this cell from 227 to 232 | complete to 2027-12-31 in 2025+ and from the 2010-01-01 floor through 2018-12-31; **incomplete across 2019-2027**: 17 `Unsourced` dates across 2019-2024 | #116 |
 | `eurex_fixed_income` | [eurex_fixed_income.rs](../../src/calendar/schedules/futures/international/eurex_fixed_income.rs) | 2018-12-10 … 2019-02-25 (2 rows) | 2010-01-01 | 2010-01-01..2026-12-31 | 108 | 0 | the all-derivatives rows the Eurex Holiday regulations and Trading Calendar editions print, shipped as the family's own table; the German-scope lines never name fixed income, and the two dated revisions (the Asian-hours extension and the post-trading shortening) are the operator's own circular and specification amendment | complete to 2026-12-31 | #116 |
+| `eurex_smi` | [eurex_smi.rs](../../src/calendar/schedules/futures/international/eurex_smi.rs) | 2010-07-05 … 2010-07-05 (1 row) | 2010-01-01 | 2010-01-01..2026-12-31 | 165 | 0 | the all-derivatives rows plus the 57 Swiss-scope rows the editions key to the SMI scope (the Swiss clause closes Swiss equity index derivatives); the German-scope lines never name this family, so the eight benchmark rows stay the sibling tables' alone, and the current Pre-Trading and Post-Trading order-entry windows rest on the 2010-07-05 amendment and are carried — the ledger's Partial / order-entry basis, whose closer is a current Annex C capture | complete to 2026-12-31 | — |
+| `euronext_index_futures` | [euronext_index_futures.rs](../../src/calendar/schedules/futures/international/euronext_index_futures.rs) | — | 2026-10-11 | 2010-01-01..2026-12-31 | 106 | 34 | the family's 08:00-22:00 grid is witnessed only by the 2026-10-11 contract pages, so dates below the retrieval refuse as carried (the Amsterdam normal-week floor gap #332 records; the Paris side has the same shape); the December half-day instants are unstated for the derivatives scope, and the 2012-2013 banked editions state the cash scope only, so their candidate dates are withheld | **incomplete** | #332 |
 | `oanda_fx` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | no `revisions!` timeline | 2021-12-08 | 2024-02-21..2026-10-30 | 4 | 0 | no withheld date inside the audited windows; earlier unaudited or carried history remains outside this completeness claim | complete to 2026-10-30 over audited windows; earlier history remains incomplete | #332 |
 | `oanda_try_fx` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | no `revisions!` timeline | 2026-10-10 | 2026-10-10..2026-10-30 | 0 | 0 | the first audited holiday window starts after the 2025 sample; historical holiday classification remains unaudited, with sourced session bridges only where the API permits them | **no 2025 coverage**: current audited windows only | #332 |
 | `oanda_metals` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | no `revisions!` timeline | 2021-12-08 | 2024-02-21..2026-10-30 | 46 | 0 | no withheld date inside the audited windows; earlier unaudited or carried history remains outside this completeness claim | complete to 2026-10-30 over audited windows; earlier history remains incomplete | #332 |
@@ -473,7 +485,7 @@ recorded rather than resolved in this stage.
 ### No-holiday and synthetic scopes
 
 Stated explicitly, as the stage requires. **No served scope is synthetic and no served scope is a
-no-holiday scope**: all fifty-two ship a holiday table, and the row above for each names its windows.
+no-holiday scope**: all fifty-four ship a holiday table, and the row above for each names its windows.
 The crate's two synthetic identities are `Exchange::Unknown`, the UTC 24x7 fallback, and
 `AlwaysOpen`; both are **dormant**, both answer `None` in `holidays/routing.rs`, and neither is a
 venue fact. They therefore contribute no inventory row, and no consumer instrument in the maps

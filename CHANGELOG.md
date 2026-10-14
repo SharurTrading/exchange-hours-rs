@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- Two served product-family keys. `eurex_smi` serves Eurex SMI® index
+  futures (`FSMI`) on the Zurich clock: continuous trading 07:50-17:27 CET
+  from the January-2010 floor until the operator's Contract Specifications
+  amendment of 2010-07-05 extended it to 07:50-22:00 (a dated T1 cutover,
+  re-witnessed by the Trading Calendar editions 2011-2026), with Pre-Trading
+  and Post-Trading order-entry phases and a built-in holiday table (2010-2026)
+  of the all-derivatives rows plus the Swiss-scope rows the operator's
+  editions key to the SMI scope. `euronext_index_futures` serves Euronext CAC
+  40 (`FCE`) and AEX (`FTI`) index futures on their shared Central Order Book
+  grid, 08:00-22:00 CET/CEST Monday to Friday, with a built-in holiday table
+  (2010-2026) read from the operator's shared cash-and-derivatives calendars.
+  Both ship with evidence files, ledger rows (served, monthly cadence) and
+  public-surface tests.
+
 ### Fixed
 
 - Seven OANDA books now answer their witnessed normal-week history instead of

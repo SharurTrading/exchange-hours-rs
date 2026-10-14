@@ -12,6 +12,7 @@ mod cme_rough_rice;
 mod cme_silver_100oz;
 mod cme_spot_quoted;
 mod cme_weather;
+mod eurex_smi_euronext;
 mod holidays_globex_energy;
 mod holidays_globex_equity_index;
 mod holidays_globex_grains;

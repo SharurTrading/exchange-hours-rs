@@ -223,16 +223,17 @@ fn the_weekend_block_is_joined_and_carries_mondays_trade_date() {
 
 /// The joined weekend block survives both DST transitions without dropping or
 /// double-counting an hour, and the daily maintenance sits at the same local
-/// instants on both sides of each change. The block runs Saturday 04:00 CT to
-/// Monday 16:00 CT, so it is 61 wall-clock hours across the November
-/// fall-back and 59 across the March spring-forward.
+/// instants on both sides of each change. The block runs from the Saturday
+/// reopen to Monday 16:00 CT — 05:00 on the October 31 extension day, 60
+/// wall-clock hours across the November fall-back, and 04:00 on the ordinary
+/// March Saturday, 59 across the spring-forward.
 #[test]
 fn the_joined_weekend_block_survives_both_dst_transitions() {
-    for (saturday, monday, hours) in [
-        ((2026, 10, 31), (2026, 11, 2), 61i64),
-        ((2027, 3, 13), (2027, 3, 15), 59),
+    for (saturday, monday, reopen, hours) in [
+        ((2026, 10, 31), (2026, 11, 2), (5u32, 0u32), 60i64),
+        ((2027, 3, 13), (2027, 3, 15), (4, 0), 59),
     ] {
-        let open = ct(saturday, (4, 0, 0));
+        let open = ct(saturday, (reopen.0, reopen.1, 0));
         let close = ct(monday, (16, 0, 0));
         assert_eq!(
             (close - open).num_hours(),
@@ -265,14 +266,16 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
 }
 
 /// The September 19 extension is scoped to the channel table that includes
-/// this product's channel 329; the October ones are class-generic. Each moves
-/// only that Saturday's reopen and reverts after.
+/// this product's channel 329; the October 3, October 24 and October 31 ones
+/// are class-generic. Each moves only that Saturday's reopen and reverts
+/// after: November 7 runs the standard 02:00-04:00 window again.
 #[test]
 fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
     for (saturday, reopen, last_closed) in [
         ((2026, 9, 19), (8u32, 0u32), (7u32, 59u32, 59u32)),
         ((2026, 10, 3), (5, 0), (4, 59, 59)),
         ((2026, 10, 24), (15, 30), (15, 29, 59)),
+        ((2026, 10, 31), (5, 0), (4, 59, 59)),
     ] {
         assert!(
             !open_at(SILVER, ct(saturday, (4, 0, 0))),
@@ -289,10 +292,28 @@ fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
             open_at(SILVER, ct(saturday, (1, 59, 59))),
             "{saturday:?}: before 02:00"
         );
+        // The three-hour October 31 window stays inside the four-hour
+        // operator-designated bound, so the fixed snapshot classifies it
+        // `Maintenance`, unlike the October 24 drill's same-trade-date
+        // closure.
+        if saturday == (2026, 10, 31) {
+            assert_eq!(
+                state_at(ct(saturday, (3, 0, 0))),
+                SessionState::Maintenance,
+                "the three-hour extension is operator-designated maintenance"
+            );
+        }
     }
     // The Saturdays either side keep the standard 04:00 reopen, including the
-    // first weekend after the go-live and the bridge weekend itself.
-    for saturday in [(2026, 9, 12), (2026, 9, 26), (2026, 10, 10), (2026, 10, 31)] {
+    // first weekend after the go-live, the bridge weekend itself, and the
+    // first Saturday after the October 31 extension reverts.
+    for saturday in [
+        (2026, 9, 12),
+        (2026, 9, 26),
+        (2026, 10, 10),
+        (2026, 10, 17),
+        (2026, 11, 7),
+    ] {
         assert!(!open_at(SILVER, ct(saturday, (3, 59, 59))), "{saturday:?}");
         assert!(
             open_at(SILVER, ct(saturday, (4, 0, 0))),

@@ -91,24 +91,37 @@ fn the_2026_split_flips_at_london_local_midnight() {
     assert!(!split_day.is_open(london((2026, 7, 6), (21, 0, 0))));
 }
 
-/// The holiday layer: bank-holiday closures, the audited-normal 1 May, the
-/// 12:15 and 13:00 half days, and the announced eves that ship `Unsourced`.
+/// The holiday layer: bank-holiday closures, the audited-normal 1 May and
+/// asterisk-free December eves, the 12:15 and 13:00 half days, and the
+/// announced or unwitnessed dates that ship `Unsourced`.
 #[test]
 fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
     let calendar = calendar_for_market_hours_key(GILTS);
     let coverage = calendar
         .holiday_coverage()
         .expect("ice_europe_gilts ships a built-in table");
-    assert_eq!(coverage.first(), day((2010, 12, 24)));
+    assert_eq!(coverage.first(), day((2010, 1, 1)));
     assert_eq!(coverage.last(), day((2026, 12, 31)));
+    assert_eq!(coverage.windows().len(), 6);
 
-    // The 2010-2014 and 2021 rows sit below the carried horizon, so the
-    // date-aware surface refuses them while the built-in table still answers
-    // through `holiday_on` — the sourced rows are shipped, never inferred.
+    // The 2010-2014, 2015-2017, 2019-2020 and 2021 rows sit below the carried
+    // horizon, so the date-aware surface refuses them while the built-in table
+    // still answers through `holiday_on` — the sourced rows are shipped, never
+    // inferred. LON3203's sterling closures key 2010 from the floor itself.
     for date in [
+        day((2010, 1, 1)),
+        day((2010, 4, 2)),
+        day((2010, 5, 3)),
         day((2011, 4, 22)),
         day((2012, 6, 5)),
         day((2013, 5, 27)),
+        day((2015, 5, 4)),
+        day((2016, 12, 27)),
+        day((2017, 1, 2)),
+        day((2019, 1, 1)),
+        day((2019, 4, 19)),
+        day((2020, 1, 1)),
+        day((2020, 4, 10)),
         day((2021, 12, 28)),
     ] {
         assert_eq!(
@@ -154,12 +167,40 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         );
     }
 
-    // The editions' open 1 May: audited normal, not a closure.
+    // The editions' open 1 May: audited normal, not a closure — 2015 as well
+    // as 2026. The 2015 edition's 1 May note names only the Euribor,
+    // Euroswiss and EUR-Swapnote trio (its subject per the 2017 edition), so
+    // the gilt date has no row and the window audits it normal.
+    for date in [day((2015, 5, 1)), day((2026, 5, 1))] {
+        assert!(
+            coverage.contains(date),
+            "{date} is inside an audited window"
+        );
+        assert_eq!(
+            calendar.holiday_on(date).map(exchange_hours::Holiday::kind),
+            None,
+            "{date} is audited normal"
+        );
+    }
     assert_eq!(
         calendar.is_closed_trade_date(day((2026, 5, 1)), SessionKind::Both),
         Ok(false),
         "the August 2026 edition prints the gilt row Open on 1 May"
     );
+
+    // The 2016/2017 December eves carry no asterisk on the gilt rows, so the
+    // editions' 18:00 early close never touches the family: audited normal.
+    for date in [day((2016, 12, 23)), day((2017, 12, 22))] {
+        assert!(
+            coverage.contains(date),
+            "{date} is inside an audited window"
+        );
+        assert_eq!(
+            calendar.holiday_on(date).map(exchange_hours::Holiday::kind),
+            None,
+            "{date} is audited normal"
+        );
+    }
 
     // The 2025 eves carry sourced 12:15 closes; both sit below the carried
     // horizon, so the rows answer through `holiday_on` while the date-aware
@@ -178,15 +219,16 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         ));
     }
 
-    // The announced eves with unpublished instants ship typed withholdings.
-    // 2026-12-24 and 2026-12-31 sit above the carried horizon, so their
-    // classification refuses `UnresolvedGap` and their sessions refuse with
-    // it — a withheld date is not an audited-normal one. 2024-12-24 sits
-    // below the horizon and answers only through `holiday_on`.
+    // The announced eves with unpublished instants ship typed withholdings —
+    // 2015's asterisked gilt rows join 2014, 2021, 2024 and 2026 — and so do
+    // the 2019/2020 dates the exchange-wide editions name without printing a
+    // family arrangement (the unwitnessed Migrated-edition layer).
     for date in [
-        day((2024, 12, 24)),
-        day((2026, 12, 24)),
-        day((2026, 12, 31)),
+        day((2015, 12, 24)),
+        day((2019, 5, 6)),
+        day((2019, 12, 24)),
+        day((2020, 5, 8)),
+        day((2020, 12, 31)),
     ] {
         assert_eq!(
             calendar.holiday_on(date).map(exchange_hours::Holiday::kind),
@@ -212,9 +254,9 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
     }
 }
 
-/// The windowed history: one-flank 2010 and interior 2015-2020 and 2023
-/// spans bridge their session questions while the holiday classification
-/// refuses; the floor and the publication horizon refuse typed.
+/// The windowed history: the unwitnessed 2018 year and 2023 span, and every
+/// pre-horizon date — including dates the shipped holiday rows and windows
+/// now sit under — refuse typed, because the normal week there is carried.
 #[test]
 fn the_windowed_history_refuses_typed_and_bridges_the_gaps() {
     let calendar = calendar_for_market_hours_key(GILTS);
@@ -222,9 +264,12 @@ fn the_windowed_history_refuses_typed_and_bridges_the_gaps() {
     // The whole span below the carried horizon refuses typed, whatever the
     // holiday layer ships under it: the normal week there is carried, not
     // sourced, so the charter's one-flank bridge — which reaches only where
-    // the sourced week answers — never does. The shipped rows stay readable
-    // through `holiday_on` (asserted in the holiday test above).
-    for date in [day((2010, 6, 15)), day((2017, 6, 12)), day((2022, 12, 23))] {
+    // the sourced week answers — never does. 2010-06-15 sits inside the first
+    // audited holiday window (LON3203's full 2010 year), 2018-06-12 inside
+    // no window at all, and 2022-12-23 under a shipped early-close row; all
+    // three refuse identically. The shipped rows stay readable through
+    // `holiday_on` (asserted in the holiday test above).
+    for date in [day((2010, 6, 15)), day((2018, 6, 12)), day((2022, 12, 23))] {
         assert!(matches!(
             calendar.is_open(london((date.year(), date.month(), date.day()), (10, 0, 0))),
             Err(CalendarQueryError::OutsideCoveredRange { date: refused, .. }) if refused == date

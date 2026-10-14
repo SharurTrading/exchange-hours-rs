@@ -51,12 +51,13 @@
   in Europe/London: the shared 08:00-18:00 grid with a 06:03-08:00 pre-open,
   and circular 26/063's unconditional 2026-07-06 extension of Long and Medium
   alone to 01:00-21:00 with a 00:45-01:00 pre-open (Short and Ultra Long Gilt
-  stay 08:00-18:00 outside the key). Holiday tables audit four operator-era
-  windows (89 rows across the LIFFE notices 2010-2014 and the IFEU schedule
-  editions 2021-2026, including 12:15 and 13:00 Christmas-eve closes), with
-  the 2015-2020 editions, the 2010 full-year notice, the 2010 floor year and
-  the 2022/2023 mid-year months disclosed as gaps, and the announced but
-  untimed Christmas eves of 2014, 2021, 2024 and 2026 shipping `Unsourced`.
+  stay 08:00-18:00 outside the key). Holiday tables audit six operator-era
+  windows (141 rows across the LIFFE notices 2010-2014, the IFEU Migrated
+  editions 2015-2017 and 2021-2026 and the exchange-wide Trading Schedule
+  editions 2019-2020, including 12:15 and 13:00 Christmas-eve closes), with
+  2018, the 2022/2023 mid-year months and the unwitnessed 2019-2020
+  Migrated-edition layer disclosed as gaps, and the announced but untimed
+  Christmas eves of 2014, 2015, 2021, 2024 and 2026 shipping `Unsourced`.
 - Two served product-family keys, each with its built-in holiday table and a
   served ledger row: `asx_spi_200` (ASX SPI 200 index futures on the Sydney
   ASX 24 grid — day session 09:50-16:30, night session 17:10 to a 07:00/08:00

@@ -6,6 +6,15 @@
 
 ### Added
 
+- The 2026-10-31 Saturday maintenance-window extension for the 24/7 markets
+  (CME Globex notice 20261005: the window runs 02:00-05:00 CT that Saturday and
+  reverts to the 02:00-04:00 standard, November 7 reopening at 04:00) now ships
+  as forward-dated one-day rows in the two families the October 3 and October 24
+  extensions (notice 20260921) already govern: `globex_cryptocurrency` and
+  `globex_silver_100oz`. The three-hour October 31 window classifies
+  `Maintenance`; the dormant `globex_event_contracts_btc` records the
+  class-wide extension beside its evidence rather than encoding it, per its
+  dormant tier. Awaiting the operator's confirmation on the day (LAW-WATCH).
 - LSE holiday-table extension through the operator's published 2028 rows and
   2029-01-01: the audited window moves from 2010-01-01..2027-12-31 to
   2010-01-01..2029-01-01 with eleven new rows — 2028-01-03, 2028-04-14,

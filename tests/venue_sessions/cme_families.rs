@@ -657,20 +657,27 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     assert!(restored.is_open_extended(ct((2026, 8, 8), (4, 0, 0))));
 }
 
-/// Notices 20260824 and 20260921 name four one-day Saturday extensions for the
-/// same channels, each reverting to the standard window the following week.
-/// The October 24 extension runs 02:00-15:30 CT for the FIA industry
-/// disaster-recovery exercise: a 13.5-hour operator-designated gap, past the
-/// four-hour bound the crate's maintenance policy keeps, so `session_state`
-/// must classify it `Closed` and `is_maintenance` must answer false there.
+/// Notices 20260824, 20260921 and 20261005 name five one-day Saturday
+/// extensions for the same channels, each reverting to the standard window the
+/// following week. The October 24 extension runs 02:00-15:30 CT for the FIA
+/// industry disaster-recovery exercise: a 13.5-hour operator-designated gap,
+/// past the four-hour bound the crate's maintenance policy keeps, so
+/// `session_state` must classify it `Closed` and `is_maintenance` must answer
+/// false there. The October 31 extension runs 02:00-05:00 CT: three hours,
+/// inside the bound, so it classifies `Maintenance`.
 #[test]
 fn cryptocurrency_models_the_later_saturday_extensions() {
-    for (saturday, (reopen_hour, reopen_minute), next_saturday) in [
-        ((2026, 8, 29), (6u32, 0u32), (2026, 9, 5)),
-        ((2026, 9, 19), (8, 0), (2026, 9, 26)),
-        ((2026, 10, 3), (5, 0), (2026, 10, 10)),
-        ((2026, 10, 24), (15, 30), (2026, 10, 31)),
+    for (saturday, reopen, next_saturday, next_reopen) in [
+        ((2026, 8, 29), (6u32, 0u32), (2026, 9, 5), (4u32, 0u32)),
+        ((2026, 9, 19), (8, 0), (2026, 9, 26), (4, 0)),
+        ((2026, 10, 3), (5, 0), (2026, 10, 10), (4, 0)),
+        // The Saturday after the FIA drill is itself an extension day
+        // (notice 20261005), so that step reverts only to the next
+        // extension's 05:00 reopen; the standard window returns on 11-07.
+        ((2026, 10, 24), (15, 30), (2026, 10, 31), (5, 0)),
+        ((2026, 10, 31), (5, 0), (2026, 11, 7), (4, 0)),
     ] {
+        let (reopen_hour, reopen_minute) = reopen;
         let temporary = hours_for_market_hours_key(
             MarketHoursKey::GlobexCryptocurrency,
             ct(saturday, (0, 0, 0)),
@@ -701,15 +708,24 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             "{next_saturday:?}"
         );
         // The extension notices name the window's end and publish no
-        // replacement Pre-Open, so the standard 03:45 queue is absent and the
-        // revert is to the 04:00 open.
+        // replacement Pre-Open, so no 03:45 queue runs on any of these
+        // Saturdays, and each reopens exactly when its own sourced state
+        // says — the standard 04:00, or the next extension's 05:00 on the
+        // one Saturday that carries a further extension.
         assert!(
             !restored.is_open_extended(ct(next_saturday, (3, 45, 0))),
             "{next_saturday:?}"
         );
+        let (next_hour, next_minute) = next_reopen;
         assert!(
-            restored.is_open_extended(ct(next_saturday, (4, 0, 0))),
+            !restored.is_open(
+                ct(next_saturday, (next_hour, next_minute, 0)) - chrono::Duration::seconds(1)
+            ),
             "{next_saturday:?}"
+        );
+        assert!(
+            restored.is_open_extended(ct(next_saturday, (next_hour, next_minute, 0))),
+            "{next_saturday:?}: reopens at {next_hour}:{next_minute:02} CT"
         );
     }
 
@@ -739,6 +755,30 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
         );
     }
 
+    // The three-hour October 31 window is the opposite policy case: it stays
+    // inside the four-hour operator-designated bound and inside one trade
+    // date, so `session_state` classifies it `Maintenance` and
+    // `is_maintenance` answers true there.
+    for probe in [
+        ct((2026, 10, 31), (2, 0, 0)),
+        ct((2026, 10, 31), (3, 0, 0)),
+        ct((2026, 10, 31), (4, 59, 59)),
+    ] {
+        assert_eq!(
+            calendar
+                .session_state(probe)
+                .expect("the coverage contract must answer a covered date"),
+            SessionState::Maintenance,
+            "{probe}: the three-hour extension is operator-designated maintenance"
+        );
+        assert!(
+            calendar
+                .is_maintenance(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "{probe}: `is_maintenance` must stay exactly the maintenance case"
+        );
+    }
+
     // Each Saturday's weekend block carries the following Monday's trade
     // date, so the October rows are keyed to the operator's own roll —
     // matching runs on the Saturday, but the trade date it belongs to is the
@@ -754,6 +794,12 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             .trade_date(ct((2026, 10, 24), (16, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
         Some(zoned(US::Central, (2026, 10, 26), (0, 0, 0)).date_naive())
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct((2026, 10, 31), (6, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(zoned(US::Central, (2026, 11, 2), (0, 0, 0)).date_naive())
     );
 }
 

@@ -72,12 +72,12 @@ static EXTENDED_2026_09_11: &[SessionRule] = &[
     },
 ];
 
-// One-day Saturday extensions that govern this product: notice 20260824
-// extends the window for the channel table including MDP channel 329 — the
-// channel the same notice moves `SIL` onto — so Saturday 2026-09-19 reopens
-// 08:00 CT; notice 20260921 extends it for the 24/7 markets on 2026-10-03
-// (to 05:00 CT) and 2026-10-24 (to 15:30 CT, the FIA drill), each reverting
-// to standard. The August extensions predate the go-live and never governed it.
+// One-day Saturday extensions that govern this product: notice 20260824's
+// channel table includes MDP channel 329 — the channel the same notice moves
+// `SIL` onto — so Saturday 2026-09-19 reopens 08:00 CT; notices 20260921 and
+// 20261005 extend the window "for 24/7 markets" on 2026-10-03 (to 05:00 CT),
+// 2026-10-24 (to 15:30 CT, the FIA drill) and 2026-10-31 (to 05:00 CT), each
+// reverting to standard. The August extensions predate the go-live.
 macro_rules! saturday_extended_to {
     ($name:ident, $reopen_hour:expr, $reopen_minute:expr) => {
         static $name: &[SessionRule] = &[
@@ -112,6 +112,7 @@ macro_rules! saturday_extended_to {
 saturday_extended_to!(EXTENDED_2026_09_19, 8, 0);
 saturday_extended_to!(EXTENDED_2026_10_03, 5, 0);
 saturday_extended_to!(EXTENDED_2026_10_24, 15, 30);
+saturday_extended_to!(EXTENDED_2026_10_31, 5, 0);
 
 static TRANSITION_2026_09_11: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
@@ -146,6 +147,7 @@ macro_rules! temporary_saturday {
 temporary_saturday!(TEMPORARY_2026_09_19, EXTENDED_2026_09_19);
 temporary_saturday!(TEMPORARY_2026_10_03, EXTENDED_2026_10_03);
 temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24);
+temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31);
 
 // The pre-cutover rows restate the family rows this product rode, by reference
 // to `energy_metals.rs`'s own tables: notice 20150907 moved every COMEX close
@@ -200,6 +202,14 @@ static REVISIONS: &[Revision] = revisions![
         "CME Globex notice 20260921"
     ),
     (2026, 10, 25, &SILVER_24_7, "CME Globex notice 20260921"),
+    (
+        2026,
+        10,
+        31,
+        &TEMPORARY_2026_10_31,
+        "CME Globex notice 20261005"
+    ),
+    (2026, 11, 1, &SILVER_24_7, "CME Globex notice 20261005"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

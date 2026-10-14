@@ -16,7 +16,7 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 
 // CME non-spot-quoted cryptocurrency futures: the 2017-12-17 five-day launch
 // grid, then the 24/7 Globex grid CME filing 26-114 introduced for trade date
-// 2026-05-30, plus five one-day Saturday extensions. See
+// 2026-05-30, plus six one-day Saturday extensions. See
 // docs/evidence/globex_cryptocurrency.md.
 
 // `SessionRule` spans at most one local midnight, so the multi-day weekend
@@ -143,6 +143,7 @@ saturday_extended_to!(EXTENDED_2026_08_29, 6, 0);
 saturday_extended_to!(EXTENDED_2026_09_19, 8, 0);
 saturday_extended_to!(EXTENDED_2026_10_03, 5, 0);
 saturday_extended_to!(EXTENDED_2026_10_24, 15, 30);
+saturday_extended_to!(EXTENDED_2026_10_31, 5, 0);
 
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
@@ -206,6 +207,7 @@ temporary_saturday!(TEMPORARY_2026_08_29, EXTENDED_2026_08_29);
 temporary_saturday!(TEMPORARY_2026_09_19, EXTENDED_2026_09_19);
 temporary_saturday!(TEMPORARY_2026_10_03, EXTENDED_2026_10_03);
 temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24);
+temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31);
 
 // Evidence: docs/evidence/globex_cryptocurrency.md
 static REVISIONS: &[Revision] = revisions![
@@ -281,6 +283,23 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-10-25 — T1 — CME Globex notice 20260921 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 10, 25, &CURRENT, "CME Globex notice 20260921"),
+    // 2026-10-31 — T1 — CME Globex notice 20261005 — Saturday maintenance
+    // window 02:00-05:00 CT; reopen 05:00 CT. Forward-dated on the operator's
+    // statement; confirm before the day. The three-hour window stays inside
+    // the four-hour maintenance bound, so `session_state` classifies it
+    // `Maintenance`, unlike the October 24 FIA drill.
+    (
+        2026,
+        10,
+        31,
+        &TEMPORARY_2026_10_31,
+        "CME Globex notice 20261005"
+    ),
+    // 2026-11-01 — T1 — CME Globex notice 20261005 — revert to the standard
+    // 02:00-04:00 CT window: "Following the extension, the Saturday
+    // maintenance window will revert to its 2:00 a.m. – 4:00 a.m. CT standard
+    // schedule."
+    (2026, 11, 1, &CURRENT, "CME Globex notice 20261005"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

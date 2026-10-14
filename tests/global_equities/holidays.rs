@@ -10,10 +10,11 @@
 //! from each year's own operator
 //! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
 //! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
-//! the European/American venues `lse` (2010-2027, the rolling table's
+//! the European/American venues `lse` (2010-2029, the rolling table's
 //! archived states across the operator's four site generations — the `.htm`
 //! page, the operator group's `lseg.com` page, the 2020 SPA page and the
-//! content API — with five 2025 dates withheld), `euronext_paris` (2010-2026 across the operator's
+//! content API — with five 2025 dates withheld until the public mirror
+//! recovered them), `euronext_paris` (2010-2026 across the operator's
 //! four calendar generations — the per-year press releases and notices, the
 //! 2014-2015 cash-markets pages, the per-year page and the per-market table;
 //! only the 2026 half-day eves are announced and unstated) and `tsx`
@@ -2951,7 +2952,10 @@ mod lse {
         let calendar = lse();
         // Every `NON-trading day.` row of the operator's business-days table,
         // per year: 2025-12-25/26 and the whole 2026 and 2027 sets are printed
-        // by the 2025-12-18 capture.
+        // by the 2025-12-18 capture; the whole 2028 set and 2029-01-01 are
+        // printed by the 2026-06-17 capture (2028-01-03 also by the
+        // 2025-12-18 capture) and re-read byte-identically from the live API
+        // on 2026-10-13.
         let closed = [
             (2025, 12, 25),
             (2025, 12, 26),
@@ -2971,6 +2975,15 @@ mod lse {
             (2027, 8, 30),
             (2027, 12, 27),
             (2027, 12, 28),
+            (2028, 1, 3),
+            (2028, 4, 14),
+            (2028, 4, 17),
+            (2028, 5, 1),
+            (2028, 5, 29),
+            (2028, 8, 28),
+            (2028, 12, 25),
+            (2028, 12, 26),
+            (2029, 1, 1),
         ];
         for date in closed {
             assert_closed(calendar, date, "lse", &london);
@@ -3187,6 +3200,8 @@ mod lse {
             (2026, 12, 31),
             (2027, 12, 24),
             (2027, 12, 31),
+            (2028, 12, 22),
+            (2028, 12, 29),
         ] {
             assert_eq!(
                 calendar
@@ -3271,21 +3286,32 @@ mod lse {
         let calendar = lse();
         let coverage = calendar.holiday_coverage().expect("lse ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
-        assert_eq!(coverage.last(), day(2027, 12, 31));
+        assert_eq!(coverage.last(), day(2029, 1, 1));
         // A covered date with no row answers None (audited normal) and a date
         // past the live table's print has no answer at all.
         assert_eq!(calendar.holiday_on(day(2017, 6, 13)), None);
-        assert_eq!(calendar.holiday_on(day(2028, 1, 3)), None);
+        assert_eq!(calendar.holiday_on(day(2028, 6, 13)), None);
+        // The extension's endpoints answer: 2028-01-03 (the 2025-12-18
+        // capture's own final row) closes, and 2029-01-01 — the last date the
+        // rolling table prints — is the audited window's final day.
+        assert_eq!(
+            calendar.holiday_on(day(2028, 1, 3)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert_eq!(
+            calendar.holiday_on(day(2029, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
         // Before the support floor.
         assert!(matches!(
             calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ));
-        // Past the audited window: 2028-01-03 is inside the live table's own
-        // print but outside this table's audited window, so the identity
-        // refuses rather than answering from an unaudited normal week. The
-        // detached snapshot still answers the pure normal week.
-        let outside = london((2028, 1, 4), (12, 0, 0));
+        // Past the audited window: 2029-01-02 is one day past the rolling
+        // table's last print, so the identity refuses rather than answering
+        // from an unaudited normal week. The detached snapshot still answers
+        // the pure normal week.
+        let outside = london((2029, 1, 2), (12, 0, 0));
         assert!(matches!(
             calendar.is_open(outside),
             Err(CalendarQueryError::OutsideCoveredRange { .. })
@@ -3304,10 +3330,10 @@ mod lse {
         let rows = rows_per_year(lse());
         assert_eq!(
             rows.len(),
-            184,
-            "148 closures, 36 half days, no withheld dates — one audited window, 2010-2027"
+            195,
+            "157 closures, 38 half days, no withheld dates — one audited window, 2010-2029"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
+        let expected: [(i32, (usize, usize, usize, usize)); 20] = [
             (2010, (8, 2, 0, 0)),
             (2011, (9, 2, 0, 0)),
             (2012, (9, 2, 0, 0)),
@@ -3326,6 +3352,8 @@ mod lse {
             (2025, (8, 2, 0, 0)),
             (2026, (8, 2, 0, 0)),
             (2027, (8, 2, 0, 0)),
+            (2028, (8, 2, 0, 0)),
+            (2029, (1, 0, 0, 0)),
         ];
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
@@ -3389,6 +3417,8 @@ mod lse {
                 (2026, 12, 31),
                 (2027, 12, 24),
                 (2027, 12, 31),
+                (2028, 12, 22),
+                (2028, 12, 29),
             ],
             "the sheet's half days, year by year"
         );

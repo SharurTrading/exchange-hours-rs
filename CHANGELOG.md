@@ -19,6 +19,27 @@
   (2010-2026) read from the operator's shared cash-and-derivatives calendars.
   Both ship with evidence files, ledger rows (served, monthly cadence) and
   public-surface tests.
+- Two new `MarketHoursKey` families, both served under the maintainer's OANDA
+  programme with monthly review cadences and built-in holiday tables.
+  `bme_ibex` carries MEFF IBEX 35 index futures (with Mini and Micro IBEX 35)
+  in Europe/Madrid: the 2010 floor grid 09:00-17:35 with an 08:30-09:00
+  opening auction, the operator-dated 2017-01-23 press-release move to
+  08:00-20:00 (auction 07:55-08:00), and notice 16/2025's unconditional
+  2025-06-23 close extension to 22:00 — notice 7/2024's CNMV-conditional
+  2024-07-01 date never keyed a row and its slip is recorded. Holiday tables
+  audit 2010-2011 and 2014-2026 (90 rows: closures, 14:00 Christmas-eve and
+  New-Year-eve early closes, 2021's two full closures), with the 2012-2013
+  grids and the 2010-2016 interim hours disclosed as gaps.
+  `ice_europe_gilts` carries ICE Futures Europe Long and Medium Gilt futures
+  in Europe/London: the shared 08:00-18:00 grid with a 06:03-08:00 pre-open,
+  and circular 26/063's unconditional 2026-07-06 extension of Long and Medium
+  alone to 01:00-21:00 with a 00:45-01:00 pre-open (Short and Ultra Long Gilt
+  stay 08:00-18:00 outside the key). Holiday tables audit four operator-era
+  windows (89 rows across the LIFFE notices 2010-2014 and the IFEU schedule
+  editions 2021-2026, including 12:15 and 13:00 Christmas-eve closes), with
+  the 2015-2020 editions, the 2010 full-year notice, the 2010 floor year and
+  the 2022/2023 mid-year months disclosed as gaps, and the announced but
+  untimed Christmas eves of 2014, 2021, 2024 and 2026 shipping `Unsourced`.
 
 ### Fixed
 

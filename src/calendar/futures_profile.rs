@@ -29,13 +29,13 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, eurex_smi_profile_at,
-    euronext_index_futures_profile_at, oanda_brent_profile_at, oanda_china50_profile_at,
-    oanda_fx_profile_at, oanda_metals_profile_at, oanda_singapore30_profile_at,
-    oanda_try_fx_profile_at, oanda_us_commodity_profile_at, oanda_us_index_profile_at,
-    sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
-    sgx_equity_index_ntr_usd_profile_at, sgx_equity_index_singapore_profile_at,
-    sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+    bme_ibex_profile_at, eurex_fixed_income_profile_at, eurex_profile_at, eurex_smi_profile_at,
+    euronext_index_futures_profile_at, ice_europe_gilts_profile_at, oanda_brent_profile_at,
+    oanda_china50_profile_at, oanda_fx_profile_at, oanda_metals_profile_at,
+    oanda_singapore30_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
+    oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
+    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
+    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
@@ -514,6 +514,43 @@ market_hours_keys! {
         /// OANDA Singapore 30 CFD day and overnight trading in Singapore time.
         /// This is the broker calendar, distinct from SGX futures.
         OandaSingapore30Cfd => "oanda_singapore30_cfd",
+        /// MEFF IBEX 35 index futures — with the Mini IBEX 35 and Micro IBEX
+        /// 35 futures, which the operator's own notices have always printed
+        /// on the same electronic-order-system row — in Europe/Madrid.
+        ///
+        /// The family runs one same-day Monday-Friday session: 09:00-17:35
+        /// with an 08:30-09:00 opening auction at the January-2010 floor,
+        /// 08:00-20:00 with a 07:55-08:00 auction from the operator's
+        /// 2017-01-23 press release, and 08:00-22:00 from the dated
+        /// 2025-06-23 close extension of notice MEFF 16/2025. The auction is
+        /// `order_entry` in every era. Notice 7/2024's conditional
+        /// 2024-07-01 date — "se confirmará una vez la Comisión Nacional del
+        /// Mercado de Valores haya procedido a la valoración" — never keyed a
+        /// row; the operator postponed the change in notice 13/2024 and
+        /// dated it unconditionally in notice 16/2025. Excludes Bono 10,
+        /// xRolling FX, stock futures and every other MEFF product, whose
+        /// rows the same notices print at different hours, and the
+        /// Christmas-eve 13:54 VWAP settlement window, which is a fixing
+        /// instant, not a session boundary (LAW-SESSION-NOT-EXPIRY).
+        BmeIbex => "bme_ibex",
+        /// ICE Futures Europe gilt futures — Long Gilt and Medium Gilt — in
+        /// Europe/London.
+        ///
+        /// The family shares one clock through 2026-07-05: Monday-Friday
+        /// 08:00-18:00 with a 06:03-08:00 pre-open, the grid the operator's
+        /// own product pages print for every four gilt contracts. Circular
+        /// 26/063 of 23 April 2026 then extends Long and Medium Gilt alone
+        /// to a 00:45 pre-open and 01:00-21:00 trading from Monday
+        /// 2026-07-06, while Short and Ultra Long Gilt explicitly stay on
+        /// 08:00-18:00 — so from that day this key carries the Long and
+        /// Medium scope and the unchanged Short/Ultra grid is a different
+        /// clock outside it. The circular leaves the settlement windows and
+        /// the Last-Trading-Day cessation unchanged; both are fixing or
+        /// expiry instants, never session boundaries
+        /// (LAW-SESSION-NOT-EXPIRY). Excludes SONIA and MPC Dated SONIA,
+        /// which the same circular moved to the same 01:00-21:00 grid and
+        /// which earn their own key only when a consumer maps one.
+        IceEuropeGilts => "ice_europe_gilts",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -604,6 +641,8 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
         MarketHoursKey::OandaChina50Cfd => oanda_china50_profile_at(as_of),
         MarketHoursKey::OandaSingapore30Cfd => oanda_singapore30_profile_at(as_of),
+        MarketHoursKey::BmeIbex => bme_ibex_profile_at(as_of),
+        MarketHoursKey::IceEuropeGilts => ice_europe_gilts_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

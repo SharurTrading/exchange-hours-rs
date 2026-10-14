@@ -2,6 +2,7 @@
 
 //! Dated-boundary fixtures organized by venue family.
 
+mod bme_ibex;
 mod cme_bitcoin_event_contracts;
 mod cme_event_contracts;
 mod cme_families;
@@ -17,6 +18,7 @@ mod holidays_globex_energy;
 mod holidays_globex_equity_index;
 mod holidays_globex_grains;
 mod ice;
+mod ice_europe_gilts;
 mod sgx_equity_index;
 mod sgx_equity_index_eras;
 

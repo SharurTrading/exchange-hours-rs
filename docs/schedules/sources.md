@@ -454,6 +454,22 @@ per-record review before any exception can drive runtime.
 - **Notices/evidence:** the operator's [pre-floor SIBE circular](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf) establishes the baseline; [Circular 1/2023](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2023/circular-1-23-english.pdf) and [Operating Instruction 47/2023](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2023/oi-47-2023-application-of-tal-phase-for-fixing-instruments.pdf) establish the 2023-12-04 Trading-At-Last launch.
 - **Status:** principal-share phases, the conservative 30-second auction envelope, and the 2023 Trading-At-Last revision are primary-supported through the complete audit window.
 
+<a id="eu-meff"></a>
+
+### `EU-MEFF`
+
+- **Official current/rulebook:** [MEFF Trading Hours](https://www.meff.es/ing/Trading-Hours) and the [IBEX 35 futures product page](https://www.meff.es/ing/Financial-Derivatives/Futures-on-IBEX35).
+- **Notices/evidence:** the [market-notice archive](https://www.meff.es/docs/comunicadosMercado/) by year and month (the 2017-01-23 extension release, notice 7/2024's CNMV-conditional date, notice 13/2024's postponement, notice 16/2025's unconditional 2025-06-23 day, and the 24/31-December session notices), and the yearly [BME press-release](https://www.bolsasymercados.es/en/media/press-releases) trading calendars that name MEFF among the Spanish markets they close.
+- **Status:** Primary for the IBEX 35 / Mini / Micro index-futures family; every other MEFF product family (Bono 10, xRolling FX, stock futures) requires its own review.
+
+<a id="ice-eu-fixed-income"></a>
+
+### `ICE-EU-FIXED-INCOME`
+
+- **Official current/rulebook:** the [IFEU Trading Schedule: Fixed Income, Equity and Indices](https://www.ice.com/publicdocs/futures/Trading_Schedule_Migrated_Liffe_Contracts.pdf) editions and the [Long Gilt Future product page](https://www.ice.com/products/37650336/Long-Gilt-Future).
+- **Notices/evidence:** the [ICE Futures Europe circulars](https://www.ice.com/futures-europe/circulars) (circular 26/063 dated the 2026-07-06 Long/Medium extension), the December [Christmas and New Year trading-hours](https://www.ice.com/publicdocs/futures/IFEu_Christmas_New_Year_Trading_Hours_2025.pdf) documents, the [T2 Excel trading-schedule workbook](https://www.ice.com/publicdocs/futures/Excel_Trading_Schedule.xlsx) whose Change Tracker cites the governing circular per change, and the [NYSE Liffe historical-notice zip archive](https://www.ice.com/publicdocs/nyse_liffe/historical_notices/) for the pre-ICE era.
+- **Status:** Primary for the Long/Medium gilt family. Short and Ultra Long Gilt share the pre-2026-07-06 clock; from that day their unchanged 08:00-18:00 grid is outside the `ice_europe_gilts` key and needs its own review before a consumer routes one.
+
 <a id="eu-nasdaq-nordic"></a>
 
 ### `EU-NASDAQ-NORDIC`

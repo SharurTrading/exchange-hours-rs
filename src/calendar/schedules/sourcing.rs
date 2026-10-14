@@ -561,6 +561,18 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::OandaChina50Cfd | MarketHoursKey::OandaSingapore30Cfd => {
             DeclaredSourcing::carried_below(horizon!(2021, 3, 3))
         }
+        // The floor grid is the operator's own product-page print of
+        // 2010-06-18 (09:00-17:35); below that observation it is carried, and
+        // the changeover into the 2017 grid is undated, so the span serves
+        // the sourced intersection per the 2026-10-04 rule
+        // (docs/evidence/bme_ibex.md).
+        MarketHoursKey::BmeIbex => DeclaredSourcing::carried_below(horizon!(2010, 6, 18)),
+        // The shared gilt grid is the operator's own product-page print of
+        // 2026-03-11 (08:00-18:00, pre-open 06:03); the 2010-2014 notices
+        // open the gilt rows at 08:00 on their half days but state no full
+        // grid, so everything below that observation is carried
+        // (docs/evidence/ice_europe_gilts.md).
+        MarketHoursKey::IceEuropeGilts => DeclaredSourcing::carried_below(horizon!(2026, 3, 11)),
         // `—`: closed before the sourced 2024-07-29 launch.
         MarketHoursKey::Sgx => DeclaredSourcing::nothing_carried(),
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.

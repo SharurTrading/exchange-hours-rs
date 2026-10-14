@@ -1014,13 +1014,17 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (35, 11, 8),
-        "the inventory's verdict shapes: thirty-five complete, eleven incomplete, eight with no 2025 \
+        (36, 12, 8),
+        "the inventory's verdict shapes: thirty-six complete, twelve incomplete, eight with no 2025 \
          coverage (eurex_smi joined the complete group on 2026-10-13 UTC: its 2010-2026 window \
          carries no Unsourced date and its 2010-07-05 revision sources the grid from the floor, so \
          only its order-entry windows are carried; euronext_index_futures joined the incomplete \
          group the same day — its grid is witnessed only by the 2026-10-11 contract pages, so dates \
          below the retrieval refuse as carried, and its 34 Unsourced dates stand withheld; \
+         bme_ibex joined the complete group on 2026-10-14 UTC - its 2025 sample answers inside the \
+         second audited window above the 2010-06-18 horizon, its carried floor span and 2012-2013 \
+         window gap refusing beside the served answer - and ice_europe_gilts reads incomplete on \
+         the carried normal week below its 2026-03-11 horizon, which refuses the 2025 sample; \
          eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
@@ -1515,7 +1519,9 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "oanda_us_commodity_cfd",
             "oanda_brent",
             "oanda_china50_cfd",
-            "oanda_singapore30_cfd"
+            "oanda_singapore30_cfd",
+            "bme_ibex",
+            "ice_europe_gilts"
         ],
         "these are closed at both instants: a different grid, not a served intersection"
     );
@@ -1588,8 +1594,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         "every later-window exception is checked"
     );
     assert_eq!(
-        checked, 54,
-        "the inventory carries one row per served scope, and all fifty-four are checked"
+        checked, 56,
+        "the inventory carries one row per served scope, and all fifty-six are checked"
     );
 }
 

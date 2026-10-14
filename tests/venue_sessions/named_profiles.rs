@@ -85,6 +85,8 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::OandaBrent, "oanda_brent"),
     (MarketHoursKey::OandaChina50Cfd, "oanda_china50_cfd"),
     (MarketHoursKey::OandaSingapore30Cfd, "oanda_singapore30_cfd"),
+    (MarketHoursKey::BmeIbex, "bme_ibex"),
+    (MarketHoursKey::IceEuropeGilts, "ice_europe_gilts"),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

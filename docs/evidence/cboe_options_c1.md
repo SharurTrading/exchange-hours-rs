@@ -198,11 +198,12 @@ affect the live book. So MIAX carries a queue-free launch row and gains the
 queue at that second capture, not at launch.
 
 The three evidence classes below:  
-  * no launch inside the window (C1, NYSE Arca/American, PHLX, ISE, NOM, BOX)  
-    — queue carried from the January-2010 audit floor, assumption applies;  
-  * launch-dated (C2, BZX, EDGX, BX, GEMX, MRX, MIAX Pearl/Emerald/Sapphire)  
-    — queue carried from the sourced launch day, assumption applies;  
-  * MIAX Options — sourced on both sides, no assumption.  
+
+- no launch inside the window (C1, NYSE Arca/American, PHLX, ISE, NOM, BOX)  
+  — queue carried from the January-2010 audit floor, assumption applies;  
+- launch-dated (C2, BZX, EDGX, BX, GEMX, MRX, MIAX Pearl/Emerald/Sapphire)  
+  — queue carried from the sourced launch day, assumption applies;  
+- MIAX Options — sourced on both sides, no assumption.  
 MEMX Options is outside all three: it has no queue at all, rejecting orders  
 before 09:30, so its sourced launch row is its only row.
 

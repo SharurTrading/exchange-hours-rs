@@ -67,6 +67,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2012-12-25 | closed | dark cell on 25 December (Tuesday column) — Christmas Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2012-12-26 | closed | dark cell on 26 December (Wednesday column) — St. Stephen's Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2012-12-31 | closed | dark cell on 31 December (Monday column) — New Year's Eve | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2013
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -83,6 +84,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2013-12-25 | closed | dark cell on 25 December (Wednesday column) — Christmas Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2013-12-26 | closed | dark cell on 26 December (Thursday column) — St. Stephen's Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2013-12-31 | closed | dark cell on 31 December (Tuesday column) — New Year's Eve | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2014
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -99,6 +101,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2014-12-25 | closed | dark cell on 25 December (Thursday column) — Christmas Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2014-12-26 | closed | dark cell on 26 December (Friday column) — St. Stephen's Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2014-12-31 | closed | dark cell on 31 December (Wednesday column) — New Year's Eve | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2015
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -113,6 +116,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2015-12-24 | closed | dark cell on 24 December (Thursday column) — Christmas Eve | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2015-12-25 | closed | dark cell on 25 December (Friday column) — Christmas Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2015-12-31 | closed | dark cell on 31 December (Thursday column) — New Year's Eve | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2016
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -124,6 +128,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2016-05-16 | closed | dark cell on 16 May (Monday column) — Whit Monday | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2016-08-01 | closed | dark cell on 1 August (Monday column) — Swiss National Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2016-12-26 | closed | dark cell on 26 December (Monday column) — St. Stephen's Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2017
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -137,6 +142,7 @@ Weekend falls that key no row: New Year's Day 2011-01-01 (Saturday), St. Berchto
 | 2017-08-01 | closed | dark cell on 1 August (Tuesday column) — Swiss National Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2017-12-25 | closed | dark cell on 25 December (Monday column) — Christmas Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2017-12-26 | closed | dark cell on 26 December (Tuesday column) — St. Stephen's Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2018
 
 The year's grids ride in the operator's Trading Guide of 28 May 2018 (`SIX-TG-2018`), `Trading Calendar 2018` section.
@@ -157,6 +163,7 @@ The year's grids ride in the operator's Trading Guide of 28 May 2018 (`SIX-TG-20
 | 2018-12-31 | closed | dark cell on 31 December (Monday column) — New Year's Eve | `SIX-TG-2018` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 
 No SIX holiday of 2018 falls on a weekend, so the grid arises no weekend-fall exclusion; the year's twelve dark cells are the only non-weekend marks in it.
+
 ### 2019
 
 The same guide's `Trading Calendar 2019` section (`SIX-TG-2018`).
@@ -177,6 +184,7 @@ The same guide's `Trading Calendar 2019` section (`SIX-TG-2018`).
 | 2019-12-31 | closed | dark cell on 31 December (Tuesday column) — New Year's Eve | `SIX-TG-2018` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 
 As in 2018, no SIX holiday of 2019 falls on a weekend; the year's twelve dark cells are the only non-weekend marks in its grid.
+
 ### 2020
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -191,6 +199,7 @@ As in 2018, no SIX holiday of 2019 falls on a weekend; the year's twelve dark ce
 | 2020-12-24 | closed | dark cell on 24 December (Thursday column) — Christmas Eve | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2020-12-25 | closed | dark cell on 25 December (Friday column) — Christmas Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2020-12-31 | closed | dark cell on 31 December (Thursday column) — New Year's Eve | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2021
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -202,6 +211,7 @@ As in 2018, no SIX holiday of 2019 falls on a weekend; the year's twelve dark ce
 | 2021-05-24 | closed | dark cell on 24 May (Monday column) — Whit Monday | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2021-12-24 | closed | dark cell on 24 December (Friday column) — Christmas Eve | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2021-12-31 | closed | dark cell on 31 December (Friday column) — New Year's Eve | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2022
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -212,6 +222,7 @@ As in 2018, no SIX holiday of 2019 falls on a weekend; the year's twelve dark ce
 | 2022-06-06 | closed | dark cell on 6 June (Monday column) — Whit Monday | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2022-08-01 | closed | dark cell on 1 August (Monday column) — Swiss National Day | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2022-12-26 | closed | dark cell on 26 December (Monday column) — St. Stephen's Day | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2023
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -225,6 +236,7 @@ As in 2018, no SIX holiday of 2019 falls on a weekend; the year's twelve dark ce
 | 2023-08-01 | closed | dark cell on 1 August (Tuesday column) — Swiss National Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2023-12-25 | closed | dark cell on 25 December (Monday column) — Christmas Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 | 2023-12-26 | closed | dark cell on 26 December (Tuesday column) — St. Stephen's Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+
 ### 2024
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |

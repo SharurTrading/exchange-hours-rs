@@ -268,13 +268,14 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2018-12-24 | early close | `12:45 CT / 13:45 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-25 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 
-
 ### 2013-2015 (T1)
+
 **This era brings the venue to six audited windows.** The table as a whole carries 203 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **38 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
 ### Documents
+
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130717050333id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july-done.pdf> | archive capture 2013-07-17T05:03:33Z | T1 | `768c7813542459dbc5443e79e514bb12fd511d93284beeb880af167f6049e0f0` |
@@ -358,9 +359,11 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2015-12-25 | closed | `Christmas Day Observed - Globex closed` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | CME prints no session running through this date |
 
 ### 2019-2021 (T1)
+
 **This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 203 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: the profile clock's own rows, none of them withheld.. The remaining 23 rows state the era's early closes. Every row is the intersection of the families routed here — `globex_energy` alone — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
 
 ### Documents
+
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2019-holiday-calendars.zip @2021-01-26T09:48:37Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20210126094837id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2019-holiday-calendars.zip> | archive capture 2021-01-26T09:48:37Z | T1 | `1e861e355238903b013c1288f4eb9e8026e6ddd5fc1001dfd2acdbfcc1832e05` |
@@ -396,6 +399,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | `CME-SVC-2026-07-05` | 2026-07-05 .. 2026-07-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-05&toEventDate=2026-07-07> | live retrieval 2026-09-26T02:55:11Z via `https://r.jina.ai/` | T2 | `f6e1900b4971eda307f63d1c905f94741c268350fe4623e916580065c4c194cb` |
 
 ### 2019
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2019-01-01 | closed | `Closed for New Year's` | `2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
@@ -409,7 +413,9 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2019-11-29 | early close | `1245 CT / 1845 UTC` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:45 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2019-12-24 | early close | `1245 CT / 1845 UTC` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:45 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2019-12-25 | closed | `Closed for Christmas` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
+
 ### 2020
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2020-01-01 | closed | `Closed for New Year's` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
@@ -423,7 +429,9 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2020-11-27 | early close | `1245 CT / 1845 UTC` | `2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:45 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2020-12-24 | early close | `1245 CT / 1845 UTC` | `2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:45 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2020-12-25 | closed | `Closed for Christmas` | `2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
+
 ### 2021
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2021-01-01 | closed | `Closed for New Year's` | `2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
@@ -436,6 +444,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2021-11-25 | early close | `1200 CT / 1800 UTC` | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:00 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2021-11-26 | early close | `1245 CT / 1845 UTC` | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | The cited sheet's `Energy, Metals & DME` line prints `12:45 CT` as this date's own final close, so the prior-evening leg is clipped there and the crate's trade date is the date that close falls on — the operator's event date. |
 | 2021-12-24 | closed | `Closed for Christmas` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | CME prints the closure on this date, so the session whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed with it, and the crate's trade date is the operator's own event date. |
+
 ### 2022-2024 (T1/T2)
 
 **Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 203 rows over
@@ -459,6 +468,7 @@ normal — the same treatment a disagreement gets, for the opposite reason: ther
 no second family to disagree with.
 
 ### 2022
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2022-01-17 | early close | `13:30` | `2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z` | T1 | CME prints `13:30` as the final close of the session that opened the previous evening at its ordinary open, so the row is an early close on the trade date the close falls on, which is the block's own date |
@@ -473,6 +483,7 @@ no second family to disagree with.
 | 2022-12-26 | closed | `"Globex Closed"` | `2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
 
 ### 2023
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2023-01-02 | closed | `"Globex Closed"` | `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
@@ -488,6 +499,7 @@ no second family to disagree with.
 | 2023-12-25 | closed | `16:00 (PREOPEN)` / `17:00 (OPEN)` — the only clocks in this date's own entry are the evening re-open that carries the next trade date | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
 
 ### 2024
+
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2024-01-01 | closed | `16:00 (PREOPEN)` / `17:00 (OPEN)` — the only clocks in this date's own entry are the evening re-open that carries the next trade date | `new-years-day-2024.pdf @2026-08-11T16:57:16Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |

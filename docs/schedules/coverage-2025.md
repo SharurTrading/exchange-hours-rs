@@ -289,27 +289,33 @@ the `**incomplete**` verdict — it is an interval verdict and each named gap st
 completeness over 2025-onward — with the refusal each names now stated at the granularity the
 evidence supports.
 
-One row per served instrument scope, recording what the crate actually ships against the adopted
-floor. **Amended 2026-09-27 UTC:** the maintainer moved the support floor back to **2010-01-01**
-(the 2026-09-21 draft's 2025 floor was reversed; the Stage 5 removal programme was cancelled,
-#117 reverted by #185), so the count columns below are re-derived from 2010-01-01 through each
-scope's last audited day. The restored 2010-2024 audited windows now answer, and the pre-2025
-known gaps surface as honest verdicts: dates outside every restored window — the pre-window
-eras of the later-launched families (`cfe`/`eurex` 2010-2024, Coinbase before 2021-06-28,
-`globex_cryptocurrency` before 2019 — `globex_nikkei_225_dollar`'s own pre-window era ended 2026-09-30 UTC, when the #225 remainder modelled the old grid from the operator's own equities-hours page and the first window moved to the floor) — refuse as
-`OutsideCoveredRange` (the #110 livestock 2016-2018 interval answered again from 2026-09-26 UTC,
-when #187 shipped its 35 rows, and #189's 66 interest-rate rows restored that family's
-2010-2012 holiday Mondays), and the #112 Coinbase unsourced rows
-report as `UnresolvedGap`. This is a **record, not a claim**: no runtime change accompanies it
-and it moves no ledger row. Every value is derived from the shipped modules, the verification ledger, the consumer's
-own routing tables and the owner evidence files. The artifacts cited in
-[Artifact resolution](#artifact-resolution) were located in the research store and their digests
-recomputed by this stage.
+One row per served instrument scope, recording what the crate actually
+ships against the adopted floor. **Amended 2026-09-27 UTC:** the maintainer
+moved the support floor back to **2010-01-01** (the 2026-09-21 draft's 2025
+floor was reversed; the Stage 5 removal programme was cancelled, #117
+reverted by #185), so the count columns below are re-derived from
+2010-01-01 through each scope's last audited day. The restored 2010-2024
+audited windows now answer, and the pre-2025 known gaps surface as honest
+verdicts: dates outside every restored window — the pre-window eras of the
+later-launched families (`cfe`/`eurex` 2010-2024, Coinbase before
+2021-06-28, `globex_cryptocurrency` before 2019 —
+`globex_nikkei_225_dollar`'s own pre-window era ended 2026-09-30 UTC, when
+the #225 remainder modelled the old grid from the operator's own
+equities-hours page and the first window moved to the floor) — refuse as
+`OutsideCoveredRange` (the #110 livestock 2016-2018 interval answered again
+from 2026-09-26 UTC, when #187 shipped its 35 rows, and #189's 66
+interest-rate rows restored that family's 2010-2012 holiday Mondays), and
+the #112 Coinbase unsourced rows report as `UnresolvedGap`. This is a
+**record, not a claim**: no runtime change accompanies it and it moves no
+ledger row. Every value is derived from the shipped modules, the
+verification ledger, the consumer's own routing tables and the owner
+evidence files. The artifacts cited in [Artifact
+resolution](#artifact-resolution) were located in the research store and
+their digests recomputed by this stage.
 
 Amended 2026-10-11 UTC: the public mirror of LSE's 2025 operator table
 closes its five withheld dates. LSE now reads complete to 2027-12-31, and
 the current tally is **thirty-one complete and five incomplete**.
-
 
 Amended 2026-10-14 UTC: the `lse` holiday window moved to
 2010-01-01..2029-01-01 on the operator's own extended rolling print — the
@@ -318,7 +324,6 @@ carried the same rows, and the 2026-10-13 forward sweep re-read the live API
 byte-identically — adding eleven rows (nine 2028/2029 closures and the two
 2028 half days). LSE stays complete; its row count moves from 184 to 195 and
 the tally is unchanged.
-
 
 Amended 2026-10-12 UTC: current OANDA activation adds sixteen reached
 scopes without altering their windows or source-review dates. The inventory
@@ -598,51 +603,58 @@ no answer, and Stage 4 item 2 refreshes it.
 
 ### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024
 
-`globex_nikkei_225_dollar` is the only scope the coverage API reported complete to that date when
-this section was written: it has
-no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. (From 2026-09-28 UTC
-`tse` reports complete to the same date in 2025+ as well — its window is 2025-01-01..2027-12-31
-with nothing withheld and no declared gap — and from 2026-10-03 UTC `globex_grains` and
-`globex_livestock` joined that group, each complete in 2025+ under the charter convention and
-**incomplete across 2010-2027** on its pre-2025 residue, so `globex_nikkei_225_dollar` remains
-the only scope whose earlier-era incompleteness runs through 2019-2027; its own 2010-2018 span
-answered completely from
-2026-09-30 UTC, when the #225 remainder modelled the old grid from the operator's own
-equities-hours page and keyed the first holiday window to the floor.) It carried a
-**witness gap** the API had no representation for until 2026-10-04 UTC: it shipped twelve of
-the seventeen merged trade dates and none of the 2025 five (2025-01-21, 2025-02-18,
-2025-05-27, 2025-06-20, 2025-09-02), because no `NKD`/`NIY` witness exists for those windows
-and the channel that would carry one returns an empty event list for them — so while every
-one of the five answered *covered*, the label each evening-before instant carried was the
-pre-holiday trade date, not the merged date the operator prints. The five now ship as
-`replacement blocks` rows on the ten-product captures the table already cites: the `ES`
-events those responses carry print the merged trade date in their own `tradingDate` field
-from the pre-holiday Sunday (Wednesday, for Juneteenth) evening through the merged day's
-`16:00 closed`, which is the operator's own T2 trade-date witness on both sides of each
-boundary, disclosed as a sibling-product step in the evidence file — no `NKD`-specific bytes
-exist, that residual risk stands, and all seventeen merged trade dates now ship (#162
-closed). The 20 `Unsourced` dates across 2019-2024 are untouched by this and still refuse
-the earlier eras. `globex_grains` and `globex_livestock` read **complete** in 2025+ since 2026-10-03 UTC:
-the charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and state", closing
-#152) dates an order-entry-only queue persisting past the close by the session it feeds — the
-operator's own T1 notice (CME Globex notice 20160530) calls the queue order entry "for the next
-trade date" that is not "an extension of the current day trading session" — so the #152 label
-declaration both scopes carried is retired, the divergent per-event labels the operator's T2
-service prints are disclosed in the two evidence files and pinned by fence, and every date of
-2025-2027 answers (the walk fence pins 1,094 of the 1,095 days on each scope, the trailing
-window edge refusing 2027-12-31). Both stay **incomplete across 2010-2027**: the omitted
-2012-05-20..2013-04-06 regime refuses `globex_grains`'s dates as the phase gap its own
-declaration states (#259), and six distinct `Unsourced` dates across 2019-2023 stand in the
-two tables — four rows in `globex_grains`, six in `globex_livestock`. The other nine scopes
-that reach that date are **not** complete either: `cbot` withholds disputed dates in §2 and `cme`
-those plus the Sunday 16:00-16:15 CT quarter-hour; `comex`, `nymex`, `globex_energy`,
-`globex_interest_rates` and `globex_equity_index` withhold that same quarter-hour in §5, and so does
-`globex_fx`; and `globex_cryptocurrency` carries an undated five-day-era Pre-Open onset, whose
-declaration withholds the era between its dated first day (2017-12-17) and its dated last (the
-2026-05-29 bridge row) and leaves the 24/7 era answered. `comex` and `nymex` are intersections too, but each routes one
-family's grid, so they match it row for row and their six `Unsourced` rows all fall in 2019-2023 —
-inside the claimed interval since the floor moved back to 2010, and reported as such in their
-`Unsrc` cells.
+`globex_nikkei_225_dollar` is the only scope the coverage API reported complete
+to that date when this section was written: it has no `Unsourced` row at or
+after 2025-01-01 and no declared phase-level gap. (From 2026-09-28 UTC `tse`
+reports complete to the same date in 2025+ as well — its window is
+2025-01-01..2027-12-31 with nothing withheld and no declared gap — and from
+2026-10-03 UTC `globex_grains` and `globex_livestock` joined that group, each
+complete in 2025+ under the charter convention and **incomplete across
+2010-2027** on its pre-2025 residue, so `globex_nikkei_225_dollar` remains the
+only scope whose earlier-era incompleteness runs through 2019-2027; its own
+2010-2018 span answered completely from 2026-09-30 UTC, when the #225 remainder
+modelled the old grid from the operator's own equities-hours page and keyed the
+first holiday window to the floor.) It carried a **witness gap** the API had no
+representation for until 2026-10-04 UTC: it shipped twelve of the seventeen
+merged trade dates and none of the 2025 five (2025-01-21, 2025-02-18,
+2025-05-27, 2025-06-20, 2025-09-02), because no `NKD`/`NIY` witness exists for
+those windows and the channel that would carry one returns an empty event list
+for them — so while every one of the five answered *covered*, the label each
+evening-before instant carried was the pre-holiday trade date, not the merged
+date the operator prints. The five now ship as `replacement blocks` rows on the
+ten-product captures the table already cites: the `ES` events those responses
+carry print the merged trade date in their own `tradingDate` field from the
+pre-holiday Sunday (Wednesday, for Juneteenth) evening through the merged day's
+`16:00 closed`, which is the operator's own T2 trade-date witness on both sides
+of each boundary, disclosed as a sibling-product step in the evidence file — no
+`NKD`-specific bytes exist, that residual risk stands, and all seventeen merged
+trade dates now ship (#162 closed). The 20 `Unsourced` dates across 2019-2024
+are untouched by this and still refuse the earlier eras. `globex_grains` and
+`globex_livestock` read **complete** in 2025+ since 2026-10-03 UTC: the
+charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and state",
+closing #152) dates an order-entry-only queue persisting past the close by the
+session it feeds — the operator's own T1 notice (CME Globex notice 20160530)
+calls the queue order entry "for the next trade date" that is not "an extension
+of the current day trading session" — so the #152 label declaration both scopes
+carried is retired, the divergent per-event labels the operator's T2 service
+prints are disclosed in the two evidence files and pinned by fence, and every
+date of 2025-2027 answers (the walk fence pins 1,094 of the 1,095 days on each
+scope, the trailing window edge refusing 2027-12-31). Both stay **incomplete
+across 2010-2027**: the omitted 2012-05-20..2013-04-06 regime refuses
+`globex_grains`'s dates as the phase gap its own declaration states (#259), and
+six distinct `Unsourced` dates across 2019-2023 stand in the two tables — four
+rows in `globex_grains`, six in `globex_livestock`. The other nine scopes that
+reach that date are **not** complete either: `cbot` withholds disputed dates in
+§2 and `cme` those plus the Sunday 16:00-16:15 CT quarter-hour; `comex`,
+`nymex`, `globex_energy`, `globex_interest_rates` and `globex_equity_index`
+withhold that same quarter-hour in §5, and so does `globex_fx`; and
+`globex_cryptocurrency` carries an undated five-day-era Pre-Open onset, whose
+declaration withholds the era between its dated first day (2017-12-17) and its
+dated last (the 2026-05-29 bridge row) and leaves the 24/7 era answered. `comex`
+and `nymex` are intersections too, but each routes one family's grid, so they
+match it row for row and their six `Unsourced` rows all fall in 2019-2023 —
+inside the claimed interval since the floor moved back to 2010, and reported as
+such in their `Unsrc` cells.
 
 ### 5. Issues checked for an effect that survives the new floor
 
@@ -694,21 +706,25 @@ and `globex_livestock` state no row on those Saturdays.
 
 ### 7. Unaudited spans the sourced week crosses are bridged residuals, not refusals (#296, 2026-10-06 and 2026-10-07 UTC)
 
-The maintainer's 2026-10-05 principle — sourced hours on both sides of an evidence gap are not
-refused wholesale — generalized the charter's sourced-intersection convention from one undated
-changeover to a whole span, and the coverage engine gained the bridge: a span **between two audited
-holiday windows** whose normal week the identity sources answers its session questions from the
-normal week the timeline serves, while its holiday layer is honestly absent and the metadata
-reports the span as `HolidayWindowsBridged` — a residual beside served answers, never an audited
-normal and never a fabricated closure. The maintainer's 2026-10-07 ruling (the Tier-2 question of
-#296) extends the bridge to the one-flank span **below the first audited window**: a date there
-whose normal week the identity sources answers its session questions exactly as a two-flank date
-does, while its holiday-table classification refuses a typed `UnresolvedGap` carrying the
-normal-week baseline — a one-flank date has no bracket, nothing witnesses the holiday layer, and
-two flanks bracket a span where one does not. The scoping is below-first only: dates **above the
-last window** are the publication horizon's to govern, not an evidence gap, and they keep refusing
-everywhere. No new verdict kind exists: both span kinds read `OutsideCoveredRange` with
-`HolidayWindowsBridged`, and `complete_ranges` keeps excluding them.
+The maintainer's 2026-10-05 principle — sourced hours on both sides of an
+evidence gap are not refused wholesale — generalized the charter's
+sourced-intersection convention from one undated changeover to a whole span, and
+the coverage engine gained the bridge: a span **between two audited holiday
+windows** whose normal week the identity sources answers its session questions
+from the normal week the timeline serves, while its holiday layer is honestly
+absent and the metadata reports the span as `HolidayWindowsBridged` — a residual
+beside served answers, never an audited normal and never a fabricated closure.
+The maintainer's 2026-10-07 ruling (the Tier-2 question of #296) extends the
+bridge to the one-flank span **below the first audited window**: a date there
+whose normal week the identity sources answers its session questions exactly as
+a two-flank date does, while its holiday-table classification refuses a typed
+`UnresolvedGap` carrying the normal-week baseline — a one-flank date has no
+bracket, nothing witnesses the holiday layer, and two flanks bracket a span
+where one does not. The scoping is below-first only: dates **above the last
+window** are the publication horizon's to govern, not an evidence gap, and they
+keep refusing everywhere. No new verdict kind exists: both span kinds read
+`OutsideCoveredRange` with `HolidayWindowsBridged`, and `complete_ranges` keeps
+excluding them.
 
 Two identities carry between-window spans today: `sgx_securities`'s 2020-01-02..2024-12-31 capture
 gap (**1,826** days) and `nse_india`'s 2018 unrecovered year (**365** days). Their edges gained

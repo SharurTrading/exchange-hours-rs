@@ -1,12 +1,12 @@
 <!-- SPDX-License-Identifier: MIT-0 -->
 
+# CME trade-type and standalone-product handoff
+
 > **Superseded on 2026-09-12 (UTC)** by the architectural review
 > ([2026-09-12-architectural-review.md](2026-09-12-architectural-review.md)) and the
 > charter it produced in `AGENTS.md` (LAW-SERVICE-TIERS): trade-type variants are not
 > modelled as keys until a consumer maps one, so this handoff is a record of the survey, not a work list. The research behind it is kept in
 > the local research store and is not discarded.
-
-# CME trade-type and standalone-product handoff
 
 Research date: 2026-09-05 · Work item 5 of
 [the coverage plan](2026-09-05-cme-globex-family-coverage.md).

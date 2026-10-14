@@ -373,6 +373,7 @@ July-to-December precedent).
 | 2024-12-24 | early close | `Christmas Eve - Tuesday, December 24th, 2024*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2024-12-17` | T1 | the July states printed the list without this row; the December state adds it, so the row keys to the December capture |
 | 2024-12-25 | closed | `Christmas Day - Wednesday, December 25, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 | 2024-12-26 | closed | `Boxing Day - Thursday, December 26, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
+
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |

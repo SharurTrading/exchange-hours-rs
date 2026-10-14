@@ -51,7 +51,6 @@ the randomisation. That is the same disclosure the holiday section records for
 the pre-2025 abbreviated days, and the envelope is the one instant family the
 era's sheets do not state.
 
-
 ## Sources
 
 Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a

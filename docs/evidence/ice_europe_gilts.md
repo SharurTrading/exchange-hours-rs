@@ -384,6 +384,7 @@ so no sourced instant exists for the two `Unsourced` rows below.
 ### 2023
 
 | 2023-01-02 | closed | − exchange "CLOSED for trading EXCEPT for the contracts listed below"; gilts not listed | `IFEU-XMAS-2022` | T1 | The Christmas document's Monday 02 January 2023 page; in-lieu closure, same local civil trade date |
+
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 

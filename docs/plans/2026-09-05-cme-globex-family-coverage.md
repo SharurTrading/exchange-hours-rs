@@ -34,7 +34,7 @@ conclusion in it is reconstructible from the citations recorded in the source
 comments, the ledger, and `docs/schedules/sources.md`; the store is a cache of
 that retrieval, not a second source of truth.
 
-```
+```text
 $EXCHANGE_HOURS_RESEARCH/          # default: ../exchange-hours-research
 ├── STATUS.md                      start here — threads, state, next steps
 ├── cme-globex/
@@ -88,6 +88,7 @@ Each is one PR. Land them separately: one PR carrying five families with full
 histories is unreviewable and stalls on whichever family sources worst.
 
 ### 1. Mini grains — `XC`, `XK`, `XW`, `MKC` — **DELIVERED, PR #51**
+
 Landed with seven dated revision rows. The eighth item in the research, `MKC`'s
 2014-03-23 listing, became catalog data rather than a revision row, per the
 crate's member-listing convention. Kept below because the reasoning generalises.
@@ -101,12 +102,14 @@ lineage. Note `SER-9049` (2022-09-01) documents an `08:00–08:30 CT` morning
 Pre-Open for the four mini contracts.
 
 ### 2. CME Weather — **DELIVERED, PR #53**
+
 Delivered with one dated revision, keyed to the venue-local opening day
 **2025-04-13** (`SER-9519`, whose stated trade date is Monday 2025-04-14 — the
 crate keys the opening day, not the trade date). One schedule family, no split
 by contract type, scoped to futures. ~179 roots ride on it.
 
 ### 3. Spot-quoted — `QSPX QNDX QDOW QRTY QBTC QETH QSOL QXRP` — **DELIVERED**
+
 Delivered with **one** dated revision, 2025-06-29. The research listed five
 candidates; only the launch changes the clock — the December 2025 listing is
 member catalog data with a byte-identical hours cell, and the other three are
@@ -115,6 +118,7 @@ cryptocurrency key: the crypto family went 24/7 on 2026-05-29 and spot-quoted
 deliberately did not.
 
 ### 4. Event contracts — `ECES ECNQ ECRTY ECYM ECBTC EC6E ECCL ECNG ECGC ECSI ECHG` — **DELIVERED**
+
 Delivered as **one** key with **one** dated revision, 2022-09-18, plus the
 hourly Chapter 23A roots. The research proposed seven keys — six split by
 "daily termination time T" plus one for `ECBTC` — and that split is refuted:
@@ -165,6 +169,7 @@ key" or "cannot source, leave unmapped". Combine shapes under one key only where
 product-family semantics and history prove it, never because envelopes match.
 
 ### 6. Review the roots already mapped — **DONE; no repository change required**
+
 Reviewed the 32 roots the inventory maps to existing keys (row 4 → `globex_cryptocurrency`,
 row 5 → `globex_grains`, row 35 → `globex_livestock`).
 

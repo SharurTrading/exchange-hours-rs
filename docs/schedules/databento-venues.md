@@ -99,4 +99,3 @@ evidence, and therefore do not alter the historical selectors.
   [`MarketHoursKey`](../../src/calendar/futures_profile.rs) for products outside
   the venue default. For example, `Iceus` defaults to NYSE FANG+, not every ICE
   Futures U.S. contract.
-

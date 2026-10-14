@@ -27,7 +27,7 @@ The page prints the identical pair across the group:
 
 > `US SPX 500 | USD | Chicago | 1 | Sun - Fri 17:01 - 15:59`
 > `US 10Y T-Note | USD | Chicago | 1 | Sun - Fri 17:01 - 15:59`
-
+>
 > `Japan 225 | USD | Chicago | 1 | Sun - Fri 17:01 - 15:59`
 
 Converted to New York, `17:01 - 15:59` Chicago is `18:01 - 16:59` — the same
@@ -275,7 +275,6 @@ and reopen at 18:00 ET, while bonds retain the normal prior-evening 18:01 ET
 opening for July 4. The July 4 index replacement preserves its 13:00 ET close.
 These product distinctions are retained instead of treating the books as one
 holiday family.
-
 
 Christmas Eve 2024 prints indices closing at 13:14 ET, but names no US-bond
 arrangement. The index row is exact; the bond row remains `Unsourced`, rather

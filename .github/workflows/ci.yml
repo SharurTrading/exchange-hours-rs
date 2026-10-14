@@ -114,3 +114,23 @@ jobs:
 
       - name: check
         run: cargo +${{ matrix.rust }} check --all-targets
+
+  markdown-lint:
+    name: markdown-lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # setup-node only fixes the runtime; the linter itself is pinned by
+      # name in the command below — the same pin the charter documents and
+      # every local run must repeat — so a fresh npm resolve cannot move the
+      # standard this gate enforces.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      # `.markdownlint-cli2.jsonc` carries the rule set: globs **/*.md,
+      # honours .gitignore, and records every deviation with its reason.
+      - run: npx -y markdownlint-cli2@0.23.3

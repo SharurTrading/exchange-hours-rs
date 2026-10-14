@@ -272,7 +272,6 @@ in those two evidence files, and the closing condition is a consumer that maps t
 The four venue tables extend over the era by D17 and their disagreements are recorded
 per venue.
 
-
 **Wave 4 landed 2026-09-16 (UTC) as this change** (branch `cme-holidays-2019-2021`).
 The round-2 verdict on `cme-2019-2021` failed the block on evidence discipline alone — no
 date, status, tier or instant value wrong in any of the 440 family rows — and the four
@@ -362,24 +361,26 @@ round-0 `INDEX.md` gains a dated amendment pointer. Every repair is guarded by a
 check, so the tool cannot run silently against a different block.
 
 The repaired block then encoded at **T1** over venue-local trade dates
-2013-01-01 .. 2015-12-31: **251 rows** — equity index 38, energy 33, FX 47, grains 43,
-interest rates 47, livestock 43 — so every interval from the January-2010 floor is audited
-for five of those six families, while `globex_livestock` keeps its 2016-2018 gap (issue
-#110). Shapes: 87 full closures, 141 early closes, 19 late opens and four
-`late_open_and_early_close` rows. The review of this wave added the two Maundy-Thursday
-early closes 2013-03-28 and 2014-04-17 that the first encoding dropped, and re-keyed
-2013-07-03's livestock row to its own line's 12:15 CT rather than Dairy's 12:00 CT.
-`globex_livestock` carries the non-scalar shapes because its grid changes *inside* the
-window: CME SER-7194 removed the evening sessions on 2014-10-27, so the 2013 year-end
-reopenings at 09:05 CT are late opens while the 2014 and 2015 ones at 08:00 CT are the
-grid's ordinary open and ship nothing. `globex_grains`' day session does not run on the
-Monday and Thursday holidays, so those are `Closed` where the financial families state an
-early close — the same distinction the 2016-2018 era records. `globex_cryptocurrency` and
-`globex_nikkei_225_dollar` declare no 2013-2015 window and ship no row for it: no crypto
-product existed before 2017-12-18, and no Nikkei-specific line is printed on any
-2013-2015 sheet, both recorded in their evidence files. **Columbus Day and Veterans Day
-2013-2015** carry no row: CME's own sheets state in session language that Globex ran a
-normal schedule.
+2013-01-01 .. 2015-12-31: **251 rows** — equity index 38, energy 33, FX 47,
+grains 43, interest rates 47, livestock 43 — so every interval from the
+January-2010 floor is audited for five of those six families, while
+`globex_livestock` keeps its 2016-2018 gap (issue #110). Shapes: 87 full
+closures, 141 early closes, 19 late opens and four `late_open_and_early_close`
+rows. The review of this wave added the two Maundy-Thursday early closes
+2013-03-28 and 2014-04-17 that the first encoding dropped, and re-keyed
+2013-07-03's livestock row to its own line's 12:15 CT rather than Dairy's 12:00
+CT. `globex_livestock` carries the non-scalar shapes because its grid changes
+*inside* the window: CME SER-7194 removed the evening sessions on 2014-10-27, so
+the 2013 year-end reopenings at 09:05 CT are late opens while the 2014 and 2015
+ones at 08:00 CT are the grid's ordinary open and ship nothing. `globex_grains`'
+day session does not run on the Monday and Thursday holidays, so those are
+`Closed` where the financial families state an early close — the same
+distinction the 2016-2018 era records. `globex_cryptocurrency` and
+`globex_nikkei_225_dollar` declare no 2013-2015 window and ship no row for it:
+no crypto product existed before 2017-12-18, and no Nikkei-specific line is
+printed on any 2013-2015 sheet, both recorded in their evidence files.
+**Columbus Day and Veterans Day 2013-2015** carry no row: CME's own sheets state
+in session language that Globex ran a normal schedule.
 
 The four venue tables extend over the era by D17: `cme` 58 rows (8 `Closed` + 50
 `Unsourced`), `cbot` 54 (8 + 46), and `comex`/`nymex` 33 each, carrying

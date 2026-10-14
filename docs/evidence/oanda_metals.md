@@ -110,6 +110,7 @@ Artifact: `normal-weeks/oanda-history-audit-2026-10-11/oanda-uk-holidays-2025032
 | 2025-12-25 | closed | `Metals: open at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Day: the stated metals evening reopen is keyed to the following trade date, so this trade date's session does not trade |
 
 | 2025-12-26 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
+
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -127,6 +128,7 @@ Artifact: `normal-weeks/oanda-history-audit-2026-10-11/oanda-uk-holidays-2025032
 | 2026-09-07 | early close | `Early close at 14:29 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day |
 
 | 2026-09-08 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
+
 ## Dated selectors
 
 The module serves the witnessed normal-week eras; `profile_at` keys each

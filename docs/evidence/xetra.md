@@ -32,7 +32,6 @@ Each year section below quotes the year's sentence in full; the operator prints 
 
 The 2010 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2010, with the exception of 1 January, 2 April, 5 April, 24 December and 31 December. 24 and 31 December are settlement days.”
 
-
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2010-01-01 | closed | `1 January` — an exception date of the year's sentence | `DB-TC-PDF-2010` | T1 | the year's sentence deletes the day |
@@ -40,20 +39,20 @@ The 2010 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2010-04-05 | closed | `5 April` — an exception date of the year's sentence | `DB-TC-PDF-2010` | T1 | the year's sentence deletes the day |
 | 2010-12-24 | closed | `24 December` — an exception date of the year's sentence | `DB-TC-PDF-2010` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2010-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2010` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2011
 
 The 2011 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2011, with the exception of 22 April, 25 April and 26 December.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2011-04-22 | closed | `22 April` — an exception date of the year's sentence | `DB-TC-PDF-2011` | T1 | the year's sentence deletes the day |
 | 2011-04-25 | closed | `25 April` — an exception date of the year's sentence | `DB-TC-PDF-2011` | T1 | the year's sentence deletes the day |
 | 2011-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2011` | T1 | the year's sentence deletes the day |
+
 ### 2012
 
 The 2012 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2012, with the exception of 6 April, 9 April, 1 May, 24 December, 25 December, 26 December and 31 December. 24 and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -64,10 +63,10 @@ The 2012 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2012-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2012` | T1 | the year's sentence deletes the day |
 | 2012-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2012` | T1 | the year's sentence deletes the day |
 | 2012-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2012` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2013
 
 The 2013 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2013, with the exception of 1 January, 29 March, 1 April, 1 May, 24 December, 25 December, 26 December and 31 December. 24 and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -79,10 +78,10 @@ The 2013 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2013-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2013` | T1 | the year's sentence deletes the day |
 | 2013-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2013` | T1 | the year's sentence deletes the day |
 | 2013-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2013` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2014
 
 The 2014 keyed document is the calendar’s German edition (`DB_HK_2014`); its sentence: „An der Frankfurter Wertpapierbörse (FWB®) wird im Jahr 2014 von montags bis freitags außer am 1. Januar, 18. April, 21. April, 1. Mai, 3. Oktober, 24. Dezember, 25. Dezember, 26. Dezember und am 31. Dezember gehandelt. Der 3. Oktober sowie der 24. und 31. Dezember sind Erfüllungstage.“. The English dispatch page edition (`DB-TC-PAGE-2014`) restates it: “at Frankfurter Wertpapierbörse (FWB®, the Frankfurt Stock Exchange) there will be trading Mondays to Fridays in 2014, with the exception of 1 January, 18 April, 21 April, 1 May, 3 October, 24 December, 25 December, 26 December and 31 December. 3 October, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -95,10 +94,10 @@ The 2014 keyed document is the calendar’s German edition (`DB_HK_2014`); its s
 | 2014-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2014` | T1 | the year's sentence deletes the day |
 | 2014-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2014` | T1 | the year's sentence deletes the day |
 | 2014-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2014` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2015
 
 The 2015 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2015, with the exception of 1 January, 3 April, 6 April, 1 May, 25 May, 24 December, 25 December and 31 December. 25 May, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -110,10 +109,10 @@ The 2015 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2015-12-24 | closed | `24 December` — an exception date of the year's sentence | `DB-TC-PDF-2015` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2015-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2015` | T1 | the year's sentence deletes the day |
 | 2015-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2015` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2016
 
 The 2016 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2016, with the exception of 1 January, 25 March, 28 March, 16 May, 3 October, 26 December. 16 May and 3 October are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -123,10 +122,10 @@ The 2016 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2016-05-16 | closed | `16 May` — an exception date of the year's sentence | `DB-TC-PDF-2016` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2016-10-03 | closed | `3 October` — an exception date of the year's sentence | `DB-TC-PDF-2016` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2016-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2016` | T1 | the year's sentence deletes the day |
+
 ### 2017
 
 The 2017 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2017, with the exception of 14 April, 17 April, 1 May, 5 June, 3 October, 31 October, 25 December and 26 December. 5 June, 3 October and 31 October are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -138,10 +137,10 @@ The 2017 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2017-10-31 | closed | `31 October` — an exception date of the year's sentence | `DB-TC-PDF-2017` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2017-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2017` | T1 | the year's sentence deletes the day |
 | 2017-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2017` | T1 | the year's sentence deletes the day |
+
 ### 2018
 
 The 2018 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2018, with the exception of 1 January, 30 March, 2 April, 1 May, 21 May, 3 October, 24 December, 25 December, 26 December and 31 December. 21 May, 3 October, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -155,10 +154,10 @@ The 2018 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2018-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2018` | T1 | the year's sentence deletes the day |
 | 2018-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2018` | T1 | the year's sentence deletes the day |
 | 2018-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2018` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2019
 
 The 2019 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2019, with the exception of 1 January, 19 April, 22 April, 1 May, 10 June, 3 October, 24 December, 25 December, 26 December and 31 December. 10 June, 3 October, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -172,10 +171,10 @@ The 2019 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2019-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2019` | T1 | the year's sentence deletes the day |
 | 2019-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2019` | T1 | the year's sentence deletes the day |
 | 2019-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2019` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2020
 
 The 2020 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2020, with the exception of 1 January, 10 April, 13 April, 1 May, 1 June, 24 December, 25 December, and 31 December. 1 June, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -187,10 +186,10 @@ The 2020 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2020-12-24 | closed | `24 December` — an exception date of the year's sentence | `DB-TC-PDF-2020` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2020-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2020` | T1 | the year's sentence deletes the day |
 | 2020-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2020` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2021
 
 The 2021 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2021, with the exception of 1 January, 2 April, 5 April, 24 May, 24 December and 31 December. 24 May, 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -200,20 +199,20 @@ The 2021 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2021-05-24 | closed | `24 May` — an exception date of the year's sentence | `DB-TC-PDF-2021` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2021-12-24 | closed | `24 December` — an exception date of the year's sentence | `DB-TC-PDF-2021` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
 | 2021-12-31 | closed | `31 December` — an exception date of the year's sentence | `DB-TC-PDF-2021` | T1 | the year's sentence deletes the day and states it a settlement day: no trading, settlement only |
+
 ### 2022
 
 The 2022 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2022, with the exception of 15 April, 18 April and 26 December.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2022-04-15 | closed | `15 April` — an exception date of the year's sentence | `DB-TC-PDF-2022` | T1 | the year's sentence deletes the day |
 | 2022-04-18 | closed | `18 April` — an exception date of the year's sentence | `DB-TC-PDF-2022` | T1 | the year's sentence deletes the day |
 | 2022-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2022` | T1 | the year's sentence deletes the day |
+
 ### 2023
 
 The 2023 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2023, with the exception of 7 April, 10 April, 1 May, 25 December and 26 December.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
@@ -222,10 +221,10 @@ The 2023 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2023-05-01 | closed | `1 May` — an exception date of the year's sentence | `DB-TC-PDF-2023` | T1 | the year's sentence deletes the day |
 | 2023-12-25 | closed | `25 December` — an exception date of the year's sentence | `DB-TC-PDF-2023` | T1 | the year's sentence deletes the day |
 | 2023-12-26 | closed | `26 December` — an exception date of the year's sentence | `DB-TC-PDF-2023` | T1 | the year's sentence deletes the day |
+
 ### 2024
 
 The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will be trading Mondays to Fridays in 2024, with the exception of 1 January, 29 March, 1 April, 1 May, 24 December, 25 December, 26 December and 31 December. 24 December and 31 December are settlement days.”
-
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|

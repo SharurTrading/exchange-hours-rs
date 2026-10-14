@@ -205,13 +205,14 @@ the following paths relative to `EXCHANGE_HOURS_RESEARCH`:
 | `holidays/cfe-eurex-ice-cde-smfe-2026-2027.json`, verdicts, raw/fix indexes | reuse each scope's actual saved years; retrieve missing 2025 material separately |
 | `holidays/DESIGN-holiday-tables.md`, `holiday-tables/DECISIONS.md`, owner evidence files | distinguish implemented scalar behavior from the approved block/error work |
 
-**One inventory PR:** add `docs/schedules/coverage-2025.md` with one row per served
-instrument scope: canonical identity, consumer routing evidence, baseline source,
-normal-week and holiday audited ranges, actually complete ranges, missing/disputed
-dates or phases, special-session needs, publication horizon, document ids and
-artifact locations/digests, and closing issues. Identify no-holiday and synthetic
-scopes explicitly. Keep lengthy quotations in owner evidence files. Check #79 and
-#105 for effects that survive the new floor; do not copy old served counts.
+**One inventory PR:** add `docs/schedules/coverage-2025.md` with one row per
+served instrument scope: canonical identity, consumer routing evidence, baseline
+source, normal-week and holiday audited ranges, actually complete ranges,
+missing/disputed dates or phases, special-session needs, publication horizon,
+document ids and artifact locations/digests, and closing issues. Identify
+no-holiday and synthetic scopes explicitly. Keep lengthy quotations in owner
+evidence files. Check #79 and #105 for effects that survive the new floor; do
+not copy old served counts.
 
 **Tests / acceptance:** resolve every cited inventory artifact and its digest;
 compare inventory membership with the ledger and actual consumer map; account for
@@ -378,11 +379,12 @@ history. Clamp walks to both listing bounds and supported calendar bounds. Prese
 trade-type disclosure. Use a temporary local candidate dependency only for validation;
 the final consumer dependency must pin the published version.
 
-**Tests / acceptance:** consumer tests cover live and historical successful answers,
-out-of-coverage and listing boundaries, future search exhaustion and exact family
-selection. Validate the candidate before the release; link the consumer PR/head in
-#118/#119. Stage 7 publishes, then completes the tagged dependency pin and verifies
-it in the consumer. Do not require an unpublished tag to exist before candidate tests.
+**Tests / acceptance:** consumer tests cover live and historical successful
+answers, out-of-coverage and listing boundaries, future search exhaustion and
+exact family selection. Validate the candidate before the release; link the
+consumer PR/head in #118/#119. Stage 7 publishes, then completes the tagged
+dependency pin and verifies it in the consumer. Do not require an unpublished
+tag to exist before candidate tests.
 
 **Handoff:** consumer PR/head, candidate crate head, validation results and the exact
 pin change waiting for publication.
@@ -401,11 +403,12 @@ because this narrower programme finished. Verify registry and tag state before
 choosing the breaking release version described in section 1.
 
 **Release gate:** every actual consumer instrument maps to a complete scope from
-2025/later launch through its stated publication horizon, covering the inspection
-present. No unresolved required phase, normal-week or holiday gap may be hidden by
-an outer window, an issue, a caller overlay or a broad venue intersection. Dormant
-completion is not required; Stage 5's obsolete-runtime cleanup is required. Track
-#94/#107 as performance follow-ups without inventing a new numeric release target.
+2025/later launch through its stated publication horizon, covering the
+inspection present. No unresolved required phase, normal-week or holiday gap may
+be hidden by an outer window, an issue, a caller overlay or a broad venue
+intersection. Dormant completion is not required; Stage 5's obsolete-runtime
+cleanup is required. Track #94/#107 as performance follow-ups without inventing
+a new numeric release target.
 
 **Tests / acceptance:** full quality/MSRV checks, `cargo publish --dry-run --locked`,
 `cargo package --list --locked`, engine benchmarks and candidate consumer validation.

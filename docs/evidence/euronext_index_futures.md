@@ -50,6 +50,7 @@ The operator publishes **one** holiday calendar per year covering its cash and d
 | `EURONEXT-FCE-SPEC-2026-10-11` | the CAC 40 Index futures contract page (the family's Paris normal-week row) | <https://www.euronext.com/en/products/indices/paris/FCE> | retrieved 2026-10-11 | T1 | `02d46ecbdbf3e2c91e6fef6cc1ef87e05f55a3c87a4e95e98aae8a513b1f181a` |
 | `EURONEXT-FTI-SPEC-2026-10-11` | the AEX Index futures contract page (the family's Amsterdam normal-week row) | <https://www.euronext.com/en/products/indices/amsterdam/FTI> | retrieved 2026-10-11 | T1 | `46196226abc331a593bf043723166cf10ac6a4e136f185e26a9adf49056bf646` |
 | `EURONEXT-HH-LIVE-2026-10-11` | no rows keyed (the live page's 2026 table, re-read beside the contract pages) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-10-11 | T1 | `3537229c30525deecc5ce8d715db3ebb3f16416092d361cd1f2b440581b7fe3a` |
+
 ### 2010
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -240,7 +241,6 @@ The operator publishes **one** holiday calendar per year covering its cash and d
 | 2026-12-24 | unsourced | Paris `**Half Trading Day` with the hours announced and unstated (`To be announced`); no instant is claimed | `EURONEXT-IF-2026` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 | 2026-12-25 | closed | Christmas: the INFO-FLASH Paris cell | `EURONEXT-IF-2026` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 | 2026-12-31 | unsourced | Paris `**Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2026` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
-
 
 The sixteen shared rows are copied byte for byte from [euronext_paris](euronext_paris.md) § Documents, whose store paths and retrieval stamps they inherit; the three index-futures rows above are the store's `normal-weeks/euronext-index-futures-2026-10-11/` artifacts (store PR #15, retrieval 2026-10-11).
 

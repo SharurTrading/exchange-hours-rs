@@ -410,6 +410,7 @@ The 2028 rows were read from the same live page as the 2026-2027 columns (`NYSE-
 | 2028-11-23 | closed | `Closed` — `Thanksgiving Day: Thursday, November 23***` | `NYSE-HOL-2026` | T1 | event date 2028-11-23; the sheet prints no session for it |
 | 2028-11-24 | early close | `close early at 1:00 p.m. ... on ... Friday, November 24, 2028 (the day after Thanksgiving)` (`***` footnote) | `NYSE-HOL-2026` | T1 | event date 2028-11-24; the `***` footnote prints the 1:00 p.m. close and nothing after it |
 | 2028-12-25 | closed | `Closed` — `Christmas Day: Monday, December 25` | `NYSE-HOL-2026` | T1 | event date 2028-12-25; the sheet prints no session for it |
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -503,4 +504,3 @@ corpus lives under `## Holidays` above.
 - <https://www.nyse.com/trade/hours-calendars> — the operator's holiday calendar and phase table (live, states 2026-2028); the 2014-2025 era lives at `nyse.com/markets/hours-calendars` and the 2007-2013 page at `nyse.com/about/newsevents/1176373643795.html` (Wayback replays, digests in the `### Documents` tables).
 - <https://ir.theice.com/press/news-details/2024/The-New-York-Stock-Exchange-Will-Close-Markets-on-January-9-to-Honor-the-Passing-of-Former-President-Jimmy-Carter-on-National-Day-of-Mourning/default.aspx> — the National Day of Mourning release naming the New York Stock Exchange (2024-12-30).
 - NYSE Euronext press releases 1351243418010 (2012-10-28) and 1351243421978 (2012-10-29) — the Hurricane Sandy closure statements, read through the web archive.
-

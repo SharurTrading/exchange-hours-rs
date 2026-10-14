@@ -56,7 +56,6 @@ The Trading Calendar editions and Holiday regulations rows are copied byte for b
 
 The Swiss clause sits inside the editions' `Overview of holidays by countries` panel, whose calendar grid interleaves the prose in text extraction; the clause's wording is quoted as the panel prints it (`Eurex is closed for trading and clearing (exercise and settlement) in … Swiss fixed income as well as equity and equity index derivatives; no cash payment in CHF: <dates>`), and each year's date list below was re-extracted from the edition's bytes on 2026-10-13 UTC. The Holiday-regulations rows quote the page's own day-by-day sentences, which are byte-contiguous.
 
-
 ### 2010
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -340,6 +339,7 @@ The edition's all-derivatives list: the Holiday regulations § 2025 day-by-day a
 | 2026-12-31 | closed | the year preamble's all-derivatives list | `EUREX-HOLREG-2026` | T1 | Eurex event date 2026-12-31 (New Year's Eve); one Zurich civil day per trade date, so the conversion is the identity |
 
 The edition's all-derivatives list: the Holiday regulations § 2026 day-by-day all-derivatives rows, corroborated by the Trading Calendar 2026 PDF. The Swiss clause: the same § 2026 rows of 02 January, 14 May and 25 May.
+
 ## Sources
 
 - The operator's annual Trading Calendar editions 2010–2024 (`EUREX-CAL-*`) and Holiday regulations page for 2025–2026 (`EUREX-HOLREG-*`), shared with the sibling Eurex identities; the monitoring entry points are the [trading calendar hub](https://www.eurex.com/ex-en/trade/trading-calendar) and the [Holiday regulations page](https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations) — T1.

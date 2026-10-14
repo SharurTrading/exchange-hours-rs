@@ -50,7 +50,24 @@ const DOCUMENTED_DIVERGENCE: &[(MarketHoursKey, &str)] = &[
          sampled week rides the family's dated 16:15-17:00 intersection, the \
          same narrowing the energy/metals family documents",
     ),
+    (
+        MarketHoursKey::IceEuropeGilts,
+        "the sampled week sits before the sourced 2026-07-06 Long/Medium \
+         extension, so the dated timeline serves the shared 06:03-08:00 \
+         pre-open while the fixed snapshot resolves after the circular's \
+         effective day and serves the 00:45-01:00 one",
+    ),
 ];
+
+/// Families whose dated timeline carries a dated revision between the
+/// sampled week (June 2026) and the fixed snapshot's resolution instant
+/// (August 2026), so the two surfaces disagree on `is_open` for the sampled
+/// week — the sampled days answer the revision's outgoing grid and the fixed
+/// snapshot its incoming one. The divergence is the dated change itself, not
+/// an omitted phase, and the direction pin below still holds: the outgoing
+/// grid is the narrower one, so the dated surface is never the more
+/// permissive.
+const DOCUMENTED_REVISION_SPAN: &[MarketHoursKey] = &[MarketHoursKey::IceEuropeGilts];
 
 /// A Monday-to-Sunday week in June 2026, sampled every five minutes.
 fn normal_week_samples() -> impl Iterator<Item = DateTime<Utc>> {
@@ -103,7 +120,15 @@ fn the_two_surfaces_now_agree_on_whether_a_trade_can_print() {
     // queue sitting in `extended`; with queues moved to `order_entry`, `is_open`
     // means "a trade can print" and the two surfaces agree everywhere.
     for key in MarketHoursKey::ALL {
-        let (minutes, _) = divergence(*key, is_open);
+        let (minutes, dated_ever_wider) = divergence(*key, is_open);
+        if DOCUMENTED_REVISION_SPAN.contains(key) {
+            assert!(
+                minutes > 0 && !dated_ever_wider,
+                "{}: the documented revision-span divergence vanished or changed                  direction; retire the DOCUMENTED_REVISION_SPAN entry",
+                key.as_str()
+            );
+            continue;
+        }
         assert_eq!(
             minutes,
             0,

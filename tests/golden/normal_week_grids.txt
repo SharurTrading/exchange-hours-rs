@@ -764,6 +764,14 @@ oanda_singapore30_cfd | regular  | (none)
 oanda_singapore30_cfd | extended | MoTuWeThFr---- | 08:31:00-17:19:00
 oanda_singapore30_cfd | extended | MoTuWeThFr---- | 17:51:00-05:14:00 +1d
 oanda_singapore30_cfd | order-en | (none)
+bme_ibex | tz Europe/Madrid | week_open_seconds 252000
+bme_ibex | regular  | MoTuWeThFr---- | 08:00:00-22:00:00
+bme_ibex | extended | (none)
+bme_ibex | order-en | MoTuWeThFr---- | 07:55:00-08:00:00
+ice_europe_gilts | tz Europe/London | week_open_seconds 360000
+ice_europe_gilts | regular  | MoTuWeThFr---- | 01:00:00-21:00:00
+ice_europe_gilts | extended | (none)
+ice_europe_gilts | order-en | MoTuWeThFr---- | 00:45:00-01:00:00
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

@@ -39,6 +39,7 @@
 mod asx;
 mod b3;
 mod bme;
+mod bme_ibex;
 mod borsa_istanbul;
 mod cfe;
 mod coinbase_derivatives;
@@ -59,6 +60,7 @@ mod globex_interest_rates;
 mod globex_livestock;
 mod globex_nikkei_225_dollar;
 mod hkex;
+mod ice_europe_gilts;
 mod ice_us;
 mod lse;
 mod nasdaq;

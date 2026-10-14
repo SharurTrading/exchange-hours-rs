@@ -333,6 +333,18 @@ historical work in #332 and never upgrades these 2025 verdicts. Native OANDA
 holiday coverage ends at trade date 2026-10-30; underlying-calendar caller
 policy does not extend that operator completeness claim.
 
+Amended 2026-10-14 UTC: the MEFF IBEX and ICE Europe gilt families join as
+served rows. The inventory now has 56 rows: **thirty-six complete, twelve
+incomplete and eight with no 2025 coverage** at its unchanged 2025-06-10
+sample. `bme_ibex` reads complete in 2025+ — its sample answers inside the
+2014-2026 audited window above the 2010-06-18 horizon — with the carried
+2010 floor span and the 2012-2013 holiday-window gap refusing beside the
+served answer; `ice_europe_gilts` reads incomplete on the carried normal
+week below its 2026-03-11 horizon, its shipped 2010-2014, 2021 and
+2022-2023 holiday rows answering only through `holiday_on`, and its eight
+announced-but-untimed Christmas eves shipping `Unsourced`. The same #332
+retained-work rules govern both.
+
 ## What “complete” means here
 
 LAW-COVERAGE fixes the support floor at **2010-01-01** (as amended 2026-09-27): complete coverage means no unresolved
@@ -437,6 +449,8 @@ served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE
 | `oanda_brent` | [oanda.rs](../../src/calendar/schedules/futures/international/oanda.rs) | no `revisions!` timeline | 2024-02-21 | 2024-02-21..2026-10-30 | 47 | 17 | 17 `Unsourced` dates in the audited windows remain typed refusals; no missing or insufficiently specified arrangement is reported as ordinary trading | **incomplete**: 17 withheld dates, although the 2025 sample itself is covered | #332 |
 | `oanda_china50_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | no `revisions!` timeline | 2021-03-03 | 2026-10-10..2026-10-30 | 0 | 0 | the first audited holiday window starts after the 2025 sample; historical holiday classification remains unaudited, with sourced session bridges only where the API permits them | **no 2025 coverage**: current audited windows only | #332 |
 | `oanda_singapore30_cfd` | [oanda_asia.rs](../../src/calendar/schedules/futures/international/oanda_asia.rs) | no `revisions!` timeline | 2021-03-03 | 2026-10-10..2026-10-30 | 0 | 0 | the first audited holiday window starts after the 2025 sample; historical holiday classification remains unaudited, with sourced session bridges only where the API permits them | **no 2025 coverage**: current audited windows only | #332 |
+| `bme_ibex` | [bme_ibex.rs](../../src/calendar/schedules/futures/international/bme_ibex.rs) | 2017-01-23 … 2025-06-23 (2 rows) | 2010-06-18 | 2010-01-01..2011-12-31, 2014-01-01..2026-12-31 | 90 | 0 | the 2010-01-01..2010-06-17 span below the sourced 2010-06-18 grid refuses as carried, and the 2012-2013 holiday-window gap sits between the audited windows: both spans answer their session questions where the sourced week reaches (the carried span below the horizon refuses) and the holiday classification refuses with them, disclosed as residuals with closing conditions in the evidence file; the sample date answers inside the second audited window | complete to 2026-12-31 in 2025+; **incomplete across 2010-2027**: the carried floor span and the 2012-2013 window gap | — |
+| `ice_europe_gilts` | [ice_europe_gilts.rs](../../src/calendar/schedules/futures/international/ice_europe_gilts.rs) | 2026-07-06 … 2026-07-06 (1 row) | 2026-03-11 | 2010-12-24..2014-12-31, 2021-01-01..2021-12-31, 2022-12-23..2023-01-02, 2024-01-01..2026-12-31 | 89 | 8 | everything below the 2026-03-11 horizon that witnesses the shared 08:00-18:00 grid refuses as carried — the shipped 2010-2014, 2021 and 2022-2023 rows answer only through `holiday_on` — the eight announced-but-untimed Christmas eves (2014, 2021, 2024, 2026) ship `Unsourced`, and the 2015-2020 editions, the 2010 full-year notice and the mid-2022/2023 months sit inside no window; closing conditions in the evidence file (#332) | **incomplete**: the carried normal week below the 2026-03-11 horizon and the windowed holiday audit | #332 |
 
 ## Consumer routing
 
@@ -485,7 +499,7 @@ recorded rather than resolved in this stage.
 ### No-holiday and synthetic scopes
 
 Stated explicitly, as the stage requires. **No served scope is synthetic and no served scope is a
-no-holiday scope**: all fifty-four ship a holiday table, and the row above for each names its windows.
+no-holiday scope**: all fifty-six ship a holiday table, and the row above for each names its windows.
 The crate's two synthetic identities are `Exchange::Unknown`, the UTC 24x7 fallback, and
 `AlwaysOpen`; both are **dormant**, both answer `None` in `holidays/routing.rs`, and neither is a
 venue fact. They therefore contribute no inventory row, and no consumer instrument in the maps

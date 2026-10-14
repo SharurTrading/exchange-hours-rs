@@ -7,11 +7,13 @@
 //! family in its owner module rather than sharing a generic venue envelope.
 
 mod binance;
+mod bme_ibex;
 mod europe;
 mod ice_abu_dhabi;
 mod ice_canada;
 mod ice_endex;
 mod ice_europe;
+mod ice_europe_gilts;
 mod oanda;
 mod oanda_asia;
 mod sgx;
@@ -25,6 +27,8 @@ mod sgx_equity_index;
 mod sgx_equity_index_more;
 
 pub(crate) use binance::profile_at as binance_profile_at;
+pub(crate) use bme_ibex::bme_ibex_profile_at;
+pub(crate) use bme_ibex::{BME_IBEX_ORDER_ENTRY_CURRENT, BME_IBEX_REGULAR_CURRENT};
 pub(crate) use eurex_fixed_income::EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT;
 pub(crate) use eurex_fixed_income::{
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_REGULAR_CURRENT,
@@ -45,6 +49,10 @@ pub(crate) use ice_canada::ice_canada_profile_at;
 pub(crate) use ice_endex::profile_at as ice_endex_profile_at;
 pub(crate) use ice_europe::{
     ice_europe_commodities_profile_at, ice_europe_financials_profile_at, iceeu_profile_at,
+};
+pub(crate) use ice_europe_gilts::ice_europe_gilts_profile_at;
+pub(crate) use ice_europe_gilts::{
+    ICE_EUROPE_GILTS_ORDER_ENTRY_CURRENT, ICE_EUROPE_GILTS_REGULAR_CURRENT,
 };
 pub(crate) use oanda::{
     OANDA_BRENT_REGULAR, OANDA_FX_REGULAR, OANDA_METALS_REGULAR, OANDA_TRY_FX_REGULAR,

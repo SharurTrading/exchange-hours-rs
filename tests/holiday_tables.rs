@@ -1111,10 +1111,10 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // 2026-10-11 horizon refuse): at the 2026-10-13 head the sweep observes
     // 583,085 enumerated occurrences, 79,382 refused cursors, 16,181
     // unresolved trade dates and 61 date-carrying identities, and every bound
-    // below still follows. The 2026-10-14 UTC wave adds the MEFF IBEX and ICE
-    // Europe gilt families the same way; this head's sweep observes the
-    // enumeration those two families' shipped grids add, and the loose bounds
-    // below still follow.
+    // below still follows. The 2026-10-14 UTC wave adds the MEFF IBEX, ICE
+    // Europe gilt, ASX SPI 200 and HKEX index-futures families the same way;
+    // this head's sweep observes the enumeration those four families' shipped
+    // grids add, and the loose bounds below still follow.
     //
     // The population itself is pinned off the two enums, so a filter that
     // quietly starts dropping identities fails here as well as in the ledger:
@@ -1122,12 +1122,12 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // `ALL_EXCHANGES` / `EXCHANGE_VARIANT_COUNT`
     // (`tests/contract/session_invariants/identity_expectations.rs`), every
     // `MarketHoursKey` the ledger names must resolve, and the verification
-    // ledger states one row per identity. This count is that ledger's 147 rows
+    // ledger states one row per identity. This count is that ledger's 149 rows
     // less the five sourced trade-date conventions the sweep excludes.
     assert_eq!(
         close_dated_calendars().len(),
-        142,
-        "147 ledger identities less this fence's five excluded conventions"
+        144,
+        "149 ledger identities less this fence's five excluded conventions"
     );
     assert_eq!(
         swept_identities,

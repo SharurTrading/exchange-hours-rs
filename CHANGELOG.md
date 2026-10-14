@@ -40,6 +40,15 @@
   the 2015-2020 editions, the 2010 full-year notice, the 2010 floor year and
   the 2022/2023 mid-year months disclosed as gaps, and the announced but
   untimed Christmas eves of 2014, 2021, 2024 and 2026 shipping `Unsourced`.
+- Two served product-family keys, each with its built-in holiday table and a
+  served ledger row: `asx_spi_200` (ASX SPI 200 index futures on the Sydney
+  ASX 24 grid — day session 09:50-16:30, night session 17:10 to a 07:00/08:00
+  close selected by the operator's own US-daylight columns, ten-minute
+  pre-opens, holiday years 2010-2027) and `hkex_index_futures` (HKEX Hang
+  Seng index futures — the dated 2011 and 2012 trading-hours phases, the
+  2013-04-08 T+1 launch per DMD/022/13, three bracketed-undated after-hours
+  cutovers served as knowledge bounds, holiday years 2010-2027 with the
+  half-day eves and the witnessed UK/US AHT suspensions).
 
 ### Fixed
 

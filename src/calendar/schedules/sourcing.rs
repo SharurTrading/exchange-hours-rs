@@ -99,8 +99,8 @@
 
 use chrono::NaiveDate;
 
-use super::timeline::horizon;
-use crate::calendar::coverage::PhaseGap;
+use super::timeline::{effective_date, horizon};
+use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
 /// What one identity declares about its own sourcing.
@@ -162,6 +162,12 @@ impl DeclaredSourcing {
             phase_gaps: &[],
         }
     }
+
+    /// Restates the identity's declared phase-level gaps beside its horizon.
+    const fn with_phase_gaps(mut self, gaps: &'static [PhaseGap]) -> Self {
+        self.phase_gaps = gaps;
+        self
+    }
 }
 
 // The #152 post-close label declaration both queue scopes carried is retired
@@ -198,6 +204,17 @@ impl DeclaredSourcing {
 // The four-leg chain, with every artifact's URL, retrieval instant and
 // sha256, is in `docs/evidence/eurex.md` ("The #157 verification") and the
 // research store's `holidays/raw/eurex/negation-2026-10-05/`.
+
+/// The HKEX index-futures family's unpublished-closure declaration: the
+/// 2013-04-08 T+1 circular's UK/US bank-holiday suspension rule, whose
+/// per-year dates the operator's captured notes instantiate only from 2017
+/// (#332; `docs/evidence/hkex_index_futures.md`).
+static HKEX_AHT_SUSPENSION_GAPS: [PhaseGap; 1] =
+    [
+        PhaseGap::new(CoverageGapReason::UnpublishedClosureDates, "#332")
+            .since(effective_date(2013, 4, 8))
+            .until(effective_date(2017, 1, 1)),
+    ];
 
 /// Returns what `source` declares about its own sourcing.
 pub(crate) const fn declared(source: CalendarSource) -> DeclaredSourcing {
@@ -574,6 +591,14 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // (docs/evidence/ice_europe_gilts.md).
         MarketHoursKey::IceEuropeGilts => DeclaredSourcing::carried_below(horizon!(2026, 3, 11)),
         // `—`: closed before the sourced 2024-07-29 launch.
+        MarketHoursKey::AsxSpi200 => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        // The 2013-04-08 T+1 circular's own rule suspends the session on a UK
+        // and US bank holiday, but the operator's per-year notes naming those
+        // dates are captured only from 2017; the era between ships no rows and
+        // answers from the normal week. Declared, never inferred
+        // (docs/evidence/hkex_index_futures.md, #332).
+        MarketHoursKey::HkexIndexFutures => DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
+            .with_phase_gaps(&HKEX_AHT_SUSPENSION_GAPS),
         MarketHoursKey::Sgx => DeclaredSourcing::nothing_carried(),
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.
         MarketHoursKey::AlwaysOpen => DeclaredSourcing::no_holidays(),

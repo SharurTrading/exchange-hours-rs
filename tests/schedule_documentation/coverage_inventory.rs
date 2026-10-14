@@ -863,6 +863,12 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("euronext_paris", 2),
         ("euronext_amsterdam", 2),
         ("bme", 2),
+        // 0 since the 2026-10-14 UTC wave-2 build: the incompleteness is the
+        // 2013-2016 unpublished-closure era the family declares (#332) — the
+        // 2013-04-08 T+1 circular's UK/US bank-holiday suspension rule whose
+        // per-year dates the operator's captured notes instantiate only from
+        // 2017 — not a withheld date; the sample sits outside the declared era.
+        ("hkex_index_futures", 0),
         ("oanda_us_index_cfd", 4),
         ("oanda_us_bond_cfd", 5),
         ("oanda_brent", 17),
@@ -1014,8 +1020,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (36, 12, 8),
-        "the inventory's verdict shapes: thirty-six complete, twelve incomplete, eight with no 2025 \
+        (37, 13, 8),
+        "the inventory's verdict shapes: thirty-seven complete, thirteen incomplete, eight with no 2025 \
          coverage (eurex_smi joined the complete group on 2026-10-13 UTC: its 2010-2026 window \
          carries no Unsourced date and its 2010-07-05 revision sources the grid from the floor, so \
          only its order-entry windows are carried; euronext_index_futures joined the incomplete \
@@ -1040,7 +1046,9 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          reclassified complete to 2027-12-31 on 2026-10-04 UTC under the maintainer's horizon \
          ruling — 2027 coverage is not a requirement and unpublished 2027 never withholds a \
          verdict; #197's b3/tadawul are \
-         complete; nyse is complete to 2027 and nasdaq joined the complete group on 2026-10-09 \
+         complete; the 2026-10-14 UTC wave-2 builds add asx_spi_200 complete to the audited \
+         window and hkex_index_futures incomplete on its uncaptured 2013-2016 UK/US AHT-suspension \
+         instantiation (#332); nyse is complete to 2027 and nasdaq joined the complete group on 2026-10-09 \
          UTC, when the operator's own Equity Trader Alerts 2010-73 and 2011-54 (still served \
          live) stated the two TBA early closes at their printed 1:00 p.m., 2012-45 stated the \
          Sandy Tuesday closure unconditionally and 2025-1 (a Wayback replay) stated the mourning \
@@ -1108,6 +1116,14 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // from the regime's dated start, and no served scope declares the
         // reason any more. The scopes below declare nothing at all.
         ("globex_livestock", vec![]),
+        // The 2013-04-08 T+1 circular's UK/US bank-holiday suspension rule is
+        // sourced, but the operator's per-year notes instantiating it are
+        // captured only from 2017: the 2013-2016 spring bank-holiday evenings
+        // ship no row and answer from the normal week, tracked in #332.
+        (
+            "hkex_index_futures",
+            vec![(CoverageGapReason::UnpublishedClosureDates, "#332")],
+        ),
         // `eurex`'s `UnpublishedClosureDates` declaration — the `tba` era of
         // the 2025 and 2026 Trading Calendar editions' German-scope note
         // (#157) — retired on 2026-10-05 UTC by the no-changes verification:
@@ -1296,8 +1312,11 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (0, 0),
-        "no served scope declares today: the #152 post-close label declaration retired \
+        (1, 1),
+        "one served scope declares today: hkex_index_futures' #332 unpublished-closure \
+         declaration, the 2013-2016 era whose UK/US AHT-suspension dates the operator's \
+         captured notes instantiate only from 2017. The retired declarations: the #152 \
+         post-close label declaration retired \
          with the charter's 2026-10-03 trade-date convention, the three \
          `NormalWeekPhaseWithheld` declarations (the seven quarter-hour scopes' #79, \
          `globex_cryptocurrency`'s #123 five-day era and `globex_grains`' #259 omitted \
@@ -1520,7 +1539,9 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "oanda_brent",
             "oanda_china50_cfd",
             "oanda_singapore30_cfd",
+            "asx_spi_200",
             "bme_ibex",
+            "hkex_index_futures",
             "ice_europe_gilts"
         ],
         "these are closed at both instants: a different grid, not a served intersection"
@@ -1594,8 +1615,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         "every later-window exception is checked"
     );
     assert_eq!(
-        checked, 56,
-        "the inventory carries one row per served scope, and all fifty-six are checked"
+        checked, 58,
+        "the inventory carries one row per served scope, and all fifty-eight are checked"
     );
 }
 

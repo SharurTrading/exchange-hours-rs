@@ -286,6 +286,14 @@ per-record review before any exception can drive runtime.
 - **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [cash-market trading calendar](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar) page, whose per-year sheets govern the built-in rows for each year; re-checked monthly per LAW-WATCH.
 - **Notices/evidence:** [Service Release 15 notice](https://www.asxonline.com/public/notices/2025/may/0473.25.05.html) and its [marked procedure amendments](https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf).
 
+<a id="apac-asx-24-derivatives"></a>
+
+### `APAC-ASX-24-DERIVATIVES`
+
+- **Official current/rulebook:** the ASX [index-derivatives trading-hours page](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/index-derivatives) and the SPI 200 contract specification, whose two-column US-daylight grid and pre-open footnote state the family's normal week.
+- **Holiday calendar (watch list entry, added 2026-10-14 UTC):** the operator's [ASX 24 trading calendar](https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar) page, whose per-year tables govern the built-in rows for each year; re-checked monthly per LAW-WATCH.
+- **Notices/evidence:** the [SYCOM trading-hours PDF](https://web.archive.org/web/20101120044224/https://www.asx.com.au/products/derivatives/trading-hours-sycom.htm) and the captured calendar states 2010-2026 in the research store (`holidays/raw/asx24-2010-2027/`, `normal-weeks/asx-spi-2026-10-11/`).
+
 <a id="apac-tmx-australia"></a>
 
 ### `APAC-TMX-AUSTRALIA`
@@ -327,6 +335,14 @@ per-record review before any exception can drive runtime.
 - **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [Trading Calendar and Holiday Schedule](https://www.hkex.com.hk/Services/Trading/Derivatives/Overview/Trading-Calendar-and-Holiday-Schedule?sc_lang=en) page, whose `Holiday Schedule` table and `Notes` eve list govern the built-in rows for each year pair; re-checked monthly per LAW-WATCH. Severe-weather halts are conditional and are never encoded.
 - **Notices/evidence:** monitor [HKEX market communications](https://www.hkex.com.hk/News/Market-Communications?sc_lang=en) and [regulatory announcements](https://www.hkex.com.hk/News/Regulatory-Announcements?sc_lang=en); retain the exact 2011 phase-one, 2012 phase-two, and [2016 CAS launch](https://www.hkex.com.hk/News/Market-Communications/2016/160725news?sc_lang=en) artifacts beside the owner timeline.
 - **Status:** the venue union is continuous through the operator-named Extended Morning Session, which is executable and therefore Regular under crate semantics. The 2011 phase-one change moves the union open to 09:30; the 2012 lunch reshuffle is not an observable envelope cutover. CAS adds the 16:00–16:10 Extended tail from its first eligible securities on 2016-07-25.
+
+<a id="apac-hkex-futures"></a>
+
+### `APAC-HKEX-FUTURES`
+
+- **Official current/rulebook:** the HKEX [derivatives trading-hours page](https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Derivatives-Market) and the HSI futures contract summary, which state the day sessions, the pre-opening periods and the T+1 (after-hours) session.
+- **Holiday calendar (watch list entry, added 2026-10-14 UTC):** the operator's [Trading Calendar and Holiday Schedule](https://www.hkex.com.hk/Services/Trading/Derivatives/Overview/Trading-Calendar-and-Holiday-Schedule?sc_lang=en) page, whose per-year tables and `Notes` eve list govern the built-in rows; re-checked monthly per LAW-WATCH.
+- **Notices/evidence:** the [circulars-and-notices channel](https://www.hkex.com.hk/Services/Rules-and-Forms-and-Fees/Circulars-and-Notices) (DMD/004/12, DMD/022/13), the AHFT information paper, the contract-page snapshots and the 2010-2017 `tradcal` wall calendars in the research store (`normal-weeks/hkex-futures-2026-10-11/`, `holidays/raw/hkex-futures-2010-2027/`).
 
 <a id="apac-sgx-securities"></a>
 

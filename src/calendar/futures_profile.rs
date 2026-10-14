@@ -29,13 +29,14 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    bme_ibex_profile_at, eurex_fixed_income_profile_at, eurex_profile_at, eurex_smi_profile_at,
-    euronext_index_futures_profile_at, ice_europe_gilts_profile_at, oanda_brent_profile_at,
-    oanda_china50_profile_at, oanda_fx_profile_at, oanda_metals_profile_at,
-    oanda_singapore30_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
-    oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
-    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
-    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+    asx_spi_200_profile_at, bme_ibex_profile_at, eurex_fixed_income_profile_at, eurex_profile_at,
+    eurex_smi_profile_at, euronext_index_futures_profile_at, hkex_index_futures_profile_at,
+    ice_europe_gilts_profile_at, oanda_brent_profile_at, oanda_china50_profile_at,
+    oanda_fx_profile_at, oanda_metals_profile_at, oanda_singapore30_profile_at,
+    oanda_try_fx_profile_at, oanda_us_commodity_profile_at, oanda_us_index_profile_at,
+    sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
+    sgx_equity_index_ntr_usd_profile_at, sgx_equity_index_singapore_profile_at,
+    sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
@@ -514,6 +515,14 @@ market_hours_keys! {
         /// OANDA Singapore 30 CFD day and overnight trading in Singapore time.
         /// This is the broker calendar, distinct from SGX futures.
         OandaSingapore30Cfd => "oanda_singapore30_cfd",
+        /// ASX SPI 200 index futures (and options) on the Sydney ASX 24 grid:
+        /// day session 09:50-16:30 Monday to Friday, night session opening
+        /// 17:10 Sunday to Friday evenings, and a ten-minute pre-open before
+        /// each open. The night close follows the operator's own two-column
+        /// US-daylight selector — 07:00 Sydney from the second Sunday in March
+        /// to the first Sunday in November, 08:00 otherwise — and the week ends
+        /// with the Friday-evening leg on the Saturday morning.
+        AsxSpi200 => "asx_spi_200",
         /// MEFF IBEX 35 index futures — with the Mini IBEX 35 and Micro IBEX
         /// 35 futures, which the operator's own notices have always printed
         /// on the same electronic-order-system row — in Europe/Madrid.
@@ -533,6 +542,15 @@ market_hours_keys! {
         /// Christmas-eve 13:54 VWAP settlement window, which is a fixing
         /// instant, not a session boundary (LAW-SESSION-NOT-EXPIRY).
         BmeIbex => "bme_ibex",
+        /// HKEX index futures (Hang Seng Index and the H-shares suite): the
+        /// HKFE day session in two parts with pre-opening order-entry periods,
+        /// plus (from 2013-04-08) the After-Hours Futures Trading T+1 session.
+        /// The T+1 session's trades are "registered as the following day's
+        /// trades" (the AHFT information paper), so in the current 17:00-03:00
+        /// era its trade date is the following day. Excludes Mini and other
+        /// contracts whose own specification closes earlier
+        /// (last-trading-day shapes are caller catalog data).
+        HkexIndexFutures => "hkex_index_futures",
         /// ICE Futures Europe gilt futures — Long Gilt and Medium Gilt — in
         /// Europe/London.
         ///
@@ -641,7 +659,9 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
         MarketHoursKey::OandaChina50Cfd => oanda_china50_profile_at(as_of),
         MarketHoursKey::OandaSingapore30Cfd => oanda_singapore30_profile_at(as_of),
+        MarketHoursKey::AsxSpi200 => asx_spi_200_profile_at(as_of),
         MarketHoursKey::BmeIbex => bme_ibex_profile_at(as_of),
+        MarketHoursKey::HkexIndexFutures => hkex_index_futures_profile_at(as_of),
         MarketHoursKey::IceEuropeGilts => ice_europe_gilts_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,

@@ -52,6 +52,20 @@
 
 ### Fixed
 
+- Correct the `ice_us_sugar` evidence record. The operator's own "Sugar No. 11
+  / No. 16" brochure (document date 22 March 2010) prints the carried
+  `HOURS  0330 EST TO 1400EST` spec row inside the previously unwitnessed
+  2010-2011 span, and the operator's Chinese Sugar introduction (printed
+  12 December 2011) re-witnesses the same grid — superseding the evidence
+  file's, ledger basis's and module comment's earlier claim that the interval
+  could not be sourced and the August-2011 carry-back was the terminal answer.
+  No served hour moves: the witnessed grid equals the baseline that already
+  shipped, so this is an evidence correction, not a schedule change. The same
+  wave's dated 2011-05-02 late open at 07:30 NY (Exchange Notice ExNot 041111)
+  is recorded in the evidence file as witnessed pre-window data rather than
+  encoded as a row, because the family's audited holiday window starts
+  2025-01-01 and a lone 2011 row would assert audited normal for every other
+  date of an extended window.
 - Seven OANDA books now answer their witnessed normal-week history instead of
   refusing everything below the 2024-02-21 page print: `oanda_fx` and the
   venue default from 2021-12-08, `oanda_metals` from 2021-12-08,

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
 //! ICE Futures Europe gilt-futures holiday and early-close table: audited
-//! windows 2010-12-24..2014-12-31, 2021, 2022-12-23..2023-01-02 and
-//! 2024..2026.
+//! windows 2010-01-01..2014-12-31, 2015-01-01..2017-12-31, 2019-01-01..2020-12-31,
+//! 2021, 2022-12-23..2023-01-02 and 2024..2026.
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, EarlyClose, Unsourced};
@@ -11,11 +11,12 @@ use super::{HolidayTable, holidays};
 // The Christmas-eve and New-Year-eve half days: the NYSE Liffe notices'
 // attachments print the gilt rows closing 12:15 GMT (2010-2013), and the IFEU
 // Christmas documents print "Trading ceases 12:15 (GMT)" (2022-12-30 and both
-// 2025 eves). 2022-12-23 printed a later 13:00 GMT cessation.
+// 2025 eves). 2022-12-23 printed a later 13:00 cessation.
 
-// The announced but time-unpublished eves of 2014, 2021, 2024 and 2026 stay
-// `Unsourced`: the operator said "partial trading day" without stating an
-// instant.
+// The announced but time-unpublished eves of 2014, 2015, 2021, 2024 and 2026
+// stay `Unsourced`: the operator said "partial trading day" without stating an
+// instant. 2016 and 2017's editions asterisk only non-gilt contracts for their
+// 18:00 early closes, so the gilt eves there are audited normal.
 // Evidence: docs/evidence/ice_europe_gilts.md
 const CLOSE_1215_SSM: u32 = 12 * 3_600 + 15 * 60;
 const CLOSE_1300_SSM: u32 = 13 * 3_600;
@@ -23,12 +24,20 @@ const CLOSE_1300_SSM: u32 = 13 * 3_600;
 // Evidence: docs/evidence/ice_europe_gilts.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
-        (2010, 12, 24) ..= (2014, 12, 31),
+        (2010, 1, 1) ..= (2014, 12, 31),
+        (2015, 1, 1) ..= (2017, 12, 31),
+        (2019, 1, 1) ..= (2020, 12, 31),
         (2021, 1, 1) ..= (2021, 12, 31),
         (2022, 12, 23) ..= (2023, 1, 2),
         (2024, 1, 1) ..= (2026, 12, 31),
     ],
     rows: [
+        (2010, 1, 1, Closed, T1, "LIFFE-ZIP-2009"),
+        (2010, 4, 2, Closed, T1, "LIFFE-ZIP-2009"),
+        (2010, 4, 5, Closed, T1, "LIFFE-ZIP-2009"),
+        (2010, 5, 3, Closed, T1, "LIFFE-ZIP-2009"),
+        (2010, 5, 31, Closed, T1, "LIFFE-ZIP-2009"),
+        (2010, 8, 30, Closed, T1, "LIFFE-ZIP-2009"),
         (2010, 12, 24, EarlyClose { close_ssm: CLOSE_1215_SSM }, T1, "LIFFE-ZIP-2010"),
         (2010, 12, 27, Closed, T1, "LIFFE-ZIP-2010"),
         (2010, 12, 28, Closed, T1, "LIFFE-ZIP-2010"),
@@ -74,6 +83,52 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 12, 25, Closed, T1, "LIFFE-ZIP-2013"),
         (2014, 12, 26, Closed, T1, "LIFFE-ZIP-2013"),
         (2014, 12, 31, Unsourced, T1, "LIFFE-ZIP-2013"),
+        (2015, 1, 1, Closed, T1, "IFEU-FI-2015"),
+        (2015, 4, 3, Closed, T1, "IFEU-FI-2015"),
+        (2015, 4, 6, Closed, T1, "IFEU-FI-2015"),
+        (2015, 5, 4, Closed, T1, "IFEU-FI-2015"),
+        (2015, 5, 25, Closed, T1, "IFEU-FI-2015"),
+        (2015, 8, 31, Closed, T1, "IFEU-FI-2015"),
+        (2015, 12, 24, Unsourced, T1, "IFEU-FI-2015"),
+        (2015, 12, 25, Closed, T1, "IFEU-FI-2015"),
+        (2015, 12, 28, Closed, T1, "IFEU-FI-2015"),
+        (2015, 12, 31, Unsourced, T1, "IFEU-FI-2015"),
+        (2016, 1, 1, Closed, T1, "IFEU-FI-2016"),
+        (2016, 3, 25, Closed, T1, "IFEU-FI-2016"),
+        (2016, 3, 28, Closed, T1, "IFEU-FI-2016"),
+        (2016, 5, 2, Closed, T1, "IFEU-FI-2016"),
+        (2016, 5, 30, Closed, T1, "IFEU-FI-2016"),
+        (2016, 8, 29, Closed, T1, "IFEU-FI-2016"),
+        (2016, 12, 26, Closed, T1, "IFEU-FI-2016"),
+        (2016, 12, 27, Closed, T1, "IFEU-FI-2016"),
+        (2017, 1, 2, Closed, T1, "IFEU-FI-2017"),
+        (2017, 4, 14, Closed, T1, "IFEU-FI-2017"),
+        (2017, 4, 17, Closed, T1, "IFEU-FI-2017"),
+        (2017, 5, 1, Closed, T1, "IFEU-FI-2017"),
+        (2017, 5, 29, Closed, T1, "IFEU-FI-2017"),
+        (2017, 8, 28, Closed, T1, "IFEU-FI-2017"),
+        (2017, 12, 25, Closed, T1, "IFEU-FI-2017"),
+        (2017, 12, 26, Closed, T1, "IFEU-FI-2017"),
+        (2019, 1, 1, Closed, T1, "IFEU-TS-2019"),
+        (2019, 4, 19, Closed, T1, "IFEU-TS-2019"),
+        (2019, 4, 22, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 5, 6, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 5, 27, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 8, 26, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 12, 24, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 12, 25, Closed, T1, "IFEU-TS-2019"),
+        (2019, 12, 26, Unsourced, T1, "IFEU-TS-2019"),
+        (2019, 12, 31, Unsourced, T1, "IFEU-TS-2019"),
+        (2020, 1, 1, Closed, T1, "IFEU-TS-2020"),
+        (2020, 4, 10, Closed, T1, "IFEU-TS-2020"),
+        (2020, 4, 13, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 5, 8, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 5, 25, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 8, 31, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 12, 24, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 12, 25, Closed, T1, "IFEU-TS-2020"),
+        (2020, 12, 28, Unsourced, T1, "IFEU-TS-2020"),
+        (2020, 12, 31, Unsourced, T1, "IFEU-TS-2020"),
         (2021, 1, 1, Closed, T1, "IFEU-FI-2021"),
         (2021, 4, 2, Closed, T1, "IFEU-FI-2021"),
         (2021, 4, 5, Closed, T1, "IFEU-FI-2021"),

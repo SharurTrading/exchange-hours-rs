@@ -39,18 +39,16 @@
 //!
 //! **2022-2024.** The grid is one wrapped `17:00 CT -> 16:00 CT` leg per trade
 //! date, the same shape the 2016-2018 era states, and its two conversions are
-//! the same. Thirty-five rows: seven closures, twenty-seven early closes — 12:00
-//! CT on the twenty Monday and Thursday holidays, 12:15 CT on 2022-11-25,
+//! the same. Thirty-five rows: seven closures, twenty-eight early closes — 12:00
+//! CT on the twenty-one Monday and Thursday holidays, 12:15 CT on 2022-11-25,
 //! 2023-07-03, 2023-11-24, 2024-07-03, 2024-11-29 and 2024-12-24, and 08:15 CT
-//! on 2023-04-07 — no late open,
-//! and one `Unsourced` row. The 2022 rows and the 2023 rows CME published a holiday
+//! on 2023-04-07 — no late open.
+//! The 2022 rows and the 2023 rows CME published a holiday
 //! schedule for are **T1** (2023-02-20 and 2023-04-07 from the operator's own
 //! summary sheets `files/presidents-day.pdf` and `files/good-friday.pdf`);
-//! 2023-01-16, the one date it published nothing this crate could read, and
-//! all of 2024 are **T2**. The `Unsourced` date — 2023-01-16 — means the
-//! operator published nothing this crate could read, not that no holiday fell
-//! on it; an operator document stating the date in session language would
-//! close it.
+//! 2023-01-16, whose 12:00 CT halt and ordinary 17:00 CT re-open are confirmed
+//! with market data (retained privately; see the evidence file), and
+//! all of 2024 are **T2**.
 //!
 //! **2025-2027.** The family's grid in this window is the one CME Globex
 //! notice 20210621 put in force on 2021-06-27: a trading day for venue-local
@@ -536,8 +534,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
         // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
-        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-01-16 - T2 - MARKET-DATA - early close 12:00 CT, confirmed with market data.
+        (2023, 1, 16, early_close(12 * 3_600), T2, "MARKET-DATA"),
         // 2023, 2, 20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - the printed Monday final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2023, 2, 20, early_close(12 * 3_600), T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
         // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the printed Friday final close 08:15 CT is earlier than the ordinary 16:00 CT close.

@@ -63,15 +63,16 @@
 //! 2017-12-22.
 //!
 //! **2022-2024.** The era's grid is the same 19:00 CT evening leg into the
-//! 08:30-13:20 CT day session. Thirty-nine rows: twenty-eight closures, the
+//! 08:30-13:20 CT day session. Thirty-nine rows: twenty-nine closures, the
 //! three `LateOpenAndEarlyClose` days after Thanksgiving, whose 08:30 CT open is
 //! the same late open a removed leg produces, one early close at 12:05 CT on
-//! 2024-12-24, the six late opens on 2022-07-05, 2023-07-05, 2023-12-26,
-//! 2024-01-02, 2024-07-05 and 2024-12-26, and the one `Unsourced` date below
-//! that the operator published nothing for. The 2022 rows, the 2023 rows CME
+//! 2024-12-24, and the six late opens on 2022-07-05, 2023-07-05, 2023-12-26,
+//! 2024-01-02, 2024-07-05 and 2024-12-26. The 2022 rows, the 2023 rows CME
 //! published a holiday schedule or summary sheet for, and the 2024 New Year's
-//! Day row are **T1**; 2023-01-16, the one 2023 date it published nothing for,
-//! and the rest of 2024 are **T2**.
+//! Day row are **T1**; 2023-01-16, whose complete closure — the prior-evening
+//! leg withheld and the next session the Monday 19:00 CT evening open serving
+//! Tuesday — is confirmed with market data (retained privately; see the
+//! evidence file), and the rest of 2024 are **T2**.
 //!
 //! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. The era's
 //! grid is an 18:00 CT evening leg (17:00 from 2012-05-20) into a 09:30-13:15 CT
@@ -542,8 +543,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
         // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
-        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-01-16 - T2 - MARKET-DATA - closed: the trade date and its prior-evening leg removed, confirmed with market data.
+        (2023, 1, 16, Closed, T2, "MARKET-DATA"),
         // 2023-02-20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - closed: no trade date; the sheet prints the Monday 19:00 CT open carrying trade date Tues 21 Feb and no Monday day session.
         (2023, 2, 20, Closed, T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
         // 2023-04-07 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - closed: no trade date; the sheet prints no Friday column.

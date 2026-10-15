@@ -362,7 +362,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 — T2 — CME-SVC-2025-01-19 — Martin Luther King Jr. Day:
         // matching stops 12:00 CT, published as a preopen.
-        (2025, 1, 20, early_close(NOON), T2, "CME-SVC-2025-01-19"),
+        (2025, 1, 20, early_close(12 * 3_600), T2, "CME-SVC-2025-01-19"),
         // 2025-01-21 - T2 - CME-SVC-2025-01-19 - MLK Day; the holiday publishes no final close, so the span from Sunday evening carries this trade date, and it still ends at the holiday's 12:00 CT close.
         (
             2025,
@@ -373,7 +373,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2025-01-19"
         ),
         // 2025-02-17 — T2 — CME-SVC-2025-02-16 — Presidents' Day: 12:00 CT.
-        (2025, 2, 17, early_close(NOON), T2, "CME-SVC-2025-02-16"),
+        (2025, 2, 17, early_close(12 * 3_600), T2, "CME-SVC-2025-02-16"),
         // 2025-02-18 - T2 - CME-SVC-2025-02-16 - Presidents Day; as 2025-01-21.
         (
             2025,
@@ -387,7 +387,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // closure, no events published for any family.
         (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-17"),
         // 2025-05-26 — T2 — CME-SVC-2025-05-25 — Memorial Day: 12:00 CT.
-        (2025, 5, 26, early_close(NOON), T2, "CME-SVC-2025-05-25"),
+        (2025, 5, 26, early_close(12 * 3_600), T2, "CME-SVC-2025-05-25"),
         // 2025-05-27 - T2 - CME-SVC-2025-05-25 - Memorial Day; as 2025-01-21.
         (
             2025,
@@ -398,7 +398,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2025-05-25"
         ),
         // 2025-06-19 — T2 — CME-SVC-2025-06-18 — Juneteenth: 12:00 CT.
-        (2025, 6, 19, early_close(NOON), T2, "CME-SVC-2025-06-18"),
+        (2025, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2025-06-18"),
         // 2025-06-20 - T2 - CME-SVC-2025-06-18 - Juneteenth falls on the Thursday, so the span opens Wednesday evening and its -2 queue is the weekday 16:45.
         (
             2025,
@@ -410,11 +410,11 @@ pub(crate) static CME: &HolidayTable = holidays! {
         ),
         // 2025-07-03 — T2 — CME-SVC-2025-07-03 — Independence Day eve: equity
         // index alone closes 12:15 CT; the evening leg then runs normally.
-        (2025, 7, 3, early_close(QUARTER_PAST_NOON), T2, "CME-SVC-2025-07-03"),
+        (2025, 7, 3, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2025-07-03"),
         // 2025-07-04 — T2 — CME-SVC-2025-07-03 — Independence Day: 12:00 CT.
-        (2025, 7, 4, early_close(NOON), T2, "CME-SVC-2025-07-03"),
+        (2025, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2025-07-03"),
         // 2025-09-01 — T2 — CME-SVC-2025-08-31 — Labor Day: 12:00 CT.
-        (2025, 9, 1, early_close(NOON), T2, "CME-SVC-2025-08-31"),
+        (2025, 9, 1, early_close(12 * 3_600), T2, "CME-SVC-2025-08-31"),
         // 2025-09-02 - T2 - CME-SVC-2025-08-31 - Labor Day; as 2025-01-21.
         (
             2025,
@@ -425,7 +425,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2025-08-31"
         ),
         // 2025-11-27 — T2 — CME-SVC-2025-11-26 — Thanksgiving: 12:00 CT.
-        (2025, 11, 27, early_close(NOON), T2, "CME-SVC-2025-11-26"),
+        (2025, 11, 27, early_close(12 * 3_600), T2, "CME-SVC-2025-11-26"),
         // 2025-11-28 — T2 — CME-SVC-2025-11-26 — day after Thanksgiving:
         // 2025-11-28 - T2 - CME-SVC-2025-11-26 - day after Thanksgiving; the Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and its own session is cut at 12:15 CT.
         (
@@ -446,7 +446,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             2025,
             12,
             24,
-            early_close(QUARTER_PAST_NOON),
+            early_close(12 * 3_600 + 15 * 60),
             T2,
             "CME-SVC-2025-12-24"
         ),
@@ -458,7 +458,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2026, 1, 1, Closed, T2, "CME-SVC-2025-12-31"),
         // 2026-01-19 — T2 — CME-SVC-2026-01-18 — Martin Luther King Jr. Day:
         // 12:00 CT.
-        (2026, 1, 19, early_close(NOON), T2, "CME-SVC-2026-01-18"),
+        (2026, 1, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-01-18"),
         // 2026-01-20 - T2 - CME-SVC-2026-01-18 - MLK Day; as 2025-01-21.
         (
             2026,
@@ -469,7 +469,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2026-01-18"
         ),
         // 2026-02-16 — T2 — CME-SVC-2026-02-15 — Presidents' Day: 12:00 CT.
-        (2026, 2, 16, early_close(NOON), T2, "CME-SVC-2026-02-15"),
+        (2026, 2, 16, early_close(12 * 3_600), T2, "CME-SVC-2026-02-15"),
         // 2026-02-17 - T2 - CME-SVC-2026-02-15 - Presidents Day; as 2025-01-21.
         (
             2026,
@@ -485,12 +485,12 @@ pub(crate) static CME: &HolidayTable = holidays! {
             2026,
             4,
             3,
-            early_close(QUARTER_PAST_EIGHT),
+            early_close(8 * 3_600 + 15 * 60),
             T2,
             "CME-SVC-2026-04-01"
         ),
         // 2026-05-25 — T2 — CME-SVC-2026-05-24 — Memorial Day: 12:00 CT.
-        (2026, 5, 25, early_close(NOON), T2, "CME-SVC-2026-05-24"),
+        (2026, 5, 25, early_close(12 * 3_600), T2, "CME-SVC-2026-05-24"),
         // 2026-05-26 - T2 - CME-SVC-2026-05-24 - Memorial Day; as 2025-01-21.
         (
             2026,
@@ -501,18 +501,18 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2026-05-24"
         ),
         // 2026-06-19 — T2 — CME-SVC-2026-06-18 — Juneteenth: 12:00 CT.
-        (2026, 6, 19, early_close(NOON), T2, "CME-SVC-2026-06-18"),
+        (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
         // 2026-06-22 — T2 — CME-SVC-2026-06-18 — Saturday session 05:00-17:00 CT
         // carrying this trade date; the complete trading day is stated.
         (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 — T2 — CME-SVC-2026-07-03 — Independence Day observed:
         // 12:00 CT.
-        (2026, 7, 3, early_close(NOON), T2, "CME-SVC-2026-07-03"),
+        (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
         // 2026-07-06 — T2 — CME-SVC-2026-07-03 — Saturday session 05:00-17:00 CT
         // carrying this trade date; the complete trading day is stated.
         (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 — T2 — CME-SVC-2026-09-06 — Labor Day: 12:00 CT.
-        (2026, 9, 7, early_close(NOON), T2, "CME-SVC-2026-09-06"),
+        (2026, 9, 7, early_close(12 * 3_600), T2, "CME-SVC-2026-09-06"),
         // 2026-09-08 - T2 - CME-SVC-2026-09-06 - Labor Day; as 2025-01-21.
         (
             2026,
@@ -523,7 +523,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2026-09-06"
         ),
         // 2026-11-26 — T2 — CME-SVC-2026-11-25 — Thanksgiving: 12:00 CT.
-        (2026, 11, 26, early_close(NOON), T2, "CME-SVC-2026-11-25"),
+        (2026, 11, 26, early_close(12 * 3_600), T2, "CME-SVC-2026-11-25"),
         // 2026-11-27 — T2 — CME-SVC-2026-11-25 — day after Thanksgiving:
         // 2026-11-27 - T2 - CME-SVC-2026-11-25 - day after Thanksgiving; as 2025-11-28.
         (
@@ -540,7 +540,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             2026,
             12,
             24,
-            early_close(QUARTER_PAST_NOON),
+            early_close(12 * 3_600 + 15 * 60),
             T2,
             "CME-SVC-2026-12-22"
         ),
@@ -552,7 +552,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2027, 1, 1, Closed, T2, "CME-SVC-2026-12-31"),
         // 2027-01-18 — T2 — CME-SVC-2027-01-17 — Martin Luther King Jr. Day:
         // 12:00 CT.
-        (2027, 1, 18, early_close(NOON), T2, "CME-SVC-2027-01-17"),
+        (2027, 1, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-01-17"),
         // 2027-01-19 - T2 - CME-SVC-2027-01-17 - MLK Day; as 2025-01-21.
         (
             2027,
@@ -563,7 +563,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2027-01-17"
         ),
         // 2027-02-15 — T2 — CME-SVC-2027-02-14 — Presidents' Day: 12:00 CT.
-        (2027, 2, 15, early_close(NOON), T2, "CME-SVC-2027-02-14"),
+        (2027, 2, 15, early_close(12 * 3_600), T2, "CME-SVC-2027-02-14"),
         // 2027-02-16 - T2 - CME-SVC-2027-02-14 - Presidents Day; as 2025-01-21.
         (
             2027,
@@ -577,7 +577,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // closure, no events published.
         (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-25"),
         // 2027-05-31 — T2 — CME-SVC-2027-05-30 — Memorial Day: 12:00 CT.
-        (2027, 5, 31, early_close(NOON), T2, "CME-SVC-2027-05-30"),
+        (2027, 5, 31, early_close(12 * 3_600), T2, "CME-SVC-2027-05-30"),
         // 2027-06-01 - T2 - CME-SVC-2027-05-30 - Memorial Day; as 2025-01-21.
         (
             2027,
@@ -588,13 +588,13 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2027-05-30"
         ),
         // 2027-06-18 — T2 — CME-SVC-2027-06-17 — Juneteenth observed: 12:00 CT.
-        (2027, 6, 18, early_close(NOON), T2, "CME-SVC-2027-06-17"),
+        (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
         // 2027-06-21 — T2 — CME-SVC-2027-06-17 — Saturday session 05:00-17:00 CT
         // carrying this trade date; the complete trading day is stated.
         (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 — T2 — CME-SVC-2027-07-04 — Independence Day observed:
         // 12:00 CT.
-        (2027, 7, 5, early_close(NOON), T2, "CME-SVC-2027-07-04"),
+        (2027, 7, 5, early_close(12 * 3_600), T2, "CME-SVC-2027-07-04"),
         // 2027-07-06 - T2 - CME-SVC-2027-07-04 - Independence Day observed; as 2025-01-21.
         (
             2027,
@@ -605,7 +605,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2027-07-04"
         ),
         // 2027-09-06 — T2 — CME-SVC-2027-09-05 — Labor Day: 12:00 CT.
-        (2027, 9, 6, early_close(NOON), T2, "CME-SVC-2027-09-05"),
+        (2027, 9, 6, early_close(12 * 3_600), T2, "CME-SVC-2027-09-05"),
         // 2027-09-07 - T2 - CME-SVC-2027-09-05 - Labor Day; as 2025-01-21.
         (
             2027,
@@ -616,7 +616,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
             "CME-SVC-2027-09-05"
         ),
         // 2027-11-25 — T2 — CME-SVC-2027-11-24 — Thanksgiving: 12:00 CT.
-        (2027, 11, 25, early_close(NOON), T2, "CME-SVC-2027-11-24"),
+        (2027, 11, 25, early_close(12 * 3_600), T2, "CME-SVC-2027-11-24"),
         // 2027-11-26 — T2 — CME-SVC-2027-11-24 — day after Thanksgiving:
         // 2027-11-26 - T2 - CME-SVC-2027-11-24 - day after Thanksgiving; as 2025-11-28.
         (

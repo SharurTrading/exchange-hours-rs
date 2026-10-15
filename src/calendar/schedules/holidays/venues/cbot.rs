@@ -470,7 +470,7 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         // 2025-11-29 - T2 - CME-SVC-2025-11-26-SAT - Thanksgiving Saturday, no events published.
         (2025, 11, 29, Closed, T2, "CME-SVC-2025-11-26-SAT"),
         // 2025-12-24 - T2 - CME-SVC-2025-12-24 - Christmas Eve, 12:05 CT final close.
-        (2025, 12, 24, early_close(HALF_DAY_CLOSE), T2, "CME-SVC-2025-12-24"),
+        (2025, 12, 24, early_close(12 * 3_600 + 5 * 60), T2, "CME-SVC-2025-12-24"),
         // 2025-12-25 - T2 - CME-SVC-2025-12-24 - Christmas Day, no events published.
         (2025, 12, 25, Closed, T2, "CME-SVC-2025-12-24"),
         // 2025-12-26 - T2 - CME-SVC-2025-12-24 - no prior-evening leg; the day opens with CME's 06:00 CT pre-open, then the ordinary session and post-close queue.
@@ -552,7 +552,7 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
             "CME-SVC-2026-11-25"
         ),
         // 2026-12-24 - T2 - CME-SVC-2026-12-24 - Christmas Eve, 12:05 CT final close.
-        (2026, 12, 24, early_close(HALF_DAY_CLOSE), T2, "CME-SVC-2026-12-24"),
+        (2026, 12, 24, early_close(12 * 3_600 + 5 * 60), T2, "CME-SVC-2026-12-24"),
         // 2026-12-25 - T2 - CME-SVC-2026-12-24 - Christmas Day, no events published.
         (2026, 12, 25, Closed, T2, "CME-SVC-2026-12-24"),
         // 2026-12-31 - T2 - CME-SVC-2026-12-31 - New Year's Day eve: the complete day, whose 14:30-16:00 CT queue CME dates to this trade date.

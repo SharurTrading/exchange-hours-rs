@@ -38,6 +38,17 @@ def parse_family(family: str) -> dict:
     text = (HOLIDAYS / f"{family}.rs").read_text()
     start = text.index("holidays! {")
     body = text[start:]
+    # The family's private scalar constants are not importable across modules,
+    # so the emitted rows expand them to the family's own arithmetic — the
+    # kind, tier and document id stay verbatim.
+    scalars = {
+        name: expr.strip()
+        for name, expr in re.findall(r"^const ([A-Z][A-Z0-9_]+): u32 = ([^;]+);", text, re.M)
+    }
+    rows = body[body.index("rows: ["):]
+    for name, expr in scalars.items():
+        rows = re.sub(rf"\b{name}\b", expr, rows)
+    body = body[: body.index("rows: [")] + rows
     coverage = re.search(r"coverage: \[(.*?)\],", body, re.S).group(1)
     rows_start = body.index("rows: [") + len("rows: [")
     rows_end = body.index("\n    ],", rows_start)

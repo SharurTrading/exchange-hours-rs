@@ -9,6 +9,18 @@
 - A markdown lint gate: `markdownlint-cli2`, pinned at 0.23.3, configured in
   `.markdownlint-cli2.jsonc` with each rule deviation's reason and enforced by
   a `markdown-lint` CI job; the tracked markdown it flagged is fixed.
+- Record the 2026-10-15 (UTC) enumeration re-sweep of the CME 2023-01-16
+  (Martin Luther King Jr. Day) `Unsourced` marker in the seven served Globex
+  family evidence files. The sweep enumerated whole Wayback directories
+  instead of guessing filenames — no Globex-hours MLK-2023 document exists
+  under any filename — and read the four MLK artifacts the operator's old
+  holiday directory holds (a CME Clearing advisory, an OTC advisory, a
+  settlement-times PDF and the compact MGEX/DME workbook): none states a
+  session hour. The January 2023 weekly Globex advisories carry no holiday
+  schedule, and the holiday-calendar page never printed 2023 MLK hours in any
+  captured state. No row, window or count moves; the marker stays
+  `Unsourced` with its closing condition unchanged. Research store:
+  `holidays/raw/cme-2023-mlk-resweep-2026-10-15/`.
 
 ## [1.2.0] - 2026-10-14
 

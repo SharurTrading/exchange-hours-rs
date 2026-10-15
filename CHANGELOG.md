@@ -6,6 +6,21 @@
 
 ### Added
 
+- `globex_nikkei_225_dollar`'s sixteen withheld holiday dates (2022-2024) ship as
+  market-data-confirmed rows: twelve-hour early closes at 12:00 CT on nine dates,
+  12:15 CT final closes on 2024-11-29 and 2024-12-24, the 08:15 CT Good Friday
+  2023 close, full closures on 2024-03-29 and 2024-12-25, with 2024-07-03 and
+  2024-12-31 audited normal — holiday classification now answers instead of
+  refusing on every date in the table's windows, and the served Globex surface
+  carries no `Unsourced` row anywhere.
+- The livestock published-table gaps closed on market-data confirmation: the
+  14:30-16:00 CT post-close queue ran across the whole November 2016..March
+  2020 capture omission, and the 06:00-08:30 CT morning queue opened on every
+  sampled weekday of its carried span from 2016-03-02. The gold, silver and
+  copper TAS carried closes, the platinum and palladium TAS carried windows,
+  and the event-contract family's carried 16:00 CT daily close are likewise
+  witnessed constant across their recorded gaps, closing six dormant recorded
+  gaps as `MARKET-DATA` evidence records.
 - A markdown lint gate: `markdownlint-cli2`, pinned at 0.23.3, configured in
   `.markdownlint-cli2.jsonc` with each rule deviation's reason and enforced by
   a `markdown-lint` CI job; the tracked markdown it flagged is fixed.

@@ -332,6 +332,7 @@ next review).
 | 2024-12-25 | closed | `Christmas Day` — `NON-trading day.` | ``LSE-BUSDAYS-2024-02-07`` | T1 | the operator's own printed date; corroborated by the 2024-03-08 capture |
 | 2024-12-26 | closed | `Boxing Day` — `NON-trading day.` | ``LSE-BUSDAYS-2024-02-07`` | T1 | the operator's own printed date; corroborated by the 2024-03-08 capture |
 | 2024-12-31 | early close | `New Year Holiday half day` — `Markets closing process commences from 12:30 London time. Standard settlement day.` | ``LSE-BUSDAYS-2024-02-07`` | T1 | the printed event date; corroborated by the 2024-03-08 capture |
+
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -543,6 +544,5 @@ Five 2025 dates — 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and
 table had already moved past them when the first 2025-era capture was taken
 (2025-12-18 starts at 2025-12-24) and the Wayback index holds no capture of
 the gap, so the rows ship as `Unsourced` and claim no closure.
-
 
 The final paragraph above records the former gap; the public mirror closes it.

@@ -10,34 +10,34 @@
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-10-01 UTC)
 
 **Gap: order-entry** — the trading session is sourced; what is withheld is a
-queue or phase in which no trade can print. COMEX 100-Ounce Silver futures,
-CME Globex root `SIL`, security group 4S. CME Globex notice 20260817 announced
-the product's migration to MDP channel 329 / market segment 74 "Effective
-Sunday, August 30 (trade date Monday, August 31)" together with its expansion
-to 24/7 trading, and notice 20260907 restated the expansion's own effective
-day in session language: "Effective this Friday, September 11, CME Group will
-expand 100-Ounce Silver futures to 24/7 Trading. Production 100-Ounce Silver
-futures weekend trading will begin at 4:30 p.m. Central Time." The key carries
-the product's whole life so a caller never switches keys on a date: the shared
-NYMEX/COMEX energy-and-metals grid by reference to that family's own dated
-rows through 2026-09-10, the 2026-09-11 bridge day (Thursday's leg still opens
-17:00 CT and closes Friday 16:00 under the old grid; the first weekend leg
-opens 16:30 CT behind that one Friday's 30-minute maintenance extension), and
-the 24/7 grid from 2026-09-12 — Monday-Friday 00:00-16:00 and 16:02-24:00 CT
-behind the operator's two-minute daily maintenance ("All subsequent Friday
-trading sessions will open at their regular time of 4:02 p.m. CT"), Saturday
-00:00-02:00 and 04:00-24:00 CT around the two-hour weekly window whose
-"2:00 a.m. – 4:00 a.m. CT standard schedule" notice 20260921 states for the
-24/7 markets, and all of Sunday. The weekend block carries the following open
-business date, as the notice states: "All holiday or weekend trading from
-Friday evening through Sunday evening will have a trade date of the following
-business day." Partial / order-entry because no artifact in hand states a
-Pre-Open queue for the 24/7 era, so the maintenance windows are served as
-closed halts rather than order entry; the queue's absence is a sourced absence
-like Rough Rice's, recorded under residual risks below. Dormant: the consumer
-routes `SIL` to the Comex venue / `globex_energy` today, whose documented scope
-excludes differently specified products — the routing observation is issue
-#193, and this key is what the consumer re-routes the root to.
+queue or phase in which no trade can print. COMEX 100-Ounce Silver futures, CME
+Globex root `SIL`, security group 4S. CME Globex notice 20260817 announced the
+product's migration to MDP channel 329 / market segment 74 "Effective Sunday,
+August 30 (trade date Monday, August 31)" together with its expansion to 24/7
+trading, and notice 20260907 restated the expansion's own effective day in
+session language: "Effective this Friday, September 11, CME Group will expand
+100-Ounce Silver futures to 24/7 Trading. Production 100-Ounce Silver futures
+weekend trading will begin at 4:30 p.m. Central Time." The key carries the
+product's whole life so a caller never switches keys on a date: the shared
+NYMEX/COMEX energy-and-metals grid by reference to that family's own dated rows
+through 2026-09-10, the 2026-09-11 bridge day (Thursday's leg still opens 17:00
+CT and closes Friday 16:00 under the old grid; the first weekend leg opens 16:30
+CT behind that one Friday's 30-minute maintenance extension), and the 24/7 grid
+from 2026-09-12 — Monday-Friday 00:00-16:00 and 16:02-24:00 CT behind the
+operator's two-minute daily maintenance ("All subsequent Friday trading sessions
+will open at their regular time of 4:02 p.m. CT"), Saturday 00:00-02:00 and
+04:00-24:00 CT around the two-hour weekly window whose "2:00 a.m. – 4:00 a.m. CT
+standard schedule" notice 20260921 states for the 24/7 markets, and all of
+Sunday. The weekend block carries the following open business date, as the
+notice states: "All holiday or weekend trading from Friday evening through
+Sunday evening will have a trade date of the following business day." Partial /
+order-entry because no artifact in hand states a Pre-Open queue for the 24/7
+era, so the maintenance windows are served as closed halts rather than order
+entry; the queue's absence is a sourced absence like Rough Rice's, recorded
+under residual risks below. Dormant: the consumer routes `SIL` to the Comex
+venue / `globex_energy` today, whose documented scope excludes differently
+specified products — the routing observation is issue #193, and this key is what
+the consumer re-routes the root to.
 
 ## Revision rows
 

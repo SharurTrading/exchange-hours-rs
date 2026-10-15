@@ -213,7 +213,6 @@ session, so the extended slice is empty.
 
 Baseline before 2012-01-30. The earliest primary statements of the Sugar grid inside the modelled window are both March 2010: ICE's DST notice (day unstated, `exnot03XX10DST.pdf`) names "the normal 3:30 am NY time" open, and the operator's Sugar brochure (`IFUS-SUGAR-BROCHURE-2010`, document date 22 March 2010) prints the first full grid, `HOURS  0330 EST TO 1400EST` — the same electronic 03:30-14:00 the August 2011 master table shows, so the carried baseline is witnessed, not merely carried. No primary source gives a January 2010 close, so the grid is still keyed from the August 2011 edition and carried back over the unwitnessed head of the span rather than inventing an earlier cutover.
 
-
 2026-09-30: the theice.com product-page channel was swept for pre-August-2011
 editions (domain-wide CDX 2009-2012, 12 503 collapsed url keys; saved beside the
 other raw directories in the research store's

@@ -178,11 +178,11 @@ verbatim public mirror, and the portal's index entry alone still proves only
 that a document exists and when it was published, as the SGX Titan newsletters
 do.
 
-Built-in *replacement-session* data is not included in the current implementation.
-The 2026-09-21 amendment supersedes the earlier caller-only scope decision:
-#93 adds built-in block support and #116 supplies complete served data from 2025.
-The current tables still carry scalar arrangements. Completing the new window
-requires evidence as well as representation:
+Built-in *replacement-session* data is not included in the current
+implementation. The 2026-09-21 amendment supersedes the earlier caller-only
+scope decision: #93 adds built-in block support and #116 supplies complete
+served data from 2025. The current tables still carry scalar arrangements.
+Completing the new window requires evidence as well as representation:
 
 - holiday topology differs by venue, segment, and futures product family;
 - operator notices are sometimes revised;

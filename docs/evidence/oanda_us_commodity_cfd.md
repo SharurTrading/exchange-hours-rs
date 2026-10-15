@@ -26,7 +26,7 @@ The page prints the identical pair across the group:
 
 > `Natural Gas | USD | New York | 2,500 | Sun - Fri 18:01 - 16:59`
 > `Copper | USD | Chicago | 2,500 | Sun - Fri 17:01 - 15:59`
-
+>
 > `Platinum (XPT) | USD | New York | 100 | Sun - Fri 18:01 - 16:59`
 
 The instants sit one minute inside the futures grid's 17:00-16:00 CT — the

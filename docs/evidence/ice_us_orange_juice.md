@@ -151,7 +151,6 @@ Monday 08:00 through Friday 14:00 New York.
 Master table, verbatim: "FCOJ-A   8:00 - 14:00". Corroborated by the ICE
 product page: "NEW YORK  8:00 AM - 2:00 PM  08:00 - 14:00".
 
-
 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
 sets these hours administratively, not by rule. Its product rulebook chapters
 - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured

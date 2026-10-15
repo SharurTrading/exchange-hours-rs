@@ -259,6 +259,7 @@ exists.
 | 2024-12-25 | closed | `Wednesday 25 December 2024 (Christmas)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
 | 2024-12-26 | closed | `Thursday 26 December 2024 (St Stephens Day / Boxing Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
 | 2024-12-31 | early close | `Tuesday 31 December 2024` — Amsterdam `**Half Trading Day`; the same appendix grid, TAL `14:00 - 14:05` | ``EURONEXT-EOY-2024`` | T1 | same reading as 2024-12-24 |
+
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |

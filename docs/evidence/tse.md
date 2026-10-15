@@ -400,6 +400,7 @@ agree date for date except where the operator itself revised the projection:
 | 2024-10-14 | closed | `Oct. 14 (Mon.) Sports Day` | `JPX-HOL-2024` | T1 | Printed date 2024-10-14, a Monday |
 | 2024-11-04 | closed | `Nov. 4 (Mon.) Culture Day (Nov. 3) observed` | `JPX-HOL-2024` | T1 | Printed date 2024-11-04, a Monday; event date Nov. 3 is a Sunday and the page's own observance rule (`National holidays that fall on a Sunday are observed on the following Monday.`) is why the printed row lands on the Monday |
 | 2024-12-31 | closed | `Dec. 31 (Tue.) Market Holiday` | `JPX-HOL-2024` | T1 | Printed date 2024-12-31, a Tuesday |
+
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -494,7 +495,6 @@ agree date for date except where the operator itself revised the projection:
 All seventeen artifacts are saved in the research store — the 2025-2027 pair under `holidays/raw/equities/tse/2025-2027/` and the fifteen 2010-2024 editions under `holidays/raw/equities/tse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests. The 2025-2027 replay and the pre-2015 TSE-era captures are stored gzip-compressed exactly as replayed; the rest are stored exactly as served.
 
 **Why the window runs 2010-01-01..2027-12-31.** The 2010 start is the charter support floor, and every edition from 2010 on states its own year complete (the equinoxes are printed in every edition), so the whole span answers from the operator's own calendars. **The forward end at 2027-12-31 needs no gap row.** The operator's own publication pattern is the current and next year on one page; every printed 2027 date is unconditional and complete (both equinoxes are printed), so the window reaches the end of the published future and nothing inside it is withheld. Every other trade date in the window is a date the page does not modify and is audited normal. The page's own caveat — `Exchange holidays are subject to change due to changes to national holidays under Japan's Act on National Holidays` — is the standing residual risk recorded under Gaps below; no such change has occurred inside this window. Re-checked monthly per LAW-WATCH; the 2028 table extends the window when JPX prints it.
-
 
 ## Sources
 

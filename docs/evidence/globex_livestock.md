@@ -19,6 +19,7 @@
 - 2020-05-31 — T1 — CME SER-8599R — the morning Pre-Open start moves from 06:00 to 08:00 CT for trade date Monday 2020-06-01.
 
 ## Evidence documents
+
 The 2016-2018, 2019-2021 and 2022-2024 eras carry their own `### Documents` table in the
 section for their years, and this table carries every other id.
 
@@ -151,7 +152,6 @@ The eras are contiguous from 2010-01-01, so every date they span has an answer.
 | 2012-12-25 | closed | `CME Globex is closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | CME prints `Dec 25` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2012-12-26 | late open | `09:05 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `09:05 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
 
-
 ### 2016
 
 | trade date | kind | instant as printed | document | tier | derived from |
@@ -208,6 +208,7 @@ states the family's ordinary day there — `Pre-opening` 06:00, `Open` 08:30, `C
 the ordinary week stands on it.
 
 ### Documents
+
 This era's rows cite the ids below — CME Group's own Globex holiday schedules, all at
 **T1**. The 2016 sheets are members of the 2016 annual bundle (the revised standalone
 New Year's PDF the era's 2016-01-01 closure reads from is resolved in the main
@@ -221,6 +222,7 @@ workbooks, `docs/zip2016/` for the 2016 bundle members) and
 `holidays/raw/cme-2016-2018-fix/` (`docs/zip2017/` and `docs/zip2018/` for the two later
 bundles), whose `INDEX.md` files carry the byte counts. The next `### Documents` table in
 this file is the 2019-2021 era's.
+
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28` | `2016-martin-luther-king-holiday-schedule.pdf` | <https://web.archive.org/web/20170628id_/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2016-martin-luther-king-holiday-schedule.pdf> | 2017-06-28T11:58:19Z | T1 | `0fac2d08a84f8e9a637573438adfab33ba91c69e76b6dce01f0ca4cbcde8aff1` |
@@ -255,7 +257,9 @@ this file is the 2019-2021 era's.
 | `2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30` | `2018-labor-day-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-labor-day-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `9b8c892dd3faba6900aae949f7f0c63b525191a76dccc938aa9859920b71b40d` |
 | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | `2018-thanksgiving-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-thanksgiving-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `31fc95f5b27f8689477b4abb557f14b2cf9ac481262926e30b78adf1455adff1` |
 | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | `2018-christmas-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-christmas-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `b97ee5f47d55c4383c7f1fa7d554eba3c7f0e8ded18343aadd06d7908d9e7a91` |
+
 ### Gaps and residual risks, 2016-2018
+
 **The era is complete for this family; the notes below are its residual risks.** The wave ships 35 rows — 27 full closures and 8 early closes at 12:15 CT — over 2016-01-01..2018-12-31, every one at T1, and 2018-12-26 is audited normal beside them.
 
 **Columbus Day and Veterans Day — six dates with no row.** 2016-10-10, 2016-11-11, 2017-10-09, 2017-11-10, 2018-10-08 and 2018-11-12 lie inside this window and carry no row, so the family's ordinary week stands there. CME publishes Globex schedules for both holidays in these years — `2016-columbus-day-holiday-schedule.xls` is saved in the research store, and the 2017 and 2018 sheets are enumerated in its CDX index — but the block did not work them up, because the family trades both days on its ordinary grid in every neighbouring era. Closing condition: a CME Globex holiday schedule naming either date for this family, or a confirmation that the enumerated sheets state this family's ordinary day.
@@ -314,7 +318,9 @@ this file is the 2019-2021 era's.
 | 2021-12-24 | closed | `Closed for Christmas` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | CME prints the closure on this date, and this family's session lies inside one civil day, so the operator's event date is the crate's trade date. |
 
 ### Documents
+
 This era's rows cite the ids below — CME Group's own Globex holiday schedules, all at **T1**. The 2020 and 2021 sheets are members of their year's consolidated annual bundle; the 2019 sheets likewise, and 1-2 January 2019 come from the December-2018 supplement CME published before the bundle. Each id resolves to the URL the bytes were read at — an Internet Archive raw replay of CME's own file — with the capture time in UTC, the tier and the sha256. All of them resolve in the research store's `holidays/raw/cme-2019-2021/`, whose `INDEX.md` carries the byte counts and whose `shasum.txt` hashes every workbook. The next `### Documents` table in this file is the 2022-2024 era's.
+
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2019-holiday-calendars.zip @2021-01-26T09:48:37Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20210126094837id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2019-holiday-calendars.zip> | archive capture 2021-01-26T09:48:37Z | T1 | `1e861e355238903b013c1288f4eb9e8026e6ddd5fc1001dfd2acdbfcc1832e05` |
@@ -347,7 +353,9 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | `2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `83724afe5e7f073bf58d3fd0118269c92d7d1c0c8c18ff716fbebe5e51b7c64c` |
 | `2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `7a8d5ce35c639998abf64723de2cc2d649dc015b1aa6cfc3bc326ab5cdfd0c4f` |
 | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `df6cdbc4c996109fe5a5829b5e8aaf622c20c6f16f1464dcdd9d5250c4163a47` |
+
 ### Gaps and residual risks, 2019-2021
+
 **This era brought the family to four audited windows; the waves since have brought it to six.** The table as a whole carries 208 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **34 rows**: 27 full closures, 7 early closes and 0 `Unsourced` rows. Every row is at T1. The 2016-2018 interval the era left unworked, and which `holiday_coverage` reported as outside every window until the #110 wave, is the six windows' third.
 **Juneteenth 2019, 2020 and 2021 — the three `Unsourced` markers deleted 2026-10-09 (UTC); the dates are audited normal.** CME published no Juneteenth schedule in any of the three years: each year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — is CME's own account of every Globex holiday schedule it published that year and carries no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either; and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. The wave that first swept these years shipped `Unsourced` markers on the ground that bundle silence cannot answer a date the operator later marks as a holiday, and the #224 review re-ran the channels and left the markers standing; the 2026-10-09 sourcing directive overturned that verdict: the operator's own consolidated enumeration of its published arrangements is an affirmative statement of which dates carry arrangements, Juneteenth first appears in CME's published set in 2022 (`2022-juneteenth-holiday-schedule.xls`), 2019 and 2020 predate the date's becoming a U.S. federal holiday entirely, and 2021-06-19 is a **Saturday** the operator's regular week already closes. Each date therefore audits normal inside its window and ships no row. Residual: an operator document stating that one of these dates carried an arrangement would re-open it as a schedule fix.
 
@@ -405,6 +413,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | 2024-11-29 | early close | `12:05` | `CME-SVC-2024-11-27` | T2 | CME prints `12:05` as the final close of this date's own flat day session, which is earlier than the family's ordinary 13:05 CT final close; nothing wraps a local midnight, so the operator's event date is the crate's trade date |
 | 2024-12-24 | early close | `12:15` | `CME-SVC-2024-12-24` | T2 | CME prints `12:15` as the final close of this date's own flat day session, which is earlier than the family's ordinary 13:05 CT final close; nothing wraps a local midnight, so the operator's event date is the crate's trade date |
 | 2024-12-25 | closed | `events []` — the artifact's own empty event list for this date | `CME-SVC-2024-12-24` | T2 | CME prints no session for the date, so the trade date that session would have ended is removed; this family trades inside one civil day, so the operator's event date is the crate's trade date |
+
 ### Documents
 
 This era's rows cite the ids below: CME Group's own published holiday schedules at **T1** (2022 per-asset-class workbooks, 2023 one-pagers, and the 2024 Good Friday and year-end service windows as archived), and responses of CME's own `trading-hours-by-product` service at **T2**. Each id resolves to the URL it was read at — an Internet Archive raw replay for a saved capture, the operator's own endpoint for a live retrieval — with the capture or retrieval time in UTC, the tier and the sha256. All thirty-one artifacts resolve in the research store's `holidays/raw/cme-2022-2024/` and `holidays/raw/cme-2022-2024-fix/`, whose `INDEX.md` files carry the byte counts.
@@ -442,6 +451,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | `CME-SVC-2024-09-01` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-09-01&toEventDate=2024-09-03&isProtected&_t=1720455278683> | archive capture 2024-07-08T16:14:39Z | T2 | `bbe6c78555cba0437fe4b9c6eac0063983ecae49056877db618ed2b29c109546` |
 | `CME-SVC-2024-11-27` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-11-27&toEventDate=2024-11-29&isProtected&_t=1720455278685> | archive capture 2024-07-08T16:14:39Z | T2 | `f6a15f26991d25f8c6821fa6c967d0e76b2ad3f775bed62a2a001ec2fd7e389a` |
 | `CME-SVC-2024-12-24` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-12-24&toEventDate=2024-12-26&isProtected&_t=1734710019537> | archive capture 2024-12-20T15:53:40Z | T2 | `183c85160e31d53fde30c422048b8e778937d8866f3ea1c45e2dd570ea9db1c8` |
+
 ### Gaps and residual risks, 2022-2024
 
 **2023-02-20 and 2023-04-07 — worked up 2026-10-09 (UTC) from the operator's own summary sheets; 2023-01-16 stays `Unsourced`.** The #224 review's saved sheets — `files/presidents-day.pdf @2023-03-29T11:57:47Z` and `files/good-friday.pdf @2024-07-08T16:00:09Z`, the operator's own unsuffixed summary sheets on the `cmegroup.com/files/` channel, the same documents `globex_grains` and `globex_interest_rates` already read the two dates from — print every asset class, and for this family the sheets print LIVESTOCK no Monday column and no Friday leg — no session belongs to either trade date. The rows re-key to the sheets at T1. 2023-01-16 keeps its `Unsourced` marker, cited to the T2 capture `CME-SVC-2023-01-15`, the operator's own machine channel read as bytes, which returns an empty event list for its window, and every operator channel the #224 review enumerated for the date closes negative: the 2023 calendar page (captured on the day) routes the holiday's hours into the trading-hours service alone, whose archived event history begins between 2023-05-28 and 2023-11-22; the summary-sheet channel `cmegroup.com/files/<holiday>.pdf` that served Presidents Day and Good Friday has `mlk-day.pdf` only as archived 404s and no `martin-luther-king.pdf` captures; the advisories are CME Clearing memoranda stating no session hours; and only a compact MGEX/DME workbook exists under `holiday-calendar/files/`. The day after it is a second, unmodelled gap: 2023-01-17 may have lost its prior-evening leg the way 2024-01-02 and 2023-12-26 did, and no artifact this crate read states whether it did, so it ships no row and the family's ordinary week stands there. Closing condition for the marker: a CME holiday schedule for 2023 covering 2023-01-16 at T1, or a T2 window that carries its events. The 2026-10-09 (UTC) Common Crawl sweep closed the second archive: no collection queried holds a capture of the trading-hours service path, so no T2 window can exist (store `holidays/raw/cc-sweeps-2026-10-09.txt`). The 2026-10-10 (UTC) mirror sweep closed the remaining untried operator channels: `cmegroup.cn` — the operator's own Chinese domain, whose verbatim mirror would be T1 — has no holiday or trading-hours page anywhere in the archive (1 818 captures across 2022-12..2023-04, all product-class marketing pages), `cmegroup.fr` is a parked EuroDNS domain that has never carried CME content, the `cmegroup.com/education/*` and `/advisories/*` paths have zero captures in the window, and the one further archived service capture that queries a January 2023 event window (the `cleared`/`group` URL shape, captured 2026-07-19) answers HTTP 500 (store `holidays/raw/cme-2023-mlk-channel-b-negatives/`).
@@ -687,7 +697,6 @@ beside it, given with the product id and the `eventDate` it was read from.
 - **2028-01-01 is outside coverage.** The operator's published future reaches it — CME's 2027-12-30 .. 2028-01-02 response prints no Livestock events for that Saturday — but the declared window ends at 2027-12-31, so no row is keyed to it and `holiday_on` answers `None` there. Extending the window is a later wave's decision, not a gap in this one.
 - Lean Hogs (`HE`) corroborates every 2027 row from `raw/cme-2025-2027/live/extra/extra_2027-*.json`.
 
-
 ### 2013
 
 | trade date | kind | instant as printed | document | tier | derived from |
@@ -747,6 +756,7 @@ beside it, given with the product id and the `eventDate` it was read from.
 | 2015-12-31 | early close | `1355 CT / 1455 ET / 1955 UTC` | `2016-new-years-holiday-schedule.pdf @2016-01-08` | T1 | the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT |
 
 ### Documents
+
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130717050333id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july-done.pdf> | archive capture 2013-07-17T05:03:33Z | T1 | `768c7813542459dbc5443e79e514bb12fd511d93284beeb880af167f6049e0f0` |

@@ -62,7 +62,6 @@ The 2012-2024 rows were backfilled on 2026-09-29 (UTC) from the same corporate p
 
 Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29, and the weekend legs of the backfilled years (for example 1 Ocak 2016, 23 Nisan 2016, 1 Mayıs 2016 and 2017's 1 Ocak, 23 Nisan, 15 Temmuz, 28 Ekim and 29 Ekim) — changes no Monday-Friday trade date and ships no row; the page prints those legs as `Kapalı` beside the holiday that does remove a trade date, and the annex prints them as `seans yapılmayacaktır`.
 
-
 ### 2012
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |

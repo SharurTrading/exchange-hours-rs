@@ -1,6 +1,11 @@
-# SPDX-License-Identifier: MIT-0
+<!-- SPDX-License-Identifier: MIT-0 -->
 
-# Working tools for the stage-2.2 CME holiday waves.
+# Working tools for the stage-2.2 CME holiday waves
+
+The transcript below is kept in the shell-comment form it was written in;
+markdownlint reads it as a code block, not as headings.
+
+```text
 #
 # These are not part of the crate; they reproduce the committed holiday rows
 # from the research store's evidence blocks, and each wave's checker re-derives
@@ -157,3 +162,4 @@
 # against the checked `VENUE_ROWS` list there, so the block cannot ship a row the
 # operator statements do not produce. `holidays/cde-2021-2026.verify.json` is the
 # independent re-derivation of that block from the saved bytes.
+```

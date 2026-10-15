@@ -185,27 +185,27 @@ even if the next monthly review is not yet due; later coverage is not promised.
 
 ### Witnessed-era normal weeks — 2026-10-12 UTC
 
-The seven OANDA books with single-zone grid histories — `oanda` and
-`oanda_fx` (2021-12-08), `oanda_metals` (2021-12-08), `oanda_us_index_cfd`
-(2021-08-04), `oanda_us_bond_cfd` and `oanda_us_commodity_cfd` (2021-03-03),
-and `oanda_china50_cfd` with `oanda_singapore30_cfd` (2021-03-03) — now serve
-their witnessed normal weeks instead of refusing everything below the
-2024-02-21 print. The earlier grids are the operator's own archived page
-prints (the 2026-10-11 audit plus the 2021-03-03..2021-08-04 replays), the
-changeovers between the last earlier-grid print of 2023-06-05 and the first
-current-grid print of 2024-02-21 are undated on every enumerated operator
-channel — the help-centre FAQ captures retrieved 2026-10-12 closed the last
-indexed channel negative — and the span serves the two grids' sourced
-intersection per the charter's 2026-10-04 rule, with each disputed remainder
-disclosed in its evidence file. Dates in the witnessed spans sit below the
-first audited holiday windows, so their holiday classification refuses typed
-under the charter's 2026-10-07 one-flank ruling while the session questions
-answer. `oanda_brent` keeps its 2024-02-21 horizon: its earlier New
-York-anchored grid and its current London dagger grid do not share a zone, so
-its intersection is not expressible as one static grid and stays the recorded
-#332 gap. Labels, tiers and the executable count are unchanged.
-The broad `Exchange::Oanda`, old SGX family keys and `ice_europe_financials`
-remain dormant. The ledger contains 143 rows: 52 served and 91 dormant.
+The seven OANDA books with single-zone grid histories — `oanda` and `oanda_fx`
+(2021-12-08), `oanda_metals` (2021-12-08), `oanda_us_index_cfd` (2021-08-04),
+`oanda_us_bond_cfd` and `oanda_us_commodity_cfd` (2021-03-03), and
+`oanda_china50_cfd` with `oanda_singapore30_cfd` (2021-03-03) — now serve their
+witnessed normal weeks instead of refusing everything below the 2024-02-21
+print. The earlier grids are the operator's own archived page prints (the
+2026-10-11 audit plus the 2021-03-03..2021-08-04 replays), the changeovers
+between the last earlier-grid print of 2023-06-05 and the first current-grid
+print of 2024-02-21 are undated on every enumerated operator channel — the
+help-centre FAQ captures retrieved 2026-10-12 closed the last indexed channel
+negative — and the span serves the two grids' sourced intersection per the
+charter's 2026-10-04 rule, with each disputed remainder disclosed in its
+evidence file. Dates in the witnessed spans sit below the first audited holiday
+windows, so their holiday classification refuses typed under the charter's
+2026-10-07 one-flank ruling while the session questions answer. `oanda_brent`
+keeps its 2024-02-21 horizon: its earlier New York-anchored grid and its current
+London dagger grid do not share a zone, so its intersection is not expressible
+as one static grid and stays the recorded #332 gap. Labels, tiers and the
+executable count are unchanged. The broad `Exchange::Oanda`, old SGX family keys
+and `ice_europe_financials` remain dormant. The ledger contains 143 rows: 52
+served and 91 dormant.
 
 ## Exchanges
 

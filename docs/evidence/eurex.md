@@ -297,12 +297,13 @@ Lineage cannot settle the conflict: both are live pages of the same operator and
 
 `EUREX-TC-2025` is the corroborating artifact rather than a row's key: it states the same eight 2025 closures in the same session language, and it is the only artifact that carries the German-scope note below, but the day-by-day page is what each row cites, exactly as the 2026 rows cite `EUREX-HOLREG-2026` rather than the 2026 PDF.
 
-**Gaps, 2025:** none. The German equity and equity-index closure set the *Eurex trading
-calendar 2025* PDF declared `tba` — verbatim `Kein Handel und keine Ausübung in deutschen
-Aktien- und Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf Xetra@-Börsen-
-notierungen basieren: tba.` — was verified **not to exist** on 2026-10-05 UTC; the #157
-declaration it keyed retired with that verification (the chain is recorded below, under "The
-#157 verification"). No `Unsourced` date remains in the year and no phase is withheld.
+**Gaps, 2025:** none. The German equity and equity-index closure set the *Eurex
+trading calendar 2025* PDF declared `tba` — verbatim `Kein Handel und keine
+Ausübung in deutschen Aktien- und Aktienindex-derivaten sowie in ETF- und
+ETC-Derivaten, die auf Xetra@-Börsen- notierungen basieren: tba.` — was verified
+**not to exist** on 2026-10-05 UTC; the #157 declaration it keyed retired with
+that verification (the chain is recorded below, under "The #157 verification").
+No `Unsourced` date remains in the year and no phase is withheld.
 
 **The circulars channel is swept and negative (2026-10-04 UTC).** Eurex's circulars are the mechanism that has dated this scope before: circular 080/2014 ("Trading calendar: Holiday regulation for 3 October 2014 (“German Unification Day“)", release date 2014-04-29, retrievable from the live circular search) quotes the FWB Exchange Council's no-trading decision for Frankfurt and then states that "the Management Board of Eurex Deutschland and the Executive Board of Eurex Zürich AG likewise decided to suspend trading on this day for the following products" — German equity options, German Single Stock Futures, the DAX®-family index options and "Index Futures of the DAX® family, i.e. DAX® (FDAX), MDAX® (F2MX), TecDAX® (FTDX) and DivDAX® (FDIV)" — and that "All other products will be traded on 3 October 2014, as before." That is the shape a `tba` resolution takes, and the site's own circular database enumerates completely: the full-year listings of `query=*` with `MM/DD/yyyy` date bounds return every 2025 item (170: the numbered series `001/2025`..`119/2025` with no gap plus every Readiness Newsflash) and every 2026 item to date (100: `001/2026`..`064/2026` plus newsflashes), and no item of either year is a trading-calendar or holiday-regulation circular or a German-scope closure notice — the only "no trading" circulars of the era are KOSPI-scope (`004/2025`, `043/2025`), and the only "Trading hours at Eurex Exchange on …" circular is `105/2025`, whose subject is the 2025-12-30 year-end early closes and which states that German index futures (e.g. FDAX) are not affected. The public production newsboard carries no German-scope holiday or reminder item over 2025-01-01..2026-10-04 (the one item the 2026-10-05 re-check found in that window is Swiss-scope), against its explicit 2019-10-02 `XEUR : Holiday reminder 03.10.2019` and 2018-05-21 `XEUR : Reminder: Holiday regulation for 21st of May2018` (the operator's own spacing) items for the pre-2019 closures. Keyword sweeps (German Unity Day, Whit Monday, holiday regulation, 3 October, and the German terms, which the English-only database answers with zero), Wayback CDX of the circulars tree for 2025-2026, external web search in both languages, `/ex-de/` (HTTP 404), `deutsche-boerse.com` newsroom paths and `eurexgroup.com` (HTTP 301 to `eurex.com`) completed the sweep. Every artifact, URL, retrieval instant and sha256 is under `holidays/raw/eurex/circulars-2026-10-04/` in the research store (INDEX/SHA256SUMS beside them). At the time of the sweep this read as an unresolved `tba`; on 2026-10-05 UTC the maintainer's no-changes verification read the same complete-channel silence as one leg of the proof that the undated closures never existed, and #157 closed with the declaration's retirement (see "The #157 verification" below). The channel remains a live watch point beside the annual editions: a future German-scope closure would travel it.
 
@@ -359,15 +360,17 @@ one but that needs to be verified." Four legs, each read from bytes in the resea
    closure since 2018-10-03, and the `tba` template line returned in 2025 for a set that
    never materialised.
 
-Verdict: the no-changes hypothesis is verified. The `tba`/`to be announced` line never
-resolved because there was nothing to resolve; 2025-01-01..2026-12-30 answers `Covered` from
-the shipped all-derivatives rows (2026-12-31 alone refuses through the resolution-edge rule,
-#151), and the #157 `UnpublishedClosureDates` declaration is retired from
-`schedules/sourcing.rs`, the reason staying on the enum as vocabulary like the #93, #152 and
-#79/#123/#259 reasons before it. **Disclosed residual:** if a later operator artifact dates a
-2025/2026 German-scope closure after all, it lands as a schedule fix on the weekly watch —
-the annual Trading Calendar editions and the Holiday regulations page are the named watch
-points, and the circulars channel beside them.
+Verdict: the no-changes hypothesis is verified. The `tba`/`to be announced`
+line never resolved because there was nothing to resolve;
+2025-01-01..2026-12-30 answers `Covered` from the shipped all-derivatives
+rows (2026-12-31 alone refuses through the resolution-edge rule, #151), and
+the #157 `UnpublishedClosureDates` declaration is retired from
+`schedules/sourcing.rs`, the reason staying on the enum as vocabulary like
+the #93, #152 and #79/#123/#259 reasons before it. **Disclosed residual:** if
+a later operator artifact dates a 2025/2026 German-scope closure after all,
+it lands as a schedule fix on the weekly watch — the annual Trading Calendar
+editions and the Holiday regulations page are the named watch points, and the
+circulars channel beside them.
 
 **The German-scope record, edition by edition, read from the bytes.** The fifteen editions divide
 four ways, and the store's `holidays/raw/eurex-2010-2024/INDEX.md` tabulates every line:

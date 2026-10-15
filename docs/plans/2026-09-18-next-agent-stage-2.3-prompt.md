@@ -231,7 +231,7 @@ is not a schedule change; what matters is whether the tier the venue profile mod
 **The CDE archival constraint.** The operator's own listing is the channel, and a CDX query found
 essentially nothing. So check the listing's own depth early: if it reaches 2021, the whole window
 is T1; if it starts in, say, 2023, the table starts there and the evidence file names
-2021-06-28..<that year> as **unretrieved**, with the closing condition (the operator's listing
+2021-06-28..`<that year>` as **unretrieved**, with the closing condition (the operator's listing
 gaining those years, or an archive capture of the listing). Do not infer a 2022 closure from a
 2023 notice — `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027-fix/INDEX.md` records exactly that
 error being caught for 2026 MLK: *"the 2025 notices must not be read across years."*
@@ -357,7 +357,7 @@ that opens at the launch is not a narrowing: the venue profile is closed before 
 `tests/schedule_documentation/evidence_files.rs` already implements everything: `DOCUMENT_TABLE_HEADER`
 (line ~689) is the **one shape a documents table may take**:
 
-```
+```text
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 ```
 
@@ -383,7 +383,7 @@ Four constraints the fences enforce, all of which bite the moment a file gains a
   rows** and silently skip the file — the table finder ends at the first `\n\n`. Write the header,
   the separator and the rows as one unbroken block.
 
-A left cell may name several ids separated by `, ` when one artifact carries more than one, and
+A left cell may name several ids separated by `` `,` `` plus a space when one artifact carries more than one, and
 every URL must start with `https://`. No file exercises the multi-id form today, so prefer one id
 per row unless an artifact genuinely serves two.
 

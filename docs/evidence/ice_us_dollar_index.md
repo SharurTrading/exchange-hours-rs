@@ -189,7 +189,6 @@ The Sunday rule has equal endpoints here. A SessionRule with `open_ssm ==
 close_ssm` encodes exactly one complete local-day span, so Sunday 18:00 runs
 continuously to Monday 18:00, which is what the pre-2011 grid described.
 
-
 2026-09-30: the theice.com product-page channel was swept for pre-August-2011
 editions (domain-wide CDX 2009-2012, 12 503 collapsed url keys; recorded in the
 research store's `holidays/raw/equities/NORMAL-WEEK-RETRIEVALS-2026-09-30.md`).

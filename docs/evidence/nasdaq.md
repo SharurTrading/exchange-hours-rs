@@ -397,6 +397,7 @@ statement).
 | 2026-11-27 | early close | `Early Close - U.S. 1:00 p.m.` | `NQ-HOL-2026` | T1 | event date 2026-11-27; the sheet prints the 1:00 p.m. close and nothing after it |
 | 2026-12-24 | early close | `Early Close - U.S. 1:00 p.m.` | `NQ-HOL-2026` | T1 | event date 2026-12-24; the sheet prints the 1:00 p.m. close and nothing after it |
 | 2026-12-25 | closed | `Closed` | `NQ-HOL-2026` | T1 | event date 2026-12-25; the sheet prints no session for it |
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |

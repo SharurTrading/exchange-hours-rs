@@ -104,7 +104,6 @@ needs.
 
 ## Phase 3 — The Partial-history backlog (independent; batched by family)
 
-
 ### Resolved 2026-09-01: do NOT bound the timeline at the January-2010 floor
 
 Raised in review on PR #25 against `cme_nikkei.rs` and answered there rather
@@ -113,7 +112,7 @@ returns a venue's baseline profile for **every** date before its first revision,
 with no lower bound, so pre-2010 instants get the January-2010 grid rather than
 an absence. Measured on that branch at 18:30 CT:
 
-```
+```text
 NKD        open in: [2005, 2008, 2009, 2010]
 globex_eq  open in: [2005, 2008, 2009, 2010]
 ```
@@ -170,7 +169,6 @@ direct sourcing, and which are the real remaining executable-hours work:
 rest of US futures, (3) other futures (Eurex, ICE Europe/Endex, SGX SORA,
 Binance), (4) everything else. Queue-onset dating is last: it is the largest
 remaining pile by row count and the smallest by trading impact.
-
 
 46 ledger rows currently carry `Partial` (27 venue rows plus the key
 families). Each closes one of two ways: a sourced dated chain, or a

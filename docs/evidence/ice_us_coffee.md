@@ -193,7 +193,6 @@ Sourcing caveat, stated plainly: the January 2014 notice prints only the NEW
 grid, marking in bold which of those figures moved. It never prints the times
 it replaced.
 
-
 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
 sets these hours administratively, not by rule. Its product rulebook chapters
 - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured

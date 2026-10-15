@@ -104,7 +104,7 @@ The research store (`../exchange-hours-research`) holds the wave-5 block and its
 `2013-4th-of-july-done.pdf` … no 2013-07-03 row ships before that document is read". The
 round-2 verifier retrieved it and saved it:
 
-```
+```text
 holidays/raw/cme-2013-2015-verify-r2/new/2013-4th-of-july-done__20130717050333.pdf
   sha256 768c7813542459dbc5443e79e514bb12fd511d93284beeb880af167f6049e0f0, 73,249 bytes
   replay https://web.archive.org/web/20130717050333id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july-done.pdf
@@ -175,23 +175,23 @@ before you start**; what follows is the map, not a substitute.
 
 **Moderate / minor (record hygiene, but a reviewer will check every one):**
 
-6. Name the crate keys the documents *do* give distinct instants for and the block does not
+1. Name the crate keys the documents *do* give distinct instants for and the block does not
    model (e.g. `X15ANN` sheet `Labor` r035 `Weather` 15:15, r020 `Mini-Sized Grains and
    Oilseeds` 13:45) as gaps with their closing condition, beside the two families that are
    silent outright.
-7. The "28 newly cited documents" self-description counts wrong: only one 2013 multi-sheet
+2. The "28 newly cited documents" self-description counts wrong: only one 2013 multi-sheet
    workbook is cited.
-8. The `2014-11-11` `other_statements[0].note` says the sheet is identical to the annual
+3. The `2014-11-11` `other_statements[0].note` says the sheet is identical to the annual
    master's; the statement is the same, the sheet is not. Reword.
-9. `2013-10-14` and `2013-11-11` drop the registered-trademark glyph from the quoted document
+4. `2013-10-14` and `2013-11-11` drop the registered-trademark glyph from the quoted document
    titles (`Globex(R)`).
-10. Observation, not a defect: 29 `*_instant` fields zero-pad three-digit printed clock times
+5. Observation, not a defect: 29 `*_instant` fields zero-pad three-digit printed clock times
     (`905 CT` → `0905 CT`). Wave 4's precedent (`verbatim` literal, instants as printed) is the
     guide; if you re-emit them, do it from the bytes.
-11. The round-0 `INDEX.md` still carries the withdrawn `.xls`-twins sentence and the withdrawn
+6. The round-0 `INDEX.md` still carries the withdrawn `.xls`-twins sentence and the withdrawn
     categorical 2015 Labor Day claim, with no amendment pointer to the fix directory. Add the
     pointer.
-12. The corroborating-statement rule is applied unevenly: `X13GFPD`'s `New Years` sheet covers
+7. The corroborating-statement rule is applied unevenly: `X13GFPD`'s `New Years` sheet covers
     2013-01-01/02 in full, and none of those ten rows carries the corroboration its siblings do.
 
 Everything the verifier *confirmed* is listed in `confirmed_sound[]`; do not "fix" those, and

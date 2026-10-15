@@ -8,33 +8,31 @@ was rewritten on 2026-09-12 (UTC) after an architectural review
 (`docs/plans/2026-09-12-architectural-review.md`); law names were kept wherever
 a law's intent survived so that existing citations stay valid. The 2026-09-21
 (UTC) amendment adopted a permanent 2025 floor and complete served-scope
-coverage, staged in
-[the release plan](docs/plans/2026-09-12-path-to-release.md). The 2026-09-27
-(UTC) amendment reverses the floor decision: the support floor returns to
-**2010-01-01**, the pre-2025 history the crate ships is retained rather than
-removed (Stage 5's removal programme is cancelled; #117 closed and reverted by
-#185), and the 2010–2024 era's known gaps (#110, #101, #112, #89) close before
-1.0.0 instead of being deleted past. The 2026-09-30 (UTC) refresh records that
-the coverage contract is enforced, not pending: the migration status and
-LAW-COVERAGE now describe what ships (closes #154). The 2026-10-05 (UTC)
-amendment names `SharurTrading/exchange-hours-evidence` as the research
-store's public home — a byte-identical, PR-gated mirror the evidence-audit
-workflow checks out for the Documents-digest fence, and the checkout
-`cargo xtask verify-evidence` resolves (#288). The 2026-10-06 (UTC) amendment
-generalizes the sourced-intersection rule from undated changeovers to whole
-evidence spans between sourced windows: the bridged residual
-(`CoverageGapReason::HolidayWindowsBridged`, issue #296) and the refusal
-context that travels beside a typed refusal. The 2026-10-07 (UTC) amendment
-extends the bridge to one-flank spans **below the first audited window** —
-sessions answer there, holiday classification refuses typed — while spans
-above the last window stay the publication horizon's to govern. The
-2026-10-09 (UTC) amendment completes the venue profile-clock rule (#153,
-#242): each CME venue's holiday table is the verbatim mirror of its clock
-family's table, so a routed family's dissent is recorded beside the served
-answer instead of withholding the venue's date, and the globex futures
-families' remaining not-worked-up markers (the three Juneteenth dates, and
-Presidents' Day and Good Friday 2023 for five families) closed as data. The
-law names are unchanged.
+coverage, staged in [the release
+plan](docs/plans/2026-09-12-path-to-release.md). The 2026-09-27 (UTC) amendment
+reverses the floor decision: the support floor returns to **2010-01-01**, the
+pre-2025 history the crate ships is retained rather than removed (Stage 5's
+removal programme is cancelled; #117 closed and reverted by #185), and the
+2010–2024 era's known gaps (#110, #101, #112, #89) close before 1.0.0 instead of
+being deleted past. The 2026-09-30 (UTC) refresh records that the coverage
+contract is enforced, not pending: the migration status and LAW-COVERAGE now
+describe what ships (closes #154). The 2026-10-05 (UTC) amendment names
+`SharurTrading/exchange-hours-evidence` as the research store's public home — a
+byte-identical, PR-gated mirror the evidence-audit workflow checks out for the
+Documents-digest fence, and the checkout `cargo xtask verify-evidence` resolves
+(#288). The 2026-10-06 (UTC) amendment generalizes the sourced-intersection rule
+from undated changeovers to whole evidence spans between sourced windows: the
+bridged residual (`CoverageGapReason::HolidayWindowsBridged`, issue #296) and
+the refusal context that travels beside a typed refusal. The 2026-10-07 (UTC)
+amendment extends the bridge to one-flank spans **below the first audited
+window** — sessions answer there, holiday classification refuses typed — while
+spans above the last window stay the publication horizon's to govern. The
+2026-10-09 (UTC) amendment completes the venue profile-clock rule (#153, #242):
+each CME venue's holiday table is the verbatim mirror of its clock family's
+table, so a routed family's dissent is recorded beside the served answer instead
+of withholding the venue's date, and the globex futures families' remaining
+not-worked-up markers (the three Juneteenth dates, and Presidents' Day and Good
+Friday 2023 for five families) closed as data. The law names are unchanged.
 
 ## Migration status — 2026-09-30 UTC
 
@@ -706,6 +704,13 @@ fences; compare them against production data, never generate them from it.
 - **Suppressions are `#[expect(..., reason = "...")]`, never bare `#[allow]`**,
   and only where the lint is wrong for a stated reason. Tests are exempt from
   the panic-family lints via the `allow-*-in-tests` switches in `clippy.toml`.
+- **Markdown is linted by `markdownlint-cli2`, pinned at `0.23.3`** — run as
+  `npx markdownlint-cli2@0.23.3`, configured in `.markdownlint-cli2.jsonc`,
+  where every deviation from the default rule set carries its reason, and
+  enforced by the `markdown-lint` CI job. Evidence-file quotations,
+  `### Documents` tables and the verification ledger are never reworded to
+  satisfy a rule; the config withholds the rules those bytes require
+  (LAW-EVIDENCE-FILES).
 - **Toolchain** is pinned in `rust-toolchain.toml` to the version the consuming
   platform builds with; the *minimum supported* version is `rust-version` in
   `Cargo.toml` (1.95) and is exercised by the `msrv` CI job. Raising either is
@@ -718,11 +723,13 @@ fences; compare them against production data, never generate them from it.
 
 ## Verification
 
-Run before claiming any change is done — this is every check the `quality` CI
-job runs, in the same order:
+Run before claiming any change is done — the first line is every check the
+`quality` CI job runs, in the same order; the second is the `markdown-lint`
+job:
 
 ```bash
 cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+npx markdownlint-cli2@0.23.3
 ```
 
 The MSRV job builds on a second toolchain, so it is a separate command:

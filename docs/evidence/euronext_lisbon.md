@@ -50,7 +50,6 @@ as each source is re-verified.
 > The anchor identity for this module is [`euronext_paris`](euronext_paris.md), which receives the
 > module narrative when LAW-EVIDENCE-FILES moves it; the module is not yet migrated.
 
-
 ## Holidays
 
 **Coverage:** 2026-01-01..2026-12-31 (inclusive Lisbon cash-market trade dates; T1).

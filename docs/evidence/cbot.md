@@ -497,10 +497,12 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 - **Six grain half-days**: 2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02,
   2024-07-05 and 2024-12-26, on which `globex_grains` states a late open at
   08:30 CT and the rate leg audited the date normal.
-- **One date both families mark `Unsourced`**: 2023-01-16. The wave retrieved no
-  document for that 2023 sheet, so both families state the crate's not-worked-up
-  marker and the venue repeats the answer they agree on. It is neither a dispute
-  nor silence.
+- **One date both families marked `Unsourced`**: 2023-01-16, until the 2026-10-15
+  (UTC) market-data confirmation closed it. The grain clock now ships its closure
+  (no Sunday-evening leg, no Monday session, the next session the Monday 19:00 CT
+  evening open serving the Tuesday) and the rate leg states its 12:00 CT early
+  close — a shipped-row disagreement named beside the venue's row rather than a
+  withheld one.
 
 ### 2022
 
@@ -523,7 +525,7 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2023-01-02 | closed | `"Globex Closed"` | `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
-| 2023-01-16 | unsourced | `hasEvents:false` — the artifact's own empty event list | `CME-SVC-2023-01-15` | T2 | the operator published no document for this date and the cited artifact is the negative control that returns an empty event list, so the row is `unsourced` and clips nothing rather than reading as audited normal |
+| 2023-01-16 | closed | prior-evening leg withheld; the next session is the Monday evening open serving the Tuesday | `MARKET-DATA` | T2 | confirmed with market data 2026-10-15 (UTC): the clock family's closure; the confirming artifact is retained privately, so the id does not resolve in the research store |
 | 2023-02-20 | closed | `19:00 (OPEN)` — the Monday column's only clock, and it carries trade date Tues 21 Feb | `files/presidents-day.pdf @2023-03-29T11:57:47Z` | T1 | the sheet's Monday column prints no day session and no Monday trade date — the 19:00 CT open carries trade date Tues 21 Feb — so the Monday trade date is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
 | 2023-04-07 | closed | `—` the sheet prints no Friday column | `files/good-friday.pdf @2024-07-08T16:00:09Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
 | 2023-05-29 | closed | `no session printed` — the operator prints no session for this date | `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
@@ -759,7 +761,7 @@ on.
 
 **The profile clock decides the artefact rows.** The venue answers from its clock, the grain grid, so a date the grain table audits normal ships no row even where the rate leg states one: that rule retired **fifty-nine** rows the earlier D17 rule had withheld — the rate leg's 15:15 CT pre-holiday Friday closes on twenty-eight dates, its 12:00 CT holiday-day closes on fourteen, its merged-Monday replacement sets on fourteen (ten under `MERGED_2010_2011_MONDAY_BLOCKS`, four under `MERGED_2012_MONDAY_BLOCKS`) and its Saturday-session replacement sets on three (2026-06-22, 2026-07-06 and 2027-06-21) — and every one of those dates still carries the rate leg's own sourced row in `globex_interest_rates`, where the consumer's exact-family routing reads it. What remains withheld is what the clock itself answers and the rate leg disputes.
 
-**Of the 202 rows withheld, 198 are disputes and 4 are dates both families themselves mark not worked up** (the three Juneteenth dates and 2023-01-16), which are the families' own marker rather than a dispute; the 2026-09-29 bounded re-search that keeps those four withheld is recorded beside their rows in the two family evidence files and tracked as #223. On every dispute the grain clock states a row and the rate leg states a different one: an early close at 12:00 CT on 98 of the 198, 12:15 CT on 23, 10:15 CT on 6, a 05:00 CT late open on 6 and 13:30 CT on 1; a complete replacement-blocks day on 21 (the 2010-2012 Thanksgiving merges, the 2012-07-04 merge, and the 2025-2027 merged trade dates, Thanksgiving Fridays and one closure eve); and on the other 43 the rate leg audited the date normal while `globex_grains` states a row. So on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
+**Of the 202 rows withheld, the census is recomputed 2026-10-15 (UTC): none is a not-worked-up agreement any more.** The four this audit named — the three Juneteenth dates and 2023-01-16 — are gone: the Juneteenths have been audited normal in both families since the 2026-10-09 work-up, and 2023-01-16 now ships the grain clock's closure (confirmed with market data), with the rate leg's 12:00 CT early close named beside it as the shipped-row dissent; the 2026-09-29 bounded re-search behind the old markers is recorded in the two family evidence files and tracked as #223. On every dispute the grain clock states a row and the rate leg states a different one: an early close at 12:00 CT on 98 of the 198, 12:15 CT on 23, 10:15 CT on 6, a 05:00 CT late open on 6 and 13:30 CT on 1; a complete replacement-blocks day on 21 (the 2010-2012 Thanksgiving merges, the 2012-07-04 merge, and the 2025-2027 merged trade dates, Thanksgiving Fridays and one closure eve); and on the other 43 the rate leg audited the date normal while `globex_grains` states a row. So on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
 
 ## The January-2010 floor era (2026-09-30 targeted review)
 

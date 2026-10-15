@@ -9,6 +9,22 @@
 - A markdown lint gate: `markdownlint-cli2`, pinned at 0.23.3, configured in
   `.markdownlint-cli2.jsonc` with each rule deviation's reason and enforced by
   a `markdown-lint` CI job; the tracked markdown it flagged is fixed.
+- Record the 2026-10-15 (UTC) enumeration re-sweep of the CME 2023-01-16
+  (Martin Luther King Jr. Day) gap in the seven served Globex family evidence
+  files, and close the marker under the maintainer's direction: the sweep
+  enumerated whole Wayback directories instead of guessing filenames — no
+  Globex-hours MLK-2023 document exists under any filename — and the four MLK
+  artifacts the operator's old holiday directory holds state no session hours.
+  The 2023-01-16 arrangements are then confirmed with market data (the exact
+  session instants, retained privately) and encoded: 12:00 CT early closes in
+  `globex_equity_index`, `globex_interest_rates` and `globex_nikkei_225_dollar`,
+  a 13:30 CT early close in `globex_energy`, full closures in `globex_grains`
+  and `globex_livestock`, and audited-normal Mondays in `globex_fx` and
+  `globex_cryptocurrency` — with the 2023-01-17 prior-evening-leg gap
+  confirmed run beside them. The four CME venue tables regenerate to the
+  profile-clock rule with no inherited marker left, and the venue evidence
+  files record the recomputed audit. Every confirming artifact is retained
+  privately and cited only as `MARKET-DATA`.
 
 ## [1.2.0] - 2026-10-14
 

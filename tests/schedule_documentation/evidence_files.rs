@@ -1476,6 +1476,12 @@ fn every_cited_document_id_is_resolved_exactly_once() {
                 continue;
             }
             for row in &block.rows {
+                // `MARKET-DATA` is resolved from private market data
+                // confirmed accurate; it is deliberately not published to the
+                // research store.
+                if row.document == "MARKET-DATA" {
+                    continue;
+                }
                 let hits = rows
                     .iter()
                     .filter(|resolved| resolved.id == row.document)

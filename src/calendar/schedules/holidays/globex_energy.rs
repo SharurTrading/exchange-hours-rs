@@ -59,17 +59,14 @@
 //! **2022-2024.** The grid is one wrapped `17:00 CT -> 16:00 CT` leg per trade
 //! date, the same shape the 2016-2018 era states, and its conversions are the
 //! same. Thirty-three rows:
-//! eight closures, twenty-four early closes — 13:30 CT on the twenty Monday
+//! eight closures, twenty-five early closes — 13:30 CT on the twenty-one Monday
 //! and Thursday holidays, 12:45 CT on 2022-11-25, 2023-11-24 and 2024-12-24,
-//! and 13:45 CT on 2024-11-29 — no late open, and one
-//! `Unsourced` row. The 2022 rows and the 2023 rows CME published a holiday
-//! schedule for are **T1** (2023-02-20 and 2023-04-07 from the operator's own
-//! summary sheets `files/presidents-day.pdf` and `files/good-friday.pdf`);
-//! 2023-01-16, the one date it published nothing this crate could read, and
-//! all of 2024 are **T2**. The `Unsourced` date — 2023-01-16 — means the
-//! operator published nothing this crate could read, not that no holiday fell
-//! on it; an operator document stating the date in session language would
-//! close it.
+//! and 13:45 CT on 2024-11-29 — no late open. The 2022 rows and the 2023 rows
+//! CME published a holiday schedule for are **T1** (2023-02-20 and 2023-04-07
+//! from the operator's own summary sheets `files/presidents-day.pdf` and
+//! `files/good-friday.pdf`); 2023-01-16, whose 13:30 CT halt and ordinary
+//! 17:00 CT re-open are confirmed with market data (retained privately; see
+//! the evidence file), and all of 2024 are **T2**.
 //!
 //! Every 2025-2027 row is **T2** under LAW-PRIMARY-SOURCES: CME's
 //! trading-hours service, the endpoint `cmegroup.com/trading-hours.html` itself
@@ -87,7 +84,7 @@
 use super::fences::early_close;
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable, holidays,
 };
 use crate::calendar::exceptions::ExceptionBlock;
@@ -493,8 +490,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
         // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
-        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-01-16 - T2 - MARKET-DATA - early close 13:30 CT, confirmed with market data.
+        (2023, 1, 16, early_close(13 * 3_600 + 30 * 60), T2, "MARKET-DATA"),
         // 2023, 2, 20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - the printed Monday final close 13:30 CT is earlier than the ordinary 16:00 CT close.
         (2023, 2, 20, early_close(13 * 3_600 + 30 * 60), T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
         // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the sheet prints no Friday leg: no session belongs to the trade date.

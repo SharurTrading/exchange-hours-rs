@@ -353,32 +353,22 @@ fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
     // inside the dated era its per-date verdict for a withheld date is
     // `OutsideCoveredRange` rather than `UnresolvedGap`. From 2026-08-22 the
     // declaration is retired and 13 of its 32 withheld dates again answer
-    // `UnresolvedGap`; neither is the plain shape these two intersections show.
+    // `UnresolvedGap`; neither is the plain shape this intersection shows.
+    // `cbot` is absent since 2026-10-15 (UTC): its one withheld date, the
+    // clock family's own 2023-01-16 marker, was confirmed with market data and
+    // encoded as the grain closure, so the venue answers `Covered` there.
     // The `neighbour` is the first answered day after the withheld date, and
     // the resolution-edge rule (#151) means it is not complete either: every
     // query on it reaches the withheld day, so its verdict is
     // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
-    // complete date after the withheld one is the day past the zone. Cbot's
-    // zone around the withheld Monday 2023-01-16 ends on the Tuesday (the
-    // Tuesday session opens Monday evening), so Wednesday is complete again;
-    // iceus trades the whole span and its zone ends two days out. Cbot's one
-    // withheld date is the clock family's own 2023-01-16 marker, inherited by
-    // the 2026-10-09 clock rule; its former 2025-01-02 fixture now answers
-    // from `globex_grains`' replacement row.
-    let fixtures = [
-        (
-            Exchange::Cbot,
-            date(2023, 1, 16),
-            date(2023, 1, 17),
-            date(2023, 1, 18),
-        ),
-        (
-            Exchange::Iceus,
-            date(2026, 1, 19),
-            date(2026, 1, 20),
-            date(2026, 1, 21),
-        ),
-    ];
+    // complete date after the withheld one is the day past the zone. Iceus
+    // trades the whole span and its zone ends two days out.
+    let fixtures = [(
+        Exchange::Iceus,
+        date(2026, 1, 19),
+        date(2026, 1, 20),
+        date(2026, 1, 21),
+    )];
     for (exchange, withheld, neighbour, complete_again) in fixtures {
         let coverage = exchange_coverage(exchange);
         assert_eq!(

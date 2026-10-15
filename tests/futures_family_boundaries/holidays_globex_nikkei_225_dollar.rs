@@ -1353,7 +1353,13 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
-    ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
+    (
+        (2023, 1, 16),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T2,
+    ),
     ((2023, 2, 20), HolidayKind::Unsourced, EvidenceTier::T2),
     ((2023, 4, 7), HolidayKind::Unsourced, EvidenceTier::T2),
     (
@@ -1562,7 +1568,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
         (noons, quarter_past_noon, closures, unsourced),
-        (11, 3, 5, 17),
+        (12, 3, 5, 16),
         "the era's shape"
     );
 }
@@ -1747,7 +1753,7 @@ fn era_2022_2024_unsourced_rows_change_no_answer() {
             checked += 1;
         }
     }
-    assert_eq!(checked, 17, "every unsourced row is fenced");
+    assert_eq!(checked, 16, "every unsourced row is fenced");
 }
 
 /// The 2022-05-30 merged `Nikkei & BTIC` line and one 2024 T2 window: both

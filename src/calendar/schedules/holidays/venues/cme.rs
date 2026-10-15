@@ -13,13 +13,13 @@
 //! own family table, where the consumer's exact-family routing (#118) reads
 //! it; the venue's evidence file names those disagreements.
 //!
-//! Coverage is 208 rows over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35 and 2025-2027 34. The table carries **1 `Unsourced` row** — the clock family's own not-worked-up markers, inherited because the venue answers every date its clock answers and withholds every date its clock withholds; each marker's closing condition is recorded beside the family's row and in the family's evidence file.
+//! Coverage is 208 rows over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35 and 2025-2027 34.
 //!
 //! Evidence: docs/evidence/cme.md, and the family's evidence file for
 //! every retrieved row.
 use super::super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable,
     fences::{early_close, late_open},
     globex_equity_index::{
@@ -311,8 +311,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
         // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
-        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-01-16 - T2 - MARKET-DATA - early close 12:00 CT, confirmed with market data.
+        (2023, 1, 16, early_close(12 * 3_600), T2, "MARKET-DATA"),
         // 2023, 2, 20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - the printed Monday final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2023, 2, 20, early_close(12 * 3_600), T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
         // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the printed Friday final close 08:15 CT is earlier than the ordinary 16:00 CT close.

@@ -457,15 +457,15 @@ documents differ.
 
 **The venue drops no date.** Metals and energy are one key and the operator prints
 them as one product row on every date this table audits, so its one routed family
-decides each date and the intersection is total. Twenty-three dates are early
-closes — nineteen at 13:30 CT (the Monday and Thursday holidays together with 2023-07-04 and 2024-06-19), 2022-11-25,
-2023-11-24 and 2024-12-24 at 12:45 CT, and 2024-11-29 at 13:45 CT — and seven are
-the full closures. Three are the family's own `Unsourced` markers, 2023-01-16,
-2023-02-20 and 2023-04-07: the wave retrieved no document for those 2023 sheets,
-so `globex_energy` states the crate's not-worked-up marker. The venue repeats the
-family's answer rather than inventing a row or claiming the dates were audited
-normal — the same treatment a disagreement gets, for the opposite reason: there is
-no second family to disagree with.
+decides each date and the intersection is total. Twenty-four dates are early
+closes — twenty at 13:30 CT (the Monday and Thursday holidays together with 2023-07-04 and 2024-06-19, 2023-01-16
+included from the 2026-10-15 (UTC) market-data confirmation), 2022-11-25,
+2023-11-24 and 2024-12-24 at 12:45 CT, and 2024-11-29 at 13:45 CT — and eight are
+the full closures (2023-04-07 among them since the #224 census read it from the
+operator's own unsuffixed sheet, and 2023-02-20 as a 13:30 CT early close from the
+same sheet generation). The family no longer states any `Unsourced` marker in this
+era: 2023-01-16 was the last, and the venue ships the family's answer rather than
+inventing a row — there is no second family to disagree with.
 
 ### 2022
 
@@ -487,7 +487,7 @@ no second family to disagree with.
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2023-01-02 | closed | `"Globex Closed"` | `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | CME prints no session on this date, so the trade date whose final close would have fallen here — the leg that opened the previous evening at its ordinary open — is removed; the crate keys the venue-local date of the final close, which is the operator's own date here |
-| 2023-01-16 | unsourced | `hasEvents:false` — the artifact's own empty event list | `CME-SVC-2023-01-15` | T2 | the operator published no document for this date and the cited artifact is the negative control that returns an empty event list, so the row is `unsourced` and clips nothing rather than reading as audited normal |
+| 2023-01-16 | early close | `13:30 CT` | `MARKET-DATA` | T2 | confirmed with market data 2026-10-15 (UTC): the clock family's session ended at the 13:30:00 CT halt and reopened at the ordinary evening open; the confirming artifact is retained privately, so the id does not resolve in the research store |
 | 2023-02-20 | early close | `13:30 CT` — `files/presidents-day.pdf @2023-03-29T11:57:47Z` prints `13:30 (PREOPEN) HALT` in the Monday column | `files/presidents-day.pdf @2023-03-29T11:57:47Z` | T1 | the printed Monday final close 13:30 CT is earlier than the ordinary close |
 | 2023-04-07 | closed | `files/good-friday.pdf @2024-07-08T16:00:09Z` prints no Friday leg | `files/good-friday.pdf @2024-07-08T16:00:09Z` | T1 | the sheet prints no session running through the trade date, so the prior-evening leg disappears with it |
 | 2023-05-29 | early close | `13:30` | `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | T1 | CME prints `13:30` as the final close of the session that opened the previous evening at its ordinary open, so the row is an early close on the trade date the close falls on, which is the block's own date |

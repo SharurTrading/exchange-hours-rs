@@ -368,7 +368,7 @@ fn the_table_ships_the_audited_kind_distribution() {
             .expect("the coverage window stays inside the representable calendar");
     }
 
-    assert_eq!(closed, 156, "closed rows over every audited window");
+    assert_eq!(closed, 157, "closed rows over every audited window");
     assert_eq!(early, 43, "early-close rows over every audited window");
     assert_eq!(
         late, 7,
@@ -376,8 +376,8 @@ fn the_table_ships_the_audited_kind_distribution() {
     );
     assert_eq!(combined, 1, "the combined row, 2013-11-29");
     assert_eq!(
-        unsourced, 1,
-        "unsourced rows, the 2023 date no document covers"
+        unsourced, 0,
+        "unsourced rows: none since the 2026-10-15 (UTC) market-data confirmation"
     );
     assert!(
         !calendar
@@ -1066,7 +1066,7 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
-    ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2023, 1, 16), HolidayKind::Closed, EvidenceTier::T2),
     ((2023, 2, 20), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 4, 7), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 5, 29), HolidayKind::Closed, EvidenceTier::T1),
@@ -1240,7 +1240,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
         (five_past_noon, quarter_past_noon, closures, unsourced),
-        (3, 1, 28, 1),
+        (3, 1, 29, 0),
         "the era's shape"
     );
 }
@@ -1315,7 +1315,7 @@ fn era_2022_2024_closures_remove_the_whole_civil_day() {
             "{date}"
         );
     }
-    assert_eq!(closures, 28, "the era's closures");
+    assert_eq!(closures, 29, "the era's closures");
 }
 
 /// Every query about an `Unsourced` date refuses, and the row's own statement
@@ -1410,14 +1410,23 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 }
 
 #[test]
-fn era_2022_2024_unsourced_rows_change_no_answer() {
+fn era_2022_2024_the_confirmed_marker_row_is_sourced() {
     let calendar = calendar();
-    // 2023-01-16 is the era's one remaining `Unsourced` row.
+    // 2023-01-16 was the era's one remaining `Unsourced` row until the
+    // 2026-10-15 (UTC) market-data confirmation encoded it; the row now
+    // states the arrangement at T2 and the date answers.
     let date = day((2023, 1, 16));
     let row = calendar
         .holiday_on(date)
         .unwrap_or_else(|| panic!("{date} ships a row"));
-    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+    assert_eq!(row.kind(), HolidayKind::Closed);
+    assert_eq!(row.tier(), EvidenceTier::T2);
+    assert!(
+        calendar
+            .is_closed_trade_date(date, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "{date} answers as a holiday"
+    );
 }
 
 /// The 2022-2024 window sits fifth in the declared coverage, its edges

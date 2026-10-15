@@ -533,6 +533,17 @@ fn the_nikkei_aggregate_sentences_derive_from_the_shipped_tables() {
             (2022, 2024) => {
                 let (first, last) = era_window(family, &coverage, years);
                 let counts = window_counts(calendar, first, last);
+                if counts.unsourced == 0 {
+                    // Since the 2026-10-15 market-data work-up the window ships
+                    // no `Unsourced` row; the paragraph states the closure and
+                    // the fence pins the zero it derives.
+                    assert!(
+                        flowed_body.contains("no `Unsourced` row"),
+                        "{family}: the 2022-2024 paragraph must state the derived zero \
+                         `Unsourced` rows ({first}..{last})"
+                    );
+                    continue;
+                }
                 let dates_2022 = unsourced_dates(calendar, 2022);
                 let unsourced_2022 = match dates_2022.as_slice() {
                     [only] => only.to_string(),

@@ -1165,13 +1165,18 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
             assert_eq!(gap_reason_on(coverage, day), None, "{day}");
         }
     }
-    for day in [date(2025, 1, 1), date(2025, 1, 3), date(2027, 12, 31)] {
-        assert_eq!(
-            coverage.coverage_on(day),
-            DateCoverage::OutsideCoveredRange,
-            "{day}: a date whose resolution reach leaves the audited window is              not called complete"
-        );
+    // 2025-01-01's and 2025-01-03's reaches read the 2024-12-31 evening that
+    // used to be withheld as `Unsourced`; since the 2026-10-15 market-data
+    // work-up audited that day normal, both answer Covered and only the
+    // trailing resolution edge refuses.
+    for day in [date(2025, 1, 1), date(2025, 1, 3)] {
+        assert_eq!(coverage.coverage_on(day), DateCoverage::Covered, "{day}");
     }
+    assert_eq!(
+        coverage.coverage_on(date(2027, 12, 31)),
+        DateCoverage::OutsideCoveredRange,
+        "2027-12-31: a date whose resolution reach leaves the audited window is              not called complete"
+    );
 }
 
 #[test]

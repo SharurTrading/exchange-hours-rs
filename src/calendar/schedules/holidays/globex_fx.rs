@@ -221,7 +221,7 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
 ];
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable, holidays,
 };
 

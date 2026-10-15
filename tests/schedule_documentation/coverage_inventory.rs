@@ -1020,9 +1020,13 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (37, 13, 8),
-        "the inventory's verdict shapes: thirty-seven complete, thirteen incomplete, eight with no 2025 \
-         coverage (eurex_smi joined the complete group on 2026-10-13 UTC: its 2010-2026 window \
+        (39, 11, 8),
+        "the inventory's verdict shapes: thirty-nine complete, eleven incomplete, eight with no 2025 \
+         coverage (cme and cbot joined the complete group on 2026-10-15 UTC, when the market-data \
+         confirmation of 2023-01-16 closed their last date-level gaps - their verdicts keep the \
+         incomplete word for #116/#223's tracked programmes and the disclosed quarter-hour and \
+         rate-dissent residuals; globex_grains keeps its incomplete word for its tracked #259/#152/#283 \
+         programmes; eurex_smi joined the complete group on 2026-10-13 UTC: its 2010-2026 window \
          carries no Unsourced date and its 2010-07-05 revision sources the grid from the floor, so \
          only its order-entry windows are carried; euronext_index_futures joined the incomplete \
          group the same day — its grid is witnessed only by the 2026-10-11 contract pages, so dates \

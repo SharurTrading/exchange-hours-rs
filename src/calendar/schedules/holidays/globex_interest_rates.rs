@@ -73,7 +73,7 @@
 //! `docs/evidence/globex_interest_rates.md`.
 
 use super::EvidenceTier::{T1, T2};
-use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::{early_close, late_open};
 use super::{HolidayTable, holidays};
 /// The complete trading day of a merged trade date whose holiday closes at

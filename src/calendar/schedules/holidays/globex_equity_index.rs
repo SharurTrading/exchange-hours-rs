@@ -84,7 +84,7 @@
 //! between sources, and it is encoded as a late open at 15:30 CT.
 
 use super::EvidenceTier::{T1, T2};
-use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::{early_close, late_open};
 use super::{HolidayTable, holidays};
 use crate::calendar::exceptions::ExceptionBlock;

@@ -84,7 +84,7 @@
 use super::fences::early_close;
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable, holidays,
 };
 use crate::calendar::exceptions::ExceptionBlock;

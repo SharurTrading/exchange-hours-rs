@@ -71,7 +71,7 @@
 use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, Unsourced},
+    HolidayKind::Closed,
     HolidayTable, holidays,
 };
 

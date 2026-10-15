@@ -1273,7 +1273,6 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
-    ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
     (
         (2023, 4, 7),
         HolidayKind::EarlyClose {
@@ -1453,7 +1452,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
             closures,
             unsourced
         ),
-        (3, 1, 1, 7, 1),
+        (3, 1, 1, 7, 0),
         "the era's shape"
     );
 }
@@ -1641,14 +1640,20 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 }
 
 #[test]
-fn era_2022_2024_unsourced_rows_change_no_answer() {
+fn era_2022_2024_the_confirmed_normal_date_ships_no_row() {
     let calendar = fx();
-    // 2023-01-16 is the era's one remaining `Unsourced` row.
+    // 2023-01-16 was the era's one remaining `Unsourced` row until the
+    // 2026-10-15 (UTC) market-data confirmation witnessed the family trading
+    // its ordinary Monday, so the row is removed and the date is audited
+    // normal: it ships no row and answers.
     let date = day(2023, 1, 16);
-    let row = calendar
-        .holiday_on(date)
-        .unwrap_or_else(|| panic!("{date} ships a row"));
-    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+    assert_eq!(calendar.holiday_on(date), None, "{date} is audited normal");
+    assert!(
+        !calendar
+            .is_closed_trade_date(date, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "{date} is a trading day"
+    );
 }
 
 /// The 2022-2024 window sits fifth in the declared coverage, its edges

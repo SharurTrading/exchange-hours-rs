@@ -903,7 +903,13 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
-    ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
+    (
+        (2023, 1, 16),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_THIRTEEN_THIRTY,
+        },
+        EvidenceTier::T2,
+    ),
     (
         (2023, 2, 20),
         HolidayKind::EarlyClose {
@@ -1166,7 +1172,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
             closures,
             unsourced
         ),
-        (20, 3, 1, 8, 1),
+        (21, 3, 1, 8, 0),
         "the era's shape"
     );
 }
@@ -1353,14 +1359,28 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 }
 
 #[test]
-fn era_2022_2024_unsourced_rows_change_no_answer() {
+fn era_2022_2024_the_confirmed_marker_row_is_sourced() {
     let calendar = calendar();
-    // 2023-01-16 is the era's one remaining `Unsourced` row.
+    // 2023-01-16 was the era's one remaining `Unsourced` row until the
+    // 2026-10-15 (UTC) market-data confirmation encoded it; the row now
+    // states the arrangement at T2 and the date answers.
     let date = day((2023, 1, 16));
     let row = calendar
         .holiday_on(date)
         .unwrap_or_else(|| panic!("{date} ships a row"));
-    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+    assert_eq!(
+        row.kind(),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_THIRTEEN_THIRTY
+        }
+    );
+    assert_eq!(row.tier(), EvidenceTier::T2);
+    assert!(
+        !calendar
+            .is_closed_trade_date(date, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "{date} is an early close: the trade date answers and still trades"
+    );
 }
 
 /// The 2022-2024 window sits fifth in the declared coverage, its edges

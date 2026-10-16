@@ -417,18 +417,34 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
 /// launched after that move, serve 16:00-17:00 CT outright.
 #[test]
 fn the_sunday_quarter_hour_is_withheld_on_comex_and_served_on_the_pgm_keys() {
-    // Sunday 2026-09-20 and Sunday 2027-01-10: a summer and a winter probe.
+    // Sunday 2015-06-07 sits inside the residual span 2012-04-15..2016-01-02,
+    // where the COMEX keys still serve the 16:15-17:00 CT intersection and
+    // withhold the disputed slice; Sunday 2026-09-20 and 2027-01-10 are after
+    // the 2016-01-03 market-data witness, whose 16:00:00 CT onsets the archive
+    // states for every Sunday it holds (2026-10-16 UTC).
+    for key in [GOLD, SILVER, COPPER] {
+        assert_eq!(
+            state_at(key, ct((2015, 6, 7), (16, 5, 0))),
+            SessionState::Closed,
+            "{key:?} 2015-06-07: 16:00-16:15 CT is withheld inside the residual span"
+        );
+        assert_eq!(
+            state_at(key, ct((2015, 6, 7), (16, 15, 0))),
+            SessionState::OrderEntry,
+            "{key:?} 2015-06-07: the served intersection starts at 16:15 CT"
+        );
+    }
     for sunday in [(2026, 9, 20), (2027, 1, 10)] {
         for key in [GOLD, SILVER, COPPER] {
             assert_eq!(
                 state_at(key, ct(sunday, (16, 5, 0))),
-                SessionState::Closed,
-                "{key:?} {sunday:?}: 16:00-16:15 CT is withheld"
+                SessionState::OrderEntry,
+                "{key:?} {sunday:?}: the witnessed 16:00:00 CT onset serves from 2016-01-03"
             );
             assert_eq!(
-                state_at(key, ct(sunday, (16, 15, 0))),
-                SessionState::OrderEntry,
-                "{key:?} {sunday:?}: the served intersection starts at 16:15 CT"
+                state_at(key, ct(sunday, (15, 59, 59))),
+                SessionState::Closed,
+                "{key:?} {sunday:?}: and 16:00 CT is still the onset"
             );
         }
         for key in [PLATINUM, PALLADIUM] {
@@ -462,17 +478,28 @@ fn copper_and_palladium_are_not_interchangeable_on_their_shared_close() {
         "palladium TAS does not list until 2018-11-18"
     );
 
-    // And after both exist, their Sunday queues still disagree.
-    let sunday_quarter_hour = ct((2019, 6, 9), (16, 5, 0));
+    // And after both exist, their Sunday queues still disagreed until the
+    // witnessed 2016 onset: inside the residual span copper withheld the
+    // disputed quarter-hour while palladium, launched after the 2012 move,
+    // served it. From 2016-01-03 the market-data witness puts copper's onset
+    // at 16:00 too, so the remaining separation is history, not the present
+    // grid — the different exchanges, security groups and launch years stand.
+    let sunday_quarter_hour = ct((2015, 6, 7), (16, 5, 0));
     assert_eq!(
         state_at(COPPER, sunday_quarter_hour),
         SessionState::Closed,
-        "copper withholds the disputed quarter-hour"
+        "copper withheld the disputed quarter-hour inside the residual span"
+    );
+    assert_eq!(
+        state_at(COPPER, ct((2026, 9, 20), (16, 5, 0))),
+        SessionState::OrderEntry,
+        "copper serves the witnessed 16:00:00 CT onset from 2016-01-03"
     );
     assert_eq!(
         state_at(PALLADIUM, sunday_quarter_hour),
-        SessionState::OrderEntry,
-        "palladium serves it"
+        SessionState::Closed,
+        "palladium does not exist on 2015-06-07 - it launched after the witnessed \
+         onset, so its whole life serves the 16:00:00 CT Sunday queue"
     );
 
     // Platinum is not copper either: a five-minute later close.

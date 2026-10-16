@@ -13,6 +13,8 @@
 
 ## Revision rows
 
+- 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT from this Sunday: every archive Sunday 2016-01-03..2026-04-05 opens the queue at exactly 16:00:00 CT (witnessed 2026-10-16 UTC; artifact retained privately).
+
 - 2011-01-23 — T1 — COMEX SER-5542 — the launch grid, 17:00 CT to a 12:00 CT close with the shared Sunday 16:15 and Monday-Thursday 16:45 CT queue onsets; keyed to the local Sunday opening day.
 - 2011-04-10 — T1 — NYMEX & COMEX MRAN RA1104-4 — order-entry only: Sunday 16:20 and Monday-Thursday 16:50 CT.
 - 2012-04-15 — T1 — CME Globex notice 20120409 — order-entry only: 16:15 / 16:45 CT restored, so the row points back at the launch profile.

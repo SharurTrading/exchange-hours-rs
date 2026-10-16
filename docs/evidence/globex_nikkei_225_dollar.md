@@ -847,8 +847,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   refused again (HTTP 403, one attempt, not retried). The closing condition this gap carried —
   a `THBP-B` response (`id=168,167,320,323,19,27`) that carries an `NKD` or `NIY` event on
   any of these five trade dates — remains unmet and stays open as the residual risk below:
-  the rows ship on the sibling line, and an `NKD`-specific capture would still strengthen
-  them. Issue #162 closes on this change.
+  the rows ship on the sibling line. **Re-witnessed 2026-10-16 (UTC) against the
+  Nikkei contracts' own sessions:** every merged Monday (2025-01-20, 02-17,
+  05-26, 09-01) and the Juneteenth Thursday (06-19) carries no close of its own —
+  the prior-evening 17:00:00 CT open, the 12:00:00 CT holiday halt and the 17:00
+  CT re-open serving the next trade date — and Christmas 2025's closure day
+  prints the 16:00 pre-open and 17:00 open exactly as the closure rows state.
+  The sibling step stands as the keying channel; the sessions themselves are now
+  self-witnessed. Issue #162 closes on this change.
 - **residual risk** — the fifteen 2025 rows through 2025-09-02 (the nine scalar rows, the
   five merged trade dates and 2025-01-02's block row) rest on the Equity Index line rather
   than on a published Nikkei line, because CME's channel no longer answers for

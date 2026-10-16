@@ -74,20 +74,24 @@ fn rough_rice_serves_the_published_grid_with_end_exclusive_closes() {
     assert!(!hours.is_open(ct((2026, 6, 15), (0, 0, 0))));
     assert!(!hours.is_open(ct((2026, 6, 15), (7, 45, 0))));
 
-    // No morning queue: the grains 08:00-08:30 Pre-Open is not Rough Rice's.
-    assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (8, 0, 0))));
-    assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (8, 29, 59))));
+    // The morning queue runs 08:00-08:30 CT before the day open — witnessed
+    // continuously by market data since the 2018 divergence (2026-10-15).
+    assert!(hours.is_accepting_orders(ct((2026, 6, 15), (8, 0, 0))));
+    assert!(hours.is_accepting_orders(ct((2026, 6, 15), (8, 29, 59))));
     assert!(hours.is_open(ct((2026, 6, 15), (8, 30, 0))));
     assert_eq!(
         state_at(ct((2026, 6, 15), (8, 30, 0))),
         SessionState::OpenRegular,
     );
 
-    // The 13:20 regular close is end-exclusive, and no post-close Pre-Open runs.
+    // The 13:20 regular close is end-exclusive; the 14:30-16:00 CT post-close
+    // queue runs after it — witnessed continuously by market data since the
+    // 2018 divergence (2026-10-15).
     assert!(hours.is_open(ct((2026, 6, 15), (13, 19, 59))));
     assert!(!hours.is_open(ct((2026, 6, 15), (13, 20, 0))));
-    assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (14, 30, 0))));
-    assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (15, 0, 0))));
+    assert!(hours.is_accepting_orders(ct((2026, 6, 15), (14, 30, 0))));
+    assert!(hours.is_accepting_orders(ct((2026, 6, 15), (15, 0, 0))));
+    assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (16, 0, 0))));
 
     // Weekday evening queue, then the next evening leg.
     assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (16, 44, 59))));
@@ -98,7 +102,7 @@ fn rough_rice_serves_the_published_grid_with_end_exclusive_closes() {
     let profile = session_profile(ZR);
     assert!(profile.is_open(ct((2026, 6, 14), (19, 0, 0))));
     assert!(!profile.is_open(ct((2026, 6, 14), (21, 0, 0))));
-    assert!(!profile.is_accepting_orders(ct((2026, 6, 15), (8, 0, 0))));
+    assert!(profile.is_accepting_orders(ct((2026, 6, 15), (8, 0, 0))));
 }
 
 /// The 21:00-08:30 CT gap is a `Halt`, not a close: the evening leg and the
@@ -247,10 +251,11 @@ fn rough_rice_extended_hours_shrink_to_1900_2100_from_2018_01_21() {
         );
     }
 
-    // The queue set narrows at the same boundary. 18-001 does not state this,
-    // and `docs/schedules/verification.md` records that as the reason the row
-    // is Partial; the profile withdraws the inherited grains windows rather
-    // than claiming queues CME's Rough Rice specification does not publish.
+    // The two daytime queues continue through the boundary unchanged: the
+    // 2026-10-15 market-data work-up witnessed the 08:00-08:30 CT morning
+    // Pre-Open and the 14:30-16:00 CT post-close Pre-Open on every sampled
+    // weekday from 2018-01-22 through 2025-06-16, so the withdrawal the
+    // specification's silence once argued is retired and both eras claim them.
     for (hour, minute, what) in [
         (8_u32, 10_u32, "the grains 08:00-08:30 CT morning Pre-Open"),
         (15, 0, "the grains 14:30-16:00 CT post-close Pre-Open"),
@@ -261,8 +266,8 @@ fn rough_rice_extended_hours_shrink_to_1900_2100_from_2018_01_21() {
             "{what} is inherited from the grain and oilseed grid before the divergence"
         );
         assert!(
-            !revised.is_accepting_orders(instant),
-            "{what} is not published for Rough Rice and is not claimed after the divergence"
+            revised.is_accepting_orders(instant),
+            "{what} is witnessed running after the divergence and is claimed there"
         );
     }
     // The two evening queues survive the divergence unchanged.

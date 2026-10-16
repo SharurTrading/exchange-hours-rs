@@ -223,11 +223,13 @@ pub(crate) static MERGED_THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 6] = [
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Three audited eras: 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027
-/// at T2.
-/// Nothing before 2019-01-01 has a table at all: that interval lies
-/// outside every window, so `holiday_on` has no answer there rather than
-/// reporting a normal date.
+/// Four audited eras: the launch-to-2018 span at T2 `MARKET-DATA` (the
+/// maintainer's 2026-10-15 direction extended the 2023-01-16 convention to the
+/// pre-2019 span, whose full trading-day audit is recorded in the evidence
+/// file), 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2.
+/// Before 2017-12-17, the five-day grid's first trade date, the product did
+/// not trade: those dates lie outside every window, so `holiday_on` has no
+/// answer there rather than reporting a normal date.
 ///
 /// Coverage ends at 2027-12-31, the
 /// end of the operator's published future. Inside a window a date with no row
@@ -235,9 +237,35 @@ pub(crate) static MERGED_THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 6] = [
 /// silence instead.
 // Evidence: docs/evidence/globex_cryptocurrency.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2017, 12, 17) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
 
+        // 2017-12-25 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2017-12-26 trade date), confirmed with market data 2026-10-15.
+        (2017, 12, 25, Closed, T2, "MARKET-DATA"),
+        // 2018-01-01 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2018-01-02 trade date), confirmed with market data 2026-10-15.
+        (2018, 1, 1, Closed, T2, "MARKET-DATA"),
+        // 2018-01-15 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 1, 15, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-02-19 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 2, 19, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-03-30 - T2 - MARKET-DATA - closed: no trade date (no session events), confirmed with market data 2026-10-15.
+        (2018, 3, 30, Closed, T2, "MARKET-DATA"),
+        // 2018-05-28 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 5, 28, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-07-03 - T2 - MARKET-DATA - early close 12:15 CT (final close 12:15:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 7, 3, early_close(12 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
+        // 2018-07-04 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 7, 4, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-09-03 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 9, 3, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-11-22 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2018, 11, 22, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2018-11-23 - T2 - MARKET-DATA - early close 12:15 CT (final close 12:15:00, no re-open that day), confirmed with market data 2026-10-15.
+        (2018, 11, 23, early_close(12 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
+        // 2018-12-24 - T2 - MARKET-DATA - early close 12:15 CT (final close 12:15:00, no re-open that day), confirmed with market data 2026-10-15.
+        (2018, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
+        // 2018-12-25 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2018-12-26 trade date), confirmed with market data 2026-10-15.
+        (2018, 12, 25, Closed, T2, "MARKET-DATA"),
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - CME prints no session running through this date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.

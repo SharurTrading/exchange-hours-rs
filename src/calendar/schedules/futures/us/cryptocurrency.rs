@@ -6,7 +6,7 @@
 
 use chrono_tz::US;
 
-use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY, SUN_PLUS_MON_THU};
+use crate::calendar::rule::{FRI, MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
@@ -163,11 +163,29 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// The five-day grid's two Pre-Open queues, witnessed by market data from the
+// 2017-12-17 launch (2026-10-15): Sunday 16:00-17:00 CT and Monday-Thursday
+// 16:45-17:00 CT, the same onsets the operator's later channels publish. The
+// launch-era specifications print the matching grid only, so the queues ride
+// the market-data convention rather than an operator document.
+static FIVE_DAY_ORDER_ENTRY: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
+
 static FIVE_DAY: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: FIVE_DAY_EXTENDED,
-    order_entry: &[],
+    order_entry: FIVE_DAY_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

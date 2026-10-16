@@ -1087,14 +1087,16 @@ fn the_coverage_window_has_two_hard_edges() {
         .holiday_coverage()
         .expect("the family ships a holiday table");
 
-    // The window opened at 2019-01-01 when the 2019-2021 wave shipped; its
-    // three declared spans are contiguous, so the outer edges are what this
-    // fence pins and `windows()` in the era sections below pins the split.
-    assert_eq!(coverage.first(), day(2019, 1, 1));
+    // The window opened at 2019-01-01 when the 2019-2021 wave shipped and
+    // moved down to the 2017-12-17 launch when the 2026-10-15 market-data
+    // work-up audited the launch-to-2018 span; the four declared spans are
+    // contiguous, so the outer edges are what this fence pins and `windows()`
+    // in the era sections below pins the split.
+    assert_eq!(coverage.first(), day(2017, 12, 17));
     assert_eq!(coverage.last(), day(2027, 12, 31));
-    assert!(coverage.contains(day(2019, 1, 1)));
+    assert!(coverage.contains(day(2017, 12, 17)));
     assert!(coverage.contains(day(2027, 12, 31)));
-    assert!(!coverage.contains(day(2018, 12, 31)));
+    assert!(!coverage.contains(day(2017, 12, 16)));
     assert!(!coverage.contains(day(2028, 1, 1)));
 
     assert_eq!(kind_on(day(2025, 1, 1)), Some(HolidayKind::Closed));
@@ -1109,33 +1111,44 @@ fn the_coverage_window_has_two_hard_edges() {
         "the 2022-2024 wave audits Christmas 2024"
     );
 
-    // Christmas 2018 is a CME closure below the window and no wave has audited
-    // it. Since the 2026-10-07 bridged-residual ruling (#296) the attached
-    // identity answers the probes' session questions from the sourced normal
-    // week — the same answer the detached grid states — while its
-    // holiday-table classification refuses: nothing witnesses the pre-2019
-    // holiday layer.
+    // Christmas 2018 is a market-data-confirmed closure inside the first
+    // audited window (2026-10-15): the day answers closed on the attached
+    // identity while the detached grid keeps its ordinary week.
     let bare = calendar.without_holidays();
-    for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 25, 18, 0)] {
+    for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 25, 12, 0)] {
         assert_eq!(
             calendar.is_open(probe),
-            Ok(bare
-                .is_open(probe)
-                .expect("the coverage contract must answer a covered date")),
-            "{probe}: the attached calendar answers the sourced normal week              beside the one-flank bridged residual"
+            Ok(false),
+            "{probe}: the closure answers closed"
         );
         assert!(
-            matches!(
-                calendar.is_closed_trade_date(
+            bare.is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "{probe}: the detached grid keeps the ordinary week"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(
                     probe.with_timezone(&chrono_tz::US::Central).date_naive(),
                     SessionKind::Both
-                ),
-                Err(CalendarQueryError::UnresolvedGap { .. })
-            ),
-            "the 2018 classification refuses: no audited window brackets the date"
+                )
+                .expect("the coverage contract must answer a covered date"),
+            "the 2018 classification answers: the window brackets the date"
         );
     }
-    assert_eq!(calendar.holiday_on(day(2018, 12, 25)), None);
+    assert_eq!(
+        calendar.holiday_on(day(2018, 12, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    // The closure day's own evening serves the next trade date: the witnessed
+    // 17:00 CT re-open answers (the closure-evening queue itself is
+    // arrangement data the scalar Closed row does not carry, exactly as the
+    // 2019+ closure rows it joins).
+    assert_eq!(
+        calendar.is_open(ct(2018, 12, 25, 17, 30)),
+        Ok(true),
+        "the 17:00 CT re-open serves the next trade date"
+    );
 
     // One day past the window the attached identity refuses and the detached
     // calendar states the ordinary week.
@@ -1712,6 +1725,7 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
     assert_eq!(
         coverage.windows(),
         vec![
+            (day(2017, 12, 17), day(2018, 12, 31)),
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
@@ -1723,38 +1737,40 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
     assert_eq!(calendar.holiday_on(day(2022, 1, 1)), None);
     assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
 
+    // Since the 2026-10-15 market-data work-up the launch-to-2018 span is the
+    // first audited window: both 2018 closures answer inside it.
     for date in [(2018, 1, 1), (2018, 12, 25)] {
-        assert!(!coverage.contains(day(date.0, date.1, date.2)), "{date:?}");
+        assert!(coverage.contains(day(date.0, date.1, date.2)), "{date:?}");
         assert_eq!(
-            calendar.holiday_on(day(date.0, date.1, date.2)),
-            None,
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Closed),
             "{date:?}"
         );
     }
-    // Christmas 2018 is a real CME closure no wave audited. 2018 sits in the
-    // unaudited pre-2019 interval: since the 2026-10-07 bridged-residual
-    // ruling (#296) the attached identity answers the probes' session
-    // questions from the sourced normal week — the same answer the detached
-    // grid states — while its holiday-table classification refuses.
+    // Christmas 2018 answers closed inside the window while the detached grid
+    // keeps its ordinary week, and Christmas Eve's witnessed 12:15 CT final
+    // close leaves no evening session until the closure day's own 17:00 CT
+    // re-open for the following trade date.
     for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 24, 18, 0)] {
         assert_eq!(
             calendar.is_open(probe),
-            Ok(bare
-                .is_open(probe)
-                .expect("the coverage contract must answer a covered date")),
-            "{probe}: the attached calendar answers the sourced normal week              beside the one-flank bridged residual"
+            Ok(false),
+            "{probe}: the closure and the early-closed eve answer closed"
         );
         assert!(
-            matches!(
-                calendar.is_closed_trade_date(
-                    probe.with_timezone(&chrono_tz::US::Central).date_naive(),
-                    SessionKind::Both
-                ),
-                Err(CalendarQueryError::UnresolvedGap { .. })
-            ),
-            "the 2018 classification refuses: no audited window brackets the date"
+            bare.is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "{probe}: the detached grid keeps the ordinary week"
         );
     }
+    assert!(
+        calendar
+            .is_closed_trade_date(day(2018, 12, 25), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "the 2018 classification answers: the window brackets the date"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -2001,6 +2017,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
     assert_eq!(
         coverage.windows(),
         vec![
+            (day(2017, 12, 17), day(2018, 12, 31)),
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),

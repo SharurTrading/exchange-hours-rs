@@ -250,10 +250,13 @@ const BELOW_FIRST_SPANS: &[BelowFirstSpan] = &[
         (2021, 6, 28),
     ),
     (
+        // The 2026-10-15 market-data work-up moved the first audited window
+        // down to the 2017-12-17 launch, so the below-first span shrank to
+        // the pre-launch closure.
         "globex_cryptocurrency",
         (2010, 1, 1),
-        (2018, 12, 31),
-        (2019, 1, 1),
+        (2017, 12, 16),
+        (2017, 12, 17),
     ),
     ("iceus", (2010, 1, 1), (2024, 12, 31), (2025, 1, 1)),
     ("ice_us", (2010, 1, 1), (2024, 12, 31), (2025, 1, 1)),

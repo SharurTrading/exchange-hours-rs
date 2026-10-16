@@ -13,6 +13,14 @@
   2024-12-31 audited normal — holiday classification now answers instead of
   refusing on every date in the table's windows, and the served Globex surface
   carries no `Unsourced` row anywhere.
+- `globex_cryptocurrency`'s first holiday window opens at the 2017-12-17 launch:
+  the launch-to-2018 span was audited day by day on market data, shipping
+  thirteen rows (four closures, six 12:00 CT early closes, three 12:15 CT final
+  closes — including 2018-07-03, which the day-by-day audit itself surfaced),
+  and the five-day era now serves its witnessed Sunday 16:00-17:00 CT and
+  Monday-Thursday 16:45-17:00 CT pre-open queues from the launch, closing the
+  #123 residual; the pre-2019 holiday-classification refusals are gone and the
+  below-first bridged span shrinks to the pre-launch closure.
 - The livestock published-table gaps closed on market-data confirmation: the
   14:30-16:00 CT post-close queue ran across the whole November 2016..March
   2020 capture omission, and the 06:00-08:30 CT morning queue opened on every

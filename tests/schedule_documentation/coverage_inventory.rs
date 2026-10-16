@@ -1495,6 +1495,10 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "asx",
             "nzx",
             "globex_grains",
+            // The cryptocurrency family's Sunday queue is witnessed at
+            // 16:00:00 CT from the launch by market data (2026-10-15), so it
+            // accepts inside the window by witness, not by the #79 residual.
+            "globex_cryptocurrency",
             "globex_nikkei_225_dollar",
             "oanda_fx"
         ],
@@ -1529,7 +1533,6 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "tadawul",
             "b3",
             "globex_livestock",
-            "globex_cryptocurrency",
             "eurex",
             "ice_us_sugar",
             "eurex_fixed_income",

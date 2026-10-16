@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME cryptocurrency holiday rows, venue-local trade dates 2019-01-01 to
-//! 2021-12-31, 2022-01-01 to 2024-12-31 and 2025-01-01 to 2027-12-31
-//! (LAW-HOLIDAY-SCOPE).
+//! CME cryptocurrency holiday rows, venue-local trade dates 2017-12-17 to
+//! 2018-12-31, 2019-01-01 to 2021-12-31, 2022-01-01 to 2024-12-31 and
+//! 2025-01-01 to 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own America/Chicago trade date, never by
 //! CME's event date: the operator publishes a holiday as an event list on a
@@ -53,9 +53,9 @@
 //! table, read as bytes and saved. It states seventeen merged trade dates as
 //! `ReplacementBlocks` rows — the nine five-day-era dates and the eight 24/7-era
 //! ones — and one six-block day-after-Thanksgiving row. The five-day era's
-//! undated Pre-Open onset is a disclosed residual (#123, retired 2026-10-04),
-//! not a declaration. The quotations, capture times,
-//! the event-date-to-trade-date conversion and that residual are in
+//! Pre-Open queues are witnessed by market data from the 2017-12-17 launch
+//! (2026-10-15), so the normal week serves them. The quotations, capture
+//! times and the event-date-to-trade-date conversion are in
 //! `docs/evidence/globex_cryptocurrency.md`.
 
 use super::fences::early_close;

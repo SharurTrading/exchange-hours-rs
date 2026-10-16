@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-16
+
 ### Added
 
 - `globex_nikkei_225_dollar`'s sixteen withheld holiday dates (2022-2024) ship as

@@ -1165,13 +1165,18 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
             assert_eq!(gap_reason_on(coverage, day), None, "{day}");
         }
     }
-    for day in [date(2025, 1, 1), date(2025, 1, 3), date(2027, 12, 31)] {
-        assert_eq!(
-            coverage.coverage_on(day),
-            DateCoverage::OutsideCoveredRange,
-            "{day}: a date whose resolution reach leaves the audited window is              not called complete"
-        );
+    // 2025-01-01's and 2025-01-03's reaches read the 2024-12-31 evening that
+    // used to be withheld as `Unsourced`; since the 2026-10-15 market-data
+    // work-up audited that day normal, both answer Covered and only the
+    // trailing resolution edge refuses.
+    for day in [date(2025, 1, 1), date(2025, 1, 3)] {
+        assert_eq!(coverage.coverage_on(day), DateCoverage::Covered, "{day}");
     }
+    assert_eq!(
+        coverage.coverage_on(date(2027, 12, 31)),
+        DateCoverage::OutsideCoveredRange,
+        "2027-12-31: a date whose resolution reach leaves the audited window is              not called complete"
+    );
 }
 
 #[test]
@@ -1447,12 +1452,11 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
 
 #[test]
 fn the_five_day_era_answers_from_the_queue_absent_grid() {
-    // #123's retirement (2026-10-04): the five-day era's normal-week queues
-    // are sourced nowhere — the workbook rows that print a `Pre-opening` state
-    // holiday arrangements, not the ordinary week — so the grid with the
-    // queues absent is the narrowest state that holds under every sourced one,
-    // and the whole era answers from it with the omission disclosed as a
-    // residual in the evidence file.
+    // #123's closure (2026-10-15): the five-day era's normal-week queues are
+    // witnessed by market data from the launch — Sunday 16:00-17:00 CT and
+    // Monday-Thursday 16:45-17:00 CT, the same onsets the operator's later
+    // channels publish — so the era serves them cited to `MARKET-DATA` and
+    // the residual the 2026-10-04 convention disclosed is retired.
     let crypto = key_coverage(MarketHoursKey::GlobexCryptocurrency);
     assert!(
         crypto.phase_gaps().is_empty(),
@@ -1481,8 +1485,8 @@ fn the_five_day_era_answers_from_the_queue_absent_grid() {
         "the 24/7 era serves the published Pre-Open and answers"
     );
     // Before the grid the family's era is a sourced launch closure, and the
-    // shipped holiday windows do not reach it — the honest reason those dates
-    // refuse, unchanged by the retirement.
+    // shipped holiday windows still do not reach it — the honest reason those
+    // dates refuse, unchanged by the closure.
     assert_ne!(
         gap_reason_on(crypto, date(2015, 1, 1)),
         Some(CoverageGapReason::NormalWeekPhaseWithheld),
@@ -1491,6 +1495,18 @@ fn the_five_day_era_answers_from_the_queue_absent_grid() {
     assert_eq!(
         crypto.coverage_on(date(2015, 1, 1)),
         DateCoverage::OutsideCoveredRange
+    );
+    // The launch-to-2018 window answers too: its holiday rows are
+    // market-data-confirmed and its ordinary days were audited day by day.
+    assert_eq!(
+        crypto.coverage_on(date(2018, 1, 16)),
+        DateCoverage::Covered,
+        "the launch-to-2018 window answers"
+    );
+    assert_eq!(
+        crypto.coverage_on(date(2018, 1, 1)),
+        DateCoverage::Covered,
+        "the 2018 New Year closure answers inside the window"
     );
     // The query surface answers from the queue-absent grid: the Sunday evening
     // before the 17:00 CT open is closed, matching opens at 17:30, and the
@@ -1508,8 +1524,13 @@ fn the_five_day_era_answers_from_the_queue_absent_grid() {
     };
     assert_eq!(
         cal.is_accepting_orders(at(date(2019, 6, 9), 16, 30)),
-        Ok(false),
-        "the era's Sunday evening answers from the queue-absent grid: no queue is served"
+        Ok(true),
+        "the era's Sunday evening serves the witnessed 16:00-17:00 CT queue"
+    );
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2019, 6, 9), 16, 0)),
+        Ok(true),
+        "the queue opens at the witnessed 16:00:00 CT onset"
     );
     assert_eq!(
         cal.is_open(at(date(2019, 6, 9), 17, 30)),
@@ -1518,8 +1539,13 @@ fn the_five_day_era_answers_from_the_queue_absent_grid() {
     );
     assert_eq!(
         cal.is_accepting_orders(at(date(2026, 5, 17), 16, 30)),
-        Ok(false),
-        "the era's own last ordinary Sundays answer from the same queue-absent grid"
+        Ok(true),
+        "the era's own last ordinary Sundays serve the same queue"
+    );
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2018, 6, 20), 16, 50)),
+        Ok(true),
+        "the launch era's weekday queue is the same witnessed 16:45-17:00 CT window"
     );
     // The 24/7 era serves the operator's published queues from the bridge day,
     // and the merged spans state their own 16:00 CT queues as blocks — the

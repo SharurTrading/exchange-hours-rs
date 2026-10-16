@@ -5,7 +5,7 @@
 use chrono_tz::US;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
+use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
@@ -32,10 +32,14 @@ pub(crate) static ROUGH_RICE_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
     close_ssm: 21 * 3600,
 }];
 
-/// The only order-entry phases this profile claims after the divergence: the
+/// The order-entry phases this profile claims after the divergence: the
 /// Sunday 16:00-19:00 CT and Monday-Thursday 16:45-19:00 CT queues CME's Rough
-/// Rice specification publishes, each running up to the electronic open.
-/// Neither can match a trade.
+/// Rice specification publishes, plus the Monday-Friday 08:00-08:30 CT morning
+/// queue and 14:30-16:00 CT post-close queue the specification does not
+/// publish — the 2026-10-15 market-data work-up witnessed both running on
+/// every sampled weekday from the 2018-01-21 boundary (which 18-001 dates for
+/// the evening leg alone) through 2025-06-16, the same continuous CBOT shape
+/// the era before it carried. None can match a trade.
 pub(crate) static ROUGH_RICE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -46,6 +50,16 @@ pub(crate) static ROUGH_RICE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
         days: MON_THU,
         open_ssm: 16 * 3600 + 45 * 60,
         close_ssm: 19 * 3600,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 8 * 3600,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 14 * 3600 + 30 * 60,
+        close_ssm: 16 * 3600,
     },
 ];
 
@@ -103,9 +117,10 @@ static FROM_2015_07_05: StaticHoursProfile = profile(
     CBOT_ORDER_ENTRY_CURRENT,
 );
 // The divergence. 18-001 dates ONE thing: the executable evening leg, which
-// stops wrapping and becomes 19:00-21:00 CT. It is silent on the queues, so
-// this interval serves the sourced intersection of the two queue states — the
-// narrower one — and no queue cutover is asserted anywhere in this timeline.
+// stops wrapping and becomes 19:00-21:00 CT. It is silent on the queues; the
+// 2026-10-15 market-data work-up witnessed the inherited daytime queues
+// running continuously through the boundary and beyond, so this interval
+// claims them alongside the evening queues the specification publishes.
 // Narrative: docs/evidence/globex_rough_rice.md
 static DATED_CURRENT: StaticHoursProfile = profile(
     ROUGH_RICE_REGULAR_CURRENT,

@@ -653,14 +653,15 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2021, 9, 13),
         chrono_tz::America::New_York,
     ),
-    // Knowledge-bound rows that remain: the CME venues whose verified-current
-    // order-acceptance phases apply from the 2026-08-22 repository review. The
-    // seventeen US options venues no longer appear here - their queues are
-    // carried across history, so no profile changes on that day. Cboe EDGA no
-    // longer appears either: its queue now starts on the sourced 2014-11-13
-    // approval day. Nor do NYSE and NYSE Arca, whose acceptance and
-    // early-session phases are dated above.
-    (Exchange::Cme, (2026, 8, 22), chrono_tz::US::Central),
-    (Exchange::Comex, (2026, 8, 22), chrono_tz::US::Central),
-    (Exchange::Nymex, (2026, 8, 22), chrono_tz::US::Central),
+    // The CME venues' Sunday 16:00 CT order-acceptance onset, which the
+    // 2026-10-16 market-data sweep moved down to the first witnessed Sunday
+    // from its 2026-08-22 review-date key. The seventeen US options venues
+    // no longer appear here - their queues are carried across history, so no
+    // profile changes on that day. Cboe EDGA no longer appears either: its
+    // queue now starts on the sourced 2014-11-13 approval day. Nor do NYSE
+    // and NYSE Arca, whose acceptance and early-session phases are dated
+    // above.
+    (Exchange::Cme, (2016, 1, 3), chrono_tz::US::Central),
+    (Exchange::Comex, (2016, 1, 3), chrono_tz::US::Central),
+    (Exchange::Nymex, (2016, 1, 3), chrono_tz::US::Central),
 ];

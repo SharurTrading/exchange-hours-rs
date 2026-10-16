@@ -169,17 +169,18 @@ static CME_PROFILE_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_DATED_CURRENT,
-    order_entry: CME_ORDER_ENTRY_1645,
+    order_entry: CME_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
-// Verified-current grid: identical to DATED_CURRENT except the Sunday
-// 16:00–17:00 Pre-Open queue, whose onset day no reviewed primary source
-// states.
-static CME_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
+// The 2016-01-03 Sunday widening: the 2015-09-20 grid with the Sunday queue
+// onset market data witnesses from that Sunday (2026-10-16 UTC). Every Sunday
+// 2016-01-03..2026-04-05 in the archive opens the queue at exactly 16:00:00
+// CT, for this family's products in step with the whole complex.
+static CME_PROFILE_2016_01_03: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
-    extended: CME_EXTENDED_CURRENT,
+    extended: CME_EXT_2015_09_20,
     order_entry: CME_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
@@ -214,6 +215,13 @@ static CME_REVISIONS: &[Revision] = revisions![
         &CME_PROFILE_2015_09_20,
         "CME Globex notice 20150817"
     ),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday 2016-01-03..2026-04-05
+    // (2026-10-16 UTC). The disputed quarter-hour shrinks to the Sundays of
+    // 2012-05-28..2016-01-02, below every witness the archive holds; the
+    // 16:15-17:00 CT remainder is already carried from the January-2010 floor
+    // above. A sourced onset day for the 2012 move replaces the residual.
+    (2016, 1, 3, &CME_PROFILE_2016_01_03, "MARKET-DATA"),
     // 2021-06-27 — T1 — CME Globex notice 20210621 — the 15:15-15:30 CT halt is
     // removed, producing the continuous 17:00-16:00 CT ETH envelope.
     (
@@ -222,18 +230,6 @@ static CME_REVISIONS: &[Revision] = revisions![
         27,
         &CME_PROFILE_DATED_CURRENT,
         "CME Globex notice 20210621"
-    ),
-    // 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated —
-    // knowledge-bound row widening the Sunday queue to 16:00-17:00 CT. Only the
-    // disputed quarter-hour depends on the undated 2012 move; the 16:15-17:00
-    // remainder is already carried from the January-2010 floor above. A sourced
-    // onset day replaces this row.
-    (
-        2026,
-        8,
-        22,
-        &CME_PROFILE_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
     ),
 ];
 

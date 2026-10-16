@@ -6,6 +6,36 @@
 
 ### Added
 
+- `globex_nikkei_225_dollar`'s sixteen withheld holiday dates (2022-2024) ship as
+  market-data-confirmed rows: twelve-hour early closes at 12:00 CT on nine dates,
+  12:15 CT final closes on 2024-11-29 and 2024-12-24, the 08:15 CT Good Friday
+  2023 close, full closures on 2024-03-29 and 2024-12-25, with 2024-07-03 and
+  2024-12-31 audited normal — holiday classification now answers instead of
+  refusing on every date in the table's windows, and the served Globex surface
+  carries no `Unsourced` row anywhere.
+- The four standard CME families' Sunday Pre-Open serves the witnessed 16:00:00 CT
+  onset from 2016-01-03: the market-data sweep witnessed every Sunday of
+  2016-01-03..2026-04-05 opening the queue at exactly 16:00 CT, so the knowledge-
+  bound row moves down from its 2026-08-22 review date and the disputed
+  16:00-16:15 CT quarter-hour shrinks to the Sundays of 2012-05-28..2016-01-02
+  (`globex_equity_index`, `globex_energy`, `globex_fx`, `globex_interest_rates`,
+  the three CME venues, and `globex_silver_100oz` by reference).
+- `globex_cryptocurrency`'s first holiday window opens at the 2017-12-17 launch:
+  the launch-to-2018 span was audited day by day on market data, shipping
+  thirteen rows (four closures, six 12:00 CT early closes, three 12:15 CT final
+  closes — including 2018-07-03, which the day-by-day audit itself surfaced),
+  and the five-day era now serves its witnessed Sunday 16:00-17:00 CT and
+  Monday-Thursday 16:45-17:00 CT pre-open queues from the launch, closing the
+  #123 residual; the pre-2019 holiday-classification refusals are gone and the
+  below-first bridged span shrinks to the pre-launch closure.
+- The livestock published-table gaps closed on market-data confirmation: the
+  14:30-16:00 CT post-close queue ran across the whole November 2016..March
+  2020 capture omission, and the 06:00-08:30 CT morning queue opened on every
+  sampled weekday of its carried span from 2016-03-02. The gold, silver and
+  copper TAS carried closes, the platinum and palladium TAS carried windows,
+  and the event-contract family's carried 16:00 CT daily close are likewise
+  witnessed constant across their recorded gaps, closing six dormant recorded
+  gaps as `MARKET-DATA` evidence records.
 - A markdown lint gate: `markdownlint-cli2`, pinned at 0.23.3, configured in
   `.markdownlint-cli2.jsonc` with each rule deviation's reason and enforced by
   a `markdown-lint` CI job; the tracked markdown it flagged is fixed.

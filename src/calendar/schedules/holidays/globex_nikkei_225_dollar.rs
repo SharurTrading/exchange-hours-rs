@@ -92,21 +92,22 @@
 //! and three year-end half-days — and one late open.
 //!
 //! **2022-2024.** The era's grid is the same wrapped `17:00 CT -> 16:00 CT`
-//! leg, so its conversions are the two above. Thirty-six rows: five closures,
-//! fifteen early closes — 12:00 CT on the twelve Monday and Thursday holidays
-//! and 12:15 CT on 2022-11-25, 2023-07-03 and 2023-11-24 — no late open,
-//! and sixteen `Unsourced` rows. The 2022 rows and the 2023 rows CME
-//! published a holiday schedule for are **T1**; all of 2024 and the two
-//! remaining 2023 dates it published nothing for are **T2**. Two of those
-//! `Unsourced` dates — 2023-02-20 and 2023-04-07 — mean the operator published
-//! nothing this crate could read, not that no holiday fell on them; an operator
-//! document stating each date in session language would close them. So does
-//! 2022-05-30, which CME prints on a merged `Nikkei & BTIC` line and which
-//! therefore states no final close for the outright contract alone. So do the
-//! thirteen 2024 dates, which no service line and no operator holiday document
-//! covers, and which a response carrying an `NKD` line would close. 2023-01-16
-//! itself is encoded: its 12:00 CT halt and ordinary 17:00 CT re-open are
-//! confirmed with market data (retained privately; see the evidence file).
+//! leg, so its conversions are the two above. Thirty-four rows: seven closures,
+//! twenty-seven early closes — 12:00 CT on twenty-one holidays (every Monday
+//! and Thursday holiday plus Wednesday-observed Juneteenth 2024), 08:15 CT on
+//! Good Friday 2023, and 12:15 CT on 2022-11-25, 2023-07-03, 2023-11-24,
+//! 2024-11-29 and 2024-12-24 — no late open, and 2024-07-03 and 2024-12-31
+//! audited normal (no row). The 2022 rows and the 2023 rows CME published a
+//! holiday schedule for are **T1**; the sixteen dates no operator document
+//! covered — 2022-05-30, 2023-02-20, 2023-04-07 and the thirteen 2024
+//! dates — are **T2 `MARKET-DATA`**: their exact sessions (halt instants,
+//! final closes, the two full closures, and the two ordinary dates) are
+//! confirmed with market data, retained privately, under the maintainer's
+//! 2026-10-15 direction that extended the 2023-01-16 convention to the
+//! remaining withholdings. Every 12:00 CT row halts at exactly 12:00:00 with
+//! the 17:00 CT re-open present, every 12:15 CT row is a final close with no
+//! re-open, and the ordinary-grid controls between the holidays match the
+//! served week.
 //!
 //! Three shapes for the family: `Closed` on a full Globex closure,
 //! `EarlyClose` on the half-days, and — in 2016-2018 alone — a **late open** at
@@ -276,7 +277,7 @@ pub(crate) static NO_PRIOR_EVENING_LEG_BLOCKS: [ExceptionBlock; 2] = [
 ];
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable, holidays,
 };
 
@@ -292,8 +293,7 @@ use super::{
 /// Coverage runs to 2027-12-31, the end of the
 /// operator's published future; CME's 2028-01-01 record is a Saturday outside
 /// every window and ships no row. Inside a window a date with no row is audited
-/// normal, except where an `Unsourced` row marks the operator's silence
-/// instead.
+/// normal.
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
@@ -576,8 +576,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2022, 2, 21, early_close(12 * 3_600), T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
         // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - unsourced: no operator document covers this date.
-        (2022, 5, 30, Unsourced, T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
+        // 2022-05-30 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2022, 5, 30, early_close(12 * 3_600), T2, "MARKET-DATA"),
         // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - early close 12:00 CT.
         (2022, 6, 20, early_close(12 * 3_600), T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
         // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - early close 12:00 CT.
@@ -594,10 +594,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
         // 2023-01-16 - T2 - MARKET-DATA - early close 12:00 CT, confirmed with market data.
         (2023, 1, 16, early_close(12 * 3_600), T2, "MARKET-DATA"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: no operator document covers this date.
-        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: no operator document covers this date.
-        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-02-20 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2023, 2, 20, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2023-04-07 - T2 - MARKET-DATA - early close 08:15 CT (final close 08:15:00, no re-open), confirmed with market data 2026-10-15.
+        (2023, 4, 7, early_close(8 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
         // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - early close 12:00 CT.
         (2023, 5, 29, early_close(12 * 3_600), T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
         // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - early close 12:00 CT.
@@ -616,35 +616,32 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
         // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: no trade date.
         (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
-        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - unsourced: no operator document covers this date.
-        (2024, 1, 15, Unsourced, T2, "CME-SVC-2024-01-14"),
-        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - unsourced: no operator document covers this date.
-        (2024, 2, 19, Unsourced, T2, "CME-SVC-2024-02-18"),
-        // 2024-03-29 - T2 - CME-SVC-2024-03-28 - unsourced: no operator document covers this date.
-        (2024, 3, 29, Unsourced, T2, "CME-SVC-2024-03-28"),
-        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - unsourced: no operator document covers this date.
-        (2024, 5, 27, Unsourced, T2, "CME-SVC-2024-05-26"),
-        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - unsourced: no operator document covers this date.
-        (2024, 6, 19, Unsourced, T2, "CME-SVC-2024-06-18"),
-        // 2024-07-03 - T2 - CME-SVC-2024-07-03 - unsourced: no operator document covers this date.
-        (2024, 7, 3, Unsourced, T2, "CME-SVC-2024-07-03"),
-        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - unsourced: no operator document covers this date.
-        (2024, 7, 4, Unsourced, T2, "CME-SVC-2024-07-03"),
-        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - unsourced: no operator document covers this date.
-        (2024, 9, 2, Unsourced, T2, "CME-SVC-2024-09-01"),
-        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - unsourced: no operator document covers this date.
-        (2024, 11, 28, Unsourced, T2, "CME-SVC-2024-11-27"),
-        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - unsourced: no operator document covers this date.
-        (2024, 11, 29, Unsourced, T2, "CME-SVC-2024-11-27"),
-        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - unsourced: no operator document covers this date.
-        (2024, 12, 24, Unsourced, T2, "CME-SVC-2024-12-24"),
-        // 2024-12-25 - T2 - CME-SVC-2024-12-24 - unsourced: no operator document covers this date.
-        (2024, 12, 25, Unsourced, T2, "CME-SVC-2024-12-24"),
-        // 2024-12-31 - T2 - CME-SVC-2024-12-31..2025-01-02 - unsourced: the operator's
-        // service window for that date carries no Nikkei product. The id names the
-        // window it resolves to, so it cannot collide with the 2025-01-01 row's
-        // CME-SVC-2024-12-31, whose artifact is the 2025-01-01..2025-01-02 response.
-        (2024, 12, 31, Unsourced, T2, "CME-SVC-2024-12-31..2025-01-02"),
+        // 2024-01-15 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 1, 15, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-02-19 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 2, 19, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-03-29 - T2 - MARKET-DATA - closed: no trade date (no session events; the prior-evening leg removed), confirmed with market data 2026-10-15.
+        (2024, 3, 29, Closed, T2, "MARKET-DATA"),
+        // 2024-05-27 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 5, 27, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-06-19 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 6, 19, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-07-03 - T2 - MARKET-DATA - audited normal: the ordinary Wednesday grid ran
+        // (16:00 close, 16:45 pre-open, 17:00 re-open), confirmed with market data 2026-10-15.
+        // 2024-07-04 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 7, 4, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-09-02 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 9, 2, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-11-28 - T2 - MARKET-DATA - early close 12:00 CT (halt 12:00:00, re-open 17:00), confirmed with market data 2026-10-15.
+        (2024, 11, 28, early_close(12 * 3_600), T2, "MARKET-DATA"),
+        // 2024-11-29 - T2 - MARKET-DATA - early close 12:15 CT (final close 12:15:00, no re-open), confirmed with market data 2026-10-15.
+        (2024, 11, 29, early_close(12 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
+        // 2024-12-24 - T2 - MARKET-DATA - early close 12:15 CT (final close 12:15:00, no re-open), confirmed with market data 2026-10-15.
+        (2024, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "MARKET-DATA"),
+        // 2024-12-25 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2024-12-26 trade date), confirmed with market data 2026-10-15.
+        (2024, 12, 25, Closed, T2, "MARKET-DATA"),
+        // 2024-12-31 - T2 - MARKET-DATA - audited normal: the ordinary 16:00:00 close ran
+        // with no evening re-open because 2025-01-01 is closed, confirmed with market data 2026-10-15.
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-02 - T2 - CME-SVC-2024-12-31 - the day after New Year's Day; its prior
         // local day is a full closure, so its Pre-Open opens at 16:00 CT. The

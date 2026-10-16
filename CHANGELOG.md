@@ -13,6 +13,24 @@
   2024-12-31 audited normal — holiday classification now answers instead of
   refusing on every date in the table's windows, and the served Globex surface
   carries no `Unsourced` row anywhere.
+- The metals TAS keys (`globex_gold_tas`, `globex_silver_tas`,
+  `globex_copper_tas`) serve the witnessed 16:00:00 CT Sunday Pre-Open onset
+  from 2016-01-03, moving their #79 quarter-hour residual to
+  2012-04-15..2016-01-02 — the same witness that moved the four standard
+  families, recorded for the PGM keys as confirmation of the weekday queue and
+  a machine-channel silence on the wiki's Sunday half.
+- Market-data records close six further recorded residuals: the platinum TAS
+  carried-back 17:00 CT open is witnessed from 2018; the spot-quoted family's
+  unsampleable interior is witnessed unchanged at four weeks; the event-contract
+  grid is witnessed current through the archive's end (2026-04-24); the mini
+  grains era's queue onsets are witnessed from 2016-01-03 (morning 08:00, PCP
+  14:30 — ten minutes earlier than the advisory's 14:40, recorded — evening
+  16:45); Nikkei's five 2025 merged trade dates are re-witnessed against the
+  contract's own sessions; and the cryptocurrency 2025 closure-evening queues
+  and full closures are witnessed as shipped. The weather-options Globex
+  migration gains an extended negative: the archive's instrument universe
+  carries no weather-option records, so the bracket keeps its dated-artifact
+  closer.
 - The four standard CME families' Sunday Pre-Open serves the witnessed 16:00:00 CT
   onset from 2016-01-03: the market-data sweep witnessed every Sunday of
   2016-01-03..2026-04-05 opening the queue at exactly 16:00 CT, so the knowledge-

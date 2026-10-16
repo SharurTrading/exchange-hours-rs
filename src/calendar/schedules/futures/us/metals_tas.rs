@@ -32,22 +32,37 @@ static COPPER_EXTENDED: &[SessionRule] = &[SessionRule {
     close_ssm: 12 * 3600,
 }];
 
-// THE TWO DATED REVISIONS ARE BOTH ORDER-ENTRY ONLY, AND BOTH TOUCH ONLY THESE
-// QUEUES. RA1104-4 staggers the onsets per group on 2011-04-10 and Globex
-// notice 20120409 restores the shared 16:15 / 16:45 CT values on 2012-04-15.
-// The Sunday onset's later, undated move to 16:00 is withheld: a knowledge
-// boundary may only widen, so the rows serve 16:15 to 17:00 (issue #79).
+// The dated revisions are all order-entry only. RA1104-4 staggers the onsets
+// on 2011-04-10; notice 20120409 restores 16:15/16:45 on 2012-04-15; the
+// Sunday onset's move to 16:00 is witnessed by market data from 2016-01-03,
+// so the 16:15-17:00 intersection survives only to 2016-01-02 and the
+// 16:00-16:15 slice below the first witness stays the #79 residual.
 // Narrative: docs/evidence/globex_gold_tas.md
 
 /// The shared TAS queue: Sunday 16:15-17:00 and Monday-Thursday 16:45-17:00 CT.
 ///
-/// In force from each key's launch to 2011-04-09 and again from 2012-04-15, and
-/// the current table. The Sunday rule starts at the sourced intersection's
-/// 16:15, not at the wiki's undated 16:00.
+/// In force from each key's launch to 2011-04-09 and again from 2012-04-15 to
+/// 2016-01-02. The Sunday rule starts at the sourced intersection's 16:15.
 pub(crate) static METALS_TAS_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
+
+/// The witnessed-current TAS queue: the same shape with the Sunday onset at
+/// 16:00, which market data witnesses on every archive Sunday from 2016-01-03
+/// (2026-10-16 UTC).
+pub(crate) static METALS_TAS_ORDER_ENTRY_2016_01_03: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600,
         close_ssm: 17 * 3600,
     },
     SessionRule {
@@ -99,14 +114,20 @@ static CLOSED: StaticHoursProfile = profile(&[], &[]);
 static GOLD_AT_LAUNCH: StaticHoursProfile = profile(GOLD_EXTENDED, METALS_TAS_ORDER_ENTRY_CURRENT);
 static GOLD_FROM_2011_04_10: StaticHoursProfile =
     profile(GOLD_EXTENDED, GOLD_ORDER_ENTRY_2011_04_10);
+static GOLD_FROM_2016_01_03: StaticHoursProfile =
+    profile(GOLD_EXTENDED, METALS_TAS_ORDER_ENTRY_2016_01_03);
 static SILVER_AT_LAUNCH: StaticHoursProfile =
     profile(SILVER_EXTENDED, METALS_TAS_ORDER_ENTRY_CURRENT);
 static SILVER_FROM_2011_04_10: StaticHoursProfile =
     profile(SILVER_EXTENDED, SILVER_ORDER_ENTRY_2011_04_10);
+static SILVER_FROM_2016_01_03: StaticHoursProfile =
+    profile(SILVER_EXTENDED, METALS_TAS_ORDER_ENTRY_2016_01_03);
 static COPPER_AT_LAUNCH: StaticHoursProfile =
     profile(COPPER_EXTENDED, METALS_TAS_ORDER_ENTRY_CURRENT);
 static COPPER_FROM_2011_04_10: StaticHoursProfile =
     profile(COPPER_EXTENDED, COPPER_ORDER_ENTRY_2011_04_10);
+static COPPER_FROM_2016_01_03: StaticHoursProfile =
+    profile(COPPER_EXTENDED, METALS_TAS_ORDER_ENTRY_2016_01_03);
 
 // Every revision row below is T1 and is keyed to the local Sunday opening day
 // of the first session it governs; each row's effective day and citation
@@ -130,6 +151,10 @@ static GOLD_REVISIONS: &[Revision] = revisions![
         "NYMEX & COMEX MRAN RA1104-4"
     ),
     (2012, 4, 15, &GOLD_AT_LAUNCH, "CME Globex notice 20120409"),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday
+    // 2016-01-03..2026-04-05 (2026-10-16 UTC).
+    (2016, 1, 3, &GOLD_FROM_2016_01_03, "MARKET-DATA"),
 ];
 // Evidence: docs/evidence/globex_silver_tas.md
 static SILVER_REVISIONS: &[Revision] = revisions![
@@ -148,6 +173,10 @@ static SILVER_REVISIONS: &[Revision] = revisions![
         "NYMEX & COMEX MRAN RA1104-4"
     ),
     (2012, 4, 15, &SILVER_AT_LAUNCH, "CME Globex notice 20120409"),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday
+    // 2016-01-03..2026-04-05 (2026-10-16 UTC).
+    (2016, 1, 3, &SILVER_FROM_2016_01_03, "MARKET-DATA"),
 ];
 // Evidence: docs/evidence/globex_copper_tas.md
 static COPPER_REVISIONS: &[Revision] = revisions![
@@ -160,6 +189,10 @@ static COPPER_REVISIONS: &[Revision] = revisions![
         "NYMEX & COMEX MRAN RA1104-4"
     ),
     (2012, 4, 15, &COPPER_AT_LAUNCH, "CME Globex notice 20120409"),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday
+    // 2016-01-03..2026-04-05 (2026-10-16 UTC).
+    (2016, 1, 3, &COPPER_FROM_2016_01_03, "MARKET-DATA"),
 ];
 
 /// The current gold TAS matching leg: Sunday-Thursday 17:00 CT wrapping to

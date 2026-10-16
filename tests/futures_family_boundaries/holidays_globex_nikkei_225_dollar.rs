@@ -1610,7 +1610,13 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     }
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
-        (noons, quarter_past_noon, eight_fifteens, closures, unsourced),
+        (
+            noons,
+            quarter_past_noon,
+            eight_fifteens,
+            closures,
+            unsourced
+        ),
         (21, 5, 1, 7, 0),
         "the era's shape"
     );
@@ -1761,10 +1767,7 @@ fn era_2022_2024_market_data_rows_answer_the_witnessed_sessions() {
     // ordinary 16:00 CT close: both are audited normal, answer from the
     // served week on the identity and a detached snapshot alike, and ship no
     // row.
-    for (y, m, d, hour, minute) in [
-        (2024, 7, 3, 15, 59),
-        (2024, 12, 31, 15, 59),
-    ] {
+    for (y, m, d, hour, minute) in [(2024, 7, 3, 15, 59), (2024, 12, 31, 15, 59)] {
         assert!(
             calendar
                 .is_open(ct(y, m, d, hour, minute, 0))

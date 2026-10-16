@@ -151,9 +151,9 @@ temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31);
 
 // The pre-cutover rows restate the family rows this product rode, by reference
 // to `energy_metals.rs`'s own tables: notice 20150907 moved every COMEX close
-// to 16:00 CT, `SIL` included, and the 2026-08-22 knowledge-bound row is the
-// same review. The September 19 row is confirmed effective by the operator's
-// T2 service (2026-09-27 UTC); the October rows are forward-dated.
+// to 16:00 CT, `SIL` included, and the family's 2016-01-03 Sunday widening is
+// restated with them. The September 19 and October 3 Saturday rows are
+// confirmed effective; the October 24 and 31 rows are forward-dated.
 // Evidence: docs/evidence/globex_silver_100oz.md
 static REVISIONS: &[Revision] = revisions![
     (

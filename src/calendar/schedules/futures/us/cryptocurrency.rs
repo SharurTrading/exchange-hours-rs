@@ -273,8 +273,11 @@ static REVISIONS: &[Revision] = revisions![
     // 02:00-04:00 CT window.
     (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
     // 2026-10-03 — T1 — CME Globex notice 20260921 — Saturday maintenance
-    // window 02:00-05:00 CT; reopen 05:00 CT. Forward-dated on the operator's
-    // statement; confirm before the day.
+    // window 02:00-05:00 CT; reopen 05:00 CT. Was forward-dated on the
+    // operator's statement; the operator's T2 service confirmed it effective
+    // on 2026-10-16 UTC (closed 02:00, preopen 04:45, open 05:00, trade date
+    // 2026-10-05; store `cme-globex/release-inspection-20261016/
+    // thbp_oct2026_sat.raw`, store PR #38).
     (
         2026,
         10,

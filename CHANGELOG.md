@@ -13,6 +13,13 @@
   2024-12-31 audited normal — holiday classification now answers instead of
   refusing on every date in the table's windows, and the served Globex surface
   carries no `Unsourced` row anywhere.
+- The four standard CME families' Sunday Pre-Open serves the witnessed 16:00:00 CT
+  onset from 2016-01-03: the market-data sweep witnessed every Sunday of
+  2016-01-03..2026-04-05 opening the queue at exactly 16:00 CT, so the knowledge-
+  bound row moves down from its 2026-08-22 review date and the disputed
+  16:00-16:15 CT quarter-hour shrinks to the Sundays of 2012-05-28..2016-01-02
+  (`globex_equity_index`, `globex_energy`, `globex_fx`, `globex_interest_rates`,
+  the three CME venues, and `globex_silver_100oz` by reference).
 - `globex_cryptocurrency`'s first holiday window opens at the 2017-12-17 launch:
   the launch-to-2018 span was audited day by day on market data, shipping
   thirteen rows (four closures, six 12:00 CT early closes, three 12:15 CT final

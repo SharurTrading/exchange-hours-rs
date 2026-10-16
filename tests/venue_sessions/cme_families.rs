@@ -21,10 +21,11 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     assert!(profile.is_open(ct((2026, 4, 20), (17, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (12, 0, 0))));
     // `globex_interest_rates` serves the #79 quarter-hour's sourced
-    // intersection, with the disputed 16:00-16:15 CT slice disclosed as a
-    // residual on the bracket-era Sundays: the identity-backed
-    // queue scan answers the disputed Sunday instant with the served
-    // intersection's closed verdict, while the Monday beside it answers from
+    // intersection on the residual-span Sundays (2012-05-28..2016-01-02):
+    // since the 2026-10-16 market-data sweep the witnessed 16:00:00 CT onset
+    // serves from 2016-01-03, so the sampled Sunday here — 2026-04-19 —
+    // answers OrderEntry at 16:05 while a residual-span Sunday answers the
+    // intersection's closed verdict. The Monday beside it answers from
     // the sourced weekday grid, so the 16:00→16:45 CT maintenance gap reports
     // as `Maintenance` rather than as a closure. The grid itself, including
     // that gap, stays asserted above through `session_profile`, and the
@@ -37,9 +38,16 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     );
     assert_eq!(
         calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
+        Ok(SessionState::OrderEntry),
+        "the Sunday onset is the witnessed 16:00:00 CT from 2016-01-03 (the \
+         2026-10-16 market-data sweep)"
+    );
+    assert_eq!(
+        calendar.session_state(ct((2015, 6, 7), (16, 5, 0))),
         Ok(SessionState::Closed),
-        "the disputed quarter-hour answers as the served intersection's closed \
-         verdict (the 2026-10-04 residual convention), never as a refusal"
+        "the disputed quarter-hour on a residual-span Sunday answers as the \
+         served intersection's closed verdict (the 2026-10-04 residual \
+         convention), never as a refusal"
     );
     assert_eq!(
         calendar

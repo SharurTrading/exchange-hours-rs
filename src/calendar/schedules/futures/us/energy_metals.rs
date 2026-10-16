@@ -69,19 +69,23 @@ pub(crate) static ENERGY_METALS_AT_2010_FLOOR: StaticHoursProfile = StaticHoursP
     has_daily_close: true,
     has_weekend_close: true,
 };
-pub(crate) static ENERGY_METALS_CURRENT: StaticHoursProfile = StaticHoursProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: ENERGY_METALS_EXTENDED_CURRENT,
-    order_entry: ENERGY_METALS_ORDER_ENTRY_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
 pub(crate) static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: ENERGY_METALS_EXTENDED_CURRENT,
     order_entry: ENERGY_METALS_ORDER_ENTRY_DATED,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+// The 2016-01-03 Sunday widening: the 2015-09-20 grid with the Sunday queue
+// onset market data witnesses from that Sunday (2026-10-16 UTC). Every Sunday
+// 2016-01-03..2026-04-05 in the archive opens the queue at exactly 16:00:00
+// CT, this family's products in step with the whole complex.
+pub(crate) static ENERGY_METALS_PROFILE_2016_01_03: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: ENERGY_METALS_EXTENDED_CURRENT,
+    order_entry: ENERGY_METALS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -98,17 +102,12 @@ static ENERGY_METALS_REVISIONS: &[Revision] = revisions![
         &ENERGY_METALS_DATED_CURRENT,
         "CME Globex notice 20150907"
     ),
-    // 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated —
-    // knowledge-bound row widening the Sunday queue by the disputed 16:00-16:15
-    // CT quarter-hour, the only part depending on the undated 2012 move. A
-    // sourced onset day replaces this row.
-    (
-        2026,
-        8,
-        22,
-        &ENERGY_METALS_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
-    ),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday 2016-01-03..2026-04-05
+    // (2026-10-16 UTC). The disputed quarter-hour shrinks to the Sundays of
+    // 2012-05-28..2016-01-02, below every witness the archive holds. A sourced
+    // onset day for the 2012 move replaces the residual.
+    (2016, 1, 3, &ENERGY_METALS_PROFILE_2016_01_03, "MARKET-DATA"),
 ];
 
 pub(crate) fn energy_metals_profile_at(

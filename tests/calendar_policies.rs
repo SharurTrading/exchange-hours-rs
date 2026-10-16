@@ -996,14 +996,15 @@ fn trade_dates_and_states_cover_the_globex_day() {
         Ok(SessionState::Closed),
         "the weekend state answers from the sourced grid"
     );
-    // The bracket-era Sunday's own quarter-hour is the residual the 2026-10-04
+    // A residual-span Sunday's own quarter-hour is what the 2026-10-04
     // convention discloses: the served intersection is closed there, and the
     // identity answers that closed verdict from the tables rather than
-    // refusing the date.
+    // refusing the date. (Sundays from 2016-01-03 serve the witnessed 16:00
+    // CT onset instead — the 2026-10-16 market-data sweep.)
     assert_eq!(
-        calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
+        calendar.session_state(ct((2015, 6, 7), (16, 5, 0))),
         Ok(SessionState::Closed),
-        "the served intersection's closed 16:05 CT verdict on a bracket-era Sunday"
+        "the served intersection's closed 16:05 CT verdict on a residual-span Sunday"
     );
     assert!(
         calendar

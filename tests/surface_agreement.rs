@@ -23,33 +23,12 @@ use exchange_hours::{MarketHoursKey, hours_for_market_hours_key};
 /// the phase each one drops. Every entry must actually diverge; a stale entry
 /// fails just as loudly as an unexpected one.
 const DOCUMENTED_DIVERGENCE: &[(MarketHoursKey, &str)] = &[
-    (
-        MarketHoursKey::GlobexEquityIndex,
-        "Sunday queue narrowed to its sourced intersection (16:15-17:00 CT); \
-         only the 16:00-16:15 slice waits on the undated 2012 cutover",
-    ),
-    (
-        MarketHoursKey::GlobexEnergy,
-        "Sunday queue narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits on \
-         the undated 2012 cutover",
-    ),
-    (
-        MarketHoursKey::GlobexFx,
-        "Sunday pre-open narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits \
-         on the undated 2012 cutover",
-    ),
-    (
-        MarketHoursKey::GlobexInterestRates,
-        "Sunday queue narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits on \
-         the undated 2012 cutover",
-    ),
-    (
-        MarketHoursKey::GlobexSilver100Oz,
-        "the fixed snapshot resolves on the 2026-08-22 knowledge-bound day, so \
-         its pre-cutover grid carries the family's widened Sunday queue; the \
-         sampled week rides the family's dated 16:15-17:00 intersection, the \
-         same narrowing the energy/metals family documents",
-    ),
+    // The four standard CME families' Sunday queue narrowing moved out of the
+    // sampled week entirely: since the 2026-10-16 market-data sweep the dated
+    // timeline serves the witnessed 16:00:00 CT onset from 2016-01-03, so the
+    // sampled June-2026 week agrees with the fixed snapshot and the
+    // 16:15-17:00 CT intersection survives only on the Sundays of
+    // 2012-05-28..2016-01-02, which the walk does not sample.
     (
         MarketHoursKey::IceEuropeGilts,
         "the sampled week sits before the sourced 2026-07-06 Long/Medium \

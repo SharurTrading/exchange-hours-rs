@@ -5,7 +5,7 @@
 use chrono_tz::US;
 
 use super::energy_metals::{
-    ENERGY_METALS_AT_2010_FLOOR, ENERGY_METALS_CURRENT, ENERGY_METALS_DATED_CURRENT,
+    ENERGY_METALS_AT_2010_FLOOR, ENERGY_METALS_DATED_CURRENT, ENERGY_METALS_PROFILE_2016_01_03,
 };
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY};
@@ -163,13 +163,10 @@ static REVISIONS: &[Revision] = revisions![
         &ENERGY_METALS_DATED_CURRENT,
         "CME Globex notice 20150907"
     ),
-    (
-        2026,
-        8,
-        22,
-        &ENERGY_METALS_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
-    ),
+    // 2016-01-03 — T2 — MARKET-DATA — the family's Sunday widening, restated
+    // here by reference: every archive Sunday 2016-01-03..2026-04-05 opens the
+    // queue at exactly 16:00:00 CT (2026-10-16 UTC).
+    (2016, 1, 3, &ENERGY_METALS_PROFILE_2016_01_03, "MARKET-DATA"),
     (
         2026,
         9,

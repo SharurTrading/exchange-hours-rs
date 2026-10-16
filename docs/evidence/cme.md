@@ -17,7 +17,7 @@
 - 2012-11-18 — T1 — CME Globex notice 20121022 — new daily trading-hour schedule; post-halt slice becomes 15:30–16:15 CT including Fridays.
 - 2015-09-20 — T1 — CME Globex notice 20150817 — CME Equity and CBOT Equity closes move 15 minutes earlier to 16:00 CT.
 - 2021-06-27 — T1 — CME Globex notice 20210621 — the 15:15–15:30 CT halt is removed, producing the continuous 17:00–16:00 CT ETH envelope.
-- 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated — knowledge-bound row widening the Sunday queue to the sourced current 16:00–17:00 CT Pre-Open.
+- 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT from this Sunday: every archive Sunday 2016-01-03..2026-04-05 opens the queue at exactly 16:00:00 CT (witnessed 2026-10-16 UTC; artifact retained privately).
 
 ## The January-2010 floor era
 

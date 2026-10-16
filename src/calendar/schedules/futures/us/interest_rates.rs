@@ -120,8 +120,8 @@ static PROFILE_2011_10_02: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Verified-current grid: identical to PROFILE_2011_10_02 except the Sunday
-// 16:00–17:00 queue, whose onset day no reviewed primary source states.
+// The 16:00 Sunday queue profile: identical to PROFILE_2011_10_02 except the
+// Sunday 16:00–17:00 queue, whose onset the archive witnesses from 2016-01-03.
 static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
@@ -151,17 +151,12 @@ static REVISIONS: &[Revision] = revisions![
         &PROFILE_2011_10_02,
         "CME Globex notice 20110926"
     ),
-    // 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated —
-    // knowledge-bound row widening the Sunday queue by the disputed 16:00-16:15
-    // CT quarter-hour, the only part depending on the undated 2012 move. A
-    // sourced onset day replaces this row.
-    (
-        2026,
-        8,
-        22,
-        &PROFILE_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
-    ),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday 2016-01-03..2026-04-05
+    // (2026-10-16 UTC). The disputed quarter-hour shrinks to the Sundays of
+    // 2012-05-28..2016-01-02, below every witness the archive holds. A sourced
+    // onset day for the 2012 move replaces the residual.
+    (2016, 1, 3, &PROFILE_CURRENT, "MARKET-DATA"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

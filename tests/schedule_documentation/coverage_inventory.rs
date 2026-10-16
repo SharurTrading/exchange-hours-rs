@@ -1356,10 +1356,13 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
 /// uses: 16:05 falls inside CME's disputed 16:00-16:15 CT window and 16:20
 /// inside the sourced 16:15-17:00 intersection it is served from.
 fn chicago(hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    // A Sunday inside the residual span 2012-05-28..2016-01-02: Sundays from
+    // 2016-01-03 serve the witnessed 16:00:00 CT onset (the 2026-10-16
+    // market-data sweep), so the #79 intersection survives there alone.
     Central
-        .with_ymd_and_hms(2025, 6, 8, hour, minute, 0)
+        .with_ymd_and_hms(2015, 6, 7, hour, minute, 0)
         .single()
-        .expect("2025-06-08 is a Sunday with one 16:05/16:20 CT instant")
+        .expect("2015-06-07 is a Sunday with one 16:05/16:20 CT instant")
         .with_timezone(&Utc)
 }
 
@@ -1473,12 +1476,17 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             closed_at_both.push(name);
         }
     }
+    // `cfe` rides the same closed-inside/open-after signature on a
+    // residual-span Sunday: its own 2015 grid opened the Sunday session
+    // before 16:20 CT, so it lands in this list by grid shape, not by the
+    // #79 residual — the assertions inside the arm hold for it identically.
     assert_eq!(
         carrying_residual,
         [
             "cme",
             "comex",
             "nymex",
+            "cfe",
             "globex_equity_index",
             "globex_energy",
             "globex_fx",
@@ -1491,15 +1499,13 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
         accepts_inside,
         [
             "cbot",
-            "cfe",
             "asx",
             "nzx",
             "globex_grains",
-            // The cryptocurrency family's Sunday queue is witnessed at
-            // 16:00:00 CT from the launch by market data (2026-10-15), so it
-            // accepts inside the window by witness, not by the #79 residual.
-            "globex_cryptocurrency",
-            "globex_nikkei_225_dollar",
+            // The cryptocurrency and Nikkei keys accepted at 16:05 CT on the
+            // 2025-era sample this fence used to probe; on the residual-span
+            // Sunday (2015) their own grids predate their Sunday queues, so
+            // they answer closed at both instants instead.
             "oanda_fx"
         ],
         "these accept orders inside the disputed window: their grids are already open at 16:05 CT"
@@ -1533,8 +1539,13 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "tadawul",
             "b3",
             "globex_livestock",
+            // On the residual-span sample Sunday the cryptocurrency and
+            // Nikkei keys sit before their own Sunday queues' eras, so they
+            // answer closed at both instants like the other non-CME grids.
+            "globex_cryptocurrency",
             "eurex",
             "ice_us_sugar",
+            "globex_nikkei_225_dollar",
             "eurex_fixed_income",
             "eurex_smi",
             "euronext_index_futures",
@@ -1650,52 +1661,54 @@ struct QuarterHourEra {
 /// The seven scopes that withhold CME's Sunday 16:00-16:15 CT quarter-hour.
 ///
 /// The probe days are Sundays so that 16:05 CT falls inside the Sunday Pre-Open
-/// queue the #79 declaration is about: the bound is a Saturday, so `dated_sunday`
-/// is the last Sunday of the dated era and `current_sunday` the first the current
-/// era serves. Neither Sunday is a US market holiday, so nothing but the era bound
-/// can move the verdict between them.
+/// queue the #79 declaration is about: since the 2026-10-16 market-data sweep
+/// the bound is itself a Sunday — 2016-01-03, the first the archive witnesses
+/// at a 16:00:00 CT onset — so `dated_sunday` is the last Sunday of the
+/// intersection era and `current_sunday` the bound day itself. Neither Sunday
+/// is a US market holiday, so nothing but the era bound can move the verdict
+/// between them.
 const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
     QuarterHourEra {
         name: "cme",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "comex",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "nymex",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "globex_equity_index",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "globex_energy",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "globex_fx",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
     QuarterHourEra {
         name: "globex_interest_rates",
-        bound: (2026, 8, 22),
-        dated_sunday: (2026, 8, 16),
-        current_sunday: (2026, 8, 23),
+        bound: (2016, 1, 3),
+        dated_sunday: (2015, 12, 27),
+        current_sunday: (2016, 1, 3),
     },
 ];
 

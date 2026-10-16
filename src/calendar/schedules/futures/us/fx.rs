@@ -107,17 +107,13 @@ static REVISIONS: &[Revision] = revisions![
     // 2010-11-15 — T1 — CME Globex notice 20101025 — Monday-Thursday Pre-Open
     // moves from 16:50 to 16:45 CT.
     (2010, 11, 15, &DATED_CURRENT, "CME Globex notice 20101025"),
-    // 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated —
-    // knowledge-bound row widening the Sunday queue by the disputed 16:00-16:15
-    // CT quarter-hour, the only part depending on the undated 2012 move. A
-    // sourced onset day replaces this row.
-    (
-        2026,
-        8,
-        22,
-        &FX_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
-    ),
+    // 2016-01-03 — T2 — MARKET-DATA — the Sunday Pre-Open opens at 16:00 CT
+    // from this Sunday, witnessed on every archive Sunday 2016-01-03..2026-04-05
+    // (2026-10-16 UTC). The disputed quarter-hour shrinks to the Sundays of
+    // 2012-05-28..2016-01-02, below every witness the archive holds; below the
+    // 2012-05-03 capture the floor-era Sunday queue is carried, not sourced. A
+    // sourced onset day for the 2012 move replaces the residual.
+    (2016, 1, 3, &FX_CURRENT, "MARKET-DATA"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

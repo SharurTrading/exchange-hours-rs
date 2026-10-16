@@ -474,9 +474,13 @@ fn the_support_floor_constant_is_the_documented_date() {
 #[test]
 fn a_withheld_phase_refuses_the_order_entry_query_but_not_the_session_query() {
     let cal = calendar_for_exchange(Exchange::Cme);
-    let day = date(2026, 4, 19);
-    let queue_instant = ct((2026, 4, 19), (16, 5));
-    let session_instant = ct((2026, 4, 19), (18, 0));
+    // A Sunday inside the residual span 2012-05-28..2016-01-02: Sundays from
+    // 2016-01-03 serve the witnessed 16:00:00 CT onset instead (the
+    // 2026-10-16 market-data sweep), so the disputed slice survives there
+    // alone.
+    let day = date(2015, 6, 7);
+    let queue_instant = ct((2015, 6, 7), (16, 5));
+    let session_instant = ct((2015, 6, 7), (18, 0));
     assert_eq!(queue_instant.with_timezone(&cal.tz()).date_naive(), day);
 
     // The date is completely covered: the residual convention serves the

@@ -110,12 +110,20 @@ fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
         MarketHoursKey::GlobexInterestRates,
     ];
 
-    // Sundays spread across the modelled window, each side of the undated
-    // 2012-05-28..2012-06-07 bracket and well beyond it.
-    const SUNDAYS: [(i32, u32, u32); 4] = [(2010, 6, 6), (2011, 6, 5), (2015, 6, 7), (2025, 6, 8)];
+    // Sundays spread across the modelled window: the floor-sourced 16:15 CT
+    // onsets (2010, 2011), a Sunday inside the disputed residual span
+    // 2012-05-28..2016-01-02 (2015), and a Sunday after the 2016-01-03
+    // market-data witness (2025), whose 16:00:00 CT onsets the archive
+    // states for every Sunday it holds (2026-10-16 UTC).
+    const SUNDAYS: [((i32, u32, u32), SessionState); 4] = [
+        ((2010, 6, 6), SessionState::Closed),
+        ((2011, 6, 5), SessionState::Closed),
+        ((2015, 6, 7), SessionState::Closed),
+        ((2025, 6, 8), SessionState::OrderEntry),
+    ];
 
     for key in FAMILIES {
-        for (year, month, day) in SUNDAYS {
+        for ((year, month, day), disputed_state) in SUNDAYS {
             let inside = utc(year, month, day, 21, 30);
             assert_eq!(
                 hours_for_market_hours_key(key, inside).session_state(inside),
@@ -124,15 +132,12 @@ fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
                  16:30 is inside the queue under every sourced Sunday value"
             );
 
-            // 16:00 CT is inside the queue only under the verified-current
-            // grid, whose onset day is undated, so a dated instant must not
-            // claim it.
             let disputed = utc(year, month, day, 21, 0);
             assert_eq!(
                 hours_for_market_hours_key(key, disputed).session_state(disputed),
-                SessionState::Closed,
-                "{key:?} must not extend the dated Sunday queue to 16:00 CT on \
-                 {year}-{month}-{day}: that quarter-hour depends on the undated 2012 cutover"
+                disputed_state,
+                "{key:?} Sunday 16:00 CT on {year}-{month}-{day}: the onset is 16:15 CT \
+                 below the 2016-01-03 market-data witness and 16:00 CT from it"
             );
         }
     }

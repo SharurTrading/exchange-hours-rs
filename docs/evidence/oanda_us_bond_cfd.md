@@ -138,13 +138,13 @@ The spans, and what each rests on:
   prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening
   replay prints the identical grid — this book's legacy era has no interior
   change.
-- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
-  The changeover to `17:01 - 15:59` is undated (last earlier-grid print
-  2023-06-05, first current-grid print 2024-02-21, no Wayback capture
-  between). The current grid nests inside the legacy print, so the span
-  serves `18:01 - 16:59` New York per the charter's 2026-10-04 rule; the
-  residual is disclosed below.
-- **Opening days from 2024-02-20 — the current grid `17:01 - 15:59`
+- **Opening days 2023-06-05 through 2024-02-10 — the legacy whole-hour
+  `18:00 - 17:00` New York grid.** The 2023-06-05 print is the last
+  earlier-grid page observation, and the operator's own machine channel
+  witnesses the whole-hour grid per day through the 2024-02-08 opening day
+  (the section in [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md), whose
+  probes cover this book's instruments too).
+- **Opening days from 2024-02-11 — the current grid `17:01 - 15:59`
   Chicago** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
   replays corroborate).
 - **Below the 2021-03-03 witness**: carried (#332).
@@ -172,13 +172,17 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection, which here is the current `18:01 - 16:59` New York grid (it
-  nests inside the whole-hour legacy print). The disputed remainder: the
-  legacy state's extra minutes — open 18:00 and close 17:00 New York. Named
-  closer: a dated OANDA UK operator artifact or desk answer; the sweep is
-  recorded in [`oanda_fx.md`](oanda_fx.md).
+- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
+  disputed 2023-06-05..2024-02-19 span served the intersection; the
+  operator's own machine channel now dates the changeover to opening day
+  2024-02-11, the span serves the whole-hour legacy grid exactly, and the
+  current grid runs from 2024-02-11 (`MARKET-DATA`, recorded in
+  [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md), whose S5 probes cover
+  USB10Y_USD: 2024-02-08 opens 23:00:00 UTC sharp, 2024-02-13 leads at
+  23:00:55). The bond book's own close minutes are thin (one-to-three S5
+  buckets), so its per-day proof rides the shared engine's open shapes plus
+  the index book's close-side record; the Memorial reopen, the 2024-12-24
+  close and the pre-witness 2024 final closes stay #332 residuals.
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - US Share CFD and ETF arrangements (`Closed` on US holidays) are
   caller-side listings of equities and stay out of this book.

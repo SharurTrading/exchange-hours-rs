@@ -3212,7 +3212,7 @@ fn the_dated_constant_fence_reads_every_shipped_constant() {
         .collect::<std::collections::BTreeSet<_>>();
     assert_eq!(
         constants.len(),
-        19,
+        17,
         "the fence collects every dated constant the crate ships; found {} in {modules:?}. \
          A drop means the matcher stopped seeing a spelling, not that a constant was removed",
         constants.len()

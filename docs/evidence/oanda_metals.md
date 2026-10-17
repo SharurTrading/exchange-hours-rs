@@ -48,7 +48,7 @@ commodity-metals book. On 2026-05-25 the operator explicitly distinguishes
 the gold/silver reopen at 18:05 from the group's 18:01. That exception applies
 where it is stated; other dated group reopens remain the literal printed
 18:00 or 18:01, and standalone `Metals` reopens include this book. A holiday
-statement overrides the undated normal week: the 2025-01-01 18:04 reopen
+statement overrides the normal week: the 2025-01-01 18:04 reopen
 and the Holy Thursday 17:00 close are encoded numerically, even though the
 page calls them "late" and "early" against today's normal 18:05/16:59 grid.
 No rounding or retrospective extension of the 2026-05-25 parenthetical is
@@ -147,14 +147,14 @@ The spans, and what each rests on:
   rows print an `18:10` open (XAU/NZD with its Auckland break): those
   per-instrument minutes stay caller instrument data, disclosed here as the
   era's residual.
-- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
-  The changeover to `18:05 - 16:59` is undated (the 2023-06-05 print is the
-  last earlier-grid observation, the 2024-02-21 print the first current-grid
-  one, and no Wayback capture sits between them). The span serves the window
-  both witnessed USD-pair states hold — open `18:05`, close `16:58` — per
-  the charter's 2026-10-04 rule; the disputed remainder is the residual
-  below.
-- **Opening days from 2024-02-20 — the current grid `18:05 - 16:59`.** The
+- **Opening days 2023-06-05 through 2024-02-10 — the earlier grid.** The
+  2023-06-05 print is the last earlier-grid page observation, and the
+  operator's own machine channel witnesses the grid per day through the
+  2024-02-08 opening day (the section below); the span serves the earlier
+  USD-pair state, open `18:03`, close `16:58`.
+- **Opening days from 2024-02-11 — the current grid `18:05 - 16:59`.** The
+  changeover is dated 2024-02-11 (opening day) by the operator's machine
+  channel under the `MARKET-DATA` convention (the section below); the
   2024-02-21 capture prints it (`OANDA-UK-HOURS-2024-WAYBACK`), and every
   later replay and the 2026-10-10 capture corroborate; all rows share one
   grid again.
@@ -188,18 +188,55 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-05..2024-02-20
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection — open 18:05, close 16:58 New York. The disputed remainder:
-  the earlier state may have opened 18:03 (and the era's crosses 18:10) and
-  the current state closes 16:59. Named closer: a dated OANDA UK operator
-  artifact or desk answer stating the changeover's effective day. The sweep
-  that closed the hunts negative is recorded in
-  [`oanda_fx.md`](oanda_fx.md); the 2021-03-03..2021-08-18 coarse
-  gold/silver rows and the era's cross opens stay #332 residuals.
+- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
+  disputed 2023-06-05..2024-02-20 span served as the sourced intersection;
+  the operator's own machine channel now dates the changeover to opening
+  day 2024-02-11 and the span serves the earlier pair grid exactly (section
+  below, `MARKET-DATA`). The 2021-03-03..2021-08-18 coarse gold/silver rows
+  and the era's cross opens stay #332 residuals.
 - Dates where the page prints no US-group row at all are audited normal for
   this book: the page's US vocabulary is rows-only, so its silence affirms no
   change.
+
+## Changeover dated by the operator's machine channel — 2026-10-16 UTC
+
+The publication-channel hunts (recorded in
+[`oanda_fx.md`](oanda_fx.md)) closed negative, and the undated span served
+the sourced intersection. On 2026-10-16 (UTC), under the maintainer's
+direction, the changeover was dated from the operator's own machine channel
+— the practice-environment candle service (`api-fxpractice.oanda.com`, the
+`/v3/accounts/<id>/instruments/XAU_USD/candles` endpoint, read as bytes
+through the `oanda-rs` client and paced by its own admission control), the
+same T2 class the MLK-2023 closure used under the `MARKET-DATA`
+convention. The feed carries the operator's own trade-dated timeline on
+both flanks of the boundary; the confirming raw responses are retained
+privately, so the id deliberately does not resolve in the research store.
+The host is the practice environment; its candle history is
+account-independent, and confirming the live host with a live read-only key
+remains a residual.
+
+Method. For every calendar day from 2023-06-06 through 2024-02-19 the probe
+fetched that day's M1 mid candles across the daily close-and-reopen window
+and classified the day by which grid's reopen minute the feed shows: the
+earlier pair grid reopens at 18:03 New York, the current grid at 18:05.
+Result: every reopen day in the span shows the earlier grid through opening
+day Thursday 2024-02-08, and every opening day from Sunday 2024-02-11 shows
+the current grid, whose first tick bucket lands in the 18:04 minute — the
+sub-five-second lead before the published 18:05 open. No opening day
+classifies against its neighbours' era; the quiet days are Fridays,
+Saturdays, the 2023-11-12 thin Sunday, and the holiday dates the holiday
+layer owns (zero-candle 2023-11-24, the 2023-12-24 and 2023-12-31 holiday
+Sundays). Second-resolution S5 confirmation across the shared US books:
+2024-02-08 opens at 18:00:00 New York sharp (the legacy whole-hour cousins)
+and its close minute ticks deep past 16:59:15, which the current 16:59
+close forbids; from 2024-02-13 the opens lead at 17:00:55/18:00:55 and the
+close minutes end within five seconds of 16:59. The metals book shares that
+engine. The M1 per-day records and the S5 shapes were retained privately
+with the retrieval date. The boundary is keyed to the local opening day of
+the first current-grid session — a day-level revision keyed to the opening
+day never splits a running session (LAW-NO-FABRICATED-DATES).
+`MARKET-DATA` — T2, confirming artifacts retained privately, retrieval
+2026-10-16 UTC.
 
 ## Publication audit — 2026-10-11 UTC
 

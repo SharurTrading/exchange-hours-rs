@@ -124,11 +124,13 @@ The spans, and what each rests on:
   [`oanda_fx.md`](oanda_fx.md)'s Documents table); the 2023-06-05 capture
   still prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening
   replay prints the identical grid.
-- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
-  The changeover to `18:01 - 16:59` is undated, the current grid nests
-  inside the legacy print, and the span serves the current grid's shape per
-  the charter's 2026-10-04 rule; the residual is disclosed below.
-- **Opening days from 2024-02-20 — the current grid `18:01 - 16:59` New
+- **Opening days 2023-06-05 through 2024-02-10 — the legacy whole-hour
+  `18:00 - 17:00` New York grid.** The 2023-06-05 print is the last
+  earlier-grid page observation, and the operator's own machine channel
+  witnesses the whole-hour grid per day through the 2024-02-08 opening day
+  (the section in [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md), whose
+  probes cover this book's XCU_USD and NATGAS_USD instruments too).
+- **Opening days from 2024-02-11 — the current grid `18:01 - 16:59` New
   York** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
   replays corroborate).
 - **Below the 2021-03-03 witness**: carried (#332).
@@ -153,18 +155,22 @@ sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection, which here is the current `18:01 - 16:59` grid (it nests
-  inside the whole-hour legacy print). The disputed remainder: the legacy
-  state's extra minutes — open 18:00 and close 17:00 New York. Named closer:
-  a dated OANDA UK operator artifact or desk answer; the sweep is recorded
-  in [`oanda_fx.md`](oanda_fx.md).
-- **The pre-2024-02-21 partial witness: the 2022
-  capture's futures-exact instants and the undated changeover refuse the
-  span on the date-aware surface. Closing condition: dated operator
-  artifacts, or hunts closed negative (then the 2026-10-04 intersection
-  rule applies).
+- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
+  disputed 2023-06-05..2024-02-19 span served the intersection; the
+  operator's own machine channel now dates the changeover to opening day
+  2024-02-11, the span serves the whole-hour legacy grid exactly, and the
+  current grid runs from 2024-02-11 (`MARKET-DATA`, recorded in
+  [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md): XCU_USD and NATGAS_USD
+  open 23:00:00 UTC sharp on 2024-02-08 and lead at 23:00:55 on
+  2024-02-13). The commodity book's close minutes are thin, so its per-day
+  proof rides the shared engine's open shapes plus the index book's
+  close-side record; the pre-witness eras stay #332 residuals.
+- **The pre-2021 witness era stays carried**: the 2022
+  capture's futures-exact instants describe an arrangement this book's shape
+  does not model, and the era below the first page witness keeps its
+  date-aware refusal. The changeover is no longer part of this residual —
+  it is dated 2026-10-16 (the RESOLVED entry above). Closing condition:
+  dated operator artifacts for the pre-witness normal week (#332).
 - The `Metals:` label's coverage of the commodity-metals listings rests on
   the 18:01/18:04 reopen instants; if OANDA prints an explicit
   `Copper:`-style row that disagrees, the split lands in a per-leg key.

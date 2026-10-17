@@ -13,7 +13,11 @@ The broker current day/night grid and bounded holiday audit are documented below
 
 ## Revision rows
 
-None. The module carries one sourced grid and no `revisions!` block; the witness is not a dated change.
+- 2024-02-12 — T2 — `MARKET-DATA` — the changeover to the current grid is
+  dated to this Singapore opening day by the operator's own machine channel
+  (artifacts retained privately; the method and per-day record are below).
+
+No `revisions!` block: the module selects eras on the dated constant.
 
 ## The normal week
 
@@ -64,14 +68,17 @@ keyed observations, not effective days — LAW-NO-FABRICATED-DATES):
   UTC, 13:35 Singapore, inside that day's day session — still prints it
   (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening replay prints
   the identical grid.
-- **Opening days 2023-06-06 through 2024-02-20 — the sourced intersection.**
-  The changeover is undated (last earlier-grid print 2023-06-05, first
-  current-grid print 2024-02-21 00:55 UTC = 08:55 Singapore, inside that
-  day's day session; no Wayback capture sits between). The current grid
-  nests inside the legacy print, so the intersection is the current grid's
-  own shape — the span serves `09:01 - 16:29; 17:01 - 04:44` per the
-  charter's 2026-10-04 rule; the residual is disclosed below.
-- **Opening days from 2024-02-21 — the current grid** (the 2024-02-21
+- **Opening days 2023-06-06 through 2024-02-09 — the legacy grid
+  `09:00 - 16:30; 17:00 - 04:45`.** The 2023-06-05 print is the last
+  earlier-grid page observation, and the operator's own machine channel
+  witnesses the legacy grid per day through the 2024-02-09 opening day (the
+  section below); the span serves the legacy grid exactly.
+- **Opening days from 2024-02-12 — the current grid `09:01 - 16:29;
+  17:01 - 04:44`.** The changeover is dated 2024-02-12 (opening day) by the
+  operator's machine channel under the `MARKET-DATA` convention (the
+  section below); the 2024-02-21 00:55 UTC page capture — 08:55 Singapore,
+  inside that day's day session — corroborates it.
+- **Opening days from 2024-02-12 — the current grid** (the 2024-02-21
   capture, `OANDA-UK-HOURS-2024-WAYBACK`; the 2026-10-10 capture
   corroborates).
 - **Holiday dates below the current audited window remain unclassified**;
@@ -118,12 +125,44 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-06..2024-02-20
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection, which here is the current grid (it nests inside the legacy
-  print). The disputed remainder: the legacy state's extra minutes — day
-  open 09:00, day close 16:30, night open 17:00, night close 04:45. Named
-  closer: a dated OANDA UK operator artifact or desk answer; the sweep that
-  closed the hunts negative is recorded in
-  [`oanda_fx.md`](oanda_fx.md).
+- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
+  disputed 2023-06-06..2024-02-20 span served the intersection (the current
+  grid's shape); the operator's own machine channel now dates the changeover
+  to opening day 2024-02-12 and the span serves the legacy grid exactly
+  (section below, `MARKET-DATA`). The unaudited holiday dates inside the
+  witnessed span keep their typed refusals; they are the remaining #332
+  residual here.
+
+## Changeover dated by the operator's machine channel — 2026-10-16 UTC
+
+Under the maintainer's direction the changeover was dated from the
+operator's own machine channel — the practice-environment candle service
+(`api-fxpractice.oanda.com`, the
+`/v3/accounts/<id>/instruments/CN50_USD/candles` endpoint, read as bytes
+through the `oanda-rs` client and paced by its own admission control) — the
+same T2 class the MLK-2023 closure used under the `MARKET-DATA`
+convention. The confirming raw responses are retained privately, so the id
+deliberately does not resolve in the research store; the practice host's
+history is account-independent, and confirming the live host with a live
+read-only key remains a residual.
+
+Record. Every calendar day from 2023-06-06 through 2024-02-19 was
+witnessed against the daily close-and-reopen window (M1, 259 requests) and
+the boundary pinned at S5. The legacy grid's day close ticks deep into its
+final minute — 16:29:40–45 Singapore — on the sampled mid-span days
+(2023-08-16, 2023-11-15, 2024-01-17) and on 2024-02-06..09, with the night
+session reopening exactly at the 17:00:00 Singapore bucket; the current
+grid's 16:29 day close leaves only sub-five-second residual buckets (last
+tick 16:29:00–05), and the 17:01 reopen leads at 17:00:55. Friday
+2024-02-09 is the legacy grid's last witnessed day; Monday 2024-02-12
+already runs the current signature (close buckets at 16:29:00 or wholly
+silent — 2024-02-12/13 are thin — and the 17:00:55 lead), as does every
+later probe through 2026-10-14. The interim M1 reopen-minute
+classifications inside 2024-02-12..19 that printed a 17:00-minute candle
+are the current grid's lead ticks, which the S5 close-side shapes resolve;
+no day's close-side evidence contradicts its neighbours' era. The boundary
+is keyed to the Singapore opening day of the first current-grid session —
+a day-level revision keyed to the opening day never splits a running
+session (LAW-NO-FABRICATED-DATES). `MARKET-DATA` — T2, confirming
+artifacts retained privately, retrieval 2026-10-16 UTC.
 Pre-witness history and the forward publication horizon remain explicit in #332.

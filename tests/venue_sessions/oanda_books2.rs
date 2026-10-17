@@ -83,22 +83,46 @@ fn oanda_metals_answers_the_witnessed_eras_on_their_own_opening_days() {
         Ok(false),
         "the legacy close is end-exclusive"
     );
-    // The undated changeover's intersection: the later 18:05 open, the
-    // earlier 16:58 close.
+    // The former undated span is dated now and serves the legacy grid:
+    // 18:03 opens with the 16:58 close through the 2024-02-08 opening day.
     assert_eq!(
-        calendar.is_open(et((2023, 8, 8), (18, 4, 59))),
+        calendar.is_open(et((2023, 8, 8), (18, 2, 59))),
         Ok(false),
-        "one second before the intersection open"
+        "one second before the legacy open on a former-span date"
     );
     assert_eq!(
-        calendar.is_open(et((2023, 8, 8), (18, 5, 0))),
+        calendar.is_open(et((2023, 8, 8), (18, 3, 0))),
         Ok(true),
-        "the intersection open instant"
+        "the legacy open instant on a former-span date"
     );
     assert_eq!(
         calendar.is_open(et((2023, 8, 9), (16, 58, 0))),
         Ok(false),
-        "the intersection close is end-exclusive"
+        "the legacy close is end-exclusive on a former-span date"
+    );
+    // The dated boundary: the session opened Thursday 2024-02-08 is the
+    // legacy grid's last (18:03 to Friday 16:58); the session opened Sunday
+    // 2024-02-11 already runs the current grid (18:05 to Monday 16:59).
+    let last_legacy = calendar
+        .session_bounds(et((2024, 2, 9), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Friday sits in the session opened Thursday");
+    assert_eq!(
+        last_legacy,
+        (et((2024, 2, 8), (18, 3, 0)), et((2024, 2, 9), (16, 58, 0))),
+        "the legacy era's final session"
+    );
+    let first_current = calendar
+        .session_bounds(et((2024, 2, 12), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Monday sits in the session opened Sunday");
+    assert_eq!(
+        first_current,
+        (
+            et((2024, 2, 11), (18, 5, 0)),
+            et((2024, 2, 12), (16, 59, 0))
+        ),
+        "the current era's first session"
     );
     assert_refused_variant(
         &calendar.is_closed_trade_date(
@@ -390,9 +414,9 @@ fn oanda_book_wire_forms_are_snake_case_and_stable() {
 #[test]
 fn oanda_us_books_answer_the_witnessed_eras_on_their_own_opening_days() {
     // All three US books share the clock: whole-hour `18:00 - 17:00` New York
-    // through the witnessed legacy era, then the current `18:01 - 16:59`
-    // grid — which nests inside the legacy print, so it is also the undated
-    // changeover's sourced intersection.
+    // through the legacy era, then the current `18:01 - 16:59` grid from the
+    // changeover the operator's machine channel dates to opening day
+    // 2024-02-11.
     for key in [
         MarketHoursKey::OandaUsIndexCfd,
         MarketHoursKey::OandaUsBondCfd,
@@ -421,26 +445,60 @@ fn oanda_us_books_answer_the_witnessed_eras_on_their_own_opening_days() {
             Ok(false),
             "{key:?}: the legacy close is end-exclusive"
         );
-        // The undated span serves the intersection (the current grid).
+        // The former undated span is dated now and serves the legacy
+        // whole-hour grid through the 2024-02-08 opening day.
         assert_eq!(
-            calendar.is_open(et((2023, 8, 8), (18, 0, 59))),
-            Ok(false),
-            "{key:?}: one second before the intersection open"
-        );
-        assert_eq!(
-            calendar.is_open(et((2023, 8, 8), (18, 1, 0))),
+            calendar.is_open(et((2023, 8, 8), (18, 0, 0))),
             Ok(true),
-            "{key:?}: the intersection open instant"
+            "{key:?}: the legacy open instant on a former-span date"
         );
         assert_eq!(
-            calendar.is_open(et((2023, 8, 9), (16, 58, 59))),
+            calendar.is_open(et((2023, 8, 9), (16, 59, 59))),
             Ok(true),
-            "{key:?}: the intersection's last minute"
+            "{key:?}: the legacy grid trades through 16:59"
         );
         assert_eq!(
-            calendar.is_open(et((2023, 8, 9), (16, 59, 0))),
+            calendar.is_open(et((2023, 8, 9), (17, 0, 0))),
             Ok(false),
-            "{key:?}: the intersection close is end-exclusive"
+            "{key:?}: the legacy close is end-exclusive on a former-span date"
+        );
+        // The dated boundary: the session opened Thursday 2024-02-08 is the
+        // legacy grid's last; the session opened Sunday 2024-02-11 already
+        // runs the current grid (18:01 to 16:59).
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 8), (17, 59, 59))),
+            Ok(false),
+            "{key:?}: one second before the legacy open on its last day"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 8), (18, 0, 0))),
+            Ok(true),
+            "{key:?}: the legacy open instant on its last day"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 9), (17, 0, 0))),
+            Ok(false),
+            "{key:?}: the legacy era's final close is end-exclusive"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 11), (18, 0, 59))),
+            Ok(false),
+            "{key:?}: one second before the current open"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 11), (18, 1, 0))),
+            Ok(true),
+            "{key:?}: the current open instant"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 12), (16, 58, 59))),
+            Ok(true),
+            "{key:?}: the current era's first day trades through 16:58"
+        );
+        assert_eq!(
+            calendar.is_open(et((2024, 2, 12), (16, 59, 0))),
+            Ok(false),
+            "{key:?}: the current close is end-exclusive"
         );
         // The witnessed span sits below the first audited window, so the
         // holiday classification refuses typed while sessions answer.

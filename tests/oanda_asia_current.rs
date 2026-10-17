@@ -194,25 +194,38 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
 
 #[test]
 fn witnessed_eras_answer_on_their_own_opening_days() {
-    for (key, legacy, intersection_open_day_close, current) in [
+    for (
+        key,
+        legacy,
+        former_span_day_close,
+        legacy_night_close,
+        legacy_last_day,
+        current_first_day,
+        current_day_close,
+    ) in [
         (
             K::OandaChina50Cfd,
             // Legacy `09:00 - 16:30; 17:00 - 04:45`, witnessed
-            // 2021-03-03..2023-06-05.
+            // 2021-03-03..2023-06-05 by the page prints and through
+            // 2024-02-09 by the operator's machine channel.
             ("2022-06-07T01:00:00Z", "2022-06-07T08:30:00Z"),
-            "2023-08-09T08:29:00Z",
-            // The current grid nests inside the legacy print, so it is also
-            // the undated changeover's sourced intersection.
-            ("2023-08-08T01:01:00Z", "2023-08-09T08:44:00Z"),
+            ("2023-08-09T08:29:59Z", "2023-08-09T08:30:00Z"),
+            "2023-08-08T20:45:00Z",
+            ("2024-02-09T01:00:00Z", "2024-02-09T08:30:00Z"),
+            ("2024-02-12T01:00:00Z", "2024-02-12T01:01:00Z"),
+            ("2024-02-12T08:28:59Z", "2024-02-12T08:29:00Z"),
         ),
         (
             K::OandaSingapore30Cfd,
             // Legacy `08:30 - 17:20; 17:50 - 04:45`.
             ("2022-06-07T00:30:00Z", "2022-06-07T09:20:00Z"),
-            // The intersection keeps the earlier night close: 04:45, not the
-            // current 05:14 (04:45 SGT on Aug 9 = 20:45 UTC on Aug 8).
+            ("2023-08-09T09:19:59Z", "2023-08-09T09:20:00Z"),
+            // The night close stays at the legacy 04:45 on a former-span
+            // day (04:45 SGT on Aug 9 = 20:45 UTC on Aug 8).
             "2023-08-08T20:45:00Z",
-            ("2023-08-08T00:31:00Z", "2023-08-09T09:19:00Z"),
+            ("2024-02-09T00:30:00Z", "2024-02-09T09:20:00Z"),
+            ("2024-02-12T00:30:00Z", "2024-02-12T00:31:00Z"),
+            ("2024-02-12T09:18:59Z", "2024-02-12T09:19:00Z"),
         ),
     ] {
         let c = ExchangeCalendar::for_market_hours_key(key);
@@ -227,21 +240,59 @@ fn witnessed_eras_answer_on_their_own_opening_days() {
             Ok(false),
             "{key:?}: the legacy day close is end-exclusive"
         );
-        let (current_open, current_close) = current;
+        // The former undated span (2023-06-06..2024-02-11 opening days) is
+        // dated now and serves the legacy grid: its day close keeps the
+        // legacy instant.
+        let (span_last_trading, span_close) = former_span_day_close;
         assert_eq!(
-            c.is_open(utc(current_open)),
+            c.is_open(utc(span_last_trading)),
             Ok(true),
-            "{key:?}: the intersection open instant"
+            "{key:?}: a former-span date trades to the legacy close"
         );
         assert_eq!(
-            c.is_open(utc(current_close)),
+            c.is_open(utc(span_close)),
             Ok(false),
-            "{key:?}: the intersection close is end-exclusive"
+            "{key:?}: the legacy day close is end-exclusive on a former-span date"
         );
         assert_eq!(
-            c.is_open(utc(intersection_open_day_close)),
+            c.is_open(utc(legacy_night_close)),
             Ok(false),
-            "{key:?}: the intersection day close instant stays closed"
+            "{key:?}: the legacy night close instant stays closed"
+        );
+        // The dated boundary: Friday 2024-02-09 is the legacy grid's last
+        // opening day; Monday 2024-02-12 already runs the current grid.
+        let (last_open, last_close) = legacy_last_day;
+        assert_eq!(
+            c.is_open(utc(last_open)),
+            Ok(true),
+            "{key:?}: the legacy grid's last opening day opens on its grid"
+        );
+        assert_eq!(
+            c.is_open(utc(last_close)),
+            Ok(false),
+            "{key:?}: the legacy grid's final day close is end-exclusive"
+        );
+        let (first_pre_open, first_open) = current_first_day;
+        assert_eq!(
+            c.is_open(utc(first_pre_open)),
+            Ok(false),
+            "{key:?}: one second before the current day open"
+        );
+        assert_eq!(
+            c.is_open(utc(first_open)),
+            Ok(true),
+            "{key:?}: the current day open instant"
+        );
+        let (cur_last_trading, cur_close) = current_day_close;
+        assert_eq!(
+            c.is_open(utc(cur_last_trading)),
+            Ok(true),
+            "{key:?}: the current era's first day trades to its close"
+        );
+        assert_eq!(
+            c.is_open(utc(cur_close)),
+            Ok(false),
+            "{key:?}: the current day close is end-exclusive"
         );
         // The witnessed span sits below the first audited window, so the
         // holiday classification refuses typed while sessions answer.

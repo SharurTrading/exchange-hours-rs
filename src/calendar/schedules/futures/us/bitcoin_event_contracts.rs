@@ -4,23 +4,16 @@
 
 use chrono_tz::US;
 
-use super::event_contracts::{
-    EVENT_CONTRACTS_EXTENDED_CURRENT, EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
-};
+use super::event_contracts::EVENT_CONTRACTS_ORDER_ENTRY_CURRENT;
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY};
+use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 const SAT_ONLY: [bool; 7] = [false, false, false, false, false, true, false];
 const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 
-// CME Event Contracts on Bitcoin Futures in America/Chicago, `ECBTC`: the one
-// Chapter 23 root CME moved to 24/7 trading on 2026-05-29. The key carries the
-// root's whole life so a caller never switches keys on a date. Two CME
-// primaries state the post-cutover weekday close an hour apart, so the key
-// serves their intersection and withholds 15:00-16:00 CT as maintenance.
-// Narrative: docs/evidence/globex_event_contracts_btc.md
+// Evidence: docs/evidence/globex_event_contracts_btc.md.
 
 /// The 24/7 executable leg under the sourced intersection: Monday-Friday
 /// 00:00-15:00 and 16:02-24:00 CT, Saturday 00:00-02:00 and 04:00-24:00 CT,
@@ -70,15 +63,22 @@ pub(crate) static BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT: &[SessionRule] = 
     },
 ];
 
-// The cutover day itself. The wiki states the instant — "Starting at 4 p.m.
-// Central Time on Friday, May 29, 2026, CME Group will expand event contracts
-// to 24/7 trading" — so Thursday's 17:00 open still closes at Friday 16:00 CT
-// under the old grid, and the first 24/7 queue opens at 16:01 that afternoon.
+// 2023-03-12 — T1 — CME SER-9092 — the root's own five-day session.
+// Evidence: docs/evidence/globex_event_contracts_btc.md.
+static FIVE_DAY_EXTENDED: &[SessionRule] = &[SessionRule {
+    days: SUN_PLUS_MON_THU,
+    open_ssm: 17 * 3600,
+    close_ssm: 15 * 3600,
+}];
+
+// 2026-05-29 — T1 — CME SER-9740R — first 24/7 queue and Friday reopen.
+// Thursday's session retains the preceding five-day grid's 15:00 CT close.
+// Evidence: docs/evidence/globex_event_contracts_btc.md.
 static EXTENDED_2026_05_29: &[SessionRule] = &[
     SessionRule {
         days: THU_ONLY,
         open_ssm: 17 * 3600,
-        close_ssm: 16 * 3600,
+        close_ssm: 15 * 3600,
     },
     SessionRule {
         days: FRI,
@@ -92,7 +92,7 @@ static ORDER_ENTRY_2026_05_29: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600 + 2 * 60,
 }];
 
-// Three one-day Saturday extensions CME announced for channel 329, each
+// Six one-day Saturday extensions governing channel 329, each
 // without a replacement Pre-Open, each followed by the standard window. The
 // weekday and Sunday pieces are unchanged; only the Saturday reopen moves.
 static ORDER_ENTRY_WEEKDAYS_ONLY: &[SessionRule] = &[SessionRule {
@@ -101,7 +101,7 @@ static ORDER_ENTRY_WEEKDAYS_ONLY: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600 + 2 * 60,
 }];
 macro_rules! saturday_extended_to {
-    ($name:ident, $reopen_hour:expr) => {
+    ($name:ident, $reopen_hour:expr, $reopen_minute:expr) => {
         static $name: &[SessionRule] = &[
             SessionRule {
                 days: MON_FRI,
@@ -120,7 +120,7 @@ macro_rules! saturday_extended_to {
             },
             SessionRule {
                 days: SAT_ONLY,
-                open_ssm: $reopen_hour * 3600,
+                open_ssm: $reopen_hour * 3600 + $reopen_minute * 60,
                 close_ssm: 24 * 3600,
             },
             SessionRule {
@@ -131,9 +131,12 @@ macro_rules! saturday_extended_to {
         ];
     };
 }
-saturday_extended_to!(EXTENDED_2026_08_01, 9);
-saturday_extended_to!(EXTENDED_2026_08_29, 6);
-saturday_extended_to!(EXTENDED_2026_09_19, 8);
+saturday_extended_to!(EXTENDED_2026_08_01, 9, 0);
+saturday_extended_to!(EXTENDED_2026_08_29, 6, 0);
+saturday_extended_to!(EXTENDED_2026_09_19, 8, 0);
+saturday_extended_to!(EXTENDED_2026_10_03, 5, 0);
+saturday_extended_to!(EXTENDED_2026_10_24, 15, 30);
+saturday_extended_to!(EXTENDED_2026_10_31, 5, 0);
 
 // CLOSED BEFORE LISTING. The root did not exist before SER-9092's listing day,
 // so the pre-listing baseline is an explicit sessionless profile, as for every
@@ -147,13 +150,12 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-/// 2023-03-12 to 2026-05-28: the event-contract grid, by reference. SER-9092's
-/// Exhibit 1 reprints the family's hours cell unchanged for this root, so the
-/// tables are shared rather than copied.
+/// The root's own five-day grid, from SER-9092 and confirmed with market data.
+/// Its 15:00 CT close differs from the other event contracts' 16:00 CT close.
 static FROM_2023_03_12: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
-    extended: EVENT_CONTRACTS_EXTENDED_CURRENT,
+    extended: FIVE_DAY_EXTENDED,
     order_entry: EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
@@ -193,6 +195,9 @@ macro_rules! temporary_saturday {
 temporary_saturday!(TEMPORARY_2026_08_01, EXTENDED_2026_08_01);
 temporary_saturday!(TEMPORARY_2026_08_29, EXTENDED_2026_08_29);
 temporary_saturday!(TEMPORARY_2026_09_19, EXTENDED_2026_09_19);
+temporary_saturday!(TEMPORARY_2026_10_03, EXTENDED_2026_10_03);
+temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24);
+temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31);
 
 // Every revision row below is T1; each row's effective day and citation
 // literal are its own fields, and the document, quotation and URL behind each
@@ -244,6 +249,54 @@ static REVISIONS: &[Revision] = revisions![
         20,
         &SOURCED_INTERSECTION,
         "CME Globex notice 20260824"
+    ),
+    // 2026-10-03 — T1 — CME Globex notice 20260921 — 24/7 maintenance to 05:00 CT.
+    (
+        2026,
+        10,
+        3,
+        &TEMPORARY_2026_10_03,
+        "CME Globex notice 20260921"
+    ),
+    // 2026-10-04 — T1 — CME Globex notice 20260921 — restore the standard grid.
+    (
+        2026,
+        10,
+        4,
+        &SOURCED_INTERSECTION,
+        "CME Globex notice 20260921"
+    ),
+    // 2026-10-24 — T1 — CME Globex notice 20260921 — FIA drill to 15:30 CT.
+    (
+        2026,
+        10,
+        24,
+        &TEMPORARY_2026_10_24,
+        "CME Globex notice 20260921"
+    ),
+    // 2026-10-25 — T1 — CME Globex notice 20260921 — restore the standard grid.
+    (
+        2026,
+        10,
+        25,
+        &SOURCED_INTERSECTION,
+        "CME Globex notice 20260921"
+    ),
+    // 2026-10-31 — T1 — CME Globex notice 20261005 — maintenance to 05:00 CT.
+    (
+        2026,
+        10,
+        31,
+        &TEMPORARY_2026_10_31,
+        "CME Globex notice 20261005"
+    ),
+    // 2026-11-01 — T1 — CME Globex notice 20261005 — restore the standard grid.
+    (
+        2026,
+        11,
+        1,
+        &SOURCED_INTERSECTION,
+        "CME Globex notice 20261005"
     ),
 ];
 

@@ -15,6 +15,19 @@
   Singapore 30's legacy night-close conflict is disclosed beside its served
   intersection. Holiday windows, typed coverage refusals and the remaining
   historical gaps in #332 are unchanged.
+- Correct the CME Event Contracts on Bitcoin Futures five-day session to its
+  own 15:00 CT close, including the May 29, 2026 transition session; market
+  data confirms the tradable event contracts' close separately from the
+  non-trading reference instruments' 16:00 CT clock (#360).
+- Apply the published October 3, 24 and 31, 2026 maintenance extensions to
+  the Bitcoin event-contract snapshot, including the 15:30 CT FIA-drill
+  reopen on October 24 (#360).
+- Retain cryptocurrency's sourced September 19 and October 3, 2026 Saturday
+  Pre-Open queues at 07:45 and 04:45 CT. Order acceptance now answers inside
+  them; matching and trading-bar starts remain at 08:00 and 05:00 CT (#360).
+- Align the gold, silver and copper TAS current snapshots with their dated
+  Sunday 16:00 CT Pre-Open and correct the four CME venue holiday-table
+  header counts, fenced against the public rows (#360).
 
 ## [1.2.1] - 2026-10-16
 

@@ -9,11 +9,38 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: executable** — the 24/7 weekday close is the sourced intersection of two CME primaries that disagree by an hour, and the withheld hour is one in which trades may print. CME Event Contracts on Bitcoin Futures, `ECBTC`, Rulebook Chapter 23 — the one event-contract root CME moved to 24/7 trading on 2026-05-29. The key carries the root's whole life so a caller never switches keys on a date: sessionless before SER-9092's listing ("Effective Sunday, March 12, 2023, for trade date Monday, March 13, 2023", keyed to the Sunday opening day), the `globex_event_contracts` grid by reference to 2026-05-28, the transition day, then 24/7. **The conflict.** SER-9740R (28 May 2026) states "CME Globex: 24/7 with the exception of the following maintenance windows: Saturday 2:00 a.m. to 4:00 a.m. CT. Monday-Friday 4:00p.m. to 4:02 p.m. CT" with Pre-Opens "Monday - Friday: 4:01 p.m. to 4:02 p.m. CT Saturday: 3:45 a.m. to 4:00 a.m. CT"; CME's client-systems wiki page for this root states "Monday through Friday / Daily Maintenance Window (with Trade Date roll) / Close: 3:00:00 p.m. to 4:01:00 p.m. CT / Pre-open: 4:01:00 p.m. to 4:01:30 p.m. CT / No cancel: 4:01:30 p.m. to 4:02:00 p.m. CT / Open: 4:02:00 p.m. CT" and the same Saturday window with a 03:45 Pre-Open. One document closes weekdays at 16:00 CT, the other at 15:00; everything else matches. **The two statements are ordered and each has a weakness.** Confluence's version API shows the wiki table entered at version 4 — absent from versions 1–3 — under the page's own Revision History row "April 22, 2026 / Added Event-Based Contract Maintenance Windows and Market Hours schedule impacts", and shows no later version (the history has no `nextVersion`; version 5 answers 404), so the 15:00 is the earlier statement, never revised, still live. SER-9740R is later but its Table 2 was not written for this root: the SER says "No other changes have been made to the original SER" beyond adding it to Table 1, and its "Current" column — "Sunday 5:00 p.m. - Friday 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT" — misstates the root's own prior cell, which SER-9092 and rule filing 23-014 both print as "Sunday 5:00 p.m.- Friday 3:00 p.m." under "CME Globex Trading Hours", separate from their Termination of Trading row. Rule filing 26-266 (4 June 2026, a Regulation 40.6(d) notification) reproduces SER-9740R verbatim as Exhibit A and is the same statement, not a second one. **Both channels are exhausted**: no SER, Globex notice, clearing advisory, product page, Daily Bulletin section, product-slate or trading-hours service entry, or the event-contract specification PDF (which has no "Trading Hours" field) restates this root's weekday window after the cutover, so waiting has no endpoint. **The key serves the intersection**: open 16:02→15:00 CT Monday–Friday with the 16:01–16:02 Pre-Open as order entry, Saturday 02:00–04:00 closed with the 03:45–04:00 Pre-Open, Sunday open — the window true under both documents — and withholds 15:00–16:00 as maintenance. Under SER-9740R's reading that under-reports an hour a day; under the wiki's it is exact; it never over-reports. **Independently confirmed after the cutover**: CME Globex notices 20260727, 20260824 and 20260831 each list "Event-Based Contracts / 329" among the 24/7 markets whose Saturday window reverts "to its 2:00 a.m. – 4:00 a.m. CT standard schedule", and date three one-day extensions — 2026-08-01 to 09:00, 2026-08-29 to 06:00 and 2026-09-19 to 08:00 CT — each modelled as a one-day row without a replacement Pre-Open, the September one forward-dated on the operator's statement. The same tables list the cryptocurrency channels, and `globex_cryptocurrency` models the same three extensions (#61). The key-backed calendar joins the Saturday-04:00-to-Monday-15:00 pieces into one block and carries the following open business date, as both documents' trade-date-roll language states. **Not evidence, recorded so it is not rediscovered**: CME's 8 July 2026 gold/crude deck prints the wiki's row template with "4:00:00 p.m." for a product migrating onto "329 (shared with events contracts)" — a statement about gold; cmegroup.com/trading-hours.html's "Event-Based Contracts / 16:01 CT / 16:00 CT" row is byte-identical before and after the cutover and still advertises a Tuesday window CME cancelled on 2026-03-03 for the neighbouring Event Contracts II channel; and the coincidence of 15:00 CT with the root's former daily settlement instant can neither corroborate nor refute a close under `LAW-SESSION-NOT-EXPIRY`. **Not `globex_cryptocurrency`**: that key has no sourced five-day Pre-Open and a 16:00 close; this root's Sunday 16:00–17:00 and Monday–Thursday 16:45–17:00 CT queues are stated on its listing day and its close under the intersection is 15:00. Partial because the disputed hour is withheld rather than sourced; one CME statement of the window after 2026-05-29 would settle it either way.
+**Gap: executable** — the 24/7 weekday close is the sourced intersection of two CME primaries that disagree by an hour, and the withheld hour is one in which trades may print. CME Event Contracts on Bitcoin Futures, `ECBTC`, Rulebook Chapter 23 — the one event-contract root CME moved to 24/7 trading on 2026-05-29. The key carries the root's whole life so a caller never switches keys on a date: sessionless before SER-9092's listing ("Effective Sunday, March 12, 2023, for trade date Monday, March 13, 2023", keyed to the Sunday opening day), its own 17:00-15:00 CT five-day grid to 2026-05-28, the transition day, then 24/7. **The conflict.** SER-9740R (28 May 2026) states "CME Globex: 24/7 with the exception of the following maintenance windows: Saturday 2:00 a.m. to 4:00 a.m. CT. Monday-Friday 4:00p.m. to 4:02 p.m. CT" with Pre-Opens "Monday - Friday: 4:01 p.m. to 4:02 p.m. CT Saturday: 3:45 a.m. to 4:00 a.m. CT"; CME's client-systems wiki page for this root states "Monday through Friday / Daily Maintenance Window (with Trade Date roll) / Close: 3:00:00 p.m. to 4:01:00 p.m. CT / Pre-open: 4:01:00 p.m. to 4:01:30 p.m. CT / No cancel: 4:01:30 p.m. to 4:02:00 p.m. CT / Open: 4:02:00 p.m. CT" and the same Saturday window with a 03:45 Pre-Open. One document closes weekdays at 16:00 CT, the other at 15:00; everything else matches. **The two statements are ordered and each has a weakness.** Confluence's version API shows the wiki table entered at version 4 — absent from versions 1–3 — under the page's own Revision History row "April 22, 2026 / Added Event-Based Contract Maintenance Windows and Market Hours schedule impacts", and shows no later version (the history has no `nextVersion`; version 5 answers 404), so the 15:00 is the earlier statement, never revised, still live. SER-9740R is later but its Table 2 was not written for this root: the SER says "No other changes have been made to the original SER" beyond adding it to Table 1, and its "Current" column — "Sunday 5:00 p.m. - Friday 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT" — misstates the root's own prior cell, which SER-9092 and rule filing 23-014 both print as "Sunday 5:00 p.m.- Friday 3:00 p.m." under "CME Globex Trading Hours", separate from their Termination of Trading row. Rule filing 26-266 (4 June 2026, a Regulation 40.6(d) notification) reproduces SER-9740R verbatim as Exhibit A and is the same statement, not a second one. **Both channels are exhausted**: no SER, Globex notice, clearing advisory, product page, Daily Bulletin section, product-slate or trading-hours service entry, or the event-contract specification PDF (which has no "Trading Hours" field) restates this root's weekday window after the cutover, so waiting has no endpoint. **The key serves the intersection**: open 16:02→15:00 CT Monday–Friday with the 16:01–16:02 Pre-Open as order entry, Saturday 02:00–04:00 closed with the 03:45–04:00 Pre-Open, Sunday open — the window true under both documents — and withholds 15:00–16:00 as maintenance. Under SER-9740R's reading that under-reports an hour a day; under the wiki's it is exact; it never over-reports. **Independently confirmed after the cutover**: CME Globex notices 20260727, 20260824 and 20260831 each list "Event-Based Contracts / 329" among the 24/7 markets whose Saturday window reverts "to its 2:00 a.m. – 4:00 a.m. CT standard schedule", and date three one-day extensions — 2026-08-01 to 09:00, 2026-08-29 to 06:00 and 2026-09-19 to 08:00 CT — each modelled as a one-day row without a replacement Pre-Open, the September one forward-dated on the operator's statement. The same tables list the cryptocurrency channels, and `globex_cryptocurrency` models the same initial three extensions (#61), and the three October extensions added here after the #360 review. The key-backed calendar joins the Saturday-04:00-to-Monday-15:00 pieces into one block and carries the following open business date, as both documents' trade-date-roll language states. **Not evidence, recorded so it is not rediscovered**: CME's 8 July 2026 gold/crude deck prints the wiki's row template with "4:00:00 p.m." for a product migrating onto "329 (shared with events contracts)" — a statement about gold; cmegroup.com/trading-hours.html's "Event-Based Contracts / 16:01 CT / 16:00 CT" row is byte-identical before and after the cutover and still advertises a Tuesday window CME cancelled on 2026-03-03 for the neighbouring Event Contracts II channel; and the coincidence of 15:00 CT with the root's former daily settlement instant can neither corroborate nor refute a close under `LAW-SESSION-NOT-EXPIRY`. **Not `globex_cryptocurrency`**: that key serves the same five-day Pre-Opens but has a 16:00 close; this root's Sunday 16:00–17:00 and Monday–Thursday 16:45–17:00 CT queues are stated on its listing day and its close under the intersection is 15:00. Partial because the disputed hour is withheld rather than sourced; one CME statement of the window after 2026-05-29 would settle it either way.
+
+## 2026-10-17 UTC — five-day close and October review (#360)
+
+Market data confirms the tradable event contracts opening at 17:00 CT and
+closing at 15:00 CT on 2026-03-13, 2026-04-23 and 2026-04-24. Price records
+confirm trading before that close on the two April dates. The accompanying
+reference instruments remain non-trading and print a separate 16:00 CT close;
+that reference clock is not the executable event-contract session. The
+2023-03-17, 2024-06-14 and 2025-04-28 samples contain reference records alone
+and therefore do not establish an alternative executable close. The confirming
+market data is retained privately.
+
+The five-day session is consequently the root's own SER-9092 17:00-15:00 CT
+clock from 2023-03-12, rather than the sibling family's 16:00 CT close.
+Thursday's running session into 2026-05-29 retains its 15:00 close before the
+first 16:01 Pre-Open and 16:02 reopen. This corrects a profile, not an inferred
+historical cutover. The post-2026-05-29 disagreement between the two published
+24/7 closes remains a disclosed residual: the market data reviewed here ends
+before that change and does not settle it.
+
+The same review applies the operator's class-wide October notices to this
+24/7 scope, as to the other 24/7 families. Dormancy does not invalidate their
+unconditional published hours; the maintainer requested this scope's review
+in #360. The October 24 and October 31 rows remain forward-dated and require
+confirmation before their effective days. No replacement Pre-Open is sourced
+for these ECBTC extensions, so none is inferred. The absence of a holiday
+table and the identity calendar's typed refusals remain unchanged.
 
 ## Revision rows
 
-- 2023-03-12 — T1 — CME SER-9092 — the listing day: "Effective Sunday, March 12, 2023, for trade date Monday, March 13, 2023"; keyed to the venue-local opening day.
+- 2023-03-12 — T1 — CME SER-9092 — the listing day: "Effective Sunday, March 12, 2023, for trade date Monday, March 13, 2023"; keyed to the venue-local opening day. Its own CME Globex Trading Hours cell ends at 15:00 CT, separate from Termination of Trading, and the five-day profile retains that close.
 - 2026-05-29 — T1 — CME SER-9740R — the transition day into 24/7 trading, "Effective Friday, May 29, 2026".
 - 2026-05-30 — T1 — CME SER-9740R — the permanent sourced intersection of SER-9740R and CME's client-systems wiki.
 - 2026-08-01 — T1 — CME Globex notice 20260727 — one-day Saturday maintenance extension to 09:00 CT, table row "Event-based contracts | 329", with no replacement Pre-Open.
@@ -22,11 +49,17 @@
 - 2026-08-30 — T1 — CME Globex notice 20260824 — revert to the standard Saturday window.
 - 2026-09-19 — T1 — CME Globex notice 20260824 — one-day Saturday maintenance extension to 08:00 CT; forward-dated on the operator's statement and restated by notice 20260831.
 - 2026-09-20 — T1 — CME Globex notice 20260824 — revert to the standard Saturday window.
+- 2026-10-03 — T1 — CME Globex notice 20260921 — the 24/7 maintenance extension ends at 05:00 CT.
+- 2026-10-04 — T1 — CME Globex notice 20260921 — restore the standard Saturday grid.
+- 2026-10-24 — T1 — CME Globex notice 20260921 — the FIA drill extends maintenance to 15:30 CT; confirm before the day under LAW-WATCH.
+- 2026-10-25 — T1 — CME Globex notice 20260921 — restore the standard Saturday grid.
+- 2026-10-31 — T1 — CME Globex notice 20261005 — the maintenance extension ends at 05:00 CT; confirm before the day under LAW-WATCH.
+- 2026-11-01 — T1 — CME Globex notice 20261005 — restore the standard Saturday grid.
 
 ## Sources
 
-Row review: 2026-09-06 (UTC) is the date the ledger row was last reviewed as a
-whole. Per-source retrieval dates were not recorded before the 2026-09-12
+Row review: 2026-10-17 (UTC) is the date the five-day close, October
+maintenance extensions and retained 24/7 residual were reviewed together. Per-source retrieval dates were not recorded before the 2026-09-12
 migration; where a later targeted review, capture or document date is recorded
 beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
@@ -40,18 +73,17 @@ as each source is re-verified.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/07/20260727.html> — CME Globex notice 20260727 — the 2026-08-01 Saturday extension.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/08/20260824.html> — CME Globex notice 20260824 — the 2026-08-29 and 2026-09-19 Saturday extensions.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/08/20260831.html> — CME Globex notice 20260831 — restates the September date.
-- <https://www.cmegroup.com/notices/electronic-trading/2026/09/20260921.html> — CME Globex notice 20260921 — the 2026-10-03 and 2026-10-24 Saturday extensions, stated "for 24/7 markets" with no channel table; recorded, not encoded (see the dormant-omission bullet below).
-- <https://www.cmegroup.com/notices/electronic-trading/2026/10/20261005.html> — CME Globex notice 20261005 — the 2026-10-31 Saturday extension, stated "for 24/7 markets" with no channel table; recorded, not encoded (see the dormant-omission bullet below).
+- <https://www.cmegroup.com/notices/electronic-trading/2026/09/20260921.html> — CME Globex notice 20260921 — the 2026-10-03 and 2026-10-24 Saturday extensions, stated "for 24/7 markets" with no channel table; encoded after the 2026-10-17 UTC review of this dormant scope (#360).
+- <https://www.cmegroup.com/notices/electronic-trading/2026/10/20261005.html> — CME Globex notice 20261005 — the 2026-10-31 Saturday extension, stated "for 24/7 markets" with no channel table; encoded after the 2026-10-17 UTC review of this dormant scope (#360).
 
 ## Gaps and residual risks
 
 - **executable** — the 24/7 weekday close is the sourced intersection of two CME primaries that disagree by an hour, and the withheld 15:00-16:00 CT hour is one in which trades may print. Under SER-9740R's reading the key under-reports an hour a day; under the wiki's it is exact; it never over-reports. Closing condition: one CME statement of this root's weekday window after 2026-05-29. Dormant identity, so recorded here rather than opened as an issue.
 - **ordering the two statements, each with a weakness** — Confluence's version API shows the wiki table entered at version 4 (absent from versions 1-3) under the page's own Revision History row "April 22, 2026 / Added Event-Based Contract Maintenance Windows and Market Hours schedule impacts", and shows no later version (the history has no `nextVersion`; version 5 answers 404), so the 15:00 is the earlier statement, never revised, still live. SER-9740R is later but its Table 2 was not written for this root: the SER says "No other changes have been made to the original SER" beyond adding it to Table 1, and its "Current" column misstates the root's own prior cell, which SER-9092 and rule filing 23-014 both print as "Sunday 5:00 p.m.- Friday 3:00 p.m.".
 - **both channels are exhausted** — no SER, Globex notice, clearing advisory, product page, Daily Bulletin section, product-slate or trading-hours service entry, or the event-contract specification PDF (which has no "Trading Hours" field) restates this root's weekday window after the cutover, so waiting has no endpoint.
-- **independently confirmed after the cutover** — CME Globex notices 20260727, 20260824 and 20260831 each list "Event-Based Contracts / 329" among the 24/7 markets whose Saturday window reverts "to its 2:00 a.m. - 4:00 a.m. CT standard schedule". The same tables list the cryptocurrency channels, and `globex_cryptocurrency` models the same three extensions (#61).
-- **the October 2026 extensions are recorded, not encoded (dormant omission)** — notices 20260921 and 20261005 extend the Saturday maintenance window "for 24/7 markets" on 2026-10-03 (to 05:00 CT), 2026-10-24 (to 15:30 CT, the FIA industry disaster-recovery exercise) and 2026-10-31 (to 05:00 CT), each reverting "to its 2:00 a.m. – 4:00 a.m. CT standard schedule", but print no channel table, so they name no channel 329. This key's three modelled extensions (2026-08-01, 2026-08-29, 2026-09-19) are exactly the ones whose notices carry a channel table naming "Event-Based Contracts / 329"; the October statements are recorded here rather than encoded, because the identity is dormant and dormant keys take no runtime change without an activation review (LAW-SERVICE-TIERS) — `globex_silver_100oz` (the other channel-329 family) and `globex_cryptocurrency` both read the class-wide scope as governing them, and this family neither confirms nor disputes that reading for itself. Closer: at activation, re-read notices 20260921 and 20261005 (20261005 saved in the research store at `cme-forward-2026-10-13/notices/globex-notice-20261005-full.html`, retrieved 2026-10-13T23:37:17Z, quoted bytes re-verified 2026-10-14 UTC) alongside the 24/7-era sourcing this key's activation already requires, and encode the extension dates the activation review sustains. Recorded 2026-10-14 UTC.
+- **independently confirmed after the cutover** — CME Globex notices 20260727, 20260824 and 20260831 each list "Event-Based Contracts / 329" among the 24/7 markets whose Saturday window reverts "to its 2:00 a.m. - 4:00 a.m. CT standard schedule". The same tables list the cryptocurrency channels, and `globex_cryptocurrency` models the same initial three extensions (#61), and the three October extensions added here after the #360 review.
 - **not evidence, recorded so it is not rediscovered** — CME's 8 July 2026 gold/crude deck prints the wiki's row template with "4:00:00 p.m." for a product migrating onto "329 (shared with events contracts)", which is a statement about gold; cmegroup.com/trading-hours.html's "Event-Based Contracts / 16:01 CT / 16:00 CT" row is byte-identical before and after the cutover and still advertises a Tuesday window CME cancelled on 2026-03-03 for the neighbouring Event Contracts II channel; and the coincidence of 15:00 CT with the root's former daily settlement instant can neither corroborate nor refute a close under LAW-SESSION-NOT-EXPIRY.
-- **not `globex_cryptocurrency`** — that key has no sourced five-day Pre-Open and a 16:00 close; this root's Sunday 16:00-17:00 and Monday-Thursday 16:45-17:00 CT queues are stated on its listing day and its close under the intersection is 15:00.
+- **not `globex_cryptocurrency`** — that key serves the same five-day Pre-Opens but has a 16:00 close; this root's Sunday 16:00-17:00 and Monday-Thursday 16:45-17:00 CT queues are stated on its listing day and its close under the intersection is 15:00.
 - **trade-date roll** — the key-backed calendar joins the Saturday-04:00-to-Monday-15:00 pieces into one block and carries the following open business date, as both documents' trade-date-roll language states.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/bitcoin_event_contracts.rs on 2026-09-12 UTC)
@@ -60,7 +92,7 @@ CME Event Contracts on Bitcoin Futures in America/Chicago: the one Chapter 23
 event-contract root CME moved to 24/7 trading on 2026-05-29, leaving the
 other ten on the five-day grid `event_contracts.rs` models. This key carries
 `ECBTC`'s whole life so a caller never switches keys on a date: sessionless
-before its 2023-03-12 listing, the shared event-contract grid until
+before its 2023-03-12 listing, its own 17:00-15:00 CT five-day grid until
 2026-05-28, and the 24/7 grid from 2026-05-29 on.
 
 WHY A SECOND KEY. CME SER-9740R (28 May 2026) expands "the trading hours on
@@ -139,7 +171,7 @@ Globex notices of 27 July, 24 August and 31 August 2026 each list
 "Event-Based Contracts | 329" among the "24/7 markets" whose Saturday
 maintenance window they temporarily extend, and each says the window will
 "revert to its 2:00 a.m. – 4:00 a.m. CT standard schedule". Those notices
-are also this key's three temporary rows, below.
+are this key's initial three temporary rows; the three October class-wide extensions are listed in Revision rows above.
 
 NOT EVIDENCE, RECORDED SO IT IS NOT REDISCOVERED. (1) CME's "24/7 Trading
 for 1-Ounce Gold and 10-Barrel Crude" deck (8 July 2026) prints the wiki's
@@ -157,11 +189,11 @@ because it sits in that document's "CME Globex Trading Hours" row, in
 session language, separate from its "Termination of Trading" row.
 
 NOT `globex_cryptocurrency`, THOUGH THE 24/7 SHAPE IS THE SAME. That key
-carries Bitcoin futures from 2017 with no sourced five-day Pre-Open and a
-16:00 CT weekday close; this root ran the event-contract grid with stated
+carries Bitcoin futures from 2017 with the same five-day Pre-Opens and a
+16:00 CT weekday close; this root ran its own 17:00-15:00 CT grid with stated
 queues from 2023 and closes at 15:00 CT under the intersection. Its queues
 stay `order_entry` here, as `event_contracts.rs` models them, rather than
-folded into `extended` as the cryptocurrency module chose.
+included in matching; the cryptocurrency key also classifies its queues as order entry.
 
 TIMEZONE. Every document above states this root's hours in Central time
 ("CT"); the wiki adds seconds. The Central grid is the one encoded.

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CME Event Contracts on Bitcoin Futures (`globex_event_contracts_btc`): the
-//! sessionless era before the 2023-03-12 listing, the shared event-contract
+//! sessionless era before the 2023-03-12 listing, the root-specific five-day
 //! grid to 2026-05-28, the 2026-05-29 transition day, the 24/7 sourced
-//! intersection with its withheld hour, the three notice-dated Saturday
+//! intersection with its withheld hour, the six notice-dated Saturday
 //! extensions, and the separations from the two keys this one is most likely
 //! to be confused with.
 //!
@@ -43,7 +43,7 @@ fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
 ///
 /// `GlobexEventContractsBtc` is dormant (LAW-SERVICE-TIERS): CME publishes no
 /// holiday table in the crate for it, so its date-aware coverage is empty above
-/// the 2025 floor and the calendar-backed surface refuses every date rather
+/// the 2010 floor and the calendar-backed surface refuses every date rather
 /// than answering. The published grid is still a sourced fact and
 /// `hours_for_market_hours_key` states it, so the boundary and classification
 /// assertions below keep their force through that surface; `assert_refused` is
@@ -64,7 +64,7 @@ fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>)
 
 /// Asserts the answer a **dormant** identity's date-aware surface gives.
 ///
-/// No date is sourced for this key: one at or after the permanent 2025 floor
+/// No date is sourced for this key: one at or after the permanent 2010 floor
 /// has no covered range, and one before it precedes the floor. Either way the
 /// calendar-backed surface refuses instead of naming a schedule
 /// (LAW-COVERAGE), which is the fact these tests now state in place of the
@@ -80,11 +80,10 @@ fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryErr
     );
 }
 
-/// The root did not exist before SER-9092's listing day and rode the
-/// event-contract grid from it: the two keys agree at every instant of a full
-/// 2024 week, state by state, and the day before the listing is sessionless.
+/// The root's own five-day close is 15:00 CT. Other event contracts stay open
+/// to 16:00, while both keys retain the same pre-open and 17:00 reopen.
 #[test]
-fn the_shared_era_is_the_event_contract_grid_by_reference() {
+fn the_five_day_era_keeps_the_roots_own_fifteen_hundred_close() {
     assert!(
         !open_at(BTC_EVENTS, ct((2023, 3, 8), (12, 0, 0))),
         "before the 2023-03-12 listing the root is sessionless"
@@ -100,22 +99,38 @@ fn the_shared_era_is_the_event_contract_grid_by_reference() {
     let mut instant = ct((2024, 6, 9), (0, 0, 0));
     let end = ct((2024, 6, 16), (0, 0, 0));
     while instant < end {
-        // 2024 precedes the permanent floor, so neither date-aware surface
-        // answers: both refuse rather than stating the shared era. The grid
-        // comparison the probe makes is therefore read from the two fixed
-        // snapshots, which are the surface that still states it.
+        // These dormant keys have no built-in holiday coverage. Compare their
+        // public dated snapshots, while keeping their default refusals fenced.
         assert_refused(own.session_state(instant), &format!("{instant} btc"));
         assert_refused(
             shared.session_state(instant),
             &format!("{instant} event contracts"),
         );
-        assert_eq!(
-            hours_for_market_hours_key(BTC_EVENTS, instant).session_state(instant),
-            hours_for_market_hours_key(EVENT_CONTRACTS, instant).session_state(instant),
-            "{instant}: the shared era must be the event-contract grid exactly"
-        );
+        let local = instant.with_timezone(&US::Central);
+        if chrono::Datelike::weekday(&local).num_days_from_monday() < 5
+            && chrono::Timelike::hour(&local) == 15
+        {
+            assert!(!open_at(BTC_EVENTS, instant), "{instant}: ECBTC has closed");
+            assert!(
+                open_at(EVENT_CONTRACTS, instant),
+                "{instant}: siblings still match"
+            );
+        } else {
+            assert_eq!(
+                hours_for_market_hours_key(BTC_EVENTS, instant).session_state(instant),
+                hours_for_market_hours_key(EVENT_CONTRACTS, instant).session_state(instant),
+                "{instant}: outside the distinct closing hour the grids agree"
+            );
+        }
         instant += chrono::Duration::minutes(30);
     }
+    let probe = ct((2024, 6, 14), (14, 30, 0));
+    let hours = hours_for_market_hours_key(BTC_EVENTS, probe);
+    assert_eq!(
+        exchange_hours::candle_end(&hours, probe, exchange_hours::CalendarResolution::Daily),
+        Some(ct((2024, 6, 14), (15, 0, 0))),
+        "the daily bar ends at the root's own matching close"
+    );
     assert_eq!(
         state_at(ct((2024, 6, 9), (16, 30, 0))),
         SessionState::OrderEntry,
@@ -124,12 +139,14 @@ fn the_shared_era_is_the_event_contract_grid_by_reference() {
 }
 
 /// The cutover day. The wiki states the instant — 16:00 CT on Friday
-/// 2026-05-29 — so Thursday's open closes at Friday 16:00 under the old grid,
+/// 2026-05-29 — so Thursday's open closes at Friday 15:00 under the old grid,
 /// the first 24/7 queue opens at 16:01, matching resumes at 16:02, and the
 /// Saturday window follows.
 #[test]
 fn the_transition_day_closes_under_the_old_grid_and_reopens_under_the_new() {
-    assert!(open_at(BTC_EVENTS, ct((2026, 5, 29), (15, 30, 0))));
+    assert!(open_at(BTC_EVENTS, ct((2026, 5, 29), (14, 59, 59))));
+    assert!(!open_at(BTC_EVENTS, ct((2026, 5, 29), (15, 0, 0))));
+    assert!(!open_at(BTC_EVENTS, ct((2026, 5, 29), (15, 30, 0))));
     assert!(!open_at(BTC_EVENTS, ct((2026, 5, 29), (16, 0, 0))));
     assert!(!open_at(BTC_EVENTS, ct((2026, 5, 29), (16, 0, 59))));
     assert_eq!(
@@ -259,17 +276,17 @@ fn the_weekend_block_is_joined_and_carries_mondays_trade_date() {
 }
 
 /// The joined weekend block straddles both US DST transitions: the Saturday
-/// 04:00 CT open to the Monday 15:00 CT close is 60 wall-clock hours across
-/// the November fall-back and 58 across the March spring-forward. The join must
+/// sourced Saturday open to Monday's 15:00 CT close retains the extra fall
+/// hour and skips the missing spring hour. October's extension opens at 05:00. The join must
 /// neither drop nor double-count that hour, and the trade date stays Monday.
 #[test]
 fn the_joined_weekend_block_survives_both_dst_transitions() {
     let calendar = calendar_for_market_hours_key(BTC_EVENTS);
-    for (saturday, monday, hours) in [
-        ((2026, 10, 31), (2026, 11, 2), 60i64),
-        ((2027, 3, 13), (2027, 3, 15), 58),
+    for (saturday, monday, reopen_hour, hours) in [
+        ((2026, 10, 31), (2026, 11, 2), 5, 59i64),
+        ((2027, 3, 13), (2027, 3, 15), 4, 58),
     ] {
-        let open = ct(saturday, (4, 0, 0));
+        let open = ct(saturday, (reopen_hour, 0, 0));
         let close = ct(monday, (15, 0, 0));
         assert_eq!(
             (close - open).num_hours(),
@@ -344,30 +361,34 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
     }
 }
 
-/// Three one-day Saturday extensions CME announced for channel 329, each
+/// Six one-day Saturday extensions CME announced for the 24/7 scope, each
 /// reverting to the standard window the following week.
 #[test]
 fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
-    for (saturday, reopen_hour) in [((2026, 8, 1), 9u32), ((2026, 8, 29), 6), ((2026, 9, 19), 8)] {
-        assert!(
-            !open_at(BTC_EVENTS, ct(saturday, (4, 0, 0))),
-            "{saturday:?}: 04:00 stays closed"
-        );
-        assert!(!open_at(
-            BTC_EVENTS,
-            ct(saturday, (reopen_hour - 1, 59, 59))
-        ));
-        assert!(
-            open_at(BTC_EVENTS, ct(saturday, (reopen_hour, 0, 0))),
-            "{saturday:?}: reopens at {reopen_hour}:00"
-        );
-        assert!(
-            open_at(BTC_EVENTS, ct(saturday, (1, 59, 59))),
-            "{saturday:?}: before 02:00"
-        );
+    for (saturday, reopen) in [
+        ((2026, 8, 1), (9u32, 0u32)),
+        ((2026, 8, 29), (6, 0)),
+        ((2026, 9, 19), (8, 0)),
+        ((2026, 10, 3), (5, 0)),
+        ((2026, 10, 24), (15, 30)),
+        ((2026, 10, 31), (5, 0)),
+    ] {
+        let opening = ct(saturday, (reopen.0, reopen.1, 0));
+        assert!(open_at(BTC_EVENTS, ct(saturday, (1, 59, 59))));
+        assert!(!open_at(BTC_EVENTS, ct(saturday, (2, 0, 0))));
+        assert!(!open_at(BTC_EVENTS, ct(saturday, (4, 0, 0))));
+        assert!(!open_at(BTC_EVENTS, opening - chrono::Duration::seconds(1)));
+        assert!(open_at(BTC_EVENTS, opening), "{saturday:?}: sourced reopen");
     }
     // The Saturdays either side keep the standard 04:00 reopen.
-    for saturday in [(2026, 7, 25), (2026, 8, 8), (2026, 9, 5), (2026, 9, 26)] {
+    for saturday in [
+        (2026, 7, 25),
+        (2026, 8, 8),
+        (2026, 9, 5),
+        (2026, 9, 26),
+        (2026, 10, 10),
+        (2026, 11, 7),
+    ] {
         assert!(
             !open_at(BTC_EVENTS, ct(saturday, (3, 59, 59))),
             "{saturday:?}"
@@ -380,8 +401,8 @@ fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
 }
 
 /// Neither neighbour can stand in. The event-contract key stays five-day after
-/// the cutover; the cryptocurrency key had no sourced Pre-Open in 2024 and
-/// trades the hour this key withholds.
+/// the cutover; cryptocurrency serves the same five-day queues and trades the
+/// hour this key withholds.
 #[test]
 fn neither_the_event_contract_nor_the_cryptocurrency_key_can_stand_in() {
     let saturday = ct((2026, 6, 6), (12, 0, 0));

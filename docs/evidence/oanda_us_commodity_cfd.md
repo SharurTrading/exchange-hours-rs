@@ -16,9 +16,10 @@ gap, no other maintenance.
 
 ## Revision rows
 
-None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
-remains tracked in #332 under the dated current OANDA scope exception.
+None. No `revisions!` block exists and no unconditional changeover day is
+asserted. The dated selectors below preserve the earlier grid, the sourced
+intersection and the current page-print observation bound. Historical
+completion remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 

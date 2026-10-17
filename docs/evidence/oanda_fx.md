@@ -215,9 +215,9 @@ Store paths (research store, wave-1 capture):
   2021-03-03 capture prints no Forex table, so the 2021-12-08 capture is the
   book's first complete witness; earlier complete FX evidence remains absent
   (see the 2026-10-11 audit below).
-- **The holiday window begins at the current week's knowledge boundary.**
-  The archived holiday page supplies 2024 arrangements; dates before
-  2024-02-21 still require normal-week evidence, and 2026-10-31 onward is
+- **The audited holiday window remains 2024-02-21..2026-10-30.**
+  Dating the normal-week changeover does not extend the holiday audit.
+  Earlier dates still lack that audit, while 2026-10-31 onward is
   unpublished. Earlier broker holiday coverage remains tracked under #332.
 - The page's overall note — "these times are subject to change during
   daylight saving time and certain public holidays. There may be occasions

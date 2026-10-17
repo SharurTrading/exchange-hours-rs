@@ -16,8 +16,8 @@ York time with the six-minute daily break — so `hours_for_exchange` routes
 to the `oanda_fx` family's `profile_at`, and the venue's holiday table is
 the verbatim mirror of that family's table, as the venue profile-clock rule
 requires. The grid, its evidence and its gaps are
-[`oanda_fx.md`](oanda_fx.md)'s — including the 2024-02-21 page-print
-horizon and the changeover the operator's machine channel positively dates
+[`oanda_fx.md`](oanda_fx.md)'s — including the 2024-02-21 first current page
+print and the changeover the operator's machine channel positively dates
 to opening day 2024-02-11 (`MARKET-DATA`, recorded there) — and this file
 adds only what the venue row adds.
 

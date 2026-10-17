@@ -78,12 +78,13 @@ closes remain 16:59 except Thanksgiving Friday's explicit 14:45.
 | 2024-12-25 | closed | — | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Christmas Day until 18:04 evening reopen |
 | 2024-12-26 | replacement blocks | prior day 18:04..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Christmas Day: Metals open late 18:04 |
 
-These fourteen T1 rows extend coverage to 2024-02-21, the current normal
-week's sourced boundary, and increase this table from 32 to 46 rows. The
-archive prints January and February 2024 arrangements too, but their
-normal-week history remains unresolved, so this extension starts at the
-existing normal-week knowledge boundary. The operator's changes-only page
-supplies audited normal days where it states no change to this metals book.
+These fourteen T1 rows extended the holiday audit to 2024-02-21 and
+increased this table from 32 to 46 rows. The archive also prints earlier
+January and February 2024 arrangements. Dating the normal-week changeover
+does not work up those holiday arrangements: the existing holiday window
+remains unchanged, with earlier holiday completion tracked in #332. Within
+that window the operator's changes-only page supplies audited normal days
+where it states no change to this metals book.
 Artifact: `normal-weeks/oanda-history-audit-2026-10-11/oanda-uk-holidays-20250326184653.html`.
 
 ### 2025

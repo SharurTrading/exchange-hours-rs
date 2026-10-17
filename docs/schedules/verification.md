@@ -133,8 +133,10 @@ from CME's 2025 and 2026 statements of it to the family's 2022 launch, and
 the sourced intersection of two CME primaries that disagree by an hour, and
 `small_exchange`, added on 2026-09-09, whose 2024 move to 08:30–15:00 CT is
 undated inside 2024-11-04..2024-11-21 and served as the sourced intersection,
-the OANDA venue and nine native book keys added on 2026-10-10..12, whose
-pre-witness normal weeks and unaudited holidays remain disclosed in #332
+the OANDA venue `oanda` and nine native keys — `oanda_fx`, `oanda_try_fx`,
+`oanda_metals`, `oanda_us_index_cfd`, `oanda_us_bond_cfd`,
+`oanda_us_commodity_cfd`, `oanda_brent`, `oanda_china50_cfd` and
+`oanda_singapore30_cfd` — added on 2026-10-10..12, whose pre-witness normal weeks and unaudited holidays remain disclosed in #332
 (the FX/metals normal-week changeover is dated to opening day 2024-02-11;
 the other book histories retain their recorded bounds),
 and the five metals TAS keys added on 2026-09-12 — `globex_gold_tas`,

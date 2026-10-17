@@ -17,9 +17,10 @@ and no other maintenance.
 
 ## Revision rows
 
-None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
-remains tracked in #332 under the dated current OANDA scope exception.
+None. No `revisions!` block exists and no unconditional changeover day is
+asserted. The dated selectors below preserve the earlier grid, the sourced
+intersection and the current page-print observation bound. Historical
+completion remains tracked in #332 under the dated current OANDA scope exception.
 
 ## The normal week
 
@@ -143,12 +144,14 @@ The spans, and what each rests on:
   2023-06-05 capture still prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`),
   and the audit's intervening replays print the identical grid.
 - **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
-  The changeover to `17:01 - 15:59` is undated (last earlier-grid print
-  2023-06-05, first current-grid print 2024-02-21, no Wayback capture
-  between). The current grid nests inside the legacy print, so the
-  intersection is the current grid's own shape — the span serves
-  `18:01 - 16:59` per the charter's 2026-10-04 rule, under-reporting the
-  legacy state's extra boundary minutes; the residual is disclosed below.
+  The changeover is undated (last earlier-grid print 2023-06-05, first
+  current-grid print 2024-02-21, no Wayback capture between). The current
+  grid nests inside the legacy print, so the intersection is the current
+  grid's own shape — the span serves `18:01 - 16:59` per the charter's
+  2026-10-04 rule, under-reporting the legacy state's extra boundary
+  minutes; the residual is disclosed below. The machine-channel witnessing
+  of 2026-10-16 does not move these bounds: the nested grids admit no
+  positive candle witness for the current state (the section below).
 - **Opening days from 2024-02-20 — the current grid `17:01 - 15:59`
   Chicago** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
   replays and the 2026-10-10 capture corroborate).
@@ -166,6 +169,49 @@ The spans, and what each rests on:
   PDF the same UTC date.
 - <https://www.oanda.com/uk-en/trading/holiday-trading-hours> — the
   operator's UK holiday page, captured 2026-10-10 22:44 UTC.
+
+## Machine-channel witnessing — 2026-10-16 UTC, corrected 2026-10-17 in review
+
+On 2026-10-16 (UTC), under the maintainer's direction, the changeover was
+witnessed from the operator's own machine channel — the
+practice-environment candle service (`api-fxpractice.oanda.com`, the
+`/v3/accounts/<id>/instruments/SPX500_USD/candles` endpoint, read as bytes
+through the `oanda-rs` client and paced by its own admission control), the
+same T2 class the MLK-2023 closure used under the `MARKET-DATA`
+convention. The confirming raw responses are retained privately, so the id
+deliberately does not resolve in the research store.
+
+The census and what it can and cannot state:
+
+- The per-day M1 sweep (2023-06-06..2024-02-19, one request per day) found
+  an 18:00-minute bucket on 183 opening days and none on 76 quiet days.
+  The first pass labelled those 183 days legacy and the span's tail
+  current; that was retracted in review — an 18:00-minute M1 bucket is
+  ambiguous between a sharp legacy open and the observed five-second
+  current-open lead (18:00:55), which lands in the same minute. The 76 quiet days are
+  Fridays, Saturdays, and the 2023-12-24/2023-12-31 holiday Sundays.
+- The retained February 8 S5 close-side sample reaches `16:59:40` New
+  York, inside the earlier whole-hour candidate and after the current
+  candidate's `16:59` close. The same day's first reopen start is
+  `23:00:00Z` (`18:00` New York). These positive observations support
+  the earlier grid in the two-candidate comparison. No universal
+  five-second lead/linger bound is inferred; the shared timestamp and
+  quoting limitations are recorded in [`oanda_fx.md`](oanda_fx.md).
+
+- **No observation positively proves the current grid on any day.** The
+  current `18:01 - 16:59` window is a strict subset of the legacy
+  `18:00 - 17:00` window: every tick a current-era day can print also fits
+  the legacy grid, so the changeover cannot be dated from candles for this
+  book. The bond and commodity candidates have the same nesting
+  relationship; their own observations are recorded in their evidence files. The archived page-print bounds
+  — the 2023-06-05 last legacy print and the 2024-02-21 first current
+  print — therefore stand, and the span keeps the sourced intersection.
+- The retained inputs do not supply sub-minute evidence for every day
+  of the span; unretained mid-span S5 summaries do not substantiate a
+  per-day or exact-cutover claim.
+
+`MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
+manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.
 
 ### Documents
 
@@ -186,14 +232,18 @@ and `20260217213704.html` in that directory.
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-05..2024-02-19
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection, which here is the current `18:01 - 16:59` grid (it nests
-  inside the whole-hour legacy print). The disputed remainder: the legacy
-  state's extra minutes — open 18:00 (one minute earlier) and close 17:00
-  (one minute later). Named closer: a dated OANDA UK operator artifact or
-  desk answer stating the changeover's effective day; the sweep that closed
-  the hunts negative is recorded in [`oanda_fx.md`](oanda_fx.md).
+- **The changeover stays undated after the machine-channel witnessing
+  (2026-10-16, reviewed 2026-10-17).** An earlier version of this file
+  claimed the boundary at 2024-02-11 from S5 lead buckets; retracted — the
+  lead buckets fit both grids (a 18:00:55 tick is 55 seconds into a legacy
+  session exactly as it is a 5-second lead of the current one), and the
+  current grid nests inside the whole-hour legacy grid, so no candle
+  observation can positively prove the current state on any day. The
+  witnessing that stands: the sharp-open and deep-close positives on
+  2024-02-08 (open `23:00:00Z` exact, close-minute ticks to `21:59:40Z`)
+  witness the legacy candidate on that date; the other days' M1 buckets are
+  ambiguous between the states. The machine-channel section above holds
+  the corrected census; the named closer stays a dated operator artifact or desk answer.
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - **Japan 225 holiday scope is unresolved.** Its two listings share the normal
   Chicago grid, but the source separately names JP225 on only some dates.
@@ -240,8 +290,10 @@ The UK operator page captured on 2025-03-26 retains its dated 2024 holiday
 changes from New Year's Day through New Year's Eve. Its page-wide
 Eastern-Time instruction governs every printed instant. The audited window
 is 2024-01-01..2024-12-31; December coverage rests on its expressly dated
-2024 Christmas and New Year sections. The existing normal-week coverage gate still applies
-before its 2024-02-21 witness. Earlier holiday history remains historical completion work tracked in #332.
+2024 Christmas and New Year sections. The January 2, January 16 and
+February 20 following-holiday final closes remain explicitly `Unsourced`: their exact normal-week close is not dated
+by the page-print bounds. Earlier holiday history remains historical
+completion work tracked in #332.
 
 The archive states `US indices open late 6 pm` and `US bonds open late 6 pm`
 for 2024-01-01. The holiday trade date is closed and the literal 18:00 ET

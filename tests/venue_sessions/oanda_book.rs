@@ -186,57 +186,71 @@ fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
         Ok(false),
         "the legacy close is end-exclusive"
     );
-    // The undated changeover's intersection: the later 17:05 open, the
-    // earlier 16:58 close — the window both witnessed states held.
+    // The per-day machine-channel witnessing (a 17:03-minute tick on every
+    // classified opening day — a minute inside the current grid's break)
+    // serves the legacy grid exactly through the 2024-02-08 opening day.
     assert_eq!(
-        calendar.is_open(et((2023, 8, 8), (17, 4, 59))),
+        calendar.is_open(et((2023, 8, 8), (17, 2, 59))),
         Ok(false),
-        "one second before the intersection open"
+        "one second before the legacy open on a former-span date"
     );
     assert_eq!(
-        calendar.is_open(et((2023, 8, 8), (17, 5, 0))),
+        calendar.is_open(et((2023, 8, 8), (17, 3, 0))),
         Ok(true),
-        "the intersection open instant"
+        "the legacy open instant on a former-span date"
     );
     assert_eq!(
         calendar.is_open(et((2023, 8, 9), (16, 58, 0))),
         Ok(false),
-        "the intersection close is end-exclusive"
+        "the legacy close is end-exclusive on a former-span date"
     );
-    // The boundary sessions: opening day 2023-06-04 is the legacy grid's last
-    // witnessed opening day; opening day 2023-06-05 already opens at the
-    // intersection's 17:05.
+    // The dated boundary: opening day 2024-02-08 (Thursday) is the legacy
+    // grid's last positively witnessed opening day — its session runs 17:03
+    // to Friday 16:58 — and opening day 2024-02-11 (Sunday) is the first
+    // current-grid day: its Monday closing leg contains S5 starts at
+    // 16:58:20, :25 and :30, inside the earlier grid's break. Friday and
+    // Saturday open no session, so no intersection days remain.
     let last_legacy = calendar
-        .session_bounds(et((2023, 6, 5), (12, 0, 0)))
+        .session_bounds(et((2024, 2, 9), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Friday sits in the session opened Thursday");
+    assert_eq!(
+        last_legacy,
+        (et((2024, 2, 8), (17, 3, 0)), et((2024, 2, 9), (16, 58, 0))),
+        "the legacy era's final session"
+    );
+    let first_current = calendar
+        .session_bounds(et((2024, 2, 12), (12, 0, 0)))
         .expect("a witnessed date answers")
         .expect("noon Monday sits in the session opened Sunday");
     assert_eq!(
-        last_legacy,
-        (et((2023, 6, 4), (17, 3, 0)), et((2023, 6, 5), (16, 58, 0))),
-        "the legacy era's final session"
+        first_current,
+        (
+            et((2024, 2, 11), (17, 5, 0)),
+            et((2024, 2, 12), (16, 59, 0))
+        ),
+        "the current era's first session"
     );
-    let first_intersection = calendar
-        .session_bounds(et((2023, 6, 6), (12, 0, 0)))
-        .expect("a witnessed date answers")
-        .expect("noon Tuesday sits in the session opened Monday");
+    // The close-minute quoting that dates the boundary sits inside the
+    // served Sunday-opened session.
     assert_eq!(
-        first_intersection,
-        (et((2023, 6, 5), (17, 5, 0)), et((2023, 6, 6), (16, 58, 0))),
-        "the intersection era's first session"
+        calendar.is_open(et((2024, 2, 12), (16, 58, 30))),
+        Ok(true),
+        "Monday 16:58:30 New York trades on the current grid"
     );
 }
 
 #[test]
 fn oanda_fx_witnessed_history_refuses_its_holiday_classification() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
-    // 2023-06-07 sits in the span the normal week now answers: session
-    // questions answer from the sourced intersection, while the holiday
-    // classification refuses typed — a one-flank date below the first
-    // audited window has no bracket (the charter's 2026-10-07 ruling).
+    // 2023-06-07 sits in the span the normal week answers on the legacy
+    // grid, while the holiday classification refuses typed — a one-flank
+    // date below the first audited window has no bracket (the charter's
+    // 2026-10-07 ruling).
     assert_eq!(
         calendar.is_open(et((2023, 6, 7), (12, 0, 0))),
         Ok(true),
-        "Wednesday 2023-06-07 midday trades on the intersection grid"
+        "Wednesday 2023-06-07 midday trades on the legacy grid"
     );
     assert_refused_variant(
         &calendar.is_closed_trade_date(

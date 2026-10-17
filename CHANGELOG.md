@@ -6,6 +6,15 @@
 
 ### Fixed
 
+- Date the `oanda_fx`, `oanda_metals` and OANDA venue-clock normal-week
+  changeover to opening day 2024-02-11 New York. Operator candle captures
+  support the earlier grids through opening day 2024-02-08 and the current
+  grids from the Sunday-opened session's Monday close; Friday and Saturday
+  open no sessions, so the former intersection span is retired. The four
+  nested-grid books and Singapore 30 retain their undated page-print bounds.
+  Singapore 30's legacy night-close conflict is disclosed beside its served
+  intersection. Holiday windows, typed coverage refusals and the remaining
+  historical gaps in #332 are unchanged.
 - Correct the CME Event Contracts on Bitcoin Futures five-day session to its
   own 15:00 CT close, including the May 29, 2026 transition session; market
   data confirms the tradable event contracts' close separately from the

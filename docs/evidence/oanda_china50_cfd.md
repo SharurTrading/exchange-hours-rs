@@ -13,7 +13,10 @@ The broker current day/night grid and bounded holiday audit are documented below
 
 ## Revision rows
 
-None. The module carries one sourced grid and no `revisions!` block; the witness is not a dated change.
+None. No `revisions!` block exists and no changeover day is asserted: the
+module's era bounds are the archived page-print observations listed under
+`## Dated selectors`, and the machine-channel witnessing (below) dates no
+current-grid day.
 
 ## The normal week
 
@@ -70,7 +73,10 @@ keyed observations, not effective days — LAW-NO-FABRICATED-DATES):
   day's day session; no Wayback capture sits between). The current grid
   nests inside the legacy print, so the intersection is the current grid's
   own shape — the span serves `09:01 - 16:29; 17:01 - 04:44` per the
-  charter's 2026-10-04 rule; the residual is disclosed below.
+  charter's 2026-10-04 rule; the residual is disclosed below. The
+  machine-channel witnessing of 2026-10-16 witnesses the legacy grid
+  positively through 2024-02-09 but cannot date the current state (the
+  section below).
 - **Opening days from 2024-02-21 — the current grid** (the 2024-02-21
   capture, `OANDA-UK-HOURS-2024-WAYBACK`; the 2026-10-10 capture
   corroborates).
@@ -118,12 +124,54 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
 
 ## Gaps and residual risks
 
-- **The undated changeover's disputed remainder (2023-06-06..2024-02-20
-  opening days) is a disclosed residual.** What is served: the sourced
-  intersection, which here is the current grid (it nests inside the legacy
-  print). The disputed remainder: the legacy state's extra minutes — day
-  open 09:00, day close 16:30, night open 17:00, night close 04:45. Named
-  closer: a dated OANDA UK operator artifact or desk answer; the sweep that
-  closed the hunts negative is recorded in
-  [`oanda_fx.md`](oanda_fx.md).
-Pre-witness history and the forward publication horizon remain explicit in #332.
+- **The changeover stays undated after the machine-channel witnessing
+  (2026-10-16, reviewed 2026-10-17).** The first pass claimed a 2024-02-12
+  boundary; retracted — the 17:00:55 reopen bucket and the 16:29:00-or-
+  silent close minutes fit the legacy grid too (a 17:00:55 tick is 55
+  seconds into a legacy session exactly as it is a 5-second lead of the
+  current one), and the current grid nests inside the legacy grid, so no
+  candle observation can positively prove the current state. What stands:
+  deep close-minute ticks to 16:29:40–45 Singapore witness the legacy grid
+  in the retained February 9 read. The archived page-print bounds stand;
+  the span keeps the sourced intersection. The unaudited holiday dates inside the
+  witnessed span keep their typed refusals; they are the remaining #332
+  residual here.
+
+## Machine-channel witnessing — 2026-10-16 UTC, corrected 2026-10-17 in review
+
+Under the maintainer's direction the changeover was witnessed from the
+operator's own machine channel — the practice-environment candle service
+(`api-fxpractice.oanda.com`, the
+`/v3/accounts/<id>/instruments/CN50_USD/candles` endpoint, read as bytes
+through the `oanda-rs` client and paced by its own admission control) — the
+same T2 class the MLK-2023 closure used under the `MARKET-DATA`
+convention. The confirming raw responses are retained privately, so the id
+deliberately does not resolve in the research store; the practice host's
+history is account-independent, and confirming the live host with a live
+read-only key remains a residual.
+
+What the witnessing establishes, after review:
+
+- **Legacy-grid observations:** the retained February 9 day-close sample
+  reaches `16:29:45` Singapore, after the current candidate's `16:29`
+  close and inside the earlier `16:30` candidate. Its night reopen
+  includes `17:00:00`. These observations support the earlier candidate
+  on that date. Earlier mid-span S5 summaries without retained responses
+  supply no independently reproducible sub-minute witness.
+
+- **No current-grid positive exists.** The current day session
+  `09:01 - 16:29` nests inside the legacy `09:00 - 16:30`: every tick a
+  current-era day can print also fits the legacy grid. The first pass
+  labelled 2024-02-12 onward current from the absence of deep ticks and
+  the 17:00:55 lead bucket; retracted in review — absence is silence, and
+  the 17:00:55 tick is 55 seconds into a legacy session exactly as it is
+  a five-second lead of the current one. The 2024-02-12/13 close minutes
+  are wholly silent and witness nothing either way.
+- The archived page-print bounds therefore stand — the 2023-06-05 last
+  legacy print and the 2024-02-21 first current print — and the span
+  between keeps the sourced intersection.
+  [Singapore 30](oanda_singapore30_cfd.md) has the same day-session
+  ambiguity and a separately recorded night-leg conflict.
+
+`MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
+manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.

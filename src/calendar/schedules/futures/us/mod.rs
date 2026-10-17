@@ -91,7 +91,7 @@ pub(crate) use livestock::{
     CURRENT_FUTURES_PROFILE as LIVESTOCK_CURRENT, profile_at as livestock_profile_at,
 };
 pub(crate) use metals_tas::{
-    COPPER_TAS_EXTENDED_CURRENT, GOLD_TAS_EXTENDED_CURRENT, METALS_TAS_ORDER_ENTRY_CURRENT,
+    COPPER_TAS_EXTENDED_CURRENT, GOLD_TAS_EXTENDED_CURRENT, METALS_TAS_ORDER_ENTRY_2016_01_03,
     SILVER_TAS_EXTENDED_CURRENT, copper_profile_at as copper_tas_profile_at,
     gold_profile_at as gold_tas_profile_at, silver_profile_at as silver_tas_profile_at,
 };

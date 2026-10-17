@@ -38,7 +38,7 @@ use crate::calendar::schedules::futures::us::{
     FCOJ_REGULAR_CURRENT, FX_CURRENT, GOLD_TAS_EXTENDED_CURRENT, ICE_US_FANG_EXTENDED_CURRENT,
     ICE_US_FANG_ORDER_ENTRY_CURRENT, ICE_US_FANG_REGULAR_CURRENT, ICE_USDX_EXTENDED_CURRENT,
     ICE_USDX_ORDER_ENTRY_CURRENT, ICE_USDX_REGULAR_CURRENT, INTEREST_RATES_CURRENT,
-    LIVESTOCK_CURRENT, METALS_TAS_ORDER_ENTRY_CURRENT, MINI_EXTENDED_CURRENT,
+    LIVESTOCK_CURRENT, METALS_TAS_ORDER_ENTRY_2016_01_03, MINI_EXTENDED_CURRENT,
     MINI_ORDER_ENTRY_CURRENT, MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_ORDER_ENTRY_CURRENT,
     NKD_REGULAR_CURRENT, PALLADIUM_TAS_EXTENDED_CURRENT, PGM_TAS_ORDER_ENTRY_CURRENT,
     PLATINUM_TAS_EXTENDED_CURRENT, ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT,
@@ -251,7 +251,7 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS: FuturesSessionProfile = FuturesSessionPro
 // the weekday executable leg ends at 15:00 CT and resumes at 16:02, with the
 // 16:01 and Saturday 03:45 Pre-Opens as order-entry phases. The Saturday
 // 02:00-04:00 window is agreed. `bitcoin_event_contracts.rs` holds the 2023
-// listing, the shared era, the 2026-05-29 transition day and the three
+// listing, the 17:00-15:00 CT era, the 2026-05-29 transition day and six
 // notice-dated Saturday extensions.
 static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
@@ -272,7 +272,7 @@ static FUTURES_GLOBEX_GOLD_TAS: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
     regular: &[],
     extended: GOLD_TAS_EXTENDED_CURRENT,
-    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -281,7 +281,7 @@ static FUTURES_GLOBEX_SILVER_TAS: FuturesSessionProfile = FuturesSessionProfile 
     tz: US::Central,
     regular: &[],
     extended: SILVER_TAS_EXTENDED_CURRENT,
-    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -290,7 +290,7 @@ static FUTURES_GLOBEX_COPPER_TAS: FuturesSessionProfile = FuturesSessionProfile 
     tz: US::Central,
     regular: &[],
     extended: COPPER_TAS_EXTENDED_CURRENT,
-    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
     has_daily_close: true,
     has_weekend_close: true,
 };

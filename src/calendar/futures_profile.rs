@@ -333,8 +333,7 @@ market_hours_keys! {
         /// NYMEX and COMEX Rulebook Chapter 23, together with the hourly
         /// contracts under Chapter 23A. The Chapter 23 roots are `ECES`,
         /// `ECNQ`, `ECRTY`, `ECYM`, `EC6E`, `ECCL`, `ECNG`, `ECGC`, `ECSI`
-        /// and `ECHG`, plus `ECBTC` from its 2023-03-12 listing until
-        /// 2026-05-28; the Chapter 23A roots are the hourly `ECS*`, `ECN*`,
+        /// and `ECHG`; the Chapter 23A roots are the hourly `ECS*`, `ECN*`,
         /// `ECR*`, `ECD*`, `ECC*`, `ECH*` and `ECG*` contracts listed from
         /// 2025-12-08.
         ///
@@ -348,10 +347,10 @@ market_hours_keys! {
         /// 16:00-17:00 and Monday-Thursday 16:45-17:00 CT, and no
         /// Friday-evening reopen.
         ///
-        /// **Excludes `ECBTC` from 2026-05-29**, when CME moved that root
-        /// alone to 24/7 trading and left the rest on this schedule; select
+        /// **Excludes `ECBTC` in every era.** Its own five-day session closes
+        /// at 15:00 CT, before its 2026-05-29 move to 24/7 trading. Select
         /// [`GlobexEventContractsBtc`](Self::GlobexEventContractsBtc) for that
-        /// root in every era instead. Also
+        /// root throughout its history. Also
         /// excludes the Chapter 22 swap-based economic and cryptocurrency
         /// event contracts, which run a 24/7 grid with a one-minute daily
         /// halt, and the sports and political event contracts on the CME
@@ -367,9 +366,8 @@ market_hours_keys! {
         /// CME Event Contracts on Bitcoin Futures (`ECBTC`), Rulebook Chapter
         /// 23 — the one event-contract root CME moved to 24/7 trading on
         /// 2026-05-29. The key carries the root's whole life: sessionless
-        /// before its 2023-03-12 listing, the
-        /// [`GlobexEventContracts`](Self::GlobexEventContracts) grid to
-        /// 2026-05-28, and a 24/7 grid from 2026-05-29.
+        /// before its 2023-03-12 listing, its own 17:00-15:00 CT five-day
+        /// grid to 2026-05-28, and a 24/7 grid from 2026-05-29.
         ///
         /// **The 24/7 weekday close is the sourced intersection of two CME
         /// primaries that disagree by an hour.** SER-9740R states a 16:00-16:02
@@ -380,7 +378,7 @@ market_hours_keys! {
         /// what both support — open 16:02→15:00 CT — and withholds the disputed
         /// hour, erring toward closed. CME's Globex notices since the cutover
         /// confirm the Saturday window for this root's channel and also state
-        /// three one-day Saturday extensions, which are modelled.
+        /// six one-day Saturday extensions, which are modelled.
         ///
         /// The fixed profile uses adjacent rules for exact open/closed state;
         /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key)

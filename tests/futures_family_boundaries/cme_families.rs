@@ -4,6 +4,15 @@
 //! order-entry gaps, the carried-back Sunday pre-open, and the livestock queue.
 
 use super::prelude::*;
+use exchange_hours::{calendar_for_market_hours_key, session_profile};
+
+fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+    chrono_tz::US::Central
+        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("fixture is an unambiguous Central instant")
+        .with_timezone(&Utc)
+}
 
 /// Every new key must expose a current snapshot without panicking, and the
 /// snapshot must agree with the dated selector at a present-day instant.
@@ -282,4 +291,71 @@ fn livestock_morning_queue_spans_its_sourced_matching_grid() {
         SessionState::OrderEntry,
         "the morning queue is not carried back past the 2016-02-29 grid it belongs to"
     );
+}
+
+/// The reviewed current TAS snapshots retain the same queue as the dated grid.
+#[test]
+fn current_comex_tas_queues_agree_without_moving_bar_boundaries() {
+    let instant = ct((2026, 10, 18), (16, 5, 0));
+    for key in [
+        MarketHoursKey::GlobexGoldTas,
+        MarketHoursKey::GlobexSilverTas,
+        MarketHoursKey::GlobexCopperTas,
+    ] {
+        let dated = hours_for_market_hours_key(key, instant);
+        let current = session_profile(key);
+        assert!(current.is_order_entry_only(instant), "{key:?}");
+        assert!(dated.is_order_entry_only(instant), "{key:?}");
+        assert!(!dated.is_open(instant), "{key:?}: a queue cannot match");
+        assert_eq!(
+            exchange_hours::candle_start(
+                &dated,
+                instant,
+                exchange_hours::CalendarResolution::Minutes(1)
+            ),
+            Some(ct((2026, 10, 18), (17, 0, 0))),
+            "{key:?}: the bar starts at matching, after the queue"
+        );
+        assert_eq!(
+            exchange_hours::candle_end(
+                &dated,
+                instant,
+                exchange_hours::CalendarResolution::Minutes(1)
+            ),
+            Some(ct((2026, 10, 18), (17, 1, 0))),
+            "{key:?}: the queue does not advance a trading bar"
+        );
+    }
+}
+
+/// Service-backed Saturday queues accept orders while matching stays stopped.
+#[test]
+fn extended_crypto_saturday_queues_do_not_start_trading_bars() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
+    for (date, preopen, reopen) in [
+        ((2026, 9, 19), (7, 45, 0), (8, 0, 0)),
+        ((2026, 10, 3), (4, 45, 0), (5, 0, 0)),
+    ] {
+        let queue = ct(date, preopen);
+        let matching = ct(date, reopen);
+        assert_eq!(
+            calendar.is_order_entry_only(queue - chrono::Duration::seconds(1)),
+            Ok(false)
+        );
+        for instant in [queue, matching - chrono::Duration::seconds(1)] {
+            assert_eq!(calendar.is_order_entry_only(instant), Ok(true));
+            assert_eq!(calendar.is_accepting_orders(instant), Ok(true));
+            assert_eq!(calendar.is_open(instant), Ok(false));
+            assert_eq!(
+                calendar.candle_start(instant, exchange_hours::CalendarResolution::Minutes(1)),
+                Ok(Some(matching))
+            );
+            assert_eq!(
+                calendar.candle_end(instant, exchange_hours::CalendarResolution::Minutes(1)),
+                Ok(Some(matching + chrono::Duration::minutes(1)))
+            );
+        }
+        assert_eq!(calendar.is_order_entry_only(matching), Ok(false));
+        assert_eq!(calendar.is_open(matching), Ok(true));
+    }
 }

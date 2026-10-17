@@ -19,12 +19,10 @@ maintainer's 2026-10-10 decision recorded in SharurPlatform#1046.
 ## Revision rows
 
 None. No `revisions!` block exists: the module's dated era machinery is
-the selector rather than a revision list. Its two positively dated bounds —
-the 2024-02-09 opening day where the per-day witnessing ends and the
-sourced intersection begins, and the 2024-02-12 opening day of the first
-positively witnessed current-grid session — are encoded as the selector's
-boundary constants with their `MARKET-DATA` citation in the module
-comment; the section below carries the tier and document id
+the selector rather than a revision list. Its positively dated bound — the
+2024-02-11 opening day of the first current-grid session — is encoded as
+the selector's boundary constant with its `MARKET-DATA` citation in the
+module comment; the section below carries the tier and document id
 (LAW-EVIDENCE-FILES). Historical completion remains tracked in #332 under
 the dated current OANDA scope exception.
 
@@ -132,19 +130,14 @@ The spans, and what each rests on:
   carries a tick in the 17:03 New York minute, which the current grid's
   16:59–17:05 break forbids (the section below). The span serves
   `Sun-Fri: 17:03 - 16:58`.
-- **Opening days 2024-02-09 through 2024-02-11 — the sourced intersection.**
-  Friday's close leg, Saturday, and the Sunday 2024-02-11 weekly open
-  (whose only early tick is the 17:04:55 lead bucket, which fits both
-  states) carry no witness that distinguishes the grids. The three days
-  keep the window both witnessed states hold — open `17:05`, close `16:58`
-  — per the charter's 2026-10-04 rule; the disputed remainder is the
-  residual below.
-- **Opening days from 2024-02-12 — the current grid.** The changeover is
-  positively dated by the operator's machine channel: from the Monday
-  2024-02-12 close the S5 record quotes continuously through
-  `[16:58:20, 16:59:00]` New York — inside the earlier grid's break, which
-  no linger explanation covers — so the current `17:05 - 16:59` grid is in
-  force from that opening day (the section below). The 2024-02-21 page
+- **Opening days from 2024-02-11 — the current grid.** The changeover is
+  positively dated by the operator's machine channel: the session opened
+  Sunday 2024-02-11 closes on Monday at `16:59:00`, and its close minute
+  quotes continuously through `[16:58:20, 16:59:00]` New York — inside the
+  earlier grid's break, which no linger explanation covers — so the
+  current `17:05 - 16:59` grid governs from that opening day (the section
+  below). The intervening Friday and Saturday open no session, so no
+  unwitnessed opening day remains between the eras. The 2024-02-21 page
   capture — the first current-grid print, taken 00:55 UTC inside the
   session opened 2024-02-20 — corroborates
   (`OANDA-UK-HOURS-2024-WAYBACK`), as do the 2024-05-07, 2024-06-20 and
@@ -207,18 +200,18 @@ Store paths (research store, wave-1 capture):
 
 ## Gaps and residual risks
 
-- **NARROWED 2026-10-17 (UTC): the changeover is positively bracketed to
-  the 2024-02-09..2024-02-11 opening days.** The residual recorded here —
-  the disputed 2023-06-05..2024-02-20 span served as the sourced
-  intersection — is reduced to three opening days: the operator's own
-  machine channel witnesses the earlier grid positively on every opening
-  day through 2024-02-08 and the current grid positively from 2024-02-12
-  (section below, `MARKET-DATA`). An earlier version of this file claimed
-  the boundary at 2024-02-11 from lead-bucket and close-side observations
-  that fit both grids, and cited a 16:58:40 New York close-minute tick
-  that no captured response contains; both claims were retracted in review
-  (the paragraph below states the corrected record). The three-day
-  intersection and the disputed remainder it withholds stay the residual.
+- **RESOLVED 2026-10-17 (UTC): the changeover is positively dated to the
+  2024-02-11 opening day.** The residual recorded here — the disputed
+  2023-06-05..2024-02-20 span served as the sourced intersection — is
+  closed: the operator's own machine channel witnesses the earlier grid
+  positively on every opening day through 2024-02-08, and the Sunday
+  2024-02-11-opened session's Monday close minute quotes inside the
+  earlier grid's break, positively dating the current era from 2024-02-11
+  (section below, `MARKET-DATA`). Two earlier claims were retracted in
+  review and the retractions stand recorded: the 2024-02-11
+  lead-bucket-only boundary of the first pass, and a 16:58:40 New York
+  close-minute tick that no captured response contains. No unwitnessed
+  opening day remains between the eras.
 - **The pre-2021-12-08 normal week is carried, not sourced.** The
   2021-03-03 capture prints no Forex table, so the 2021-12-08 capture is the
   book's first complete witness; earlier complete FX evidence remains absent
@@ -304,13 +297,15 @@ states are positively provable from presence alone:
   on 2024-02-12 (16:58:20, :25, :30), 2024-02-13 (16:58:50), 2024-02-14
   (16:58:20 through 16:58:55, dense), 2024-02-15 (16:58:15–:35) and
   2024-02-19 (16:58:30–:55), each ending at the 16:59:00 close bucket.
-  The first such day is Monday 2024-02-12.
-- **The three opening days between — 2024-02-09 (Friday close leg of the
-  legacy-keyed session), Saturday, and the Sunday 2024-02-11 weekly open —
-  carry no distinguishing witness.** The Sunday's only early tick is the
-  17:04:55 lead bucket, which fits both grids (a legacy session reopened
-  at 17:03:00 could equally print it); no close side exists. They keep the
-  sourced intersection.
+  A New York close minute belongs to the session opened the prior evening,
+  so the Monday 2024-02-12 quoting is the close witness of the session
+  opened Sunday 2024-02-11: **the current era is positively in force from
+  the 2024-02-11 opening day.**
+- **No unwitnessed opening day remains.** The intervening Friday
+  (2024-02-09) and Saturday open no session — the Friday close leg belongs
+  to the legacy-keyed Thursday session — and the first Sunday is itself
+  the current era's first opening day. The sourced intersection hosts no
+  opening day and is retired with the dating.
 - **Correction recorded:** an earlier version of this section claimed the
   boundary at 2024-02-11 and cited a 16:58:40 New York close-minute tick
   on 2024-02-08 as earlier-grid proof. The tick appears in no captured
@@ -321,17 +316,16 @@ states are positively provable from presence alone:
   section states the corrected record. The per-day classification of
   2024-02-11..2024-02-19 as "current" in the first M1 pass shared the same
   defect — the absence of a 17:03-minute tick is silence, not a state —
-  and those days are now claimed only where the close-side quoting
-  witnesses them (2024-02-12, 13, 14, 15, 19).
+  and the retraction note above stands.
 
-The boundary is keyed to the opening day of the first positively witnessed
-current-grid session — 2024-02-12 — with the three unwitnessed opening days
-before it keeping the sourced intersection; a day-level revision keyed to
-the opening day never splits a running session
-(LAW-NO-FABRICATED-DATES). `MARKET-DATA` — T2, confirming artifacts
-retained privately (the flanking-day responses and the full per-day
-transcript, with sha256 manifest), retrieval 2026-10-16 UTC, corrected
-2026-10-17 UTC.
+The boundary is keyed to the opening day of the session whose close minute
+carries the positive current-grid witness — 2024-02-11 — and no unwitnessed
+opening day sits between the eras; a day-level revision keyed to the
+opening day never splits a running session (LAW-NO-FABRICATED-DATES).
+`MARKET-DATA` — T2, confirming artifacts retained privately (the
+flanking-day responses, the decisive close-side S5 windows, and the full
+per-day transcript, with sha256 manifest), retrieval 2026-10-16 UTC,
+corrected 2026-10-17 UTC.
 
 ## Pending orders and session scope — 2026-10-11 UTC
 

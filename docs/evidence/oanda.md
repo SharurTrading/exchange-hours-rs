@@ -18,22 +18,18 @@ the verbatim mirror of that family's table, as the venue profile-clock rule
 requires. The grid, its evidence and its gaps are
 [`oanda_fx.md`](oanda_fx.md)'s — including the 2024-02-21 page-print
 horizon and the changeover the operator's machine channel positively dates
-to opening day 2024-02-12, with the three opening days before it keeping
-the sourced intersection (`MARKET-DATA`, recorded there) — and this file
+to opening day 2024-02-11 (`MARKET-DATA`, recorded there) — and this file
 adds only what the venue row adds.
 
 ## Revision rows
 
-- 2024-02-09 — T2 — `MARKET-DATA` — the per-day machine-channel witnessing
-  of the earlier grid ends at this opening day's predecessor and the
-  sourced intersection begins here (three opening days).
-- 2024-02-12 — T2 — `MARKET-DATA` — the venue clock's changeover to the
+- 2024-02-11 — T2 — `MARKET-DATA` — the venue clock's changeover to the
   current `17:05 - 16:59` grid is positively dated to this New York opening
-  day: from it the close minutes quote continuously inside the earlier
-  grid's break (artifacts retained privately; see
+  day: the Sunday-opened session's Monday close minute quotes continuously
+  inside the earlier grid's break (artifacts retained privately; see
   [`oanda_fx.md`](oanda_fx.md)).
 
-No `revisions!` block: the module selects eras on the dated constants; a
+No `revisions!` block: the module selects eras on the dated constant; a
 dormant identity owes its current schedule rather than a worked-up history
 (LAW-BOUNDED-WORK).
 

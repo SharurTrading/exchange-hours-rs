@@ -77,7 +77,7 @@ keyed observations, not effective days — LAW-NO-FABRICATED-DATES):
   machine-channel witnessing of 2026-10-16 witnesses the legacy grid
   positively through 2024-02-09 but cannot date the current state (the
   section below).
-- **Opening days from 2024-02-12 — the current grid** (the 2024-02-21
+- **Opening days from 2024-02-21 — the current grid** (the 2024-02-21
   capture, `OANDA-UK-HOURS-2024-WAYBACK`; the 2026-10-10 capture
   corroborates).
 - **Holiday dates below the current audited window remain unclassified**;

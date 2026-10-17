@@ -127,13 +127,44 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
 
 - **The changeover stays undated after the machine-channel witnessing
   (2026-10-16, reviewed 2026-10-17).** The first pass claimed a 2024-02-12
-  boundary; retracted — the current grid nests inside the legacy grid, so
-  no candle observation can positively prove the current state. What
-  stands: deep close-minute ticks to 17:19:45 Singapore witness the legacy
-  grid positively on 2024-02-06..09; the 2024-02-12/13 close minutes are
-  wholly silent and witness nothing either way. The archived page-print
-  bounds stand; the span keeps the sourced intersection (night close 04:45
-  through it, 05:14 from the 2024-02-21 page-print bound). The unaudited
-  holiday dates inside the witnessed span keep their typed refusals; they
-  are the remaining #332 residual here.
+  boundary; retracted — the day session nests (current `08:31 - 17:19`
+  inside legacy `08:30 - 17:20`), so its ticks cannot prove the current
+  state. This book is **not** nested on the night leg (legacy night close
+  `04:45`, current `05:14` — the current night session runs later), so a
+  quote well inside 04:45–05:14 Singapore could positively distinguish the
+  night state; the probe of those mornings is recorded below and dates no
+  changeover. What stands: deep day-close-minute ticks to 17:19:45
+  Singapore witness the legacy day grid positively on 2024-02-06..09; the
+  2024-02-12/13 day close minutes are wholly silent and witness nothing
+  either way. The archived page-print bounds stand; the span keeps the
+  sourced intersection (night close 04:45 through it, 05:14 from the
+  2024-02-21 page-print bound). The unaudited holiday dates inside the
+  witnessed span keep their typed refusals; they are the remaining #332
+  residual here.
+
+## Night-leg machine-channel record — 2026-10-17 UTC
+
+The night legs are offset between the page states (legacy close `04:45`,
+current close `05:14` Singapore), so the night close minutes were probed
+at S5 across the changeover window (mornings 2024-02-06..09 and
+2024-02-12..16, 19, 20; window `04:44:00–05:15:00` Singapore, read through
+the `oanda-rs` client as bytes, retained privately with the sha256
+manifest). Result: continuous quoting through `[04:45:15, 05:14:00]`
+Singapore on **every sampled morning on both flanks** — 02-06 through
+02-09 (legacy by the day-session witnesses) and 02-13 through 02-16 and
+02-20 (current by the day-session witnesses) — each morning ending at the
+`05:14:00` close bucket (the 02-12 and 02-19 mornings are wholly silent).
+Two consequences, both recorded rather than encoded:
+
+- The night leg cannot date the day-session changeover: its close minute
+  shows the same shape on both flanks.
+- The night close is a standing T1/T2 conflict in the legacy era: the
+  2023-06-05 page prints `04:45` while the operator's own machine channel
+  quotes the leg past `04:45:15` continuously on every sampled
+  legacy-side morning. The sourced intersection withholds
+  `[04:45, 05:14]` accordingly (the charter's conflict rule: serve the
+  window both page states state; record the dispute). Closing condition:
+  a legacy-era operator artifact stating the night close, or a desk
+  answer.
+
 Pre-witness history and the forward publication horizon remain explicit in #332.

@@ -102,11 +102,11 @@ fn oanda_metals_answers_the_witnessed_eras_on_their_own_opening_days() {
         "the legacy close is end-exclusive on a per-day-witnessed date"
     );
     // The dated boundary: opening day 2024-02-08 (Thursday) is the legacy
-    // grid's last positively witnessed day; opening day 2024-02-12 (Monday)
-    // is the first positively current-grid day. The opening days between
-    // carry no distinguishing witness and keep the sourced intersection:
-    // the Sunday 2024-02-11 session runs the intersection's 18:05 open to
-    // Monday's 16:58 close.
+    // grid's last positively witnessed day; opening day 2024-02-11 (Sunday)
+    // is the first current-grid day: its session's Monday close minute
+    // quotes continuously through [16:58:00, 16:59:00], inside the earlier
+    // grid's break. Friday and Saturday open no session, so no intersection
+    // days remain.
     let last_legacy = calendar
         .session_bounds(et((2024, 2, 9), (12, 0, 0)))
         .expect("a witnessed date answers")
@@ -116,27 +116,15 @@ fn oanda_metals_answers_the_witnessed_eras_on_their_own_opening_days() {
         (et((2024, 2, 8), (18, 3, 0)), et((2024, 2, 9), (16, 58, 0))),
         "the legacy era's final session"
     );
-    let intersection_session = calendar
-        .session_bounds(et((2024, 2, 11), (12, 0, 0)))
-        .expect("a witnessed date answers")
-        .expect("noon Sunday sits in the session opened Sunday");
-    assert_eq!(
-        intersection_session,
-        (
-            et((2024, 2, 11), (18, 5, 0)),
-            et((2024, 2, 12), (16, 58, 0))
-        ),
-        "the intersection's final session"
-    );
     let first_current = calendar
-        .session_bounds(et((2024, 2, 13), (12, 0, 0)))
+        .session_bounds(et((2024, 2, 12), (12, 0, 0)))
         .expect("a witnessed date answers")
-        .expect("noon Tuesday sits in the session opened Monday");
+        .expect("noon Monday sits in the session opened Sunday");
     assert_eq!(
         first_current,
         (
-            et((2024, 2, 12), (18, 5, 0)),
-            et((2024, 2, 13), (16, 59, 0))
+            et((2024, 2, 11), (18, 5, 0)),
+            et((2024, 2, 12), (16, 59, 0))
         ),
         "the current era's first session"
     );

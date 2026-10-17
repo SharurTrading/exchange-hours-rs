@@ -155,15 +155,13 @@ The spans, and what each rests on:
   section below). The span serves the earlier USD-pair state, open
   `18:03`, close `16:58` (one thin Sunday, 2023-11-12, is bracketed by
   witnessed neighbours).
-- **Opening days 2024-02-09 through 2024-02-11 — the sourced intersection.**
-  The three opening days between the positive flanks carry no witness that
-  distinguishes the grids. They keep the window both witnessed states hold
-  — open `18:05`, close `16:58` — per the charter's 2026-10-04 rule.
-- **Opening days from 2024-02-12 — the current grid `18:05 - 16:59`.** The
-  changeover is positively dated: from Monday 2024-02-12 the S5 record
-  quotes continuously through `[16:58:00, 16:59:00]` New York — inside the
-  earlier grid's break (the section below). The 2024-02-21 capture prints
-  the grid (`OANDA-UK-HOURS-2024-WAYBACK`), and every later replay and the
+- **Opening days from 2024-02-11 — the current grid `18:05 - 16:59`.** The
+  changeover is positively dated: the session opened Sunday 2024-02-11
+  closes on Monday at `16:59:00`, and its close minute quotes continuously
+  inside the earlier grid's break (the section below). The intervening
+  Friday and Saturday open no session, so no unwitnessed opening day
+  remains between the eras. The 2024-02-21 capture prints the grid
+  (`OANDA-UK-HOURS-2024-WAYBACK`), and every later replay and the
   2026-10-10 capture corroborate; all rows share one grid again.
 - **Below the 2021-12-08 witness**: carried. The 2021-03-03..2021-08-18 page
   generation prints coarser `All gold instruments (XAU)` /
@@ -195,12 +193,13 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **NARROWED 2026-10-17 (UTC): the changeover is positively bracketed to
-  the 2024-02-09..2024-02-11 opening days.** The disputed
-  2023-06-05..2024-02-20 span served as the sourced intersection; the
-  operator's own machine channel witnesses the earlier pair grid
-  positively on every opening day through 2024-02-08 and the current grid
-  positively from 2024-02-12 (section below, `MARKET-DATA`). The
+- **RESOLVED 2026-10-17 (UTC): the changeover is positively dated to the
+  2024-02-11 opening day.** The disputed 2023-06-05..2024-02-20 span
+  served as the sourced intersection; the operator's own machine channel
+  witnesses the earlier pair grid positively on every opening day through
+  2024-02-08, and the Sunday 2024-02-11-opened session's Monday close
+  minute quotes inside the earlier grid's break, dating the current era
+  from 2024-02-11 (section below, `MARKET-DATA`). The
   2021-03-03..2021-08-18 coarse gold/silver rows and the era's cross opens
   stay #332 residuals.
 - Dates where the page prints no US-group row at all are audited normal for
@@ -240,17 +239,19 @@ alone:
   `[16:58:15, 16:59:00]` New York window the 16:58:00 close and any
   linger forbid. The S5 record shows continuous ticks through that window
   on 2024-02-12 (16:58:00 through 16:58:55, dense, ending at the 16:59:00
-  close bucket) and 2024-02-13 through 2024-02-15 likewise. The first such
-  day is Monday 2024-02-12.
-- **The opening days between — 2024-02-09 through 2024-02-11 — carry no
-  distinguishing witness** and keep the sourced intersection.
+  close bucket) and 2024-02-13 through 2024-02-15 likewise. A New York
+  close minute belongs to the session opened the prior evening, so the
+  Monday 2024-02-12 quoting is the close witness of the session opened
+  Sunday 2024-02-11: **the current era is positively in force from the
+  2024-02-11 opening day.** The intervening Friday and Saturday open no
+  session, so no unwitnessed opening day remains.
 - **Correction recorded:** the first pass labelled 2024-02-11 onward
   current from M1 lead buckets that fit both grids; retracted in review.
   Only the close-side quoting above dates the current state.
 
-The boundary is keyed to the opening day of the first positively witnessed
-current-grid session — 2024-02-12 — with the three unwitnessed opening
-days before it keeping the sourced intersection (LAW-NO-FABRICATED-DATES).
+The boundary is keyed to the opening day of the session whose close minute
+carries the positive current-grid witness — 2024-02-11 — and no unwitnessed
+opening day sits between the eras (LAW-NO-FABRICATED-DATES).
 `MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
 manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.
 

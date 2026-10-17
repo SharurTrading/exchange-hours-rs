@@ -207,10 +207,9 @@ fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
     // The dated boundary: opening day 2024-02-08 (Thursday) is the legacy
     // grid's last positively witnessed opening day — its session runs 17:03
     // to Friday 16:58 — and opening day 2024-02-11 (Sunday) is the first
-    // current-grid day: its session's Monday close minute quotes
-    // continuously through [16:58:20, 16:59:00], inside the earlier grid's
-    // break. Friday and Saturday open no session, so no intersection days
-    // remain.
+    // current-grid day: its Monday closing leg contains S5 starts at
+    // 16:58:20, :25 and :30, inside the earlier grid's break. Friday and
+    // Saturday open no session, so no intersection days remain.
     let last_legacy = calendar
         .session_bounds(et((2024, 2, 9), (12, 0, 0)))
         .expect("a witnessed date answers")

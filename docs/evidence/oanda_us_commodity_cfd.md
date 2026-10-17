@@ -124,13 +124,15 @@ The spans, and what each rests on:
   [`oanda_fx.md`](oanda_fx.md)'s Documents table); the 2023-06-05 capture
   still prints it (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening
   replay prints the identical grid.
-- **Opening days 2023-06-05 through 2024-02-10 — the legacy whole-hour
-  `18:00 - 17:00` New York grid.** The 2023-06-05 print is the last
-  earlier-grid page observation, and the operator's own machine channel
-  witnesses the whole-hour grid per day through the 2024-02-08 opening day
-  (the section in [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md), whose
-  probes cover this book's XCU_USD and NATGAS_USD instruments too).
-- **Opening days from 2024-02-11 — the current grid `18:01 - 16:59` New
+- **Opening days 2023-06-05 through 2024-02-19 — the sourced intersection.**
+  The changeover is undated (last earlier-grid print 2023-06-05, first
+  current-grid print 2024-02-21, no Wayback capture between). The current
+  grid nests inside the legacy print, so the span serves the current grid's
+  shape per the charter's 2026-10-04 rule; the residual is disclosed below,
+  and the machine-channel witnessing of 2026-10-16 does not move these
+  bounds (see [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md) for why the
+  nested grids admit no positive candle witness for the current state).
+- **Opening days from 2024-02-20 — the current grid `18:01 - 16:59` New
   York** (the 2024-02-21 capture, `OANDA-UK-HOURS-2024-WAYBACK`; later
   replays corroborate).
 - **Below the 2021-03-03 witness**: carried (#332).
@@ -155,16 +157,14 @@ sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
 
 ## Gaps and residual risks
 
-- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
-  disputed 2023-06-05..2024-02-19 span served the intersection; the
-  operator's own machine channel now dates the changeover to opening day
-  2024-02-11, the span serves the whole-hour legacy grid exactly, and the
-  current grid runs from 2024-02-11 (`MARKET-DATA`, recorded in
-  [`oanda_us_index_cfd.md`](oanda_us_index_cfd.md): XCU_USD and NATGAS_USD
-  open 23:00:00 UTC sharp on 2024-02-08 and lead at 23:00:55 on
-  2024-02-13). The commodity book's close minutes are thin, so its per-day
-  proof rides the shared engine's open shapes plus the index book's
-  close-side record; the pre-witness eras stay #332 residuals.
+- **The changeover stays undated after the machine-channel witnessing
+  (2026-10-16, reviewed 2026-10-17).** The first pass claimed a 2024-02-11
+  boundary; retracted — the nested grids admit no positive candle witness
+  for the current state. What stands for this book: XCU_USD and NATGAS_USD
+  open `23:00:00Z` sharp on 2024-02-08 (positive legacy) and lead at
+  `23:00:55` on 2024-02-13 (ambiguous alone); the close minutes are thin.
+  The archived page-print bounds stand and the span keeps the sourced
+  intersection. The pre-witness eras stay #332 residuals.
 - **The pre-2021 witness era stays carried**: the 2022
   capture's futures-exact instants describe an arrangement this book's shape
   does not model, and the era below the first page witness keeps its

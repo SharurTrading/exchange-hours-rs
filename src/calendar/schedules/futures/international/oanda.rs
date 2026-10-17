@@ -15,33 +15,46 @@ use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU, TUE_FRI};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{effective_date, local_date};
 
-// The changeover to the current grid, dated by the operator's own machine
-// channel (`MARKET-DATA`, T2, artifacts retained privately): every opening
-// day of the former span witnessed per day, the last earlier-grid session
-// opened Thursday 2024-02-08, the first current-grid session Sunday
-// 2024-02-11. Opening-day keying never splits a running session
-// (LAW-NO-FABRICATED-DATES) — docs/evidence/oanda_fx.md holds the sweep.
-const NEW_YORK_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 11);
+// Era bounds for the two offset-grid books, whose changeover the operator's
+// machine channel witnesses positively in both directions (`MARKET-DATA`,
+// T2, artifacts retained privately): 17:03/18:03-minute ticks on every
+// opening day through 2024-02-08 (inside the current grid's break), then
+// quoting inside the earlier break from 2024-02-12. The three days between
+// keep the sourced intersection — docs/evidence/oanda_fx.md.
+const FX_METALS_INTERSECTION_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 9);
+const FX_METALS_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 12);
 
 /// Selects the witnessed normal-week era for a New York-anchored book:
-/// opening days before 2024-02-11 answer from the earlier grid — witnessed
-/// by the archived page prints through 2023-06-05 and per day by the
-/// operator's machine channel through 2024-02-08 — and opening days from
-/// 2024-02-11 answer from the current grid. An opening day below the
-/// witnessed span still selects the earlier grid — a session straddling the
-/// horizon resolves complete bounds while its trade dates refuse through the
-/// coverage gate.
+/// opening days before `first_intersection` answer from the earlier grid,
+/// the span through `first_current - 1` keeps the sourced intersection, and
+/// opening days from `first_current` answer from the current grid. An
+/// opening day below the witnessed span still selects the earlier grid — a
+/// session straddling the horizon resolves complete bounds while its trade
+/// dates refuse through the coverage gate.
 fn new_york_era_select(
     day: NaiveDate,
+    first_intersection: NaiveDate,
+    first_current: NaiveDate,
     legacy: &'static StaticHoursProfile,
+    intersection: &'static StaticHoursProfile,
     current: &'static StaticHoursProfile,
 ) -> &'static StaticHoursProfile {
-    if day >= NEW_YORK_CURRENT_FIRST_OPEN_DAY {
+    if day >= first_current {
         current
+    } else if day >= first_intersection {
+        intersection
     } else {
         legacy
     }
 }
+
+// The US continuous books' era bounds: their current grid is a strict
+// subset of the whole-hour legacy grid, so no candle observation can
+// positively prove the current state and the changeover stays undated —
+// the bounds are the archived page-print observations, and the span
+// between keeps the sourced intersection per the 2026-10-04 rule.
+const US_INTERSECTION_FIRST_OPEN_DAY: NaiveDate = effective_date(2023, 6, 5);
+const US_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 20);
 
 // Evidence: docs/evidence/oanda_fx.md
 pub(crate) static OANDA_FX_REGULAR: &[SessionRule] = &[SessionRule {
@@ -51,11 +64,24 @@ pub(crate) static OANDA_FX_REGULAR: &[SessionRule] = &[SessionRule {
 }];
 
 // The earlier `Sun-Fri: 17:03 - 16:58` grid, witnessed 2021-12-08..2023-06-05
-// with its five-minute 16:58-17:03 break.
+// by the page prints and per day through the 2024-02-08 opening day by the
+// operator's machine channel (each day carries a 17:03-minute tick, inside
+// the current grid's break).
 // Evidence: docs/evidence/oanda_fx.md (`OANDA-UK-HOURS-2021-DEC-WAYBACK`)
 pub(crate) static OANDA_FX_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3_600 + 3 * 60,
+    close_ssm: 16 * 3_600 + 58 * 60,
+}];
+
+// The 2024-02-09..2024-02-11 opening days carry no distinguishing machine-
+// channel witness; the span keeps the sourced intersection: the later open
+// and the earlier close of the two witnessed grids — the seven-minute
+// 16:58-17:05 break window both states held.
+// Evidence: docs/evidence/oanda_fx.md
+pub(crate) static OANDA_FX_INTERSECTION_REGULAR: &[SessionRule] = &[SessionRule {
+    days: SUN_PLUS_MON_THU,
+    open_ssm: 17 * 3_600 + 5 * 60,
     close_ssm: 16 * 3_600 + 58 * 60,
 }];
 
@@ -71,6 +97,15 @@ static OANDA_FX: StaticHoursProfile = StaticHoursProfile {
 static OANDA_FX_LEGACY: StaticHoursProfile = StaticHoursProfile {
     tz: New_York,
     regular: OANDA_FX_LEGACY_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static OANDA_FX_INTERSECTION: StaticHoursProfile = StaticHoursProfile {
+    tz: New_York,
+    regular: OANDA_FX_INTERSECTION_REGULAR,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
@@ -112,6 +147,15 @@ pub(crate) static OANDA_METALS_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3_600 + 58 * 60,
 }];
 
+// The sourced intersection over the 2024-02-09..2024-02-11 opening days:
+// the later open and the earlier close of the two witnessed USD-pair grids.
+// Evidence: docs/evidence/oanda_metals.md
+pub(crate) static OANDA_METALS_INTERSECTION_REGULAR: &[SessionRule] = &[SessionRule {
+    days: SUN_PLUS_MON_THU,
+    open_ssm: 18 * 3_600 + 5 * 60,
+    close_ssm: 16 * 3_600 + 58 * 60,
+}];
+
 static OANDA_METALS: StaticHoursProfile = StaticHoursProfile {
     tz: New_York,
     regular: OANDA_METALS_REGULAR,
@@ -130,6 +174,15 @@ static OANDA_METALS_LEGACY: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+static OANDA_METALS_INTERSECTION: StaticHoursProfile = StaticHoursProfile {
+    tz: New_York,
+    regular: OANDA_METALS_INTERSECTION_REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 // Evidence: docs/evidence/oanda_us_index_cfd.md, docs/evidence/oanda_us_bond_cfd.md, docs/evidence/oanda_us_commodity_cfd.md
 pub(crate) static OANDA_US_CONTINUOUS_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
@@ -140,8 +193,8 @@ pub(crate) static OANDA_US_CONTINUOUS_REGULAR: &[SessionRule] = &[SessionRule {
 // The earlier whole-hour US clock `18:00 - 17:00` New York (Chicago-labelled
 // rows print the same instants as `17:00 - 16:00`), witnessed from the
 // 2021-08-04 index print and the 2021-03-03 bond/commodity prints through
-// 2023-06-05 and per day by the operator's machine channel through the
-// 2024-02-08 opening day.
+// 2023-06-05. The current grid nests inside it, so the undated changeover's
+// sourced intersection is the current grid's own shape.
 // Evidence: docs/evidence/oanda_us_index_cfd.md
 pub(crate) static OANDA_US_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
@@ -215,7 +268,14 @@ static OANDA_BRENT: StaticHoursProfile = StaticHoursProfile {
 
 pub(crate) fn oanda_fx_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
-    new_york_era_select(day, &OANDA_FX_LEGACY, &OANDA_FX)
+    new_york_era_select(
+        day,
+        FX_METALS_INTERSECTION_FIRST_OPEN_DAY,
+        FX_METALS_CURRENT_FIRST_OPEN_DAY,
+        &OANDA_FX_LEGACY,
+        &OANDA_FX_INTERSECTION,
+        &OANDA_FX,
+    )
 }
 
 pub(crate) fn oanda_try_fx_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
@@ -224,17 +284,41 @@ pub(crate) fn oanda_try_fx_profile_at(_as_of: DateTime<Utc>) -> &'static StaticH
 
 pub(crate) fn oanda_metals_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
-    new_york_era_select(day, &OANDA_METALS_LEGACY, &OANDA_METALS)
+    new_york_era_select(
+        day,
+        FX_METALS_INTERSECTION_FIRST_OPEN_DAY,
+        FX_METALS_CURRENT_FIRST_OPEN_DAY,
+        &OANDA_METALS_LEGACY,
+        &OANDA_METALS_INTERSECTION,
+        &OANDA_METALS,
+    )
 }
 
 pub(crate) fn oanda_us_index_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
-    new_york_era_select(day, &OANDA_US_INDEX_LEGACY, &OANDA_US_INDEX)
+    // The current grid nests inside the legacy one, so the undated span's
+    // sourced intersection is the current profile itself; the span is dated
+    // and disclosed in the evidence file, not by a third profile.
+    new_york_era_select(
+        day,
+        US_INTERSECTION_FIRST_OPEN_DAY,
+        US_CURRENT_FIRST_OPEN_DAY,
+        &OANDA_US_INDEX_LEGACY,
+        &OANDA_US_INDEX,
+        &OANDA_US_INDEX,
+    )
 }
 
 pub(crate) fn oanda_us_commodity_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
-    new_york_era_select(day, &OANDA_US_COMMODITY_LEGACY, &OANDA_US_COMMODITY)
+    new_york_era_select(
+        day,
+        US_INTERSECTION_FIRST_OPEN_DAY,
+        US_CURRENT_FIRST_OPEN_DAY,
+        &OANDA_US_COMMODITY_LEGACY,
+        &OANDA_US_COMMODITY,
+        &OANDA_US_COMMODITY,
+    )
 }
 
 pub(crate) fn oanda_brent_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {

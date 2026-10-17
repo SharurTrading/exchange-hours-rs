@@ -13,12 +13,10 @@ The broker current day/night grid and bounded holiday audit are documented below
 
 ## Revision rows
 
-- 2024-02-12 — T2 — `MARKET-DATA` — the changeover to the current grid is
-  dated to this Singapore opening day by the operator's own machine channel
-  (artifacts retained privately; the method and per-day record are below / in
-  [`oanda_china50_cfd.md`](oanda_china50_cfd.md)).
-
-No `revisions!` block: the module selects eras on the dated constant.
+None. No `revisions!` block exists and no changeover day is asserted: the
+module's era bounds are the archived page-print observations listed under
+`## Dated selectors`, and the machine-channel witnessing (recorded in
+[`oanda_china50_cfd.md`](oanda_china50_cfd.md)) dates no current-grid day.
 
 ## The normal week
 
@@ -69,17 +67,17 @@ keyed observations, not effective days — LAW-NO-FABRICATED-DATES):
   Singapore, inside that day's day session — still prints it
   (`OANDA-UK-HOURS-2023-JUN-WAYBACK`), and every intervening replay prints
   the identical grid.
-- **Opening days 2023-06-06 through 2024-02-09 — the legacy grid
-  `08:30 - 17:20; 17:50 - 04:45`.** The 2023-06-05 print is the last
-  earlier-grid page observation, and the operator's own machine channel
-  witnesses the legacy grid per day through the 2024-02-09 opening day (the
-  section below); the span serves the legacy grid exactly.
-- **Opening days from 2024-02-12 — the current grid `08:31 - 17:19;
-  17:51 - 05:14`.** The changeover is dated 2024-02-12 (opening day) by the
-  operator's machine channel under the `MARKET-DATA` convention (the
-  section in [`oanda_china50_cfd.md`](oanda_china50_cfd.md), whose probes
-  cover this book's shared engine); the 2024-02-21 08:55 Singapore page
-  capture corroborates it.
+- **Opening days 2023-06-06 through 2024-02-20 — the sourced intersection.**
+  The changeover is undated (last earlier-grid print 2023-06-05, first
+  current-grid print 2024-02-21 08:55 Singapore; no Wayback capture sits
+  between). The span serves the window both witnessed states hold — day
+  `08:31 - 17:19`, night `17:51 - 04:45`, the night close held at the
+  earlier 04:45 rather than adopting the current 05:14 — per the charter's
+  2026-10-04 rule; the residual is disclosed below. The machine-channel
+  witnessing of 2026-10-16 witnesses the legacy grid positively through
+  2024-02-09 but cannot date the current state (the note in
+  [`oanda_china50_cfd.md`](oanda_china50_cfd.md) applies to this book's
+  shared engine).
 - **Opening days from 2024-02-12 — the current grid
   `08:31 - 17:19; 17:51 - 05:14`** (the 2024-02-21 capture,
   `OANDA-UK-HOURS-2024-WAYBACK`; the 2026-10-10 capture corroborates).
@@ -127,15 +125,15 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
 
 ## Gaps and residual risks
 
-- **RESOLVED 2026-10-16 (UTC): the changeover's effective day.** The
-  disputed 2023-06-06..2024-02-20 span served the intersection; the
-  operator's own machine channel now dates the changeover to opening day
-  2024-02-12 and the span serves the legacy grid exactly — night close
-  04:45 before it, 05:14 from it (`MARKET-DATA`, recorded in
-  [`oanda_china50_cfd.md`](oanda_china50_cfd.md): the 17:20 day close ticks
-  to 17:19:45 Singapore through 2024-02-09, and the current-era close
-  minutes end by 17:19:00-05 with the 17:51 reopen leading at 17:50:55;
-  2024-02-12/13 are wholly silent in the close minute and disclosed).
-  The unaudited holiday dates inside the witnessed span keep their typed
-  refusals; they are the remaining #332 residual here.
+- **The changeover stays undated after the machine-channel witnessing
+  (2026-10-16, reviewed 2026-10-17).** The first pass claimed a 2024-02-12
+  boundary; retracted — the current grid nests inside the legacy grid, so
+  no candle observation can positively prove the current state. What
+  stands: deep close-minute ticks to 17:19:45 Singapore witness the legacy
+  grid positively on 2024-02-06..09; the 2024-02-12/13 close minutes are
+  wholly silent and witness nothing either way. The archived page-print
+  bounds stand; the span keeps the sourced intersection (night close 04:45
+  through it, 05:14 from the 2024-02-21 page-print bound). The unaudited
+  holiday dates inside the witnessed span keep their typed refusals; they
+  are the remaining #332 residual here.
 Pre-witness history and the forward publication horizon remain explicit in #332.

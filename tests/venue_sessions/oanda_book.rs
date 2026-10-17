@@ -186,9 +186,9 @@ fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
         Ok(false),
         "the legacy close is end-exclusive"
     );
-    // The former undated span (2023-06-05..2024-02-10 opening days) is now
-    // dated: it serves the legacy grid, witnessed per day by the operator's
-    // machine channel through the 2024-02-08 opening day.
+    // The per-day machine-channel witnessing (a 17:03-minute tick on every
+    // classified opening day — a minute inside the current grid's break)
+    // serves the legacy grid exactly through the 2024-02-08 opening day.
     assert_eq!(
         calendar.is_open(et((2023, 8, 8), (17, 2, 59))),
         Ok(false),
@@ -205,9 +205,12 @@ fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
         "the legacy close is end-exclusive on a former-span date"
     );
     // The dated boundary: opening day 2024-02-08 (Thursday) is the legacy
-    // grid's last witnessed opening day — its session runs 17:03 to Friday
-    // 16:58 — and opening day 2024-02-11 (Sunday) already opens at the
-    // current grid's 17:05, closing Monday 16:59.
+    // grid's last positively witnessed opening day — its session runs 17:03
+    // to Friday 16:58 — and opening day 2024-02-12 (Monday) is the first
+    // positively current-grid day. The three opening days between carry no
+    // distinguishing witness and keep the sourced intersection: the Sunday
+    // 2024-02-11 session runs the intersection's 17:05 open to Monday's
+    // 16:58 close.
     let last_legacy = calendar
         .session_bounds(et((2024, 2, 9), (12, 0, 0)))
         .expect("a witnessed date answers")
@@ -217,15 +220,27 @@ fn oanda_fx_answers_the_witnessed_eras_on_their_own_opening_days() {
         (et((2024, 2, 8), (17, 3, 0)), et((2024, 2, 9), (16, 58, 0))),
         "the legacy era's final session"
     );
-    let first_current = calendar
-        .session_bounds(et((2024, 2, 12), (12, 0, 0)))
+    let intersection_session = calendar
+        .session_bounds(et((2024, 2, 11), (12, 0, 0)))
         .expect("a witnessed date answers")
-        .expect("noon Monday sits in the session opened Sunday");
+        .expect("noon Sunday sits in the session opened Sunday");
+    assert_eq!(
+        intersection_session,
+        (
+            et((2024, 2, 11), (17, 5, 0)),
+            et((2024, 2, 12), (16, 58, 0))
+        ),
+        "the intersection's final session"
+    );
+    let first_current = calendar
+        .session_bounds(et((2024, 2, 13), (12, 0, 0)))
+        .expect("a witnessed date answers")
+        .expect("noon Tuesday sits in the session opened Monday");
     assert_eq!(
         first_current,
         (
-            et((2024, 2, 11), (17, 5, 0)),
-            et((2024, 2, 12), (16, 59, 0))
+            et((2024, 2, 12), (17, 5, 0)),
+            et((2024, 2, 13), (16, 59, 0))
         ),
         "the current era's first session"
     );

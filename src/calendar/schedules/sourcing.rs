@@ -424,9 +424,9 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         // The book's current grid is witnessed by the operator's own archived
         // 2024-02-21 page print; the earlier `17:03-16:58` grid is witnessed
         // 2021-12-08..2023-06-05 by the prints and per day to 2024-02-08 by
-        // the machine channel that dates the changeover 2024-02-11
-        // (`MARKET-DATA`, docs/evidence/oanda_fx.md). Below the 2021-12-08
-        // witness stays carried.
+        // the machine channel, which positively dates the changeover to the
+        // 2024-02-12 opening day (`MARKET-DATA`, docs/evidence/oanda_fx.md).
+        // Below the 2021-12-08 witness stays carried.
         Exchange::Oanda => DeclaredSourcing::carried_below(horizon!(2021, 12, 8)),
     }
 }
@@ -549,11 +549,10 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // `—`: the pre-launch era is a sourced closure on the specification captures.
         MarketHoursKey::GlobexPalladiumTas => DeclaredSourcing::nothing_carried(),
         // The earlier `17:03-16:58` grid is witnessed from the operator's own
-        // 2021-12-08 page print through 2023-06-05 and per day by the
-        // operator's machine channel through the 2024-02-08 opening day; the
-        // changeover to the current 17:05-16:59 grid (first page-witnessed
-        // 2024-02-21) is dated 2024-02-11 by that channel, and opening days
-        // below the witness stay carried (docs/evidence/oanda_fx.md).
+        // 2021-12-08 page print through 2023-06-05 and positively per day to
+        // the 2024-02-08 opening day; the 2024-02-12 dating and the three-
+        // day intersection before it sit beside the selector, and opening
+        // days below the witness stay carried (docs/evidence/oanda_fx.md).
         MarketHoursKey::OandaFx => DeclaredSourcing::carried_below(horizon!(2021, 12, 8)),
         // The TRY grid's only witness is the living hours page captured
         // 2026-10-10; every earlier day is carried, and the holiday page
@@ -561,10 +560,10 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::OandaTryFx => DeclaredSourcing::carried_below(horizon!(2026, 10, 10)),
         // These books' current grids state themselves on the operator's
         // archived 2024-02-21 page print; their earlier grids are witnessed
-        // per book below, and the changeovers are dated 2024-02-11 (opening
-        // day) by the operator's machine channel (`MARKET-DATA`).
-        // `oanda_brent` alone stays carried at its 2024-02-21 witness: its
-        // grids do not share a zone and its changeover is not yet dated.
+        // per book below, and the changeovers of the two offset-grid books
+        // (`oanda_fx`, `oanda_metals`) are positively dated 2024-02-12 by
+        // the machine channel (`MARKET-DATA`). The nested-grid books' and
+        // Brent's changeovers stay undated (see each evidence file).
         MarketHoursKey::OandaMetals => DeclaredSourcing::carried_below(horizon!(2021, 12, 8)),
         MarketHoursKey::OandaUsIndexCfd => DeclaredSourcing::carried_below(horizon!(2021, 8, 4)),
         MarketHoursKey::OandaUsBondCfd => DeclaredSourcing::carried_below(horizon!(2021, 3, 3)),
@@ -573,9 +572,10 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         }
         MarketHoursKey::OandaBrent => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         // The two Singapore books' earlier grids are witnessed
-        // 2021-03-03..2023-06-05 by the page prints and through the
-        // 2024-02-09 opening day by the operator's machine channel; the
-        // changeover is dated 2024-02-12 (opening day) by that channel
+        // 2021-03-03..2023-06-05 by the page prints, with machine-channel
+        // deep close-minute ticks through 2024-02-09; their current grids
+        // nest inside the legacy ones, so no candle can positively date the
+        // changeovers and the span keeps the sourced intersection
         // (docs/evidence/oanda_china50_cfd.md, oanda_singapore30_cfd.md).
         MarketHoursKey::OandaChina50Cfd | MarketHoursKey::OandaSingapore30Cfd => {
             DeclaredSourcing::carried_below(horizon!(2021, 3, 3))

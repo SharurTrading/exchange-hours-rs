@@ -6,19 +6,18 @@
 
 ### Fixed
 
-- Dated every OANDA book's grid changeover: the undated 2023-06-05..2024-02-21
-  span that served the sourced intersection now serves the earlier grids
-  exactly, and the current grids start one working week earlier. The
+- Positively dated the `oanda_fx` and `oanda_metals` grid changeover: the
   operator's own machine channel (the practice candle service, read as bytes
   through `oanda-rs` under the `MARKET-DATA` convention, artifacts retained
-  privately) witnesses every opening day in the former span per day: the
-  earlier grids hold through the 2024-02-08 opening day on the New York books
-  (`oanda`, `oanda_fx`, `oanda_metals`, `oanda_us_index_cfd`,
-  `oanda_us_bond_cfd`, `oanda_us_commodity_cfd`) and through 2024-02-09 on the
-  Singapore books (`oanda_china50_cfd`, `oanda_singapore30_cfd`), and the
-  current grids run from the 2024-02-11 and 2024-02-12 opening days. The
-  interim intersection profiles are retired; `oanda_brent`'s earlier-era gap
-  and the books' pre-witness history stay disclosed in #332.
+  privately) carries a 17:03/18:03-minute tick — inside the current grid's
+  break — on every opening day through 2024-02-08, and continuous quoting
+  inside the earlier grid's break from 2024-02-12. The earlier grids now
+  serve exactly through the 2024-02-08 opening day, the changeover is dated
+  2024-02-12, and only the three opening days between keep the sourced
+  intersection. The five nested-grid books keep their undated page-print
+  bounds (a nested current grid admits no positive candle witness);
+  `oanda_brent`'s earlier-era gap and the books' pre-witness history stay
+  disclosed in #332.
 
 ## [1.2.1] - 2026-10-16
 

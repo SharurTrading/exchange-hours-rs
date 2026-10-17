@@ -17,18 +17,23 @@ to the `oanda_fx` family's `profile_at`, and the venue's holiday table is
 the verbatim mirror of that family's table, as the venue profile-clock rule
 requires. The grid, its evidence and its gaps are
 [`oanda_fx.md`](oanda_fx.md)'s — including the 2024-02-21 page-print
-horizon and the changeover the operator's machine channel dates to opening
-day 2024-02-11 (`MARKET-DATA`, recorded there) — and this file adds only
-what the venue row adds.
+horizon and the changeover the operator's machine channel positively dates
+to opening day 2024-02-12, with the three opening days before it keeping
+the sourced intersection (`MARKET-DATA`, recorded there) — and this file
+adds only what the venue row adds.
 
 ## Revision rows
 
-- 2024-02-11 — T2 — `MARKET-DATA` — the venue clock's changeover to the
-  current `17:05 - 16:59` grid is dated to this New York opening day by the
-  operator's own machine channel (artifacts retained privately; see
+- 2024-02-09 — T2 — `MARKET-DATA` — the per-day machine-channel witnessing
+  of the earlier grid ends at this opening day's predecessor and the
+  sourced intersection begins here (three opening days).
+- 2024-02-12 — T2 — `MARKET-DATA` — the venue clock's changeover to the
+  current `17:05 - 16:59` grid is positively dated to this New York opening
+  day: from it the close minutes quote continuously inside the earlier
+  grid's break (artifacts retained privately; see
   [`oanda_fx.md`](oanda_fx.md)).
 
-No `revisions!` block: the module selects eras on the dated constant; a
+No `revisions!` block: the module selects eras on the dated constants; a
 dormant identity owes its current schedule rather than a worked-up history
 (LAW-BOUNDED-WORK).
 
@@ -67,10 +72,11 @@ This row cites the operator's own pages through [`oanda_fx.md`](oanda_fx.md)'s
 ## Gaps and residual risks
 
 See [`oanda_fx.md`](oanda_fx.md): the family's witnessed normal-week eras
-(the earlier grids served from each book's first witness, the changeovers
-dated by the operator's machine channel to opening day 2024-02-11 New York
-and 2024-02-12 Singapore), the carried pre-witness weeks, and the holiday
-window's edges are the family's gaps and stay the family's.
+(the earlier grids served from each book's first witness, the fx/metals
+changeover positively dated to opening day 2024-02-12 New York, the
+nested-grid books' changeovers still undated on the archived page-print
+bounds), the carried pre-witness weeks, and the holiday window's edges are
+the family's gaps and stay the family's.
 
 Pending-order storage outside the printed trading windows is a broker facility,
 not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).

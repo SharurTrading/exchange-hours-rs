@@ -2,18 +2,7 @@
 
 //! The `Exchange::Comex` table holiday rows — the clock family `globex_energy`, carried verbatim.
 //!
-//! Derived, not retrieved. The 2026-10-09 amendment completes the
-//! profile-clock rule (AGENTS.md, LAW-HOLIDAY-SCOPE; the 2026-09-30 decision
-//! on issue #153, retired artefacts by #242): the venue speaks for its profile
-//! clock — the energy grid — so wherever the clock states a row the venue ships that
-//! row verbatim (kind, tier and document id), wherever the clock audits the
-//! date normal the venue ships no row, and wherever the clock itself withholds
-//! the venue inherits the marker. A routed family that prints a different
-//! arrangement on a date the clock answers keeps its own sourced row in its
-//! own family table, where the consumer's exact-family routing (#118) reads
-//! it; the venue's evidence file names those disagreements.
-//!
-//! Coverage is 203 rows over the six audited eras: 2010-2012 38, 2013-2015 33, 2016-2018 31, 2019-2021 32, 2022-2024 33 and 2025-2027 36.
+//! Coverage is 220 rows over the six audited eras: 2010-2012 38, 2013-2015 33, 2016-2018 31, 2019-2021 32, 2022-2024 33 and 2025-2027 53.
 //!
 //! Evidence: docs/evidence/comex.md, and the family's evidence file for
 //! every retrieved row.

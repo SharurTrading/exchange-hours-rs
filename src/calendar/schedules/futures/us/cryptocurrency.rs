@@ -103,8 +103,9 @@ static ORDER_ENTRY_2026_05_29: &[SessionRule] = &[SessionRule {
 }];
 
 // One-day Saturday extensions: the weekday and Sunday pieces are the normal
-// grid; only the Saturday reopen moves, and no replacement Pre-Open is
-// published, so the 03:45 queue is absent on those days. The reopen is stated
+// grid; only the Saturday reopen moves. The sourced September 19 and October 3
+// replacement queues are stated separately below; other extensions omit
+// their unsourced replacement queue. The reopen is stated
 // as hour and minute because notice 20260921's FIA drill extension ends at
 // 15:30 CT, not on the hour.
 macro_rules! saturday_extended_to {
@@ -163,11 +164,8 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// The five-day grid's two Pre-Open queues, witnessed by market data from the
-// 2017-12-17 launch (2026-10-15): Sunday 16:00-17:00 CT and Monday-Thursday
-// 16:45-17:00 CT, the same onsets the operator's later channels publish. The
-// launch-era specifications print the matching grid only, so the queues ride
-// the market-data convention rather than an operator document.
+// Five-day Pre-Open queues — T2 — MARKET-DATA.
+// Evidence: docs/evidence/globex_cryptocurrency.md.
 static FIVE_DAY_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -208,24 +206,47 @@ static TRANSITION_2026_05_29: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: false,
 };
 
+// 2026-09-19 — T2 — CME-SVC-SATURDAY-2026-09-19 — replacement Pre-Open.
+// Evidence: docs/evidence/globex_cryptocurrency.md.
+static ORDER_ENTRY_2026_09_19: &[SessionRule] = &[SessionRule {
+    days: SAT_ONLY,
+    open_ssm: 7 * 3600 + 45 * 60,
+    close_ssm: 8 * 3600,
+}];
+// 2026-10-03 — T2 — CME-SVC-SATURDAY-2026-10-03 — replacement Pre-Open.
+// Evidence: docs/evidence/globex_cryptocurrency.md.
+static ORDER_ENTRY_2026_10_03: &[SessionRule] = &[SessionRule {
+    days: SAT_ONLY,
+    open_ssm: 4 * 3600 + 45 * 60,
+    close_ssm: 5 * 3600,
+}];
+
 macro_rules! temporary_saturday {
-    ($name:ident, $extended:ident) => {
+    ($name:ident, $extended:ident, $order_entry:expr) => {
         static $name: StaticHoursProfile = StaticHoursProfile {
             tz: US::Central,
             regular: &[],
             extended: $extended,
-            order_entry: &[],
+            order_entry: $order_entry,
             has_daily_close: true,
             has_weekend_close: false,
         };
     };
 }
-temporary_saturday!(TEMPORARY_2026_08_01, EXTENDED_2026_08_01);
-temporary_saturday!(TEMPORARY_2026_08_29, EXTENDED_2026_08_29);
-temporary_saturday!(TEMPORARY_2026_09_19, EXTENDED_2026_09_19);
-temporary_saturday!(TEMPORARY_2026_10_03, EXTENDED_2026_10_03);
-temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24);
-temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31);
+temporary_saturday!(TEMPORARY_2026_08_01, EXTENDED_2026_08_01, &[]);
+temporary_saturday!(TEMPORARY_2026_08_29, EXTENDED_2026_08_29, &[]);
+temporary_saturday!(
+    TEMPORARY_2026_09_19,
+    EXTENDED_2026_09_19,
+    ORDER_ENTRY_2026_09_19
+);
+temporary_saturday!(
+    TEMPORARY_2026_10_03,
+    EXTENDED_2026_10_03,
+    ORDER_ENTRY_2026_10_03
+);
+temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24, &[]);
+temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31, &[]);
 
 // Evidence: docs/evidence/globex_cryptocurrency.md
 static REVISIONS: &[Revision] = revisions![
@@ -257,11 +278,8 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-08-30 — T1 — CME Globex notice 20260824 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 8, 30, &CURRENT, "CME Globex notice 20260824"),
-    // 2026-09-19 — T1 — CME Globex notice 20260824 — Saturday reopen 08:00 CT.
-    // Was forward-dated on the operator's statement; the operator's T2 service
-    // confirmed it effective on 2026-09-27 UTC (closed 02:00, preopen 07:45,
-    // open 08:00, trade date 2026-09-21; store `cme-globex/
-    // release-inspection-20260928/thbp_sep2026_sat.raw`).
+    // 2026-09-19 — T1 — CME Globex notice 20260824 — reopen 08:00 CT;
+    // the operator service confirms the replacement 07:45 Pre-Open (T2).
     (
         2026,
         9,
@@ -272,12 +290,8 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-09-20 — T1 — CME Globex notice 20260824 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
-    // 2026-10-03 — T1 — CME Globex notice 20260921 — Saturday maintenance
-    // window 02:00-05:00 CT; reopen 05:00 CT. Was forward-dated on the
-    // operator's statement; the operator's T2 service confirmed it effective
-    // on 2026-10-16 UTC (closed 02:00, preopen 04:45, open 05:00, trade date
-    // 2026-10-05; store `cme-globex/release-inspection-20261016/
-    // thbp_oct2026_sat.raw`, store PR #38).
+    // 2026-10-03 — T1 — CME Globex notice 20260921 — reopen 05:00 CT;
+    // the operator service confirms the replacement 04:45 Pre-Open (T2).
     (
         2026,
         10,
@@ -288,12 +302,8 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-10-04 — T1 — CME Globex notice 20260921 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 10, 4, &CURRENT, "CME Globex notice 20260921"),
-    // 2026-10-24 — T1 — CME Globex notice 20260921 — Saturday maintenance
-    // window 02:00-15:30 CT for the FIA disaster-recovery exercise; reopen
-    // 15:30 CT. The 13.5-hour closure exceeds the four-hour maintenance bound
-    // and falls inside one trade date — the weekend block carries the
-    // following Monday's — so `session_state` classifies it `Closed`, not
-    // `Maintenance`. Forward-dated; confirm before the day.
+    // 2026-10-24 — T1 — CME Globex notice 20260921 — FIA drill to 15:30 CT.
+    // Forward-dated: confirm before the day. The 13.5-hour gap is Closed.
     (
         2026,
         10,
@@ -304,11 +314,8 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-10-25 — T1 — CME Globex notice 20260921 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 10, 25, &CURRENT, "CME Globex notice 20260921"),
-    // 2026-10-31 — T1 — CME Globex notice 20261005 — Saturday maintenance
-    // window 02:00-05:00 CT; reopen 05:00 CT. Forward-dated on the operator's
-    // statement; confirm before the day. The three-hour window stays inside
-    // the four-hour maintenance bound, so `session_state` classifies it
-    // `Maintenance`, unlike the October 24 FIA drill.
+    // 2026-10-31 — T1 — CME Globex notice 20261005 — maintenance to 05:00 CT.
+    // Forward-dated: confirm before the day. The three-hour gap is Maintenance.
     (
         2026,
         10,
@@ -316,10 +323,7 @@ static REVISIONS: &[Revision] = revisions![
         &TEMPORARY_2026_10_31,
         "CME Globex notice 20261005"
     ),
-    // 2026-11-01 — T1 — CME Globex notice 20261005 — revert to the standard
-    // 02:00-04:00 CT window: "Following the extension, the Saturday
-    // maintenance window will revert to its 2:00 a.m. – 4:00 a.m. CT standard
-    // schedule."
+    // 2026-11-01 — T1 — CME Globex notice 20261005 — restore the standard grid.
     (2026, 11, 1, &CURRENT, "CME Globex notice 20261005"),
 ];
 

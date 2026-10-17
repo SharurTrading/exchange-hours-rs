@@ -1306,3 +1306,55 @@ fn the_cbot_withheld_date_is_the_clocks_marker() {
             .expect("the closure answers"),
     );
 }
+
+/// Module totals and each three-year subtotal are derived from public rows.
+#[test]
+fn venue_module_header_counts_match_the_public_tables() {
+    for (exchange, text, evidence) in [
+        (
+            Exchange::Cme,
+            include_str!("../../src/calendar/schedules/holidays/venues/cme.rs"),
+            include_str!("../../docs/evidence/cme.md"),
+        ),
+        (
+            Exchange::Cbot,
+            include_str!("../../src/calendar/schedules/holidays/venues/cbot.rs"),
+            include_str!("../../docs/evidence/cbot.md"),
+        ),
+        (
+            Exchange::Comex,
+            include_str!("../../src/calendar/schedules/holidays/venues/comex.rs"),
+            include_str!("../../docs/evidence/comex.md"),
+        ),
+        (
+            Exchange::Nymex,
+            include_str!("../../src/calendar/schedules/holidays/venues/nymex.rs"),
+            include_str!("../../docs/evidence/nymex.md"),
+        ),
+    ] {
+        let calendar = calendar_for_exchange(exchange);
+        let mut total = 0;
+        for year in [2010, 2013, 2016, 2019, 2022, 2025] {
+            let mut date = day(year, 1, 1);
+            let end = day(year + 3, 1, 1);
+            let mut rows = 0;
+            while date < end {
+                rows += usize::from(calendar.holiday_on(date).is_some());
+                date = date.succ_opt().expect("fixture remains representable");
+            }
+            total += rows;
+            assert!(
+                text.contains(&format!("{year}-{} {rows}", year + 2)),
+                "{exchange:?}: era count"
+            );
+        }
+        assert!(
+            text.contains(&format!("Coverage is {total} rows")),
+            "{exchange:?}: total count"
+        );
+        assert!(
+            evidence.contains(&format!("Current holiday total: {total} rows.")),
+            "{exchange:?}: evidence total"
+        );
+    }
+}

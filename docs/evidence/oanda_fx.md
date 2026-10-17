@@ -115,7 +115,7 @@ opening day to its era. `sourcing.rs` declares the normal week witnessed from
 
 The spans, and what each rests on:
 
-- **Opening days 2021-12-08 through 2023-06-04 — the earlier grid.** The
+- **Opening days 2021-12-08 through 2024-02-08 — the earlier grid.** The
   2021-12-08 capture prints `Sun-Fri: 17:03 - 16:58*` with the five-minute
   `16:58 - 17:03` break (`OANDA-UK-HOURS-2021-DEC-WAYBACK`), and the
   2023-06-05 capture — taken 05:35 UTC, inside the session opened Sunday
@@ -123,8 +123,7 @@ The spans, and what each rests on:
   (`OANDA-UK-HOURS-2023-JUN-WAYBACK`). The audit's intervening replays
   (2022-05-18, 2022-07-24, 2022-10-02, 2022-11-27, 2023-02-01, 2023-03-16,
   2023-04-25) all print the identical grid.
-- **Opening days 2021-12-08 through 2024-02-08 — the earlier grid.** The
-  page prints witness the grid through 2023-06-05, and the operator's own
+  The page prints witness the grid through 2023-06-05, and the operator's own
   machine channel witnesses it positively per day to the 2024-02-08
   opening day: every classified opening day in 2023-06-06..2024-02-08
   carries a tick in the 17:03 New York minute, which the current grid's
@@ -133,8 +132,8 @@ The spans, and what each rests on:
 - **Opening days from 2024-02-11 — the current grid.** The changeover is
   positively dated by the operator's machine channel: the session opened
   Sunday 2024-02-11 closes on Monday at `16:59:00`, and its close minute
-  quotes continuously through `[16:58:20, 16:59:00]` New York — inside the
-  earlier grid's break, which no linger explanation covers — so the
+  contains S5 buckets at `16:58:20`, `:25` and `:30` New York — inside the
+  earlier published grid's break — so the
   current `17:05 - 16:59` grid governs from that opening day (the section
   below). The intervening Friday and Saturday open no session, so no
   unwitnessed opening day remains between the eras. The 2024-02-21 page
@@ -204,7 +203,7 @@ Store paths (research store, wave-1 capture):
   2024-02-11 opening day.** The residual recorded here — the disputed
   2023-06-05..2024-02-20 span served as the sourced intersection — is
   closed: the operator's own machine channel witnesses the earlier grid
-  positively on every opening day through 2024-02-08, and the Sunday
+  positively on classified opening days through 2024-02-08, and the Sunday
   2024-02-11-opened session's Monday close minute quotes inside the
   earlier grid's break, positively dating the current era from 2024-02-11
   (section below, `MARKET-DATA`). Two earlier claims were retracted in
@@ -274,58 +273,79 @@ client's own admission control, and the confirming raw responses are retained
 privately; the `MARKET-DATA` id below deliberately does not resolve in the
 research store.
 
-Bar stamps are bucket-open times: an M1 candle stamped `T` witnesses at
-least one mid quote in `[T, T+1min)`, an S5 candle in `[T, T+5s)`. The
-feed's measured envelope is a ≤5-second lead before a published open and a
-≤5-second linger past a published close; every classification threshold
-sits outside that envelope, and absence of ticks is never evidence.
+Bar stamps are bucket-open times: an M1 candle stamped `T` represents
+`[T, T+1min)`, an S5 candle `[T, T+5s)`. The operator's
+[API definition](https://developer.oanda.com/rest-live-v20/instrument-df/#Candlestick)
+explicitly defines the stamp as the start time (retrieved 2026-10-17 UTC;
+retained privately as `raw/validation-2026-10-17/instrument-df.html`). An
+independent cross-granularity check reproduced all 65 S10/S15/S30/M1
+midpoint OHLC and summed price-count aggregates from start-aligned S5
+windows; none of the 61 comparable end-aligned aggregates matched. The
+first end-aligned bucket of each granularity lacks preceding S5 input and
+is excluded. Live forming-candle polling was not attempted during the
+weekend closure.
 
-The two grids are offset, not nested — the earlier `17:03 - 16:58` and the
-current `17:05 - 16:59` each hold minutes the other forbids — so both
-states are positively provable from presence alone:
+Quoting and executable sessions are different observations. Ten sampled
+current FX reopens first stamp at `17:04:55` New York, five seconds before
+the published `17:05` open. Neither such a lead bucket nor absence of an
+earlier quote identifies a state. Exact-open stamps alone also cannot
+establish timestamp semantics if pre-open quoting is allowed. No universal
+five-second quote envelope is asserted: the Singapore night census records
+an S5 start stamp ten seconds beyond that book's candidate close. Endpoint
+instants remain the T1 page values; the machine-channel comparison selects
+between the published candidate grids and does not infer execution times
+from midpoint updates.
 
-- **Earlier-grid proof:** a tick in the 17:03 New York minute. The current
-  grid sits in its 16:59–17:05 break then, and a ≤5-second lead of the
-  17:05 open reaches only 17:04:55. The per-day M1 sweep (one request per
-  calendar day, 2023-06-06..2024-02-19, the daily close-and-reopen window)
-  shows a 17:03-minute tick on every classified opening day through
-  Thursday 2024-02-08 — 176 positive witnesses — and the S5 shape on
-  2024-02-08 pins it: reopen ticks at 17:03:00 and 17:03:30 New York.
-- **Current-grid proof:** quoting inside the earlier grid's break, in the
-  `[16:58:15, 16:59:00]` New York window that the 16:58:00 close and any
-  linger forbid. The S5 record shows continuous ticks through that window
-  on 2024-02-12 (16:58:20, :25, :30), 2024-02-13 (16:58:50), 2024-02-14
-  (16:58:20 through 16:58:55, dense), 2024-02-15 (16:58:15–:35) and
-  2024-02-19 (16:58:30–:55), each ending at the 16:59:00 close bucket.
-  A New York close minute belongs to the session opened the prior evening,
-  so the Monday 2024-02-12 quoting is the close witness of the session
-  opened Sunday 2024-02-11: **the current era is positively in force from
-  the 2024-02-11 opening day.**
-- **No unwitnessed opening day remains.** The intervening Friday
-  (2024-02-09) and Saturday open no session — the Friday close leg belongs
-  to the legacy-keyed Thursday session — and the first Sunday is itself
-  the current era's first opening day. The sourced intersection hosts no
-  opening day and is retired with the dating.
-- **Correction recorded:** an earlier version of this section claimed the
-  boundary at 2024-02-11 and cited a 16:58:40 New York close-minute tick
-  on 2024-02-08 as earlier-grid proof. The tick appears in no captured
-  response (no S5 request covered fx in February 2024 when it was written),
-  and the direction was wrong regardless: the current close (16:59) is one
-  minute *later* than the earlier close (16:58), so a deep close-minute
-  tick would have argued the current grid. Both claims are retracted; this
-  section states the corrected record. The per-day classification of
-  2024-02-11..2024-02-19 as "current" in the first M1 pass shared the same
-  defect — the absence of a 17:03-minute tick is silence, not a state —
-  and the retraction note above stands.
+The FX candidates are offset: earlier `17:03 - 16:58`, current
+`17:05 - 16:59`. The retained positive observations are:
 
-The boundary is keyed to the opening day of the session whose close minute
-carries the positive current-grid witness — 2024-02-11 — and no unwitnessed
-opening day sits between the eras; a day-level revision keyed to the
-opening day never splits a running session (LAW-NO-FABRICATED-DATES).
-`MARKET-DATA` — T2, confirming artifacts retained privately (the
-flanking-day responses, the decisive close-side S5 windows, and the full
-per-day transcript, with sha256 manifest), retrieval 2026-10-16 UTC,
-corrected 2026-10-17 UTC.
+- **Earlier-grid observations:** the per-day M1 sweep of
+  2023-06-06..2024-02-19 contains 176 opening days through 2024-02-08
+  with a `17:03` New York minute bucket, inside the current candidate's
+  break. The holiday Sundays 2023-12-24 and 2023-12-31 are quiet and do
+  not supply positive witnesses. The February 8 S5 reopen includes
+  `17:03:00` and `17:03:30`; the February 9 closing leg's final bucket
+  starts at `16:58:00`.
+- **Current-grid observations:** the Monday 2024-02-12 closing leg
+  includes S5 starts at `16:58:15`, `:20`, `:25` and `:30`, and at
+  `16:59:00`. Later retained close-minute starts are listed below. These
+  observations support the current candidate in the two-grid comparison;
+  they do not assert continuous quotes in every intervening bucket.
+
+| Closing date, New York | Retained S5 starts after 16:58:00 and before 16:59:00 | 16:59:00 bucket |
+|---|---|---|
+| 2024-02-12 | :15, :20, :25, :30 | present |
+| 2024-02-13 | :50 | present |
+| 2024-02-14 | :05, :10, :25, :30, :35, :40, :45, :50, :55 | present |
+| 2024-02-15 | :05, :10, :15, :20, :30, :35 | present |
+| 2024-02-19 | :30, :35, :55 | present |
+
+A Monday close belongs to the session opened the prior Sunday, so the
+first current opening day is **2024-02-11**. The last earlier opening day
+is Thursday February 8; Friday and Saturday open no sessions. No
+unwitnessed opening day remains between the two eras, and the intersection
+profile is retired. Session boundaries remain keyed to their opening day
+and never split a running session.
+
+The first M1 pass's current-state inference from silent/lead buckets and
+its alleged February 8 `16:58:40` FX tick were retracted: that tick occurs
+in no retained response. The subsequent February 12 opening-day key was
+also corrected to February 11. These are corrections to the interpretation,
+not different operator endpoints.
+
+`MARKET-DATA` — T2. Retention root:
+`~/Developer/oanda-feed-captures-2026-10-16/`, with `MANIFEST.md` and
+`SHA256SUMS.txt`. The original per-day record is `witness.jsonl` (1,813
+records across seven books); the original S5 inputs are the timestamped
+`EUR_USD_S5_*.json` files under `raw/`. The independent 2026-10-17 reads
+retain full typed responses and request metadata as
+`raw/validation-2026-10-17/era-EUR_USD-2024-02-{08,09,12}.json`;
+the aggregation inputs are `E3-{S5,S10,S15,S30,M1}.json` there.
+`validation-tools-2026-10-17/market-data-analysis.json` records the
+recomputed counts. The overlapping original FX/metals windows reproduce
+exactly. Initial retrieval 2026-10-16 UTC; independent reads and corrections
+2026-10-17 UTC. The practice host does not confirm live-host equivalence;
+that remaining check is tracked in #332.
 
 ## Pending orders and session scope — 2026-10-11 UTC
 

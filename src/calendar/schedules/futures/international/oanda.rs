@@ -15,12 +15,8 @@ use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU, TUE_FRI};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{effective_date, local_date};
 
-// The changeover of the two offset-grid books, positively witnessed in both
-// directions by the operator's machine channel (`MARKET-DATA`, T2, retained
-// privately): 17:03/18:03-minute ticks on every opening day through
-// 2024-02-08, then the Sunday 2024-02-11-opened session quoting inside the
-// earlier grid's break at its Monday close. Friday and Saturday open no
-// session — docs/evidence/oanda_fx.md.
+// 2024-02-11 — T2 — MARKET-DATA — FX/metals first current opening day; docs/evidence/oanda_fx.md.
+
 const FX_METALS_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 11);
 
 /// Selects the witnessed normal-week era for a New York-anchored book:
@@ -62,11 +58,8 @@ fn new_york_era_select_intersected(
     }
 }
 
-// The US continuous books' era bounds: their current grid is a strict
-// subset of the whole-hour legacy grid, so no candle observation can
-// positively prove the current state and the changeover stays undated —
-// the bounds are the archived page-print observations, and the span
-// between keeps the sourced intersection per the 2026-10-04 rule.
+// 2023-06-05 / 2024-02-20 — T1 — OANDA-UK-HOURS-2023-JUN-WAYBACK / OANDA-UK-HOURS-2024-WAYBACK — observation bounds; docs/evidence/oanda_us_index_cfd.md.
+
 const US_INTERSECTION_FIRST_OPEN_DAY: NaiveDate = effective_date(2023, 6, 5);
 const US_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 20);
 
@@ -77,11 +70,8 @@ pub(crate) static OANDA_FX_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3_600 + 59 * 60,
 }];
 
-// The earlier `Sun-Fri: 17:03 - 16:58` grid, witnessed 2021-12-08..2023-06-05
-// by the page prints and per day through the 2024-02-08 opening day by the
-// operator's machine channel (each day carries a 17:03-minute tick, inside
-// the current grid's break).
-// Evidence: docs/evidence/oanda_fx.md (`OANDA-UK-HOURS-2021-DEC-WAYBACK`)
+// Evidence: docs/evidence/oanda_fx.md (OANDA-UK-HOURS-2021-DEC-WAYBACK, T1; MARKET-DATA, T2).
+
 pub(crate) static OANDA_FX_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3_600 + 3 * 60,
@@ -130,11 +120,8 @@ pub(crate) static OANDA_METALS_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3_600 + 59 * 60,
 }];
 
-// The earlier XAU/USD and XAG/USD grid `Sun-Fri: 18:03 - 16:58`, witnessed
-// 2021-12-08..2023-06-05. The era's cross rows printed an 18:10 open; that
-// per-instrument minute is disclosed beside the rows in the evidence file,
-// like the NZD Auckland break.
-// Evidence: docs/evidence/oanda_metals.md
+// Evidence: docs/evidence/oanda_metals.md (OANDA-UK-HOURS-2021-DEC-WAYBACK, T1; MARKET-DATA, T2).
+
 pub(crate) static OANDA_METALS_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 18 * 3_600 + 3 * 60,
@@ -166,12 +153,8 @@ pub(crate) static OANDA_US_CONTINUOUS_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3_600 + 59 * 60,
 }];
 
-// The earlier whole-hour US clock `18:00 - 17:00` New York (Chicago-labelled
-// rows print the same instants as `17:00 - 16:00`), witnessed from the
-// 2021-08-04 index print and the 2021-03-03 bond/commodity prints through
-// 2023-06-05. The current grid nests inside it, so the undated changeover's
-// sourced intersection is the current grid's own shape.
-// Evidence: docs/evidence/oanda_us_index_cfd.md
+// Evidence: docs/evidence/oanda_us_index_cfd.md (OANDA-UK-HOURS-2021-AUG-WAYBACK, T1).
+
 pub(crate) static OANDA_US_LEGACY_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 18 * 3_600,

@@ -18,9 +18,10 @@ including 2025 closes at 13:00 and 14:30; no uniform futures inset is assumed.
 
 ## Revision rows
 
-None. The module carries one sourced grid and no `revisions!` block; there is
-no dated, day-level change to record, and no unconditional changeover day is asserted. Historical completion
-remains tracked in #332 under the dated current OANDA scope exception.
+- 2024-02-11 — T2 — `MARKET-DATA` — first current New York opening day,
+encoded by the shared FX/metals selector constant rather than a `revisions!`
+block. Historical completion remains tracked in #332 under the dated
+current OANDA scope exception.
 
 ## The normal week
 
@@ -138,7 +139,7 @@ opening day to its era. `sourcing.rs` declares the normal week witnessed from
 
 The spans, and what each rests on:
 
-- **Opening days 2021-12-08 through 2023-06-04 — the earlier USD-pair grid
+- **Opening days 2021-12-08 through 2024-02-08 — the earlier USD-pair grid
   `18:03 - 16:58`.** The 2021-12-08 capture prints
   `Gold (XAU/USD) ... Sun-Fri: 18:03 - 16:58*` and the matching silver row
   (`OANDA-UK-HOURS-2021-DEC-WAYBACK`); the 2023-06-05 capture still prints
@@ -147,8 +148,7 @@ The spans, and what each rests on:
   rows print an `18:10` open (XAU/NZD with its Auckland break): those
   per-instrument minutes stay caller instrument data, disclosed here as the
   era's residual.
-- **Opening days 2021-12-08 through 2024-02-08 — the earlier grid.** The
-  page prints witness the grid through 2023-06-05, and the operator's own
+  The page prints witness the grid through 2023-06-05, and the operator's own
   machine channel witnesses it positively per day to the 2024-02-08
   opening day: every classified opening day carries an 18:03 New York
   minute tick, which the current grid's 16:59–18:05 break forbids (the
@@ -157,8 +157,8 @@ The spans, and what each rests on:
   witnessed neighbours).
 - **Opening days from 2024-02-11 — the current grid `18:05 - 16:59`.** The
   changeover is positively dated: the session opened Sunday 2024-02-11
-  closes on Monday at `16:59:00`, and its close minute quotes continuously
-  inside the earlier grid's break (the section below). The intervening
+  closes on Monday at `16:59:00`, and its close minute contains S5
+  buckets inside the earlier grid's break (the section below). The intervening
   Friday and Saturday open no session, so no unwitnessed opening day
   remains between the eras. The 2024-02-21 capture prints the grid
   (`OANDA-UK-HOURS-2024-WAYBACK`), and every later replay and the
@@ -196,7 +196,7 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 - **RESOLVED 2026-10-17 (UTC): the changeover is positively dated to the
   2024-02-11 opening day.** The disputed 2023-06-05..2024-02-20 span
   served as the sourced intersection; the operator's own machine channel
-  witnesses the earlier pair grid positively on every opening day through
+  witnesses the earlier pair grid positively on classified opening days through
   2024-02-08, and the Sunday 2024-02-11-opened session's Monday close
   minute quotes inside the earlier grid's break, dating the current era
   from 2024-02-11 (section below, `MARKET-DATA`). The
@@ -206,54 +206,51 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
   this book: the page's US vocabulary is rows-only, so its silence affirms no
   change.
 
-## Machine-channel witnessing and the dated boundary — 2026-10-16 UTC, corrected 2026-10-17 in review
+## Machine-channel witnessing and the dated boundary — 2026-10-16 UTC, corrected 2026-10-17
 
-The publication-channel hunts (recorded in
-[`oanda_fx.md`](oanda_fx.md)) closed negative, and the undated span served
-the sourced intersection. On 2026-10-16 (UTC), under the maintainer's
-direction, the changeover was witnessed from the operator's own machine
-channel — the practice-environment candle service
-(`api-fxpractice.oanda.com`, the
-`/v3/accounts/<id>/instruments/XAU_USD/candles` endpoint, read as bytes
-through the `oanda-rs` client and paced by its own admission control), the
-same T2 class the MLK-2023 closure used under the `MARKET-DATA`
-convention. The confirming raw responses are retained privately, so the id
-deliberately does not resolve in the research store. The host is the
-practice environment; its candle history is account-independent, and
-confirming the live host with a live read-only key remains a residual.
+The operator Practice candle service was read through `oanda-rs` for
+`XAU_USD`. The timestamp convention, the limits of midpoint observations
+and the positive-presence method are documented in
+[`oanda_fx.md`](oanda_fx.md#machine-channel-witnessing-and-the-dated-boundary--2026-10-16-utc-corrected-2026-10-17-in-review).
+An observed five-second lead is not a universal upper bound for this or
+another book. No silent or lead-only bucket dates a changeover.
 
-Bar stamps are bucket-open times, and the feed's measured envelope is a
-≤5-second lead before a published open and a ≤5-second linger past a
-published close. The metals grids are offset, not nested — the earlier
-`18:03 - 16:58` and the current `18:05 - 16:59` each hold minutes the
-other forbids — so both states are positively provable from presence
-alone:
+The candidates are earlier `18:03 - 16:58` and current `18:05 - 16:59`.
+The per-day M1 transcript has 175 positive `18:03`-minute observations
+through opening day 2024-02-08. Sunday 2023-11-12 is thin and bracketed by
+witnessed neighbours; the holiday Sundays 2023-12-24 and 2023-12-31 are
+also quiet. None supplies a positive observation. The independent February
+8 S5 read includes the `18:03:00` reopen, and the February 9 closing leg's
+final bucket starts at `16:58:00`.
 
-- **Earlier-grid proof:** an 18:03 New York minute tick. The current grid
-  sits in its 16:59–18:05 break then. The per-day M1 sweep (one request
-  per calendar day, 2023-06-06..2024-02-19) shows an 18:03-minute tick on
-  every classified opening day through Thursday 2024-02-08 — 175 positive
-  witnesses, the thin Sunday 2023-11-12 excepted (bracketed by witnessed
-  neighbours).
-- **Current-grid proof:** quoting inside the earlier grid's break, in the
-  `[16:58:15, 16:59:00]` New York window the 16:58:00 close and any
-  linger forbid. The S5 record shows continuous ticks through that window
-  on 2024-02-12 (16:58:00 through 16:58:55, dense, ending at the 16:59:00
-  close bucket) and 2024-02-13 through 2024-02-15 likewise. A New York
-  close minute belongs to the session opened the prior evening, so the
-  Monday 2024-02-12 quoting is the close witness of the session opened
-  Sunday 2024-02-11: **the current era is positively in force from the
-  2024-02-11 opening day.** The intervening Friday and Saturday open no
-  session, so no unwitnessed opening day remains.
-- **Correction recorded:** the first pass labelled 2024-02-11 onward
-  current from M1 lead buckets that fit both grids; retracted in review.
-  Only the close-side quoting above dates the current state.
+The Monday February 12 closing leg contains buckets well inside the earlier
+candidate's break. The retained close-minute starts are:
 
-The boundary is keyed to the opening day of the session whose close minute
-carries the positive current-grid witness — 2024-02-11 — and no unwitnessed
-opening day sits between the eras (LAW-NO-FABRICATED-DATES).
-`MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
-manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.
+| Closing date, New York | S5 starts at 16:58:ss | 16:59:00 bucket |
+|---|---|---|
+| 2024-02-12 | :00, :05, :10, :15, :20, :25, :30, :35, :45, :50, :55 | present |
+| 2024-02-13 | :10, :15, :20, :30, :40 | present |
+| 2024-02-14 | :25, :50, :55 | present |
+| 2024-02-15 | :15, :50, :55 | absent |
+| 2024-02-19 | none | absent |
+
+Absence in the last two rows does not establish a different close. The
+February 12 positive observations support the current candidate for the
+session opened **Sunday 2024-02-11**. Friday and Saturday open no session
+between the last earlier Thursday opening and that Sunday, so the
+intersection hosts no opening days and is retired. The first pass's
+lead-only current classification and the later February 12 opening-day key
+were corrected in review.
+
+`MARKET-DATA` — T2, initial reads 2026-10-16 UTC, independently retrieved
+and corrected 2026-10-17 UTC. Retention root:
+`~/Developer/oanda-feed-captures-2026-10-16/`, `MANIFEST.md` and
+`SHA256SUMS.txt`. The per-day input is `witness.jsonl`; original S5 inputs
+are `raw/XAU_USD_S5_*.json`. Full independent responses are
+`raw/validation-2026-10-17/era-XAU_USD-2024-02-{08,09,12}.json`.
+These observations date the USD-pair candidate grid; they do not remove
+the historical cross-pair residual or establish live-host equivalence.
+Those checks remain in #332.
 
 ## Publication audit — 2026-10-11 UTC
 

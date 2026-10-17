@@ -186,25 +186,28 @@ The census and what it can and cannot state:
   an 18:00-minute bucket on 183 opening days and none on 76 quiet days.
   The first pass labelled those 183 days legacy and the span's tail
   current; that was retracted in review — an 18:00-minute M1 bucket is
-  ambiguous between a sharp legacy open and the current grid's ≤5-second
-  lead (18:00:55), which lands in the same minute. The 76 quiet days are
+  ambiguous between a sharp legacy open and the observed five-second
+  current-open lead (18:00:55), which lands in the same minute. The 76 quiet days are
   Fridays, Saturdays, and the 2023-12-24/2023-12-31 holiday Sundays.
-- The S5 close-side witnesses are the positive record: deep close-minute
-  ticks (past 16:59:15 New York, which the current 16:59:00 close and its
-  ≤5-second linger forbid) on 2023-08-16 (to 16:59:40), 2023-11-15 (to
-  16:59:45) and 2024-02-08 (to 16:59:40), plus the 2024-02-08 sharp open
-  (`23:00:00Z` exact — a current-era lead cannot precede `23:00:55`).
-  These witness the legacy grid positively on those days.
+- The retained February 8 S5 close-side sample reaches `16:59:40` New
+  York, inside the earlier whole-hour candidate and after the current
+  candidate's `16:59` close. The same day's first reopen start is
+  `23:00:00Z` (`18:00` New York). These positive observations support
+  the earlier grid in the two-candidate comparison. No universal
+  five-second lead/linger bound is inferred; the shared timestamp and
+  quoting limitations are recorded in [`oanda_fx.md`](oanda_fx.md).
+
 - **No observation positively proves the current grid on any day.** The
   current `18:01 - 16:59` window is a strict subset of the legacy
   `18:00 - 17:00` window: every tick a current-era day can print also fits
   the legacy grid, so the changeover cannot be dated from candles for this
-  book. USB10Y_USD, XCU_USD and NATGAS_USD print the same shapes (shared
-  engine; their close minutes are thinner). The archived page-print bounds
+  book. The bond and commodity candidates have the same nesting
+  relationship; their own observations are recorded in their evidence files. The archived page-print bounds
   — the 2023-06-05 last legacy print and the 2024-02-21 first current
   print — therefore stand, and the span keeps the sourced intersection.
-- The 2024-01-17 close minute is fully silent (no witness either way);
-  disclosed.
+- The retained inputs do not supply sub-minute evidence for every day
+  of the span; unretained mid-span S5 summaries do not substantiate a
+  per-day or exact-cutover claim.
 
 `MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
 manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.
@@ -237,10 +240,9 @@ and `20260217213704.html` in that directory.
   observation can positively prove the current state on any day. The
   witnessing that stands: the sharp-open and deep-close positives on
   2024-02-08 (open `23:00:00Z` exact, close-minute ticks to `21:59:40Z`)
-  and the mid-span deep-close samples of 2023-08-16 and 2023-11-15 witness
-  the legacy grid positively on those days; every other day's M1 bucket is
-  ambiguous between the states. The section below holds the corrected
-  census; the named closer stays a dated operator artifact or desk answer.
+  witness the legacy candidate on that date; the other days' M1 buckets are
+  ambiguous between the states. The machine-channel section above holds
+  the corrected census; the named closer stays a dated operator artifact or desk answer.
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - **Japan 225 holiday scope is unresolved.** Its two listings share the normal
   Chicago grid, but the source separately names JP225 on only some dates.

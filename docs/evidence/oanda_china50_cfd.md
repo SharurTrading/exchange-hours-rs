@@ -132,9 +132,8 @@ Store paths: `normal-weeks/oanda-uk-hours-2026-10-10/` for the original HTML/PDF
   current one), and the current grid nests inside the legacy grid, so no
   candle observation can positively prove the current state. What stands:
   deep close-minute ticks to 16:29:40–45 Singapore witness the legacy grid
-  positively on 2024-02-06..09 (and the mid-span samples 2023-08-16,
-  2023-11-15, 2024-01-17). The archived page-print bounds stand; the span
-  keeps the sourced intersection. The unaudited holiday dates inside the
+  in the retained February 9 read. The archived page-print bounds stand;
+  the span keeps the sourced intersection. The unaudited holiday dates inside the
   witnessed span keep their typed refusals; they are the remaining #332
   residual here.
 
@@ -153,13 +152,13 @@ read-only key remains a residual.
 
 What the witnessing establishes, after review:
 
-- **Legacy-grid positives:** the day session's final minute ticks deep —
-  16:29:40–45 Singapore — on the mid-span samples (2023-08-16,
-  2023-11-15, 2024-01-17) and on 2024-02-06..09. The current grid closes
-  the day session at 16:29:00, and its ≤5-second linger cannot reach
-  those depths, so the legacy `16:30` close is positively in force on
-  those days, through Friday 2024-02-09. The 2024-02-08 reopen shape
-  (first tick exactly 17:00:00 Singapore) is a second legacy positive.
+- **Legacy-grid observations:** the retained February 9 day-close sample
+  reaches `16:29:45` Singapore, after the current candidate's `16:29`
+  close and inside the earlier `16:30` candidate. Its night reopen
+  includes `17:00:00`. These observations support the earlier candidate
+  on that date. Earlier mid-span S5 summaries without retained responses
+  supply no independently reproducible sub-minute witness.
+
 - **No current-grid positive exists.** The current day session
   `09:01 - 16:29` nests inside the legacy `09:00 - 16:30`: every tick a
   current-era day can print also fits the legacy grid. The first pass
@@ -170,8 +169,9 @@ What the witnessing establishes, after review:
   are wholly silent and witness nothing either way.
 - The archived page-print bounds therefore stand — the 2023-06-05 last
   legacy print and the 2024-02-21 first current print — and the span
-  between keeps the sourced intersection. [`oanda_singapore30_cfd.md`]
-  (oanda_singapore30_cfd.md) shares the engine and the conclusion.
+  between keeps the sourced intersection.
+  [Singapore 30](oanda_singapore30_cfd.md) has the same day-session
+  ambiguity and a separately recorded night-leg conflict.
 
 `MARKET-DATA` — T2, confirming artifacts retained privately (with sha256
 manifest), retrieval 2026-10-16 UTC, corrected 2026-10-17 UTC.

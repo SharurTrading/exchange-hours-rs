@@ -179,10 +179,8 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
   (2026-10-16, reviewed 2026-10-17).** The first pass claimed a 2024-02-11
   boundary; retracted — the nested grids admit no positive candle witness
   for the current state. What stands for this book: USB10Y_USD opens
-  `23:00:00Z` sharp on 2024-02-08 (positive legacy; a current-era lead
-  cannot precede `23:00:55`) and leads at `23:00:55` from 2024-02-13
-  (ambiguous alone); the bond close minutes are thin (one-to-three S5
-  buckets). The archived page-print bounds stand and the span keeps the
+  `23:00:00Z` sharp on 2024-02-08 (supporting the legacy candidate) and leads at `23:00:55` from 2024-02-13
+  (ambiguous alone); the retained bond close minutes are thin. The archived page-print bounds stand and the span keeps the
   sourced intersection. The Memorial reopen, the 2024-12-24 close and the
   pre-witness 2024 final closes stay #332 residuals.
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.

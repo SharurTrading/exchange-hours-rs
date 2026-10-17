@@ -25,7 +25,7 @@ adds only what the venue row adds.
 
 - 2024-02-11 — T2 — `MARKET-DATA` — the venue clock's changeover to the
   current `17:05 - 16:59` grid is positively dated to this New York opening
-  day: the Sunday-opened session's Monday close minute quotes continuously
+  day: the Sunday-opened session's Monday close minute contains S5 starts
   inside the earlier grid's break (artifacts retained privately; see
   [`oanda_fx.md`](oanda_fx.md)).
 
@@ -69,7 +69,7 @@ This row cites the operator's own pages through [`oanda_fx.md`](oanda_fx.md)'s
 
 See [`oanda_fx.md`](oanda_fx.md): the family's witnessed normal-week eras
 (the earlier grids served from each book's first witness, the fx/metals
-changeover positively dated to opening day 2024-02-12 New York, the
+changeover positively dated to opening day 2024-02-11 New York, the
 nested-grid books' changeovers still undated on the archived page-print
 bounds), the carried pre-witness weeks, and the holiday window's edges are
 the family's gaps and stay the family's.

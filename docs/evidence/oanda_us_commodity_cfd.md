@@ -168,8 +168,8 @@ sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
 - **The pre-2021 witness era stays carried**: the 2022
   capture's futures-exact instants describe an arrangement this book's shape
   does not model, and the era below the first page witness keeps its
-  date-aware refusal. The changeover is no longer part of this residual —
-  it is dated 2026-10-16 (the RESOLVED entry above). Closing condition:
+  date-aware refusal. The intervening changeover remains undated and
+  serves the sourced intersection described above. Closing condition:
   dated operator artifacts for the pre-witness normal week (#332).
 - The `Metals:` label's coverage of the commodity-metals listings rests on
   the 18:01/18:04 reopen instants; if OANDA prints an explicit

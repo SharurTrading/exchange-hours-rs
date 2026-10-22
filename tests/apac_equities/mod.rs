@@ -10,38 +10,4 @@ mod history_oceania_japan;
 mod history_singapore_korea_taiwan;
 mod history_southeast_asia;
 
-mod prelude {
-    pub(super) use chrono::{Duration, NaiveDate};
-    pub(super) use chrono_tz::{Asia, Australia, Pacific, Tz};
-    pub(super) use exchange_hours::{
-        CalendarQueryError, CalendarResolution, CalendarSource, Exchange, MarketHours, SessionKind,
-        SessionState, calendar_for_exchange, candle_end, candle_start, hours_for_apac_equities,
-        hours_for_exchange, hours_map_apac_equities,
-    };
-
-    pub(super) use crate::support::local;
-
-    pub(super) fn cutover_sides(
-        exchange: Exchange,
-        tz: Tz,
-        date: (i32, u32, u32),
-    ) -> (MarketHours, MarketHours) {
-        let midnight = local(tz, date, (0, 0, 0));
-        (
-            hours_for_exchange(exchange, midnight - Duration::nanoseconds(1)),
-            hours_for_exchange(exchange, midnight),
-        )
-    }
-
-    pub(super) fn assert_weekend_closed(exchange: Exchange, tz: Tz) {
-        let saturday = local(tz, (2026, 8, 22), (11, 0, 0));
-        assert!(
-            !hours_for_exchange(
-                exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000)
-            )
-            .is_open(saturday)
-        );
-    }
-}
+mod prelude;

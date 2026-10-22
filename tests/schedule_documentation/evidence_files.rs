@@ -463,7 +463,7 @@ struct HolidayRow {
 
 /// Returns whether the byte at `offset` sits on a comment line.
 ///
-/// `holidays/mod.rs` prints a worked invocation inside the macro's own doc
+/// `holidays/builder.rs` prints a worked invocation inside the macro's own doc
 /// comment, and the macro's arms name its own tokens; neither is a table.
 fn on_comment_line(text: &str, offset: usize) -> bool {
     let line_start = text[..offset].rfind('\n').map_or(0, |index| index + 1);

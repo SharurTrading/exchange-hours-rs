@@ -155,9 +155,9 @@ pub(crate) struct HolidayTable {
 impl HolidayTable {
     /// Returns whether any row of this table replaces a trade date with blocks.
     ///
-    /// This is the one-bit gate in front of the replacement scan. It is `false`
-    /// for every table the crate ships today, which is what keeps Stage 3's new
-    /// kind off the hot path until Stage 4 ships a row that uses it.
+    /// This constant-evaluated bit gates the replacement scan. A table with
+    /// no replacement rows skips the scan; a table that carries them scans
+    /// only the queried window's rows.
     pub(crate) const fn carries_replacement_blocks(&self) -> bool {
         self.has_blocks
     }

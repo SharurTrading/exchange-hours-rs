@@ -2,7 +2,7 @@
 
 //! The date-aware status, session-boundary, trade-date and civil-day query
 //! surface. Every method delegates through the one date-aware
-//! [`QueryContext`](super::query::QueryContext) path.
+//! [`QueryContext`] path.
 
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;

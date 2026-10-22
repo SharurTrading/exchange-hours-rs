@@ -591,6 +591,13 @@ state actual supported ranges; an unknown date is not a market closure.
 
 ## Structural rules
 
+- **STYLE-MOD-DECLS** — `mod.rs` contains only the copyright header, module
+  documentation and attributes, out-of-line module declarations, and re-exports.
+  Type definitions, functions, `impl` blocks, constants, statics, macro definitions
+  and test bodies belong in focused sibling files. Enforce this for new modules
+  and `mod.rs` files changed by the task; do not launch an unrelated repository-wide
+  cleanup. If you touch a mod that has not enforced this yet, it is your duty to
+  enforce it at the time of implementation.
 - `Exchange` and `MarketHoursKey` are `#[non_exhaustive]`: identity additions
   are minor releases, not breaking ones. Never remove that attribute, and never
   remove or rename a variant outside a major release. A dormant identity is

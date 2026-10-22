@@ -1,0 +1,226 @@
+// SPDX-License-Identifier: MIT-0
+
+//! The calendar type itself: construction, identity and holiday accessors,
+//! and the constructors every caller starts from.
+
+use chrono::{DateTime, NaiveDate, Utc};
+use chrono_tz::Tz;
+
+use super::source::CalendarSource;
+use crate::calendar::schedules::holidays::{self, Holiday, HolidayCoverage, HolidayTable};
+use crate::calendar::{
+    CalendarCoverage, Exchange, MarketHours, MarketHoursKey, hours_for_exchange,
+    hours_for_market_hours_key,
+};
+
+/// A venue's zone is invariant across its revision eras, so any fixed instant
+/// resolves it; the epoch keeps this independent of schedule data and of any
+/// caller's clock.
+const TZ_RESOLUTION_INSTANT: DateTime<Utc> = DateTime::<Utc>::UNIX_EPOCH;
+
+/// One session's `(open, close)` bounds in UTC, as every boundary query
+/// reports them: opens resolve earliest and closes latest under DST ambiguity.
+pub type SessionWindow = (DateTime<Utc>, DateTime<Utc>);
+
+/// A deterministic, date-aware calendar for one exchange or product family.
+///
+/// The calendar reselects a concrete fixed profile for every candidate local
+/// opening day. It holds no clock and performs no I/O. It is
+/// `Copy + Send + Sync + 'static`; built-in status, session-boundary,
+/// trade-date, session-state, and candle-boundary queries allocate nothing.
+/// A containing-session predicate takes `O(R + log H)` work for `R` selected
+/// rules and `H` dated revisions. Forward and period queries inspect at most a
+/// documented bounded number `D` of local days and therefore take
+/// `O(D * (R + log H))` work.
+/// Caller work inside a [`DayPolicy`](crate::DayPolicy) is outside this
+/// performance guarantee. The normal-week duration helper is also excluded
+/// because it collects and sorts temporary intervals. A built-in holiday
+/// table, where the identity has one, is a binary search over a sorted static
+/// table and is gated so a date the table says nothing about costs only that
+/// search.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ExchangeCalendar {
+    source: CalendarSource,
+    holidays: bool,
+}
+
+impl ExchangeCalendar {
+    /// Creates a date-aware calendar for `exchange`.
+    ///
+    /// The identity's built-in holiday table, if it has one, applies to every
+    /// query; [`Self::without_holidays`] detaches it.
+    #[must_use]
+    pub const fn new(exchange: Exchange) -> Self {
+        Self {
+            source: CalendarSource::Exchange(exchange),
+            holidays: true,
+        }
+    }
+
+    /// Creates a date-aware calendar for `key`.
+    ///
+    /// The family's built-in holiday table, if it has one, applies to every
+    /// query; [`Self::without_holidays`] detaches it.
+    #[must_use]
+    pub const fn for_market_hours_key(key: MarketHoursKey) -> Self {
+        Self {
+            source: CalendarSource::MarketHoursKey(key),
+            holidays: true,
+        }
+    }
+
+    /// Detaches this identity's built-in holiday table from every query.
+    ///
+    /// The result answers exactly as the crate did before any table shipped:
+    /// the sourced normal week, plus whatever the caller's own overlays say.
+    /// This is the consumer's escape hatch when a shipped row is wrong and a
+    /// release cannot wait, and the exact A/B control for measuring what the
+    /// table costs. A detached calendar also reports no
+    /// [`Self::holiday_on`] row and no [`Self::holiday_coverage`] window: it
+    /// has no table, rather than a table it declines to apply.
+    #[must_use]
+    pub const fn without_holidays(self) -> Self {
+        Self {
+            source: self.source,
+            holidays: false,
+        }
+    }
+
+    /// Returns the built-in holiday row for venue-local `trade_date`.
+    ///
+    /// `None` means one of three different things — this identity has no
+    /// table, the date is outside the table's coverage window, or the date was
+    /// audited and found normal. [`Self::holiday_coverage`] separates them,
+    /// which is why both exist and why neither is enough alone.
+    ///
+    /// Tables ship for the served CME product families — Globex equity index,
+    /// energy, grains, FX, interest rates, livestock, cryptocurrency and
+    /// dollar Nikkei 225 — and for the 2026 venue block: CFE, Eurex, ICE
+    /// Futures U.S. and Coinbase Derivatives. Every other identity has no
+    /// table, answers `None` for every date, and leaves the caller's
+    /// [`DayPolicy`](crate::DayPolicy) overlay as its only holiday layer.
+    /// Which identities have a table, and over which trade-date window, is
+    /// the `Holidays` column of the verification ledger (LAW-HOLIDAY-SCOPE).
+    #[must_use]
+    pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+        self.holiday_table()
+            .and_then(|table| table.holiday_on(trade_date))
+    }
+
+    /// Returns the inclusive trade-date window this identity's built-in table
+    /// audited, or `None` when it has no table.
+    ///
+    /// Inside the window, a date with no row is audited normal. Outside it the
+    /// crate has no holiday answer for this identity at all, and the
+    /// normal-week schedule is served unmodified.
+    ///
+    /// Tables ship for the served CME product families and the 2026 venue
+    /// block; every other identity answers `None` here. Windows differ by
+    /// identity, so read this per identity rather than assuming one shared
+    /// window (LAW-HOLIDAY-SCOPE).
+    #[must_use]
+    pub fn holiday_coverage(self) -> Option<HolidayCoverage> {
+        self.holiday_table().map(HolidayTable::coverage)
+    }
+
+    /// Resolves this identity's built-in table, honouring
+    /// [`Self::without_holidays`].
+    pub(in crate::calendar) const fn holiday_table(self) -> Option<&'static HolidayTable> {
+        if self.holidays {
+            holidays::table_for(self.source)
+        } else {
+            None
+        }
+    }
+
+    /// Returns what this identity's calendar can and cannot answer
+    /// (LAW-COVERAGE).
+    ///
+    /// The metadata reports, separately: the identity; the venue-local date
+    /// below which its normal week is carried rather than sourced (the
+    /// verification ledger's `Horizon` column); the holiday layer's own
+    /// contract, including an audited window a date with no row is normal
+    /// inside; the venue-local ranges it answers completely; and the ranges it
+    /// does not, each with a reason.
+    /// [`CalendarQueryError`](crate::CalendarQueryError) is the matching error
+    /// vocabulary, and the crate's support floor is
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR).
+    ///
+    /// [`Self::without_holidays`] is respected: where the identity ships a
+    /// table, a detached calendar reports the **normal-week contract** rather
+    /// than complete calendar coverage — its complete ranges are empty and its
+    /// holiday contract is
+    /// [`HolidayContract::NormalWeekOnly`](crate::HolidayContract::NormalWeekOnly)
+    /// — while the normal-week side is unchanged. An identity with no table is
+    /// unaffected either way.
+    ///
+    /// The value borrows static tables, allocates nothing, and is
+    /// `Copy + Send + Sync + 'static`. Inspecting it changes no query: the
+    /// metadata is not permission to return a fabricated schedule.
+    #[must_use]
+    pub const fn coverage(self) -> CalendarCoverage {
+        CalendarCoverage::new(self.source, self.holidays)
+    }
+
+    /// Returns the schedule identity represented by this calendar.
+    #[must_use]
+    pub const fn source(self) -> CalendarSource {
+        self.source
+    }
+
+    /// Returns the represented exchange, or `None` for a product-family calendar.
+    #[must_use]
+    pub const fn exchange(self) -> Option<Exchange> {
+        match self.source {
+            CalendarSource::Exchange(exchange) => Some(exchange),
+            CalendarSource::MarketHoursKey(_) => None,
+        }
+    }
+
+    /// Returns the represented product-family key, or `None` for an exchange calendar.
+    #[must_use]
+    pub const fn market_hours_key(self) -> Option<MarketHoursKey> {
+        match self.source {
+            CalendarSource::Exchange(_) => None,
+            CalendarSource::MarketHoursKey(key) => Some(key),
+        }
+    }
+
+    /// Resolves the fixed [`MarketHours`] profile in force at `instant`.
+    #[must_use]
+    pub fn hours_at(self, instant: DateTime<Utc>) -> MarketHours {
+        match self.source {
+            CalendarSource::Exchange(exchange) => hours_for_exchange(exchange, instant),
+            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key(key, instant),
+        }
+    }
+
+    /// Returns the venue's invariant IANA time zone.
+    #[must_use]
+    pub fn tz(self) -> Tz {
+        match self.source {
+            CalendarSource::Exchange(exchange) => {
+                hours_for_exchange(exchange, TZ_RESOLUTION_INSTANT).tz
+            }
+            CalendarSource::MarketHoursKey(key) => {
+                hours_for_market_hours_key(key, TZ_RESOLUTION_INSTANT).tz
+            }
+        }
+    }
+}
+
+/// Creates a date-aware calendar for `exchange`.
+#[must_use]
+pub const fn calendar_for_exchange(exchange: Exchange) -> ExchangeCalendar {
+    ExchangeCalendar::new(exchange)
+}
+
+/// Creates a date-aware calendar for a product-family `key`.
+///
+/// The calendar reselects [`hours_for_market_hours_key`] for every
+/// candidate session-opening day, including while scanning across a sourced
+/// historical revision.
+#[must_use]
+pub const fn calendar_for_market_hours_key(key: MarketHoursKey) -> ExchangeCalendar {
+    ExchangeCalendar::for_market_hours_key(key)
+}

@@ -7,7 +7,7 @@ integration on 2026-09-04. The inventory has 50 distinct venue labels: 19
 equities, 18 equity-options, and 13 futures venues. The futures venues are also
 the complete set repeated under options on futures.
 
-Every label maps to a real, non-`Unknown` [`Exchange`](../../src/calendar/exchange/mod.rs)
+Every label maps to a real, non-`Unknown` [`Exchange`](../../src/calendar/exchange/table.rs)
 variant. No new enum identity is required for this inventory. Repeated feeds for
 Nasdaq, NYSE, EEX, and Eurex collapse to their one venue identity, and the
 futures and options-on-futures sections deliberately share identities because

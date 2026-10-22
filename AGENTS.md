@@ -606,7 +606,7 @@ state actual supported ranges; an unknown date is not a market closure.
   authorization, an appropriate SemVer release, a changelog migration note and
   exhaustive cleanup; never perform one as drive-by cleanup.
 - `Exchange`, `Exchange::ALL`, and `Exchange::as_str` are generated from
-  **one table** (the `exchanges!` invocation in `exchange/mod.rs`): adding a
+  **one table** (the `exchanges!` invocation in `exchange/table.rs`): adding a
   venue is one new row, and neither `ALL` nor the name table can omit it. The
   compiler then forces the remaining in-crate exhaustive match —
   `hours_for_exchange` in `presets/historical.rs` (no catch-all arm). The same

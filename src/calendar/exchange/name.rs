@@ -7,7 +7,7 @@
 //! (a config key, a wire message, a CLI argument) parse it directly instead of
 //! deserializing through a format crate or pattern-matching by hand.
 //!
-//! The names themselves live in `exchange/mod.rs`, where the `exchanges!` macro
+//! The names themselves live in `exchange/table.rs`, where the `exchanges!` macro
 //! generates the enum, [`Exchange::ALL`], and [`Exchange::as_str`] from one
 //! table — a variant cannot be missing a name or missing from `ALL`, because
 //! all three are the same rows. `FromStr` here searches `ALL` by `as_str`, so

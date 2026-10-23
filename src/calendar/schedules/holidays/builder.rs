@@ -29,29 +29,39 @@
 ///
 /// Constant evaluation fails the build unless:
 ///
-/// 1. the windows are non-empty, ascending and non-overlapping;
-/// 2. trade dates are strictly ascending, so `HolidayTable::may_affect`'s
+/// 1. every window endpoint is a real calendar date — each window is built
+///    through `HolidayWindow::new`, which resolves both endpoints the same
+///    way a row's trade date is resolved;
+/// 2. the windows are non-empty, ascending and non-overlapping;
+/// 3. trade dates are strictly ascending, so `HolidayTable::may_affect`'s
 ///    partition-point search and `HolidayTable::holiday_on`'s binary search
 ///    see a total order and no row is shadowed by a duplicate;
-/// 3. every row lies inside one of the coverage windows, the rule
+/// 4. every row lies inside one of the coverage windows, the rule
 ///    [`StaticSessionExceptions`](crate::StaticSessionExceptions) enforces for
 ///    a caller's records;
-/// 4. every row carries a non-empty document id, so a holiday can never exist
+/// 5. every row carries a non-empty document id, so a holiday can never exist
 ///    without a named artifact; and
-/// 5. every row's tier is
+/// 6. every row's tier is
 ///    [`EvidenceTier::T1`](crate::calendar::schedules::holidays::EvidenceTier::T1)
 ///    or
 ///    [`EvidenceTier::T2`](crate::calendar::schedules::holidays::EvidenceTier::T2),
 ///    and
 ///    every instant is inside the `DayPolicy` ranges — a close in `0..=86_400`
 ///    and an open in `0..86_400`; and
-/// 6. every replacement block set is non-empty, is ordered by opening day and
+/// 7. every replacement block set is non-empty, is ordered by opening day and
 ///    then open time, keeps each offset inside the block day range and each
 ///    instant inside the ranges above, and never opens on its own trade date
 ///    while wrapping past it — the same rules
 ///    [`StaticSessionExceptions`](crate::StaticSessionExceptions) applies to a
 ///    caller's records, so a built-in row and a caller's record cannot state
 ///    differently shaped topologies.
+///
+/// Because the windows are stored as the date pairs this construction
+/// validated, the runtime coverage answers
+/// ([`HolidayCoverage::windows`](crate::calendar::schedules::holidays::HolidayCoverage::windows)
+/// and
+/// [`HolidayCoverage::contains`](crate::calendar::schedules::holidays::HolidayCoverage::contains))
+/// carry no endpoint conversion and no fallback branch.
 ///
 /// The quotations, URLs, capture times and interpretive steps stay in
 /// `docs/evidence/<owner>.md` (LAW-EVIDENCE-FILES); the row carries only its
@@ -77,20 +87,23 @@ macro_rules! holidays {
                 }
             ),*
         ];
-        const WINDOW_DATES: &[(i32, u32, u32, i32, u32, u32)] = &[
+        const WINDOWS: &[$crate::calendar::schedules::holidays::HolidayWindow] = &[
             $(
-                ($first_year, $first_month, $first_day, $last_year, $last_month, $last_day)
+                $crate::calendar::schedules::holidays::HolidayWindow::new(
+                    ($first_year, $first_month, $first_day),
+                    ($last_year, $last_month, $last_day),
+                )
             ),*
         ];
         const TABLE: &$crate::calendar::schedules::holidays::HolidayTable =
             &$crate::calendar::schedules::holidays::HolidayTable {
-                windows: WINDOW_DATES,
+                windows: WINDOWS,
                 rows: ROWS,
                 has_blocks: $crate::calendar::schedules::holidays::fences::any_blocks(ROWS),
             };
         const _: () = {
             const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),*];
-            $crate::calendar::schedules::holidays::fences::assert_table(WINDOW_DATES, DATES, ROWS);
+            $crate::calendar::schedules::holidays::fences::assert_table(WINDOWS, DATES, ROWS);
         };
         TABLE
     }};

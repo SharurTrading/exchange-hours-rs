@@ -7,6 +7,7 @@ use chrono::NaiveDate;
 
 use super::kind::HolidayKind;
 use super::tier::EvidenceTier;
+use crate::calendar::schedules::holidays::fences::{day_key, holiday_date};
 use crate::calendar::schedules::timeline::SourceRef;
 
 /// One built-in holiday row, as reported to a caller.
@@ -45,6 +46,82 @@ impl Holiday {
     }
 }
 
+/// One audited, inclusive trade-date window, stored as the date pair its
+/// construction already validated.
+///
+/// A window value exists only along the `holidays!` macro path:
+/// [`Self::new`](HolidayWindow::new) resolves both endpoints during constant
+/// evaluation and fails the build on a component triple that is not a real
+/// calendar date, so by the time a window is stored in a
+/// [`HolidayTable`] no endpoint conversion can fail and
+/// [`HolidayCoverage::windows`](HolidayCoverage::windows) and
+/// [`HolidayCoverage::contains`](HolidayCoverage::contains) answer from real
+/// dates with no fallback branch (LAW-INVARIANT: the invalid state is made
+/// unrepresentable at the owning construction boundary instead of caught
+/// later).
+///
+/// The day-key scalars sit beside the dates because `NaiveDate`'s comparison
+/// operators are not const-callable: the constant evaluation that orders and
+/// bounds a table's windows compares keys, which for validated dates order
+/// exactly as their dates do.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct HolidayWindow {
+    first: NaiveDate,
+    last: NaiveDate,
+    first_key: i64,
+    last_key: i64,
+}
+
+impl HolidayWindow {
+    /// Builds one window from raw `(year, month, day)` endpoint triples,
+    /// failing the build when either endpoint is not a real calendar date.
+    ///
+    /// This is the owning construction boundary the `holidays!` macro builds
+    /// every window through, during constant evaluation — the same shape
+    /// [`holiday_date`] gives a row's trade date, and the build failure this
+    /// constructor raises on a bad endpoint is that function's own — so a
+    /// table cannot ship an endpoint its stored representation could later
+    /// fail to convert.
+    pub(crate) const fn new(first: (i32, u32, u32), last: (i32, u32, u32)) -> Self {
+        Self {
+            first: holiday_date(first.0, first.1, first.2),
+            last: holiday_date(last.0, last.1, last.2),
+            first_key: day_key(first),
+            last_key: day_key(last),
+        }
+    }
+
+    /// Returns the window's earliest audited trade date.
+    pub(crate) const fn first(self) -> NaiveDate {
+        self.first
+    }
+
+    /// Returns the window's latest audited trade date.
+    pub(crate) const fn last(self) -> NaiveDate {
+        self.last
+    }
+
+    /// Returns the day-key scalar of the first endpoint, the form the const
+    /// fences order windows by.
+    pub(crate) const fn first_key(self) -> i64 {
+        self.first_key
+    }
+
+    /// Returns the day-key scalar of the last endpoint, the form the const
+    /// fences order windows by.
+    pub(crate) const fn last_key(self) -> i64 {
+        self.last_key
+    }
+
+    /// Returns whether `trade_date` falls inside this window.
+    ///
+    /// Both endpoints are real dates by construction, so this is a plain
+    /// inclusive range test with no endpoint conversion that could fail.
+    pub(crate) fn contains(self, trade_date: NaiveDate) -> bool {
+        self.first <= trade_date && trade_date <= self.last
+    }
+}
+
 /// The venue-local trade-date windows a built-in table audited.
 ///
 /// Mirrors [`ExceptionCoverage`](crate::ExceptionCoverage), and for the same
@@ -64,7 +141,7 @@ impl Holiday {
 pub struct HolidayCoverage {
     first: NaiveDate,
     last: NaiveDate,
-    windows: &'static [(i32, u32, u32, i32, u32, u32)],
+    windows: &'static [HolidayWindow],
 }
 
 impl HolidayCoverage {
@@ -85,43 +162,27 @@ impl HolidayCoverage {
     ///
     /// A caller that needs to know whether a *particular* date was audited
     /// should ask [`Self::contains`]; this is for a caller that reports the
-    /// coverage itself, or that wants to size a scan. An invalid window literal
-    /// has already failed the build, so the conversion is total.
+    /// coverage itself, or that wants to size a scan. Every stored window was
+    /// validated when it was constructed, so this reports real dates directly —
+    /// there is no endpoint conversion left that could fail.
     #[must_use]
     pub fn windows(self) -> Vec<(NaiveDate, NaiveDate)> {
         self.windows
             .iter()
-            .map(
-                |(first_year, first_month, first_day, last_year, last_month, last_day)| {
-                    (
-                        chrono::NaiveDate::from_ymd_opt(*first_year, *first_month, *first_day)
-                            .unwrap_or(self.first),
-                        chrono::NaiveDate::from_ymd_opt(*last_year, *last_month, *last_day)
-                            .unwrap_or(self.last),
-                    )
-                },
-            )
+            .map(|window| (window.first(), window.last()))
             .collect()
     }
 
     /// Returns whether `trade_date` falls inside an audited window.
+    ///
+    /// Every stored window was validated when it was constructed, so the
+    /// membership test compares real dates; no invalid endpoint can turn a
+    /// window into a silent `false`.
     #[must_use]
     pub fn contains(self, trade_date: NaiveDate) -> bool {
-        use chrono::Datelike as _;
-
-        let key = trade_date.num_days_from_ce();
-        self.windows.iter().any(
-            |(first_year, first_month, first_day, last_year, last_month, last_day)| {
-                let first = chrono::NaiveDate::from_ymd_opt(*first_year, *first_month, *first_day);
-                let last = chrono::NaiveDate::from_ymd_opt(*last_year, *last_month, *last_day);
-                match (first, last) {
-                    (Some(first), Some(last)) => {
-                        first.num_days_from_ce() <= key && key <= last.num_days_from_ce()
-                    }
-                    _ => false,
-                }
-            },
-        )
+        self.windows
+            .iter()
+            .any(|window| window.contains(trade_date))
     }
 }
 
@@ -140,7 +201,9 @@ pub(crate) struct HolidayRow {
 /// One family's holiday rows plus the windows they were audited over.
 #[derive(Clone, Copy)]
 pub(crate) struct HolidayTable {
-    pub(crate) windows: &'static [(i32, u32, u32, i32, u32, u32)],
+    /// The audited windows, each endpoint validated when the `holidays!`
+    /// macro constructed it during constant evaluation.
+    pub(crate) windows: &'static [HolidayWindow],
     pub(crate) rows: &'static [HolidayRow],
     /// Whether any row carries a replacement block set.
     ///

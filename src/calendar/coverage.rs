@@ -111,7 +111,7 @@ pub use ranges::{CompleteRanges, CoverageGaps};
 use chrono::NaiveDate;
 
 use super::exchange_calendar::CalendarSource;
-use super::schedules::holidays::{self, HolidayCoverage, HolidayKind, HolidayTable};
+use super::schedules::holidays::{self, HolidayCoverage, HolidayKind, HolidayTable, HolidayWindow};
 use super::schedules::sourcing;
 use super::schedules::timeline::effective_date;
 
@@ -1128,13 +1128,7 @@ impl CalendarCoverage {
         if last == NaiveDate::MAX {
             return false;
         }
-        let answered_through = table
-            .windows
-            .iter()
-            .filter_map(|&(.., last_year, last_month, last_day)| {
-                NaiveDate::from_ymd_opt(last_year, last_month, last_day)
-            })
-            .max();
+        let answered_through = table.windows.iter().map(|window| window.last()).max();
         let Some(answered_through) = answered_through else {
             return false;
         };
@@ -1382,17 +1376,13 @@ impl CalendarCoverage {
             return true;
         }
         // Outside-window land begins the day before the first window's first
-        // date and the day after each window's last.
-        for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
-        {
-            if let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day)
-                && within(first.pred_opt())
-            {
+        // date and the day after each window's last. The stored windows carry
+        // validated endpoints, so their dates answer directly.
+        for window in self.windows() {
+            if within(window.first().pred_opt()) {
                 return true;
             }
-            if let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day)
-                && within(last.succ_opt())
-            {
+            if within(window.last().succ_opt()) {
                 return true;
             }
         }
@@ -1504,8 +1494,8 @@ impl CalendarCoverage {
     /// does not swallow the date, so the normal week the timeline serves
     /// across the span is sourced rather than carried. The windows are the
     /// build-validated ascending set, so this is one bounded scan of a handful
-    /// of static tuples: allocation-free, total, and identical on every view
-    /// of the identity.
+    /// of static validated windows: allocation-free, total, and identical on
+    /// every view of the identity.
     ///
     /// The one-flank-**above** shape — a window ends before the date and none
     /// begins after it — is deliberately not a span kind: above the last
@@ -1514,33 +1504,27 @@ impl CalendarCoverage {
     /// their whole-date refusal ([`CoverageGapReason::NoHolidayCoverage`]).
     /// The 2026-10-07 ruling bridges below-the-first-window spans only.
     fn bridge_span_kind(
-        windows: &'static [(i32, u32, u32, i32, u32, u32)],
+        windows: &'static [HolidayWindow],
         carried_below: Option<NaiveDate>,
         date: NaiveDate,
     ) -> Option<BridgeSpanKind> {
         let mut lower_last: Option<NaiveDate> = None;
         let mut upper_first: Option<NaiveDate> = None;
-        for &(first_year, first_month, first_day, last_year, last_month, last_day) in windows {
-            let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day) else {
-                continue;
-            };
-            let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day) else {
-                continue;
-            };
-            if first <= date && date <= last {
+        for window in windows {
+            if window.contains(date) {
                 // Inside a window: audited, not bridged.
                 return None;
             }
-            if last < date {
+            if window.last() < date {
                 lower_last = Some(match lower_last {
-                    Some(current) if current > last => current,
-                    _ => last,
+                    Some(current) if current > window.last() => current,
+                    _ => window.last(),
                 });
             }
-            if first > date {
+            if window.first() > date {
                 upper_first = Some(match upper_first {
-                    Some(current) if current < first => current,
-                    _ => first,
+                    Some(current) if current < window.first() => current,
+                    _ => window.first(),
                 });
             }
         }
@@ -1628,17 +1612,9 @@ impl CalendarCoverage {
                 );
             }
         }
-        for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
-        {
-            consider(
-                NaiveDate::from_ymd_opt(first_year, first_month, first_day)
-                    .filter(|first| *first > date),
-            );
-            consider(
-                NaiveDate::from_ymd_opt(last_year, last_month, last_day)
-                    .and_then(|last| last.succ_opt())
-                    .filter(|after| *after > date),
-            );
+        for window in self.windows() {
+            consider(Some(window.first()).filter(|first| *first > date));
+            consider(window.last().succ_opt().filter(|after| *after > date));
         }
         // A withheld date flips this view's verdict only where the view
         // consults the table at all.
@@ -1670,18 +1646,13 @@ impl CalendarCoverage {
                 consider(edge.filter(|edge| *edge > date));
             }
         }
-        for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
-        {
-            if let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day)
-                && let Some(before) = first.pred_opt()
-            {
+        for window in self.windows() {
+            if let Some(before) = window.first().pred_opt() {
                 for edge in self.resolution_zone_edges(before) {
                     consider(edge.filter(|edge| *edge > date));
                 }
             }
-            if let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day)
-                && let Some(after) = last.succ_opt()
-            {
+            if let Some(after) = window.last().succ_opt() {
                 for edge in self.resolution_zone_edges(after) {
                     consider(edge.filter(|edge| *edge > date));
                 }
@@ -1780,8 +1751,10 @@ impl CalendarCoverage {
     /// slice when it ships no table — a view that detached its table still
     /// segments on the shipped windows where a date-scoped declaration needs
     /// the bounds. Splitting a uniform run at one of them is harmless; walking
-    /// past an edge that could have ended a day-merged run is not.
-    fn windows(self) -> &'static [(i32, u32, u32, i32, u32, u32)] {
+    /// past an edge that could have ended a day-merged run is not. Each
+    /// window's endpoints were validated when the table was built, so callers
+    /// read real dates with no endpoint conversion.
+    fn windows(self) -> &'static [HolidayWindow] {
         self.shipped.map_or(&[], |table| table.windows)
     }
 

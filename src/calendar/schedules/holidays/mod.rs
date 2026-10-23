@@ -99,5 +99,5 @@ pub(crate) use builder::holidays;
 pub use kind::HolidayKind;
 pub(crate) use routing::table_for;
 pub use table::{Holiday, HolidayCoverage};
-pub(crate) use table::{HolidayRow, HolidayTable};
+pub(crate) use table::{HolidayRow, HolidayTable, HolidayWindow};
 pub use tier::EvidenceTier;

@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Store built-in holiday coverage windows as the validated date pairs the
+  `holidays!` macro constructs, so `HolidayCoverage::windows` and
+  `HolidayCoverage::contains` answer from real dates with no endpoint
+  conversion. An invalid window endpoint now fails the build where each
+  window is constructed, the same const fence a row's trade date passes
+  through, and the former outer-coverage substitution and `false`-on-invalid
+  fallback branches are gone (#365). Every audited window and every public
+  coverage result is unchanged.
+
 ## [1.2.2] - 2026-10-22
 
 ### Fixed

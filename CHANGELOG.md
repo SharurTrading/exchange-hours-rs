@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-22
+
 ### Fixed
 
 - Date the `oanda_fx`, `oanda_metals` and OANDA venue-clock normal-week

@@ -17,7 +17,7 @@
 //!    the identity's built-in table covers, or an affirmative no-holiday
 //!    assertion ([`CalendarCoverage::holiday_contract`]); and
 //! 3. **the identity does not withhold the date** as
-//!    [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced);
+//!    [`HolidayKind::Unsourced`];
 //! 4. **answering the date completely stays inside the dates the identity
 //!    answers**: a session can open on the previous civil day, and the next
 //!    session's trade date can lie beyond it, so a date whose resolution
@@ -230,7 +230,7 @@ pub enum DateCoverage {
     /// the claim that *every* query on it answers.
     OutsideCoveredRange,
     /// The date is inside an audited window on a date the identity explicitly
-    /// withholds as [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
+    /// withholds as [`HolidayKind::Unsourced`].
     UnresolvedGap,
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays): it
@@ -263,7 +263,7 @@ pub enum CoverageGapReason {
     /// holiday table audited.
     NoHolidayCoverage,
     /// The identity explicitly withholds the date as
-    /// [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
+    /// [`HolidayKind::Unsourced`].
     WithheldDate,
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays).
@@ -303,7 +303,7 @@ pub enum CoverageGapReason {
     /// flanks the sourced windows witness the ordinary layer. A one-flank
     /// date's classification refuses a typed
     /// [`CalendarQueryError::UnresolvedGap`], enriched with the
-    /// [`NormalWeekBaseline`](crate::NormalWeekBaseline) the date sits inside,
+    /// [`NormalWeekBaseline`] the date sits inside,
     /// because nothing witnesses the holiday layer there and the crate's
     /// accuracy bar ("nothing answered where it cannot back") forbids a
     /// "not closed" answer.
@@ -1553,7 +1553,7 @@ impl CalendarCoverage {
     /// has no bracket: nothing witnesses the holiday layer there, so
     /// `is_closed_trade_date` refuses a typed
     /// [`CalendarQueryError::UnresolvedGap`] — enriched, per Tier 3, with the
-    /// [`NormalWeekBaseline`](crate::NormalWeekBaseline) the date sits inside
+    /// [`NormalWeekBaseline`] the date sits inside
     /// — instead of answering "not closed" from the normal week, while the
     /// same date's session questions answer from that week. A two-flank date
     /// keeps answering its classification beside the disclosed residual — two

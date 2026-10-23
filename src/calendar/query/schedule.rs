@@ -449,8 +449,8 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// its blocks can open on a day inside it.
     ///
     /// This is the cheap pre-filter in front of the two block walks
-    /// ([`replacement::governs_instant`](super::replacement::governs_instant)
-    /// and [`replacement::find_occurrence`](super::replacement::find_occurrence)),
+    /// ([`replacement::governs_instant`]
+    /// and [`replacement::find_occurrence`]),
     /// which otherwise probe record tables once per candidate trade date on
     /// every resolved occurrence. It answers **false only when no block can
     /// exist**: a `false` here always means the walks would find nothing, so
@@ -899,8 +899,8 @@ pub(in crate::calendar) fn builtin_resolves_order_entry(
 /// carries a tradeable rule is a day a session scan can find an occurrence on,
 /// whatever the holiday layer later does to that occurrence. It is the same
 /// profile selection every query runs
-/// ([`Self::profile_for_open_day`]), so the metadata and the query surface
-/// cannot disagree about which days carry rules.
+/// ([`QueryContext::profile_for_open_day`]), so the metadata and the query
+/// surface cannot disagree about which days carry rules.
 pub(in crate::calendar) fn builtin_has_tradeable_rule(
     source: CalendarSource,
     day: NaiveDate,

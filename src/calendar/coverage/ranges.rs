@@ -18,7 +18,8 @@
 //! settles each run exactly as the per-date accessor settles its dates.
 //!
 //! A **date-scoped** declaration — one carrying an
-//! [`PhaseGapShape::OrderEntryWindow`] shape — can flip the verdict from date to
+//! [`PhaseGapShape::OrderEntryWindow`](super::PhaseGapShape::OrderEntryWindow)
+//! shape — can flip the verdict from date to
 //! date, because the served occurrence it is keyed to resolves on a bracket-era
 //! Sunday and not on the Tuesday beside it. Inside such a declaration's span the
 //! walk therefore merges verdicts **day by day**, which keeps every reported run

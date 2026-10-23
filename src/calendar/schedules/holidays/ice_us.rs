@@ -28,7 +28,7 @@
 //! announced in advance of the respective holiday via Exchange Notices". Where
 //! that notice exists the row carries its instants; where it does not, the
 //! operator has published that the date is **not** normal without publishing
-//! what it is, which is exactly what [`Unsourced`](super::HolidayKind::Unsourced)
+//! what it is, which is exactly what [`Unsourced`]
 //! records. Those dates are now few: the 2025 Independence Day and Christmas
 //! notices and the 2026 MLK and Presidents' Day notices were retrieved live
 //! from the operator's own notices listing service on 2026-10-09 UTC (the T2

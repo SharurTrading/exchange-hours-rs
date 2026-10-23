@@ -42,7 +42,8 @@
 //! 2026-12-31: the operator's 2027-2036 calendars exist only "on a preliminary
 //! and indicative basis … and are subject to change", which is not an
 //! unconditional dated future, so LAW-NO-FABRICATED-DATES keeps them out.
-//! [`TABLE`] serves `Exchange::Eurex` and the `eurex` key; [`FIXED_INCOME`]
+//! [`TABLE`](super::eurex::TABLE) serves `Exchange::Eurex` and the `eurex`
+//! key; [`FIXED_INCOME`](super::eurex::FIXED_INCOME)
 //! serves the `eurex_fixed_income` key; this table serves the `eurex_smi` key.
 //! All three resolve through
 //! [`docs/evidence/eurex_smi.md`](../../../../../docs/evidence/eurex_smi.md)

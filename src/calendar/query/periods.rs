@@ -169,8 +169,9 @@ pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
 /// Walks forward from `instant` for the next daily close, at most
 /// `CLOSE_LOOKAHEAD_DAYS` days.
 ///
-/// Running out of window is [`CalendarQueryError::SearchExhausted`] for an
-/// identity-backed source, reported against the day the walk stopped on: it is
+/// Running out of window is
+/// [`CalendarQueryError::SearchExhausted`](crate::calendar::coverage::CalendarQueryError::SearchExhausted)
+/// for an identity-backed source, reported against the day the walk stopped on: it is
 /// a different answer from a day the identity refuses, which the per-day gate
 /// below raises instead (LAW-COVERAGE). A **detached fixed snapshot** has no
 /// coverage to attribute an error to — its gate is infallible — so it keeps

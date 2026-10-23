@@ -6,6 +6,9 @@
 
 ### Fixed
 
+- Repair the fifteen private-item rustdoc diagnostics: unresolved intra-doc
+  links now resolve in their real scopes and the redundant explicit link
+  targets are removed, documentation bytes only (#366).
 - Store built-in holiday coverage windows as the validated date pairs the
   `holidays!` macro constructs, so `HolidayCoverage::windows` and
   `HolidayCoverage::contains` answer from real dates with no endpoint

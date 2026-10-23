@@ -248,7 +248,7 @@ impl<'a> PolicyCalendar<'a> {
     ///
     /// This is the crate's own coverage claim; a caller's exception provider
     /// publishes its own through
-    /// [`SessionExceptionSource::coverage`](crate::SessionExceptionSource::coverage).
+    /// [`SessionExceptionSource::coverage`].
     #[must_use]
     pub fn holiday_coverage(self) -> Option<HolidayCoverage> {
         self.calendar.holiday_coverage()

@@ -81,7 +81,7 @@ fn weather_serves_the_published_grid_with_end_exclusive_closes() {
         SessionState::OpenExtended,
     );
     assert!(!hours.is_open_regular(ct((2026, 9, 14), (12, 0, 0))));
-    assert!(session_profile(WEATHER).regular.is_empty());
+    assert_eq!(session_profile(WEATHER).regular, []);
 
     // The leg wraps local midnight and closes 16:00 end-exclusive.
     assert!(hours.is_open(ct((2026, 9, 14), (3, 0, 0))));
@@ -112,7 +112,7 @@ fn weather_serves_the_published_grid_with_end_exclusive_closes() {
     assert!(profile.is_open(ct((2026, 9, 14), (15, 59, 59))));
     assert!(!profile.is_open(ct((2026, 9, 14), (16, 0, 0))));
     assert!(profile.is_order_entry_only(ct((2026, 9, 14), (16, 45, 0))));
-    assert!(profile.regular.is_empty());
+    assert_eq!(profile.regular, []);
 }
 
 /// The wrapping leg takes the trade date of its close, so the Sunday-evening

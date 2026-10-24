@@ -1272,8 +1272,8 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
     // queue era.
     let grains = key_coverage(MarketHoursKey::GlobexGrains);
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
-    assert!(grains.phase_gaps().is_empty());
-    assert!(livestock.phase_gaps().is_empty());
+    assert_eq!(grains.phase_gaps(), []);
+    assert_eq!(livestock.phase_gaps(), []);
 
     // The queue days read complete: a Sunday, a mid-week queue day, the first
     // week of livestock's sourced 2016-06-06 Post-Close onset, grains' whole
@@ -1644,7 +1644,7 @@ fn a_date_shaped_gap_carries_no_closing_condition() {
         .expect("globex_nikkei_225_dollar has a trailing gap");
     assert_eq!(trailing.closing_condition(), None);
     assert_eq!(trailing.phase_gap(), None);
-    assert!(complete.phase_gaps().is_empty());
+    assert_eq!(complete.phase_gaps(), []);
 }
 
 #[test]

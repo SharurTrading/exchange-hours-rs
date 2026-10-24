@@ -206,7 +206,7 @@ fn the_weekday_close_is_the_intersection_and_the_disputed_hour_is_withheld() {
     }
 
     let profile = session_profile(BTC_EVENTS);
-    assert!(profile.regular.is_empty());
+    assert_eq!(profile.regular, []);
     assert!(!profile.has_weekend_close);
     assert!(profile.is_open(ct((2026, 6, 5), (14, 59, 59))));
     assert!(!profile.is_open(ct((2026, 6, 5), (15, 0, 0))));

@@ -9,7 +9,7 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     let profile = session_profile(MarketHoursKey::GlobexInterestRates);
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
 
-    assert!(profile.regular.is_empty());
+    assert_eq!(profile.regular, []);
     assert!(!profile.is_open(ct((2026, 4, 19), (15, 59, 59))));
     // 16:00 CT Sunday is the pre-open queue: order entry, not a session.
     assert!(profile.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
@@ -220,8 +220,8 @@ fn livestock_current_profile_is_the_weekday_day_session() {
     // Livestock has a day session plus queues and no electronic overnight
     // session, so `extended` is legitimately empty and the queues are
     // `order_entry`.
-    assert!(profile.extended.is_empty());
-    assert!(!profile.order_entry.is_empty());
+    assert_eq!(profile.extended, []);
+    assert_ne!(profile.order_entry, []);
     assert!(!profile.is_open(ct((2026, 4, 20), (7, 59, 59))));
     assert!(profile.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))));
     assert!(hours.is_order_entry_only(ct((2026, 4, 20), (8, 29, 59))));
@@ -408,7 +408,7 @@ fn cryptocurrency_current_profile_preserves_exact_open_state() {
         chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
     );
 
-    assert!(profile.regular.is_empty());
+    assert_eq!(profile.regular, []);
     assert!(!profile.has_weekend_close);
     assert!(profile.is_open(ct((2026, 6, 5), (15, 59, 59))));
     assert!(!profile.is_open(ct((2026, 6, 5), (16, 0, 0))));

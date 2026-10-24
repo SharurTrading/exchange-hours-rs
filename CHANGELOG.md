@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- Encode the 2026 ICE Futures U.S. Christmas notice of October 22, 2026: the
+  softs families (Coffee, Cocoa, Cotton, FCOJ) close early at 13:05 New York
+  on 2026-12-24 while Sugar 11 and 16 keep regular hours, the NYSE-stock-index
+  and U.S. Dollar Index families close early at 13:15, and Coffee, Cocoa,
+  Cotton and Sugar 11 open late at 08:00 on 2026-12-28 while FCOJ, Sugar 16
+  and the index families trade regular hours; the `iceus` venue ships
+  `Unsourced` on both dates, whose arrangements its families dispute. The
+  notice also resolves the index families' and the venue's former
+  2026-12-28 withholdings.
+- Add NSE India's 2026-01-15 closure (Municipal Corporation Election,
+  Maharashtra), keyed from the operator's holiday-master feed at T2, which
+  the 2025-12-18 holiday-list banner predates; the crate previously answered
+  the date as an ordinary Thursday.
+
 ## [1.2.2] - 2026-10-23
 
 ### Fixed

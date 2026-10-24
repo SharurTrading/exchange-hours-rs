@@ -10,7 +10,9 @@
 //! or T2: the annual circulars ("Trading holidays for the calendar year ...",
 //! 2010 and 2013), the annual trading-holiday pages on `nseindia.com`
 //! (2011, 2014-2017, 2019-2022), and the operator's own
-//! `holiday-master?type=trading` machine channel (2023 and 2024; T2) — all
+//! `holiday-master?type=trading` machine channel (2023, 2024, and 2026's
+//! 2026-01-15 Maharashtra-election closure, which the earlier banner
+//! predates; T2) — all
 //! read from the Wayback `id_` replays the live site's bot wall makes
 //! necessary. Each source's CM/equities list prints one row per holiday and
 //! separately lists the holidays falling on Saturday/Sunday; only the weekday
@@ -703,6 +705,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 11, 5, Closed, T1, "NSE-HOL-2025"),
         // 2025-12-25 - T1 - NSE-HOL-2025 - Christmas, Thursday.
         (2025, 12, 25, Closed, T1, "NSE-HOL-2025"),
+        // 2026-01-15 - T2 - NSE-HOLMASTER-2026 - Municipal Corporation
+        // Election, Maharashtra, Thursday: a closure the 2025-12-18 banner
+        // predates, stated by the operator's own machine channel from its
+        // first 2026 capture (2026-02-26) and unchanged through 2026-10-11.
+        (2026, 1, 15, Closed, T2, "NSE-HOLMASTER-2026"),
         // 2026-01-26 - T1 - NSE-HOL-2026 - Republic Day, Monday.
         (2026, 1, 26, Closed, T1, "NSE-HOL-2026"),
         // 2026-03-03 - T1 - NSE-HOL-2026 - Holi, Tuesday.

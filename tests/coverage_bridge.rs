@@ -842,3 +842,41 @@ fn the_baseline_is_absent_where_the_normal_week_is_not_sourced() {
         "a carried week states no baseline"
     );
 }
+
+// ------------------------------------------------- the 2026 Maharashtra closure
+
+/// The 2026-01-15 Municipal Corporation Election closure keys from the
+/// operator's holiday-master feed at T2: the 2025-12-18 banner predates the
+/// election-day announcement, and the feed has carried the closure from its
+/// first 2026 capture. Before the row landed the crate answered the date as
+/// an ordinary Thursday against the operator's own machine channel.
+#[test]
+fn the_2026_maharashtra_election_closure_answers_shut() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    assert_eq!(
+        nse.holiday_on(date(2026, 1, 15))
+            .map(exchange_hours::Holiday::kind),
+        Some(exchange_hours::HolidayKind::Closed)
+    );
+    assert_eq!(
+        nse.holiday_on(date(2026, 1, 15))
+            .map(exchange_hours::Holiday::document_id),
+        Some("NSE-HOLMASTER-2026")
+    );
+    assert_eq!(
+        nse.is_closed_trade_date(date(2026, 1, 15), SessionKind::Both),
+        Ok(true),
+        "the feed-keyed closure deletes the trade date the banner left trading"
+    );
+    // The flanking banner-keyed rows are untouched.
+    assert_eq!(
+        nse.is_closed_trade_date(date(2026, 1, 26), SessionKind::Both),
+        Ok(true),
+        "Republic Day keeps its banner-keyed closure"
+    );
+    assert_eq!(
+        nse.is_closed_trade_date(date(2026, 1, 16), SessionKind::Both),
+        Ok(false),
+        "the Friday after answers audited normal"
+    );
+}

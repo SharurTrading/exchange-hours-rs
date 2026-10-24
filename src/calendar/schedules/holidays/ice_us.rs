@@ -34,9 +34,10 @@
 //! from the operator's own notices listing service on 2026-10-09 UTC (the T2
 //! machine channel behind <https://www.ice.com/futures-us/notices>), which
 //! falsified the earlier "no such notice exists" records for the two 2026
-//! holidays, and the only still-withheld dates in this block are 2026-12-28
-//! (the 2026 Christmas notice had not issued at the 2026-10-09 re-check) and
-//! the 2027 `open1` dates, whose notices are unpublished by construction. The
+//! holidays, and the only still-withheld dates in this block are the 2027
+//! `open1` dates, whose notices are unpublished by construction — the 2026
+//! Christmas notice of October 22, 2026, retrieved live 2026-10-23 UTC,
+//! stated 2026-12-24 and 2026-12-28, so those dates no longer withhold. The
 //! retrieval history is in
 //! [`docs/evidence/iceus.md`](../../../../../docs/evidence/iceus.md).
 //!
@@ -128,8 +129,16 @@ pub(crate) static SUGAR: &HolidayTable = holidays! {
         (2026, 10, 30, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - the notice prints
+        // regular hours for Sugar 11 and 16, so the eve is audited normal
+        // and carries no row.
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
+        // am NY for Sugar 11 (Sugar 16 keeps its regular open, which no
+        // crate identity models separately); regular close times for all
+        // products.
+        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -231,8 +240,15 @@ pub(crate) static COFFEE: &HolidayTable = holidays! {
         (2026, 10, 30, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close at
+        // 1:05 pm NY, shared with Cotton, Cocoa and FCOJ; TAS trading for
+        // Cotton and FCOJ ends at 1:00 pm.
+        (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
+        // am NY; regular close times for all products.
+        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -333,8 +349,15 @@ pub(crate) static COCOA: &HolidayTable = holidays! {
         (2026, 10, 30, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close at
+        // 1:05 pm NY, shared with Cotton, Coffee and FCOJ; TAS trading for
+        // Cotton and FCOJ ends at 1:00 pm.
+        (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
+        // am NY; regular close times for all products.
+        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -414,26 +437,33 @@ pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
         // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close at
         // 13:30 NY; regular hours otherwise.
         (2026, 11, 27, early_close(13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close at
+        // 1:05 pm NY, shared with Cotton, Coffee and Cocoa; TAS trading for
+        // Cotton and FCOJ ends at 1:00 pm.
+        (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - the notice prints a
+        // Regular Open for FCOJ, so the date is audited normal and carries
+        // no row.
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
-        (2027, 1, 18, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-02-15 - T1 - IFUS-CAL-2027 - Presidents Day.
-        (2027, 2, 15, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-03-26 - T1 - IFUS-CAL-2027 - Good Friday.
-        (2027, 3, 26, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-05-31 - T1 - IFUS-CAL-2027 - Memorial Day.
-        (2027, 5, 31, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-06-18 - T1 - IFUS-CAL-2027 - Juneteenth.
-        (2027, 6, 18, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-07-05 - T1 - IFUS-CAL-2027 - Independence Day observed.
-        (2027, 7, 5, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-09-06 - T1 - IFUS-CAL-2027 - Labor Day.
-        (2027, 9, 6, Closed, T1, "IFUS-CAL-2027"),
-        // 2027-11-25 - T1 - IFUS-CAL-2027 - Thanksgiving Day.
-        (2027, 11, 25, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-18 - T1 - IFUS-CAL-2027 - MLK Day `open1`.
+        (2027, 1, 18, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-02-15 - T1 - IFUS-CAL-2027 - Presidents Day `open1`.
+        (2027, 2, 15, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-03-26 - T1 - IFUS-CAL-2027 - Good Friday `open1`.
+        (2027, 3, 26, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-05-31 - T1 - IFUS-CAL-2027 - Memorial Day `open1`.
+        (2027, 5, 31, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-06-18 - T1 - IFUS-CAL-2027 - Juneteenth `open1`.
+        (2027, 6, 18, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-07-05 - T1 - IFUS-CAL-2027 - Independence Day observed `open1`.
+        (2027, 7, 5, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-09-06 - T1 - IFUS-CAL-2027 - Labor Day `open1`.
+        (2027, 9, 6, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-11-25 - T1 - IFUS-CAL-2027 - Thanksgiving Day `open1`.
+        (2027, 11, 25, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-12-24 - T1 - IFUS-CAL-2027 - Christmas Day observed.
         (2027, 12, 24, Closed, T1, "IFUS-CAL-2027"),
     ],
@@ -504,8 +534,17 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
         // Friday's post-close pre-open at 15:30 NY, an order-entry instant
         // the evidence file records beside this row.
         (2026, 11, 27, late_open_and_early_close(8 * 3_600, 13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close at
+        // 1:05 pm NY, shared with Coffee, Cocoa and FCOJ; the notice also
+        // starts this eve's Post-Close Pre-Open 30 minutes after the close
+        // and ends it at 3:30 pm, an order-entry instant the evidence file
+        // records beside this row.
+        (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
+        // am NY; regular close times for all products.
+        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -611,11 +650,15 @@ pub(crate) static FANG: &HolidayTable = holidays! {
         (2026, 11, 26, early_close(13 * 3_600), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:15 NY.
         (2026, 11, 27, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close 13:15
+        // NY, the NYSE Stock Indexes, FTSE Stock Index and MSCI Stock
+        // Indexes bullet; TAS ends at 1:00 pm.
+        (2026, 12, 24, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-CAL-2026 - Boxing Day `open1`; no notice had
-        // issued at the 2026-10-09 re-check of the operator's notices listing.
-        (2026, 12, 28, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - the notice prints
+        // Regular Hours for the stock-index bullet, so Boxing Day is audited
+        // normal and carries no row.
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - MLK Day `open1`.
@@ -698,11 +741,15 @@ pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
         (2026, 11, 26, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:15 NY.
         (2026, 11, 27, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close 13:15
+        // NY, TAS ends at 1:00 pm — the year's own instant, earlier than
+        // 2025's 1:45 pm.
+        (2026, 12, 24, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-CAL-2026 - Boxing Day `open1`; no notice had
-        // issued at the 2026-10-09 re-check of the operator's notices listing.
-        (2026, 12, 28, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - the notice prints
+        // Regular Hours for the U.S. Dollar Index bullet, so Boxing Day is
+        // audited normal and carries no row.
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - MLK Day `open1`.
@@ -836,10 +883,16 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // early, FCOJ early, the softs regular, the index families early at
         // their own instants.
         (2026, 11, 27, Unsourced, T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Coffee, Cotton,
+        // Cocoa and FCOJ early at 13:05, Sugar 11/16 regular, FANG+ and the
+        // dollar index early at 13:15.
+        (2026, 12, 24, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day, every family closed.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-CAL-2026 - softs regular, index families `open1`.
-        (2026, 12, 28, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Coffee, Cocoa,
+        // Cotton and Sugar 11 open late at 08:00, FCOJ, Sugar 16 and the
+        // index families regular.
+        (2026, 12, 28, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day, every family closed.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.

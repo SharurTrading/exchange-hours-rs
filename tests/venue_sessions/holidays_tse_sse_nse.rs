@@ -1914,7 +1914,9 @@ fn the_window_counts_are_the_printed_lists_counts() {
             (2023, 15, 0, 1),
             (2024, 13, 0, 1),
             (2025, 13, 0, 1),
-            (2026, 15, 1, 0),
+            // 2026 carries the banner's fifteen weekday legs plus the feed-keyed
+            // 2026-01-15 Municipal Corporation Election closure.
+            (2026, 16, 1, 0),
         ],
         "NSE closures, withheld Muhurat dates and replacement-block Muhurat days per year, from the operator's lists"
     );

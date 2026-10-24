@@ -872,11 +872,10 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("oanda_us_index_cfd", 4),
         ("oanda_us_bond_cfd", 5),
         ("oanda_brent", 17),
-        // 42 since the 2026-10-09 notices-service sweep (41 at HEAD): the four
-        // notices it yielded moved eight family-level dates onto stated rows,
-        // and the Independence Day notice's Cotton 2025-07-07 late open added
-        // one new disagreement date to the venue intersection.
-        ("iceus", 42),
+        // 43 since the 2026-10-23 Christmas notice (42 at HEAD): the notice
+        // resolved the 2026-12-28 `open1` withholding onto family rows and
+        // shipped 2026-12-24 as one new disagreement date to the intersection.
+        ("iceus", 43),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.

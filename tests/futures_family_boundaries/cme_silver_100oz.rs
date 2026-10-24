@@ -162,7 +162,7 @@ fn the_247_week_matches_the_class_template() {
         "no regular session is published"
     );
     assert!(!profile.has_weekend_close);
-    assert!(profile.order_entry.is_empty());
+    assert_eq!(profile.order_entry, []);
     assert!(profile.is_open(ct((2026, 9, 14), (10, 0, 0))));
     assert!(!profile.is_open(ct((2026, 9, 14), (16, 1, 0))));
     assert!(profile.is_open(ct((2026, 9, 20), (0, 0, 0))));

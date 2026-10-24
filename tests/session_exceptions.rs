@@ -1921,7 +1921,7 @@ fn every_validation_error_renders_a_distinct_message() {
         StaticSessionExceptionsError::BlocksNotOrdered { index: 8, block: 4 }.to_string(),
     ];
     for (position, message) in messages.iter().enumerate() {
-        assert!(!message.is_empty());
+        assert_ne!(message, "");
         assert!(
             !messages[position + 1..].contains(message),
             "duplicate message {message}"

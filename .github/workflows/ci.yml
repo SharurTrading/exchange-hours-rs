@@ -52,7 +52,7 @@ jobs:
       # purpose. rust-toolchain.toml is the single source of truth and rustup
       # honours it for every cargo invocation in the workspace, installing that
       # toolchain and its components on demand — the run log confirms it with
-      # "the toolchain '1.97.1-...' is currently in use (overridden by
+      # "the toolchain '1.99.1-...' is currently in use (overridden by
       # .../rust-toolchain.toml)". Naming a version here too would duplicate the
       # pin in a second file for no gain.
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable

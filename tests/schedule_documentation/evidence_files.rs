@@ -509,7 +509,9 @@ fn holiday_coverage(body: &str, module: &str) -> Vec<String> {
         format!("{year:04}-{month:02}-{date:02}")
     };
     bounds
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| format!("{}..{}", day(pair[0]), day(pair[1])))
         .collect()
 }

@@ -140,7 +140,7 @@ fn market_hours_key_from_str_rejects_noncanonical_names() {
             .parse::<MarketHoursKey>()
             .expect_err("noncanonical key must be rejected");
         assert_eq!(error.input(), input);
-        assert!(!error.to_string().is_empty());
+        assert_ne!(error.to_string(), "");
     }
 }
 

@@ -35,8 +35,8 @@ fn broker_day_night_boundaries_and_friday_wrap_are_exact() {
     ] {
         let c = ExchangeCalendar::for_market_hours_key(key);
         assert_eq!(session_profile(key).tz, chrono_tz::Asia::Singapore);
-        assert!(session_profile(key).regular.is_empty());
-        assert!(session_profile(key).order_entry.is_empty());
+        assert_eq!(session_profile(key).regular, []);
+        assert_eq!(session_profile(key).order_entry, []);
         for (open, close) in [
             (utc(day_open), utc(day_close)),
             (utc(night_open), utc(night_close)),

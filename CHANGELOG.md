@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-24
+
 ### Added
 
 - Encode the 2026 ICE Futures U.S. Christmas notice of October 22, 2026: the

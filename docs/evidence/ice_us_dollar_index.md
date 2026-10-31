@@ -260,6 +260,19 @@ https://www.ice.com/publicdocs/futures_us/ICE_Dollar_Index_FAQ.pdf
   https://web.archive.org/web/20110222135802/https://www.theice.com/publicdocs/futures_us/exchange_notices/ExNot020311DXhours.pdf
 Evidence: docs/evidence/ice_us_dollar_index.md
 
-**Forward confirmation:** reconfirm the already-published 2026 Christmas
-arrangements by 2026-12-23 UTC under LAW-WATCH; tracked in
-[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).
+**Forward confirmation completed — 2026-10-31 23:21:52 UTC:** The publication check
+tracked in [#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374)
+was completed before its 2026-12-23 confirm-by date. A fresh live retrieval of
+`IFUS-NOTICE-2026-CHRISTMAS` at 2026-10-31 23:19:44 UTC has SHA-256
+`a7658155b57c51085cd3b36abc9ff6b91f3ca353cda88365a06459ebb40f0801`,
+identical to the original Documents-table artifact. Original retrieval history
+is retained. USDX keeps the 13:15 NY Christmas-eve close, Closed on 25 December and regular matching on 28 December.
+
+The current ICE notices listing was also retrieved at 2026-10-31 23:19:44 UTC;
+no superseding Christmas-hours notice was identified among its latest ten
+entries, dated 2–29 October. Exact URLs, retrieval instants, the PDF and
+supporting ordinary-hours/PCPO documents, and the checks against merged data
+are retained in `reviews/2026-10-31-confirm-374/ice/` in the research store
+(`MANIFEST.json`, `REPORT.md` and `MERGED_DATA_CHECK.json`). This confirms the
+published arrangements as checked; it does not witness future production
+trading or establish that later notices cannot change them.

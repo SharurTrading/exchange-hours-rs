@@ -368,9 +368,24 @@ modification until 16:15 accepts no new trade and extends no session.
 
 The six replacement blocks retain each executable, order-entry and closed
 phase. Their trade date is the Sunday itself. The source is unconditional and
-fully specified; confirm it against the operator by 2026-11-07 under LAW-WATCH
-(#374). Raw PDF and its retrieval/digest manifest live at
-`reviews/2026-10-31-future-update/nse/` in the evidence checkout.
+fully specified. **Confirmed 2026-10-31 UTC under LAW-WATCH (#374), before the
+2026-11-07 deadline:** the live PDF was retrieved again at
+2026-10-31T23:19:09.653909Z and reproduces SHA-256
+`ce94ee1c54d98eccdf3c30fa0673ae2b6a49ea4ed4a72fb83d826f4359f71d58`.
+All six merged blocks agree with its published phases and the venue-envelope
+derivations above. The operator's live circular API, queried for
+2026-10-19..2026-10-31 at 23:19:15.913908 UTC, returned 275 records: the
+original and six distinct later CMTR circulars were checked, and none amends
+this session. The later investor-services circular ISC77098 explicitly
+references CMTR76941 and reiterates November 8; the checked clearing notices
+CMPT77037 and CMPL77195 concern administration rather than trading hours.
+This confirms the published future arrangement as of these retrievals, not
+that the session has occurred or that a later notice cannot change it.
+
+The original PDF and retrieval/digest manifest remain at
+`reviews/2026-10-31-future-update/nse/`. Fresh bytes, exact URLs and UTC
+retrieval times, the circular-channel response, amendment-search scope and
+checksums are at `reviews/2026-10-31-confirm-374/nse/` in the evidence checkout.
 
 ### Documents
 

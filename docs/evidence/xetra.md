@@ -306,11 +306,32 @@ the final-session timetable. A scalar early close would incorrectly preserve
 regular trading through the new closing auction and remove the sourced
 post-trading period, so `ReplacementBlocks` is required.
 
-The row was encoded on 2026-10-31 UTC before its effective day. **Confirm by
-2026-12-29 UTC**, before the 2026-12-30 venue-local session, under LAW-WATCH;
-tracking: #374. The captured notice and linked 2027 calendar
-are under `reviews/2026-10-31-future-update/europe/` in the research store,
-with URLs, retrieval instants, byte counts and sha256s in `captures.json`.
+The row was encoded on 2026-10-31 UTC before its effective day. Its original
+LAW-WATCH confirmation deadline was 2026-12-29 UTC, tracked in #374.
+**Confirmed against the operator on 2026-10-31 UTC**, satisfying that deadline:
+the live notice was retrieved again at 23:19:02.444473 UTC and its 158,845 bytes reproduce the
+original SHA-256 `d3618ef9738a3cae92909d11d4eaf820ab7b71d1e723c1fa04a21062e9738115`.
+Its XETR phase times match the merged seven-block replacement; the 09:00:30
+and 13:02:30 conservative uncross boundaries retain their normal-profile
+basis rather than becoming new literals of this special-session notice.
+
+The current calendar still links that PDF. The current circulars first page
+(ten rendered entries), its ten-entry RSS feed, and its five-result search for
+`final trading session 2026` were retrieved through 23:19:27.707498 UTC.
+The two latest entries are circulars 049/2026 and 050/2026, both displayed as
+30 October 2026; both reaffirm the session date and refer readers to the
+calendar announcement. No superseding or amending timetable was located in
+those checked channels. This confirms the publication available at that UTC
+check, before the session; it makes no claim about later notices or the
+session's eventual execution. The independent 2027-hours watch remains #200.
+
+The confirmation PDF, current calendar, circulars, RSS and query results are
+under `reviews/2026-10-31-confirm-374/xetra/` in the research store. Its
+`captures.json`, `SHA256SUMS.txt`, `channel-checks.json`,
+`runtime-comparison.json` and `REPORT.md` record the retrievals and comparison.
+The original notice capture and linked 2027 calendar remain preserved under
+`reviews/2026-10-31-future-update/europe/`; their original retrieval information
+in the Documents table is unchanged.
 
 ### Documents
 

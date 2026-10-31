@@ -341,7 +341,19 @@ sourced in the Normal week record above. The replacement removes the raw
 2026-12-25 Friday queue that otherwise survives the closed Christmas Day.
 It adds no new Tuesday clock and preserves Monday's own queue and wrap.
 
-**Forward confirmation:** re-confirm the published 2026-12-24 and
-2026-12-28 arrangements, plus Cotton's derived 2026-12-29 replacement,
-against the operator by 2026-12-23 UTC under LAW-WATCH; tracked in
-[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).
+**Forward confirmation completed — 2026-10-31 23:21:52 UTC:** The publication check
+tracked in [#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374)
+was completed before its 2026-12-23 confirm-by date. A fresh live retrieval of
+`IFUS-NOTICE-2026-CHRISTMAS` at 2026-10-31 23:19:44 UTC has SHA-256
+`a7658155b57c51085cd3b36abc9ff6b91f3ca353cda88365a06459ebb40f0801`,
+identical to the original Documents-table artifact. Original retrieval history
+is retained. Cotton keeps the 13:05 NY Christmas-eve close; its 13:35–15:30 queue feeds the 28 December 08:00–14:20 session. The dependent 29 December replacement restates the unchanged Monday queues and overnight matching day.
+
+The current ICE notices listing was also retrieved at 2026-10-31 23:19:44 UTC;
+no superseding Christmas-hours notice was identified among its latest ten
+entries, dated 2–29 October. Exact URLs, retrieval instants, the PDF and
+supporting ordinary-hours/PCPO documents, and the checks against merged data
+are retained in `reviews/2026-10-31-confirm-374/ice/` in the research store
+(`MANIFEST.json`, `REPORT.md` and `MERGED_DATA_CHECK.json`). This confirms the
+published arrangements as checked; it does not witness future production
+trading or establish that later notices cannot change them.

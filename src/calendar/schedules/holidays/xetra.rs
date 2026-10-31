@@ -1,62 +1,36 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Xetra (Deutsche Börse cash market) holiday rows, 2010-2024 and 2025-2027.
+//! Xetra cash-market date exceptions.
+//! Audited windows: 2010-01-01..2024-12-31 and 2025-01-01..2027-12-31.
 //!
-//! Keyed by the crate's own venue-local trade date in `Europe/Berlin`. The
-//! operator states each year's closure set in one sentence — "there will be
-//! trading Mondays to Fridays in \<year\>, with the exception of ..." — printed
-//! on the `Trading calendar` PDFs: the `Trading Calendar <year>` grids of
-//! 2010-2014 (the `DB_HK_<year>` documents of the xetra.com and
-//! deutsche-boerse.com archive) and the `xetra-trading-calendar-<year>` PDFs of
-//! 2015-2024. The 2025-2027 rows key on the operator's per-year PDFs and the
-//! `Trading calendar and trading hours` page's non-trading-days table. The
-//! whole block is **T1**; every row cites the calendar that prints its year.
-//!
-//! Christmas Eve and New Year's Eve are full closures, not early closes, in
-//! every era: the historical sentences place them in the exception list and add
-//! "24 and 31 December are settlement days" — no trading, settlement only —
-//! which is the same statement as the modern `**` footnote "No trading but
-//! settlement is open". Early closes appear only where the operator names both
-//! the day and the instant: the live page names 2026's trading holidays —
-//! Ascension Day (14 May 2026), Whit Monday (25 May 2026), Corpus Christi
-//! (4 June 2026) — and states that "Trading of shares and Exchange traded
-//! products on Frankfurt and Xetra ends on public holidays ... at 20:00 CET".
-//! The 2025 edition of the same page words the 20:00 note over Börse Frankfurt
-//! only, so no 2025 Xetra early close is sourced and none ships; the 2027
-//! trading holidays are named by no retrieved artifact, so 2027 ships closures
-//! only. Both omissions are recorded as residual gaps in
-//! [`docs/evidence/xetra.md`](../../../../../docs/evidence/xetra.md).
-//!
-//! The historical sentences read as they print, per year: 2011 names no 3
-//! October (a Monday) and the 2013 sentence names no 3 October (a Thursday), so
-//! the exchange traded those German Unity Days; from 2022 the sentences stop
-//! naming Whit Monday and German Unity Day altogether, so those days trade as
-//! ordinary days from 2022 on. Weekend-falling exception dates (2011-01-01,
-//! 2012-01-01, 2015-10-03, 2016-12-24, 2016-12-25, 2016-12-31, 2021-05-01,
-//! 2021-10-03, 2022-01-01, 2022-05-01, 2022-06-06, 2022-10-03, 2022-12-24,
-//! 2022-12-31, 2023-05-29, 2023-10-03, 2023-12-24, 2023-12-31, 2024-05-20 and
-//! the like) are deleted by the operator's Monday-to-Friday statement itself
-//! and key no weekday row. The page's conditional note — "On December 30,
-//! 2026, deviating trading hours may apply", echoed by the `*)` footnote on the
-//! 2026 PDF — keys no row (LAW-NO-FABRICATED-DATES).
+//! Evidence: [`docs/evidence/xetra.md`](../../../../../docs/evidence/xetra.md).
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
+use crate::calendar::exceptions::ExceptionBlock;
 
 /// The trading-holiday close on shares and exchange traded products, `20:00`
 /// venue-local, in seconds since midnight.
 const HOLIDAY_CLOSE_SSM: u32 = 20 * 3_600;
 
+// 2026-12-30 — T1 — DB-FINAL-SESSION-2026 — DAX-share final trading session.
+// Evidence: docs/evidence/xetra.md
+#[rustfmt::skip]
+static FINAL_SESSION_2026: [ExceptionBlock; 7] = [
+    ExceptionBlock::order_entry(0, 7 * 3_600, 8 * 3_600),
+    ExceptionBlock::extended(0, 8 * 3_600, 9 * 3_600 + 30),
+    ExceptionBlock::regular(0, 9 * 3_600 + 30, 13 * 3_600),
+    ExceptionBlock::extended(0, 13 * 3_600, 13 * 3_600 + 2 * 60 + 30),
+    ExceptionBlock::regular(0, 13 * 3_600 + 2 * 60 + 30, 14 * 3_600),
+    ExceptionBlock::extended(0, 14 * 3_600, 14 * 3_600 + 10 * 60),
+    ExceptionBlock::order_entry(0, 14 * 3_600 + 10 * 60, 15 * 3_600),
+];
+
 /// Xetra's built-in holiday rows and the windows they were audited over.
 ///
-/// Every closure row is one line of the operator's per-year calendar sentence
-/// ("there will be trading Mondays to Fridays in \<year\>, with the exception
-/// of ...") or the equivalent cell of the page's non-trading-days table; the
-/// three 2026 early closes are the page's own named 2026 trading holidays
-/// under its 20:00 close rule. A date inside a window with no row is audited
-/// normal.
+/// A date inside an audited window with no row follows its normal-week profile.
 // Evidence: docs/evidence/xetra.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
@@ -325,6 +299,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 12, 24, Closed, T1, "DB-TC-PDF-2026"),
         // 2026-12-25 - T1 - DB-TC-PDF-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "DB-TC-PDF-2026"),
+        // 2026-12-30 — T1 — DB-FINAL-SESSION-2026 — shortened final session.
+        (2026, 12, 30, ReplacementBlocks(&FINAL_SESSION_2026), T1, "DB-FINAL-SESSION-2026"),
         // 2026-12-31 - T1 - DB-TC-PDF-2026 - New Year's Eve: "No trading but
         // settlement is open".
         (2026, 12, 31, Closed, T1, "DB-TC-PDF-2026"),

@@ -119,6 +119,7 @@ The 2025 block is the intersection of the seven family tables over the `July 5, 
 | 2026-12-24 | unsourced | no single cell — the modelled families disagree, so the venue states no instant | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | notice dated October 22, 2026: Coffee/Coffee Metric/Cotton/Cocoa/FCOJ early at 13:05, Sugar 11/16 regular, FANG+ and the dollar index early at 13:15 |
 | 2026-12-25 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-12-25; all five calendar groups print `closed`; the notice's Fri, Dec 25 column prints `Closed` for every group |
 | 2026-12-28 | unsourced | no single cell — the modelled families disagree, so the venue states no instant | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | the same notice's Mon, Dec 28 column: Coffee/Coffee Metric/Cocoa/Cotton/Sugar 11 late at 08:00, FCOJ and Sugar 16 regular open, the index bullets `Regular Hours` |
+| 2026-12-29 | unsourced | no shared exception arrangement | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | Cotton restates the ordinary Tuesday day to remove its raw Christmas-Friday queue; other family tables carry no replacement |
 
 **Gaps, 2026: the two “missing” notices exist — the earlier record was an archive-channel failure, corrected 2026-10-09 UTC.** The notices listing service named both the **2026 MLK notice** (issued 2025-12-03) and the **2026 Presidents Day notice** (issued 2025-12-23), and both were retrieved live the same day; the prior sweeps' archive-only channels (the CDX prefix enumeration, the 150 live filename probes) had simply never reached December 2025. Their bytes state per-family arrangements that leave the intersection exactly where it was — softs `Closed`, FANG+ early at 13:00, the dollar index printing `Regular Hours, TAS trading will not be held` — so the two dates stay `Unsourced` on the rows above, now cited to the notices instead of the calendar's `open1` cells. **The 2026 Christmas notice issued on October 22, 2026 and was retrieved live 2026-10-23 UTC** (`IFUS-NOTICE-2026-CHRISTMAS`): its two columns state per-family arrangements that disagree on both dates — Thu, Dec 24 prints the softs split (`Early Close … 1:05 pm` for Coffee, Coffee Metric, Cotton, Cocoa and FCOJ against `Regular hours for Sugar 11 and 16`) beside the stock-index and dollar-index bullets' 1:15 pm, and Mon, Dec 28 prints the 8:00 am late open for Cocoa, Coffee, Coffee Metric, Sugar 11 and Cotton against a `Regular Open for FCOJ and Sugar 16` and `Regular Hours` for the index bullets — so both dates ship `Unsourced` on the intersection rule, cited to the notice rather than the calendar's `open1` cells. The 2026 Thanksgiving notice issued on 2026-09-23 and its rows are read above. **`Daily Gold and Silver` may close on further days** the calendar does not name, by the operator's own admission, but that product group has no crate key. **Canola** is on ICE's calendar and has no crate identity in this block. Each gap is closed by the corresponding Exchange Notice. **Scope of the intersection.** `Canola`, `Energy* and Environmental Contracts` and `Daily Gold and Silver Contracts` are product groups on ICE's own calendar that no crate identity routes to, so they are outside this table's intersection; a consumer that maps such a product to the venue calendar would be using a clock the crate never claimed for it. On all four dates that do ship a `closed` row those three groups are closed as well, so including them would not change a row. **The 2026 DST-end week (2026-10-26..30) is the same disagreement shape as the London-bank-holiday late opens:** the notice names the three softs only and prints “Regular Trading Hours” for every other group, so the families disagree on the open instant and the venue ships `unsourced` for each of the five dates. The notice's settlement-window lines are calculation windows, not session boundaries (LAW-SESSION-NOT-EXPIRY), and state nothing this table could carry anyway.
 
@@ -211,3 +212,54 @@ profile avoids pretending the product accepted orders earlier that day.
 
 Same Pre-Open queue as the current profile, so the same classification: this
 is the launch evening's order-entry phase, not a tradeable session.
+
+## Holiday-module narrative moved on 2026-10-31 UTC
+
+The holiday tables key ICE's civil-date notices to the local trade date in
+America/New_York. Matching runs inside one civil day for the non-wrapping
+softs; Cotton and the two index families include the evening leg belonging to
+the following trade date. Post-close queues carry the trade date of the
+matching session they feed, so the 2026 Christmas queue is restated with its
+following Monday session as documented in the family files.
+
+The annual 2025, 2026 and 2027 calendars and the per-holiday notices are T1
+operator statements. `open1` is a declaration of special hours without
+instants until the corresponding notice issues; the 2027 `open1` dates remain
+withheld. The 2026 Christmas notice has now issued and is recorded below.
+Coverage remains 2025-01-01..2028-01-03. The last two dates are audited normal:
+2027-12-31 is absent from the calendar, and every modelled product group
+prints open on 2028-01-03. Exact family calendars carry their own arrangements;
+the broad venue withholds dates on which those family arrangements disagree.
+
+## 2026-10-31 UTC Christmas notice review
+
+The operator's notice of 2026-10-22, `IFUS-NOTICE-2026-CHRISTMAS`, is unconditional and states
+2026-12-24, 2026-12-25 and 2026-12-28 in New York local time. Its PDF and
+layout text are retained under
+`reviews/2026-10-31-future-update/ice-americas/` in the research store.
+The adjacent `ice-christmas-2026.FETCH.json` records the live URL,
+retrieval instant, byte count and SHA-256. The 2026 notices-listing response
+was retrieved at 2026-10-31 22:04:49 UTC and names this exact PDF.
+The audited window remains 2025-01-01..2028-01-03.
+
+The venue remains an intersection rather than a replacement for exact
+family routing. On 2026-12-24 Sugar matches to 13:00 NY, the other four
+modelled softs to 13:05, and the two index families to 13:15. On 2026-12-28
+four softs have late opens, FCOJ has its regular open, the index families
+have regular hours, and the softs carry their Christmas-eve queues. Both
+dates therefore carry `Unsourced` here, now based on the actual notice
+rather than on an unpublished-notice assumption. Each exact family states
+its sourced arrangement in its own table and evidence file. The new source
+is a confirmed forward publication as checked on 2026-10-31 UTC.
+
+The additional 2026-12-29 venue marker follows Cotton's complete replacement
+of the first ordinary wrapped day after its special Monday session. The
+Cotton replacement removes the Christmas-Friday raw queue the baseline would
+otherwise assign to Tuesday; other families do not carry that replacement.
+Its matching boundaries are ordinary, but the family table's complete
+order-entry arrangement differs, so the broad venue withholds that trade date.
+
+**Forward confirmation:** re-confirm the published 2026-12-24 and
+2026-12-28 arrangements, plus Cotton's derived 2026-12-29 replacement,
+against the operator by 2026-12-23 UTC under LAW-WATCH; tracked in
+[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).

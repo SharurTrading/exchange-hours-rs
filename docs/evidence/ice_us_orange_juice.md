@@ -92,8 +92,9 @@ The 2025 block is the `July 5, 2024` — `2025 Trading Holiday Calendar`'s own d
 | 2026-11-26 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-11-26, “Thanksgiving Day” |
 | 2026-12-24 | early close | `Early Close for Coffee “C”, Coffee “C”® Metric, Cotton, Cocoa and FCOJ - 1:05 pm` — 13:05 NY | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | notice dated October 22, 2026, Thu, Dec 24 column of the softs group line |
 | 2026-12-25 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-12-25, “Christmas Day” |
+| 2026-12-28 | replacement blocks | matching 08:00–14:00 NY; prior Thursday queue 13:35–15:30 NY | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | the 2026-12-24 post-close queue is carried at offset -4 to the session it feeds; FCOJ's Monday open is regular |
 
-**Gaps, 2026: the 2026 MLK and Presidents Day notices exist** — the earlier record that none did was an archive-channel failure, corrected on 2026-10-09 UTC when the operator's own notices listing service named both (issued 2025-12-03 and 2025-12-23, retrieved live the same day). Their softs group lines print `Closed` for the holidays, which is what the calendar rows above already state, so no row moves; the notices corroborate, they do not re-key. **The 2026 Christmas notice issued on October 22, 2026 and was retrieved live 2026-10-23 UTC** (`IFUS-NOTICE-2026-CHRISTMAS`): its Christmas-eve column gives FCOJ the 1:05 pm early close — TAS trading for Cotton and FCOJ ends at 1:00 pm — and its Boxing Day column prints `Regular Open for FCOJ and Sugar 16`, so 2026-12-28 is audited normal and carries no row. The 2026 Thanksgiving notice issued on 2026-09-23 and is read below; the DST-end notice of 2026-09-25 is read above. **`Daily Gold and Silver` may close on further days** the calendar does not name, by the operator's own admission, but that product group has no crate key. **Canola** is on ICE's calendar and has no crate identity in this block. Each gap is closed by the corresponding Exchange Notice.
+**Gaps, 2026: the 2026 MLK and Presidents Day notices exist** — the earlier record that none did was an archive-channel failure, corrected on 2026-10-09 UTC when the operator's own notices listing service named both (issued 2025-12-03 and 2025-12-23, retrieved live the same day). Their softs group lines print `Closed` for the holidays, which is what the calendar rows above already state, so no row moves; the notices corroborate, they do not re-key. **The 2026 Christmas notice issued on October 22, 2026 and was retrieved live 2026-10-23 UTC** (`IFUS-NOTICE-2026-CHRISTMAS`): its Christmas-eve column gives FCOJ the 1:05 pm early close — TAS trading for Cotton and FCOJ ends at 1:00 pm — and its Boxing Day column prints `Regular Open for FCOJ and Sugar 16`, so matching on 2026-12-28 retains its regular 08:00–14:00 NY window; the replacement row additionally preserves the shortened Christmas-eve queue, as described in the 2026-10-31 correction below. The 2026 Thanksgiving notice issued on 2026-09-23 and is read below; the DST-end notice of 2026-09-25 is read above. **`Daily Gold and Silver` may close on further days** the calendar does not name, by the operator's own admission, but that product group has no crate key. **Canola** is on ICE's calendar and has no crate identity in this block. Each gap is closed by the corresponding Exchange Notice.
 
 **Interpretive steps, 2026:** ICE's calendars key one line per product group, not per contract, and the group “Cocoa, Coffee “C”®, Coffee "C"® Metric, Cotton No 2®, FCOJ, Sugar No. 11 and No. 16 Contracts” is the line this family sits on; the per-holiday notices restate the same set as “Sugar No. 11® and 16, Coffee “C”®, Coffee "C"® Metric, Cotton No. 2®, Cocoa and FCOJ”. Where a notice names a subset — Easter Monday's “Sugar No. 11, Coffee “C” and Cocoa”, and 2026-07-06's “Cotton” — only the named families take the row and the notice's own “Regular Hours for all other contracts” is the positive statement of normality for the rest. 2026-10-12 is normal for the same reason. Each family's session runs inside one New York civil day, so the conversion from ICE's civil date to the crate's trade date is the identity. FCOJ is therefore **not** part of the 2026-04-06 late open and ships no row for it.
 
@@ -246,3 +247,41 @@ product-page form ("Pre-Open ... 8:00 PM 20:00"); ICE publishes no notice
 establishing or moving it, so it is carried in the baseline rather than given
 a cutover.
 Evidence: docs/evidence/ice_us_orange_juice.md
+
+## 2026-10-31 UTC post-close queue correction
+
+The already-cited `IFUS-NOTICE-2026-CHRISTMAS` was retrieved again at
+2026-10-31 22:05:03 UTC. Its bytes are identical to the 2026-10-23 capture
+in the Documents table (SHA-256
+`a7658155b57c51085cd3b36abc9ff6b91f3ca353cda88365a06459ebb40f0801`).
+The second PDF capture and layout text are under
+`reviews/2026-10-31-future-update/ice-americas/` in the research store, with
+URL and retrieval metadata in `ice-christmas-2026.FETCH.json`. The annual
+window remains 2025-01-01..2028-01-03.
+
+Matching on 2026-12-24 ends at 13:05 NY; Sugar's own hours are
+regular while the four other modelled softs have the notice's 13:05 early
+close. The notice separately states the Post-Close Pre-Open starts thirty
+minutes after each contract closes and ends at 15:30 NY. Thus this family's
+queue is 13:35–15:30 NY on Thursday 2026-12-24. It is order entry only.
+
+The next matching session is Monday 2026-12-28, 08:00–14:00 NY. The
+notice expressly gives FCOJ its regular open and the other four modelled
+softs an 08:00 late open, and keeps every regular close. For Cotton this
+creates a Monday daytime session even though its normal grid has no Sunday
+evening leg. A scalar late-open clip cannot create that session or preserve
+the Thursday queue. A complete `ReplacementBlocks` row therefore states the
+Thursday queue at offset -4 and the Monday matching block. The queue carries
+2026-12-28, the trade date of the session it feeds, under the charter's
+Post-Close convention; no matching on the closed 2026-12-25 is invented.
+Monday's own post-close queue still feeds 2026-12-29 and remains unchanged.
+TAS and settlement windows are excluded by LAW-SESSION-NOT-EXPIRY.
+
+The two new exception dates are forward publications confirmed against the
+operator on 2026-10-31 UTC. The source is sufficiently specified for the
+blocks above; the published 2027 `open1` dates remain withheld.
+
+**Forward confirmation:** re-confirm the published 2026-12-24 and
+2026-12-28 arrangements, plus Cotton's derived 2026-12-29 replacement,
+against the operator by 2026-12-23 UTC under LAW-WATCH; tracked in
+[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).

@@ -168,3 +168,7 @@ above are:
 > Shared module. The narrative for
 > [`ice_us.rs`](../../src/calendar/schedules/futures/us/ice_us.rs)
 > lives in [`iceus`](iceus.md#module-narrative-moved-from-srccalendarschedulesfuturesusice_usrs-on-2026-09-12-utc).
+
+**Forward confirmation:** reconfirm the already-published 2026 Christmas
+arrangements by 2026-12-23 UTC under LAW-WATCH; tracked in
+[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).

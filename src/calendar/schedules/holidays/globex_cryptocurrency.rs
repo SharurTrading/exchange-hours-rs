@@ -1,61 +1,10 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME cryptocurrency holiday rows, venue-local trade dates 2017-12-17 to
+//! CME cryptocurrency trade-date exceptions, audited over 2017-12-17 to
 //! 2018-12-31, 2019-01-01 to 2021-12-31, 2022-01-01 to 2024-12-31 and
-//! 2025-01-01 to 2027-12-31 (LAW-HOLIDAY-SCOPE).
+//! 2025-01-01 to 2027-12-31.
 //!
-//! Every row is keyed by the crate's own America/Chicago trade date, never by
-//! CME's event date: the operator publishes a holiday as an event list on a
-//! civil day and prints the trade date each event carries, and it is that
-//! printed trade date the rows below are built from.
-//!
-//! The family's [`HolidayKind::Closed`] rows mean "there is no such trade
-//! date", not "trading stopped". Which of the two consequences follows is a
-//! property of the era, not of the row:
-//!
-//! - in the five-day 17:00-16:00 CT era, which closes over the weekend, a
-//!   closed trade date deletes its complete trading day including the session
-//!   that opened the previous evening, so only a date CME published with no
-//!   trading at all carries a row. The Monday and Thursday holidays on which
-//!   CME published a 16:00 CT pre-open instead of a 16:00 CT final close are
-//!   not such dates: matching ran from the previous 17:00 CT to 16:00 CT as on
-//!   a normal day and only the trade-date label merged. Such a holiday carries
-//!   no row of its own, because the operator assigns the span the following
-//!   business day's trade date: the span ships as a `ReplacementBlocks` row
-//!   keyed to that trade date, and its Pre-Open queue is stated with it;
-//! - in the 24/7 era from trade date 2026-05-30, where the family assigns a
-//!   block to the following open business date, a closed trade date is skipped
-//!   by that roll and the connected block survives, carrying the next business
-//!   date instead. The operator's own data says exactly this: on a holiday its
-//!   16:00 CT final close is either omitted or printed with the following
-//!   Monday's trade date. Where it is *printed* — the era's Friday holidays —
-//!   the ordinary week already states the whole block and the `Closed` row is
-//!   the only row the date needs. Where it is **omitted** — the era's Monday and
-//!   Thursday holidays — the holiday's own 16:00-16:01 CT minute carried no
-//!   matching break, so the following trade date's complete day ships as a
-//!   `ReplacementBlocks` row too: [`MERGED_24X7_AFTER_MONDAY_HOLIDAY_BLOCKS`]
-//!   for a Monday holiday and
-//!   [`MERGED_24X7_AFTER_THURSDAY_HOLIDAY_BLOCKS`] for a Thursday one.
-//!
-//! **2022-2024.** The era sits inside the five-day 17:00-16:00 CT era, so each
-//! of its `Closed` rows deletes a complete trading day. Thirteen rows: seven
-//! closures, five early closes — 12:45 CT on 2022-11-25, 2023-11-24,
-//! 2024-11-29 and 2024-12-24, and 10:15 CT on 2023-04-07; on 2023-01-16 and
-//! 2023-02-20 the family ran its ordinary Monday to the 16:00 CT close, so
-//! those dates ship no row (2023-01-16 confirmed with market data, retained
-//! privately; 2023-02-20 per the operator's own summary sheet
-//! `files/presidents-day.pdf`). The 2022 rows
-//! and the 2023 rows CME published a holiday schedule for are **T1**; the
-//! confirmed 2023-01-16 and all of 2024 are **T2**.
-//!
-//! The 2025-2027 block is **T2**: CME's own trading-hours service, the channel
-//! the operator's trading-hours page calls to render its per-asset-class holiday
-//! table, read as bytes and saved. It states seventeen merged trade dates as
-//! `ReplacementBlocks` rows — the nine five-day-era dates and the eight 24/7-era
-//! ones — and one six-block day-after-Thanksgiving row. The five-day era's
-//! Pre-Open queues are witnessed by market data from the 2017-12-17 launch
-//! (2026-10-15), so the normal week serves them. The quotations, capture
-//! times and the event-date-to-trade-date conversion are in
+//! Source quotations, conversion steps and published scope:
 //! `docs/evidence/globex_cryptocurrency.md`.
 
 use super::fences::early_close;
@@ -219,6 +168,40 @@ pub(crate) static MERGED_THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 6] = [
     ExceptionBlock::extended(-1, 17 * 3_600, 7 * 3_600),
     ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
     ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 13 * 3_600 + 45 * 60),
+];
+
+// The complete Monday trade dates spanning the sourced October Saturday
+// maintenance extensions. Every block is relative to the Monday, including
+// Friday's queue and the Sunday midnight boundary. Evidence:
+// docs/evidence/globex_cryptocurrency.md, October 2026 maintenance review.
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "the evidence fence requires midnight in hour-and-minute grammar"
+)]
+static SATURDAY_TO_0500_BLOCKS: [ExceptionBlock; 7] = [
+    ExceptionBlock::order_entry(-3, 16 * 3_600 + 1 * 60, 16 * 3_600 + 2 * 60),
+    ExceptionBlock::extended(-3, 16 * 3_600 + 2 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-2, 0 * 3_600 + 0 * 60, 2 * 3_600),
+    ExceptionBlock::order_entry(-2, 4 * 3_600 + 45 * 60, 5 * 3_600 + 0 * 60),
+    ExceptionBlock::extended(-2, 5 * 3_600 + 0 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-1, 0 * 3_600 + 0 * 60, 24 * 3_600),
+    ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 16 * 3_600),
+];
+
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "the evidence fence requires midnight in hour-and-minute grammar"
+)]
+static SATURDAY_TO_1530_BLOCKS: [ExceptionBlock; 7] = [
+    ExceptionBlock::order_entry(-3, 16 * 3_600 + 1 * 60, 16 * 3_600 + 2 * 60),
+    ExceptionBlock::extended(-3, 16 * 3_600 + 2 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-2, 0 * 3_600 + 0 * 60, 2 * 3_600),
+    ExceptionBlock::order_entry(-2, 15 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(-2, 15 * 3_600 + 30 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-1, 0 * 3_600 + 0 * 60, 24 * 3_600),
+    ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 16 * 3_600),
 ];
 
 /// The family's built-in holiday rows and the windows they were audited over.
@@ -500,6 +483,15 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             T2,
             "CME-SVC-2026-09-06"
         ),
+        // 2026-10-05 — T2 — CME-SVC-2026-10-02 — Saturday October 3
+        // maintenance 02:00-05:00 CT with 04:45-05:00 order entry.
+        (2026, 10, 5, ReplacementBlocks(&SATURDAY_TO_0500_BLOCKS), T2, "CME-SVC-2026-10-02"),
+        // 2026-10-26 — T2 — CME-SVC-2026-10-23 — Saturday October 24
+        // maintenance 02:00-15:30 CT with 15:15-15:30 order entry.
+        (2026, 10, 26, ReplacementBlocks(&SATURDAY_TO_1530_BLOCKS), T2, "CME-SVC-2026-10-23"),
+        // 2026-11-02 — T2 — CME-SVC-2026-10-30 — Saturday October 31
+        // maintenance 02:00-05:00 CT with 04:45-05:00 order entry.
+        (2026, 11, 2, ReplacementBlocks(&SATURDAY_TO_0500_BLOCKS), T2, "CME-SVC-2026-10-30"),
         // 2026-11-26 — T2 — CME-SVC-2026-11-25 — Thanksgiving; the 16:00 CT close
         // is omitted and the re-open carries trade date 2026-11-27.
         (2026, 11, 26, HolidayKind::Closed, T2, "CME-SVC-2026-11-25"),

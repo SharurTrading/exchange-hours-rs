@@ -665,25 +665,14 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     assert!(restored.is_open_extended(ct((2026, 8, 8), (4, 0, 0))));
 }
 
-/// Notices 20260824, 20260921 and 20261005 name five one-day Saturday
-/// extensions for the same channels, each reverting to the standard window the
-/// following week. The October 24 extension runs 02:00-15:30 CT for the FIA
-/// industry disaster-recovery exercise: a 13.5-hour operator-designated gap,
-/// past the four-hour bound the crate's maintenance policy keeps, so
-/// `session_state` must classify it `Closed` and `is_maintenance` must answer
-/// false there. The October 31 extension runs 02:00-05:00 CT: three hours,
-/// inside the bound, so it classifies `Maintenance`.
+/// Earlier extensions retain their legacy snapshot representation. October's
+/// complete trade-date exceptions and newly sourced queues are tested through
+/// the calendar surface in the cryptocurrency holiday suite.
 #[test]
 fn cryptocurrency_models_the_later_saturday_extensions() {
     for (saturday, reopen, next_saturday, next_reopen) in [
         ((2026, 8, 29), (6u32, 0u32), (2026, 9, 5), (4u32, 0u32)),
         ((2026, 9, 19), (8, 0), (2026, 9, 26), (4, 0)),
-        ((2026, 10, 3), (5, 0), (2026, 10, 10), (4, 0)),
-        // The Saturday after the FIA drill is itself an extension day
-        // (notice 20261005), so that step reverts only to the next
-        // extension's 05:00 reopen; the standard window returns on 11-07.
-        ((2026, 10, 24), (15, 30), (2026, 10, 31), (5, 0)),
-        ((2026, 10, 31), (5, 0), (2026, 11, 7), (4, 0)),
     ] {
         let (reopen_hour, reopen_minute) = reopen;
         let temporary = hours_for_market_hours_key(
@@ -746,7 +735,7 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
     for probe in [
         ct((2026, 10, 24), (2, 0, 0)),
         ct((2026, 10, 24), (8, 0, 0)),
-        ct((2026, 10, 24), (15, 29, 59)),
+        ct((2026, 10, 24), (15, 14, 59)),
     ] {
         assert_eq!(
             calendar
@@ -770,7 +759,7 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
     for probe in [
         ct((2026, 10, 31), (2, 0, 0)),
         ct((2026, 10, 31), (3, 0, 0)),
-        ct((2026, 10, 31), (4, 59, 59)),
+        ct((2026, 10, 31), (4, 44, 59)),
     ] {
         assert_eq!(
             calendar

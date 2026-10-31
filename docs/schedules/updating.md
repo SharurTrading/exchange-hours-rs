@@ -371,9 +371,12 @@ forward, and only a sourced onset day replaces it.
   [GIX operator site](https://www.tradegix.com/). Registration or an H2 target
   is not a live-session boundary; add a `gix` identity only after a sourced
   production day and hours are available.
-- **Nasdaq MRX Options 3C — awaiting operative alert:** the approved additional
-  sessions remain unencoded until Nasdaq publishes the required trader alert
-  with the production day and final phase table.
+- **Nasdaq MRX Options 3C — awaiting operative alert:**
+  [OTA2026-39](https://www.nasdaqtrader.com/MicroNews.aspx?id=OTA2026-39)
+  targets the first quarter of 2027 for designated-class extended sessions,
+  without an unconditional day.
+  Keep them unencoded until the operator states the production day and final
+  phase table for the exact admitted scope.
 
 ## 4. Implement in the owner module
 

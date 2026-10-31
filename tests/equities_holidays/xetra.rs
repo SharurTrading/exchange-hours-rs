@@ -271,6 +271,80 @@ fn the_2026_closures_and_the_three_named_trading_holidays_ship() {
 }
 
 #[test]
+fn the_2026_final_session_replaces_retail_late_with_shortened_post_trading() {
+    let calendar = calendar();
+    let row = calendar
+        .holiday_on(day(2026, 12, 30))
+        .expect("the final session has a sourced replacement");
+    assert!(matches!(row.kind(), HolidayKind::ReplacementBlocks(_)));
+    assert_eq!(row.document_id(), "DB-FINAL-SESSION-2026");
+    assert_eq!(row.tier(), EvidenceTier::T1);
+
+    for (time, open) in [
+        ((7, 59, 59), false),
+        ((8, 0, 0), true),
+        ((8, 55, 0), true),
+        ((14, 0, 0), true),
+        ((14, 5, 0), true),
+        ((14, 9, 59), true),
+        ((14, 10, 0), false),
+        ((15, 0, 0), false),
+        ((21, 0, 0), false),
+    ] {
+        assert_eq!(
+            calendar
+                .is_open(de((2026, 12, 30), time))
+                .expect("the final trading date is covered"),
+            open,
+            "the final session's executable envelope at {time:?}"
+        );
+    }
+    for (time, order_entry) in [
+        ((6, 59, 59), false),
+        ((7, 0, 0), true),
+        ((8, 0, 0), false),
+        ((14, 9, 59), false),
+        ((14, 10, 0), true),
+        ((14, 59, 59), true),
+        ((15, 0, 0), false),
+    ] {
+        assert_eq!(
+            calendar
+                .is_order_entry_only(de((2026, 12, 30), time))
+                .expect("the final trading date is covered"),
+            order_entry,
+            "pre-trading and post-trading remain order entry at {time:?}"
+        );
+    }
+    for (time, regular) in [
+        ((9, 0, 29), false),
+        ((9, 0, 30), true),
+        ((13, 0, 0), false),
+        ((13, 2, 30), true),
+        ((13, 59, 59), true),
+        ((14, 0, 0), false),
+    ] {
+        assert_eq!(
+            calendar
+                .is_open_regular(de((2026, 12, 30), time))
+                .expect("the final trading date is covered"),
+            regular,
+            "the final session's continuous phases at {time:?}"
+        );
+    }
+    assert!(
+        calendar
+            .is_open(de((2026, 12, 29), (21, 0, 0)))
+            .expect("the preceding ordinary date is covered")
+    );
+    let next = calendar
+        .next_session_after(de((2026, 12, 30), (15, 0, 0)))
+        .expect("the New Year interval is covered")
+        .expect("the January reopening exists");
+    assert_eq!(next.0, de((2027, 1, 4), (8, 0, 0)));
+}
+
+#[test]
 fn every_printed_2027_closure_ships() {
     let calendar = calendar();
     assert_closed(
@@ -285,8 +359,9 @@ fn every_printed_2027_closure_ships() {
             day(2027, 12, 31),
         ],
     );
-    // The 2027 trading holidays are named by no retrieved artifact, so they
-    // carry no row; Ascension 2027-05-06 answers as an ordinary Thursday.
+    // The 2027 PDF marks trading holidays only with the conditional
+    // "Trading hours may differ" footnote and states no final hours, so no
+    // early close is inferred; Ascension answers as an ordinary Thursday.
     assert_eq!(calendar.holiday_on(day(2027, 5, 6)), None);
     assert!(
         calendar

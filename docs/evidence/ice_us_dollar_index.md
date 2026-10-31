@@ -259,3 +259,7 @@ https://www.ice.com/publicdocs/futures_us/ICE_Dollar_Index_FAQ.pdf
   documents, the archive capture is cited as-is.
   https://web.archive.org/web/20110222135802/https://www.theice.com/publicdocs/futures_us/exchange_notices/ExNot020311DXhours.pdf
 Evidence: docs/evidence/ice_us_dollar_index.md
+
+**Forward confirmation:** reconfirm the already-published 2026 Christmas
+arrangements by 2026-12-23 UTC under LAW-WATCH; tracked in
+[#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374).

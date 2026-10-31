@@ -1680,12 +1680,12 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
         ("cotton", MarketHoursKey::IceUsCotton),
     ] {
         let calendar = key(which);
-        assert_eq!(
-            calendar.holiday_on(day(2026, 12, 28)).map(Holiday::kind),
-            Some(HolidayKind::LateOpen {
-                open_ssm: 8 * 3_600
-            }),
-            "{name}"
+        assert!(
+            matches!(
+                calendar.holiday_on(day(2026, 12, 28)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ),
+            "{name}: the Monday day includes its shortened Christmas-eve queue"
         );
         assert_eq!(
             calendar
@@ -1709,12 +1709,8 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
             );
         }
     }
-    // Cotton's late open is a recorded statement, not an answered session —
-    // the same shape as its 2026-07-06 row: the modelled grid opens for
-    // trade date D at 21:00 NY on D-1 and names no Sunday, so no modelled
-    // trade date 2026-12-28 exists for the row to clip, and the
-    // Monday-evening leg of trade date 2026-12-29 is the answer that would
-    // break first if the row were mis-keyed.
+    // The complete replacement now states Cotton's Monday daytime session.
+    // Its following Monday-evening leg must still feed Tuesday unchanged.
     let cotton = key(MarketHoursKey::IceUsCotton);
     assert!(
         cotton
@@ -1728,7 +1724,6 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
         Some(day(2026, 12, 29))
     );
     for (name, which) in [
-        ("FCOJ", MarketHoursKey::IceUsOrangeJuice),
         ("FANG+", MarketHoursKey::IceUs),
         ("dollar index", MarketHoursKey::IceUsDollarIndex),
     ] {
@@ -1867,5 +1862,117 @@ fn the_venue_table_is_the_intersection_of_the_five_tables_its_keys_select() {
         date = date
             .checked_add_days(Days::new(1))
             .expect("the scan stays inside the representable calendar");
+    }
+}
+
+#[test]
+fn the_2026_christmas_notice_shortens_queues_and_states_the_monday_reopen() {
+    // IFUS-NOTICE-2026-CHRISTMAS, October 22: all times are New York time.
+    // Sugar keeps its 13:00 matching close; the other four softs close 13:05.
+    // Their eve PCPO starts thirty minutes later and ends at 15:30. The queue
+    // feeds the next open matching session on Monday, not the closed Friday.
+    for (which, eve_close, queue_open, monday_close, ordinary_queue) in [
+        (
+            MarketHoursKey::IceUsSugar,
+            (13, 0, 0),
+            (13, 30, 0),
+            (13, 0, 0),
+            (13, 30, 0),
+        ),
+        (
+            MarketHoursKey::IceUsCoffee,
+            (13, 5, 0),
+            (13, 35, 0),
+            (13, 30, 0),
+            (14, 0, 0),
+        ),
+        (
+            MarketHoursKey::IceUsCocoa,
+            (13, 5, 0),
+            (13, 35, 0),
+            (13, 30, 0),
+            (14, 0, 0),
+        ),
+        (
+            MarketHoursKey::IceUsCotton,
+            (13, 5, 0),
+            (13, 35, 0),
+            (14, 20, 0),
+            (14, 50, 0),
+        ),
+        (
+            MarketHoursKey::IceUsOrangeJuice,
+            (13, 5, 0),
+            (13, 35, 0),
+            (14, 0, 0),
+            (14, 30, 0),
+        ),
+    ] {
+        let calendar = key(which);
+        let close = ny((2026, 12, 24), eve_close);
+        assert!(
+            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            "{which:?}"
+        );
+        assert!(!calendar.is_open(close).unwrap(), "{which:?}");
+        let queue = ny((2026, 12, 24), queue_open);
+        assert!(
+            !calendar
+                .is_accepting_orders(queue - TimeDelta::seconds(1))
+                .unwrap(),
+            "{which:?}"
+        );
+        assert!(calendar.is_order_entry_only(queue).unwrap(), "{which:?}");
+        assert!(!calendar.is_open(queue).unwrap(), "{which:?}");
+        assert_eq!(
+            calendar.trade_date(queue).unwrap(),
+            Some(day(2026, 12, 28)),
+            "{which:?}"
+        );
+        assert!(
+            calendar
+                .is_order_entry_only(ny((2026, 12, 24), (15, 29, 59)))
+                .unwrap(),
+            "{which:?}"
+        );
+        assert!(
+            !calendar
+                .is_accepting_orders(ny((2026, 12, 24), (15, 30, 0)))
+                .unwrap(),
+            "{which:?}"
+        );
+        assert!(
+            !calendar
+                .is_accepting_orders(ny((2026, 12, 25), (15, 0, 0)))
+                .unwrap(),
+            "{which:?}"
+        );
+        assert!(
+            !calendar.is_open(ny((2026, 12, 28), (7, 59, 59))).unwrap(),
+            "{which:?}"
+        );
+        assert!(
+            calendar.is_open(ny((2026, 12, 28), (8, 0, 0))).unwrap(),
+            "{which:?}"
+        );
+        let close = ny((2026, 12, 28), monday_close);
+        assert!(
+            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            "{which:?}"
+        );
+        assert!(!calendar.is_open(close).unwrap(), "{which:?}");
+        assert!(
+            calendar
+                .is_order_entry_only(ny((2026, 12, 28), ordinary_queue))
+                .unwrap(),
+            "{which:?}"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(ny((2026, 12, 28), ordinary_queue))
+                .unwrap(),
+            Some(day(2026, 12, 29)),
+            "{which:?}"
+        );
     }
 }

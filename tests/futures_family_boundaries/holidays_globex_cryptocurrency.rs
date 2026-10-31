@@ -23,7 +23,7 @@ use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, 
 use chrono_tz::US;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlock, ExceptionBlockKind,
-    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key,
 };
 
@@ -2255,4 +2255,125 @@ fn era_2019_2021_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2019_2021_ROWS.len(), "every recorded row ships");
+}
+
+/// CME's complete service windows assign the October maintenance Saturdays to
+/// the following Monday and state the last fifteen minutes as Pre-Open.
+#[test]
+fn october_maintenance_rows_preserve_the_weekend_and_exact_queues() {
+    let calendar = crypto();
+    for (saturday, friday, monday, preopen, reopen, closed_state) in [
+        (
+            (10, 3),
+            (10, 2),
+            (10, 5),
+            (4, 45),
+            (5, 0),
+            SessionState::Maintenance,
+        ),
+        (
+            (10, 24),
+            (10, 23),
+            (10, 26),
+            (15, 15),
+            (15, 30),
+            SessionState::Closed,
+        ),
+        (
+            (10, 31),
+            (10, 30),
+            (11, 2),
+            (4, 45),
+            (5, 0),
+            SessionState::Maintenance,
+        ),
+    ] {
+        let trade_date = day(2026, monday.0, monday.1);
+        let row = calendar
+            .holiday_on(trade_date)
+            .expect("a sourced replacement row");
+        assert_eq!(row.tier(), EvidenceTier::T2);
+        assert!(matches!(row.kind(), HolidayKind::ReplacementBlocks(_)));
+        let before = ct(2026, saturday.0, saturday.1, 1, 59);
+        assert_eq!(calendar.is_open(before), Ok(true));
+        assert_eq!(calendar.trade_date(before), Ok(Some(trade_date)));
+        let closed = ct(2026, saturday.0, saturday.1, 2, 0);
+        assert_eq!(calendar.is_open(closed), Ok(false));
+        assert_eq!(calendar.session_state(closed), Ok(closed_state));
+        assert_eq!(calendar.is_accepting_orders(closed), Ok(false));
+        let queue = ct(2026, saturday.0, saturday.1, preopen.0, preopen.1);
+        assert_eq!(
+            calendar.is_accepting_orders(queue - Duration::seconds(1)),
+            Ok(false)
+        );
+        assert_eq!(calendar.is_order_entry_only(queue), Ok(true));
+        assert_eq!(calendar.is_open(queue), Ok(false));
+        assert_eq!(calendar.session_state(queue), Ok(SessionState::OrderEntry));
+        let open = ct(2026, saturday.0, saturday.1, reopen.0, reopen.1);
+        assert_eq!(
+            calendar.is_order_entry_only(open - Duration::seconds(1)),
+            Ok(true)
+        );
+        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(calendar.is_open(open), Ok(true));
+        assert_eq!(calendar.trade_date(open), Ok(Some(trade_date)));
+        assert_eq!(calendar.next_session_open_after(closed), Ok(Some(open)));
+        assert_eq!(
+            calendar.candle_end(open, CalendarResolution::Daily),
+            Ok(Some(ct(2026, monday.0, monday.1, 16, 0))),
+        );
+        let friday_queue = ct(2026, friday.0, friday.1, 16, 1);
+        assert_eq!(calendar.is_order_entry_only(friday_queue), Ok(true));
+        assert_eq!(
+            calendar.is_open(friday_queue + Duration::minutes(1)),
+            Ok(true)
+        );
+        let monday_close = ct(2026, monday.0, monday.1, 16, 0);
+        assert_eq!(
+            calendar.is_open(monday_close - Duration::seconds(1)),
+            Ok(true)
+        );
+        assert_eq!(calendar.is_open(monday_close), Ok(false));
+        assert_eq!(
+            calendar.is_order_entry_only(monday_close + Duration::minutes(1)),
+            Ok(true)
+        );
+        assert_eq!(
+            calendar.is_open(monday_close + Duration::minutes(2)),
+            Ok(true)
+        );
+    }
+}
+
+/// A replacement covering the US clock change includes both copies of the
+/// repeated Sunday hour and restores the standard Saturday queue next week.
+#[test]
+fn october_31_replacement_covers_both_dst_fold_instants_and_restores_the_week() {
+    let calendar = crypto();
+    for fold in [
+        Utc.with_ymd_and_hms(2026, 11, 1, 6, 30, 0)
+            .single()
+            .expect("valid UTC instant"),
+        Utc.with_ymd_and_hms(2026, 11, 1, 7, 30, 0)
+            .single()
+            .expect("valid UTC instant"),
+    ] {
+        assert_eq!(calendar.is_open(fold), Ok(true));
+        assert_eq!(calendar.trade_date(fold), Ok(Some(day(2026, 11, 2))));
+    }
+    assert_eq!(
+        calendar.is_order_entry_only(ct(2026, 11, 7, 3, 45)),
+        Ok(true)
+    );
+    assert_eq!(calendar.is_open(ct(2026, 11, 7, 4, 0)), Ok(true));
+    let inside_exception = ct(2026, 10, 31, 4, 30);
+    assert!(
+        exchange_hours::hours_for_market_hours_key(
+            MarketHoursKey::GlobexCryptocurrency,
+            inside_exception,
+        )
+        .is_open(inside_exception),
+        "a detached normal-week snapshot has no date exceptions"
+    );
+    assert_eq!(calendar.is_open(inside_exception), Ok(false));
 }

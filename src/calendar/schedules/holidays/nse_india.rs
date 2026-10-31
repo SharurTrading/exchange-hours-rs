@@ -1,58 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
-//! National Stock Exchange of India holiday rows, 2010-2026.
-//!
-//! Keyed by the crate's own venue-local trade date in `Asia/Kolkata` (design
-//! memo D1). NSE runs no overnight wrap and no weekend sessions, so a closed
-//! trade date is one whose daytime sessions are absent outright.
-//!
-//! The block is the operator's own published trading-holiday material at T1
-//! or T2: the annual circulars ("Trading holidays for the calendar year ...",
-//! 2010 and 2013), the annual trading-holiday pages on `nseindia.com`
-//! (2011, 2014-2017, 2019-2022), and the operator's own
-//! `holiday-master?type=trading` machine channel (2023, 2024, and 2026's
-//! 2026-01-15 Maharashtra-election closure, which the earlier banner
-//! predates; T2) — all
-//! read from the Wayback `id_` replays the live site's bot wall makes
-//! necessary. Each source's CM/equities list prints one row per holiday and
-//! separately lists the holidays falling on Saturday/Sunday; only the weekday
-//! legs ship rows, exactly as with the SSE range legs, and a Muhurat-Trading
-//! footnote keyed to a specific date withholds that date below. The
-//! derivation and per-row quotations are recorded in
-//! [`docs/evidence/nse_india.md`](../../../../../docs/evidence/nse_india.md).
-//!
-//! **2018 sits outside every audited window.** No operator artifact stating
-//! the 2018 CM holiday list survives in the archive (the annual-page URL has
-//! no capture in that year and the annual circular is uncaptured), so the
-//! coverage windows run 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31.
-//! 2012 was in that state until 2026-10-06 UTC, when the 2012 list's own
-//! annual circular (`NSE-CIRC-2011-66`, dated 2011-12-09) surfaced in the
-//! archive and the first window merged across the year. The 2018 span sits
-//! **between two audited windows**, so the charter's bridged-residual
-//! convention (2026-10-06, AGENTS.md "Modeling conventions", #296) serves its
-//! session questions from the sourced normal week while the holiday layer
-//! stays honestly absent: the metadata reports the span as
-//! `HolidayWindowsBridged`, no closure is asserted there that no operator
-//! statement witnesses, and the span's residual is disclosed with its closer
-//! in the evidence file's gaps.
-//!
-//! **Seven rows are `Unsourced` rather than closures** (2011-10-26, 2012-11-13,
-//! 2013-11-03, 2014-10-23, 2017-10-19, 2019-10-27 and 2026-11-08 — six Muhurat
-//! dates plus the 2026 banner date): each source that prints a Muhurat-Trading
-//! footnote ("*Muhurat Trading will be conducted", timings "shall be notified
-//! subsequently") keys it to a specific date the row set would otherwise
-//! misstate — a printed holiday a special session interrupts, or a weekend the
-//! operator announces a session on. **Eight further Muhurat dates ship
-//! `ReplacementBlocks`** (2010-11-05, 2015-11-11, 2016-10-30, 2020-11-14,
-//! 2022-10-24, 2023-11-12, 2024-11-01, 2025-10-21): the operator's own
-//! capital-market circulars recovered from the Wayback archive — the 2010,
-//! 2015 and 2016 ones on 2026-10-06 UTC — state each day's complete
-//! special-session schedule, and the rows restate those printed schedules.
-//! 2021 is the exception in the other direction: its list prints the Muhurat
-//! footnote against no date at all, so no day is withheld and the
-//! announced-but-undated session stays a recorded residual risk. NSE
-//! publishes the next year's list each December; no 2027 list exists as of
-//! the 2026-09-29 retrieval, so the window ends 2026-12-31.
+//! National Stock Exchange of India holiday and special-session rows.
+//! Audited windows: 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31.
+//! Evidence: `docs/evidence/nse_india.md`.
 
 use crate::calendar::exceptions::ExceptionBlock;
 
@@ -60,22 +10,7 @@ use super::EvidenceTier::{T1, T2};
 use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
 use super::{HolidayTable, holidays};
 
-/// The operator's printed Diwali Muhurat evening session of 2020, 2022 and
-/// 2023, relative to that trade date.
-///
-/// Read from the operator's own capital-market circulars (`NSE-CIRC-2020-98`,
-/// `NSE-CIRC-2022-124` and `NSE-CIRC-2023-139`, whose schedules are
-/// identical): Block deal 17:45-18:00 (a trade prints), Pre Open 18:00-18:08
-/// with the random closure "in last one minute" of that order-entry period,
-/// Normal Market 18:15-19:15, and a Closing Session 19:25-19:35. The
-/// order-entry leg stops at 18:07, the earliest second the auction's random
-/// closure can fire, exactly as the normal-week profile splits its 09:00
-/// pre-open at 09:07; the leg from the closure to the 18:15 Normal Market
-/// open is tradeable and ships `extended`. The circular's Trade Modification
-/// cut-off (18:15-19:45) is a modification window, not a session, and the
-/// Call Auction Illiquid sub-window (18:20-19:05) runs inside the Normal
-/// Market, so neither states an envelope edge.
-///
+/// Muhurat replacement phases for 2020, 2022 and 2023.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_EVENING_BLOCKS: [ExceptionBlock; 5] = [
@@ -86,19 +21,7 @@ static MUHURAT_EVENING_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 19 * 3_600 + 25 * 60, 19 * 3_600 + 35 * 60),
 ];
 
-/// The operator's printed Diwali Muhurat session of 2024-11-01, relative to
-/// that trade date.
-///
-/// Read from the operator's own capital-market circular `NSE-CIRC-2024-147`:
-/// Block deal 17:30-17:45, Pre Open 17:45-18:00 — its footnote bounds the
-/// order-entry period at "17:45 to 17:53 hours" with the random closure "in
-/// last one minute" of it, so the order-entry leg stops at 17:52, the
-/// earliest second the closure can fire — Normal Market 18:00-19:00, and a
-/// Closing Session 19:10-19:20. The Special Pre-open Session for IPO and
-/// relisted scrips (17:45-18:30, opening 18:45-19:00) and the Call Auction
-/// Illiquid sub-window (18:05-18:50) are sub-segment phases inside that
-/// envelope and state no edge the envelope lacks.
-///
+/// Muhurat replacement phases for 2024-11-01.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2024_BLOCKS: [ExceptionBlock; 5] = [
@@ -109,18 +32,7 @@ static MUHURAT_2024_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 19 * 3_600 + 10 * 60, 19 * 3_600 + 20 * 60),
 ];
 
-/// The operator's printed Diwali Muhurat session of 2025-10-21, relative to
-/// that trade date.
-///
-/// Read from the operator's own capital-market circular `NSE-CIRC-2025-124`:
-/// Block deal 13:15-13:30, Pre Open 13:30-13:45 — its footnote states the
-/// random closure "any time between last one minute i.e. 13:37 to 13:38
-/// hours", so the order-entry leg stops at 13:37 — Normal Market 13:45-14:45,
-/// and a Closing Session 14:55-15:05. The Special Pre-open Session for IPO
-/// and relisted scrips (13:30-14:15, opening 14:30-14:45) and the Call
-/// Auction Illiquid sub-window (13:50-14:35) are sub-segment phases inside
-/// that envelope and state no edge the envelope lacks.
-///
+/// Muhurat replacement phases for 2025-10-21.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2025_BLOCKS: [ExceptionBlock; 5] = [
@@ -131,18 +43,19 @@ static MUHURAT_2025_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 14 * 3_600 + 55 * 60, 15 * 3_600 + 5 * 60),
 ];
 
-/// The operator's printed Diwali Muhurat session of 2010-11-05, relative to
-/// that trade date.
-///
-/// Read from the operator's own capital-market circular `NSE-CIRC-2010-121`
-/// (circular 121/2010, dated 2010-10-20): Pre-open order entry 18:00-18:08
-/// "with random closure in last one minute", Normal / RDM / Odd Lot Market
-/// 18:15-19:00, and a Closing Session 19:20-19:30. No block-deal session
-/// exists in 2010. The order-entry leg stops at 18:07, the earliest second
-/// the random closure can fire, exactly as the normal-week profile splits its
-/// pre-open; the leg from the closure to the 18:15 Normal Market open is
-/// tradeable and ships `extended`.
-///
+/// 2026-11-08 — T1 — NSE-CIRC-2026-149 — venue-wide Muhurat session.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2026_BLOCKS: [ExceptionBlock; 6] = [
+    ExceptionBlock::extended(0, 13 * 3_600 + 50 * 60, 14 * 3_600 + 5 * 60),
+    ExceptionBlock::order_entry(0, 14 * 3_600 + 5 * 60, 14 * 3_600 + 13 * 60),
+    ExceptionBlock::extended(0, 14 * 3_600 + 13 * 60, 14 * 3_600 + 20 * 60),
+    ExceptionBlock::regular(0, 14 * 3_600 + 20 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 30 * 60, 15 * 3_600 + 35 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 50 * 60, 16 * 3_600),
+];
+
+/// Muhurat replacement phases for 2010-11-05.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2010_BLOCKS: [ExceptionBlock; 4] = [
@@ -152,17 +65,7 @@ static MUHURAT_2010_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(0, 19 * 3_600 + 20 * 60, 19 * 3_600 + 30 * 60),
 ];
 
-/// The operator's printed Diwali Muhurat session of 2015-11-11, relative to
-/// that trade date.
-///
-/// Read from the operator's own capital-market circular `NSE-CIRC-2015-65`
-/// (circular 65/2015, dated 2015-10-30): Pre Open 17:30-17:38 with the random
-/// closure "in last one minute", Normal Market/LPM 17:45-18:45, Block Deal
-/// Session 17:45-18:20, Call Auction Illiquid session 17:50-18:35, and a
-/// Closing Session 18:55-19:05. The block-deal and illiquid windows run
-/// inside the Normal Market hours and state no edge the envelope lacks; the
-/// order-entry leg stops at 17:37, the earliest second the closure can fire.
-///
+/// Muhurat replacement phases for 2015-11-11.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2015_BLOCKS: [ExceptionBlock; 4] = [
@@ -172,17 +75,7 @@ static MUHURAT_2015_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(0, 18 * 3_600 + 55 * 60, 19 * 3_600 + 5 * 60),
 ];
 
-/// The operator's printed Diwali Muhurat session of 2016-10-30, relative to
-/// that trade date.
-///
-/// Read from the operator's own capital-market circular `NSE-CIRC-2016-56`
-/// (circular 56/2016, dated 2016-10-17): Pre Open 18:15-18:23 with the random
-/// closure "in last one minute", Normal Market/LPM 18:30-19:30, Block Deal
-/// Session 18:30-19:05, Call Auction Illiquid session 18:35-19:20, and a
-/// Closing Session 19:40-19:50. As in 2015, the block-deal and illiquid
-/// windows run inside the Normal Market hours and state no edge the envelope
-/// lacks; the order-entry leg stops at 18:22.
-///
+/// Muhurat replacement phases for 2016-10-30.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
@@ -192,21 +85,7 @@ static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(0, 19 * 3_600 + 40 * 60, 19 * 3_600 + 50 * 60),
 ];
 
-/// NSE's built-in holiday rows and the windows they were audited over.
-///
-/// Every `Closed` row is one printed date of the operator's own holiday
-/// material: `NSE-CIRC-2010-61` for 2010, `NSE-HOL-PAGE-2011` for 2011,
-/// `NSE-CIRC-2011-66` for 2012, `NSE-CIRC-2012-79` for 2013,
-/// `NSE-HOL-PAGE-2014`..`NSE-HOL-PAGE-2017` and
-/// `NSE-HOL-PAGE-2019`..`NSE-HOL-PAGE-2022` for their years, the T2
-/// `NSE-HOLMASTER-2023` and `NSE-HOLMASTER-2024` feeds for 2023-2024, then
-/// `NSE-HOL-2025` for 2025 and `NSE-HOL-2026` for 2026. The eight Muhurat
-/// replacement days cite the operator's own circulars `NSE-CIRC-2010-121`,
-/// `NSE-CIRC-2015-65`, `NSE-CIRC-2016-56`, `NSE-CIRC-2020-98`,
-/// `NSE-CIRC-2022-124`, `NSE-CIRC-2023-139`, `NSE-CIRC-2024-147` and
-/// `NSE-CIRC-2025-124`. A date inside a window with no row is audited normal;
-/// the seven `Unsourced` withheld dates are not, and 2018 is inside no window at
-/// all.
+/// NSE trading holidays and complete Muhurat replacement sessions.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
@@ -734,11 +613,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 10, 2, Closed, T1, "NSE-HOL-2026"),
         // 2026-10-20 - T1 - NSE-HOL-2026 - Dussehra, Tuesday.
         (2026, 10, 20, Closed, T1, "NSE-HOL-2026"),
-        // 2026-11-08 - T1 - NSE-HOL-2026 - Muhurat Trading: the list footnotes a
-        // special session onto this Sunday with timings "shall be notified
-        // subsequently", so the day is not the audited-normal weekend closure the
-        // normal week alone would claim and is withheld.
-        (2026, 11, 8, Unsourced, T1, "NSE-HOL-2026"),
+        // 2026-11-08 - T1 - NSE-CIRC-2026-149 - Muhurat Trading;
+        // complete replacement phases from circular 149/2026.
+        (2026, 11, 8, ReplacementBlocks(&MUHURAT_2026_BLOCKS), T1, "NSE-CIRC-2026-149"),
         // 2026-11-10 - T1 - NSE-HOL-2026 - Diwali-Balipratipada, Tuesday.
         (2026, 11, 10, Closed, T1, "NSE-HOL-2026"),
         // 2026-11-24 - T1 - NSE-HOL-2026 - Prakash Gurpurab Sri Guru Nanak Dev,

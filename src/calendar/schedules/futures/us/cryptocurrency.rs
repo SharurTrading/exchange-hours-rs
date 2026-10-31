@@ -16,7 +16,8 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 
 // CME non-spot-quoted cryptocurrency futures: the 2017-12-17 five-day launch
 // grid, then the 24/7 Globex grid CME filing 26-114 introduced for trade date
-// 2026-05-30, plus six one-day Saturday extensions. See
+// 2026-05-30, plus the three legacy one-day Saturday extensions. October
+// maintenance arrangements are trade-date exceptions. See
 // docs/evidence/globex_cryptocurrency.md.
 
 // `SessionRule` spans at most one local midnight, so the multi-day weekend
@@ -103,8 +104,8 @@ static ORDER_ENTRY_2026_05_29: &[SessionRule] = &[SessionRule {
 }];
 
 // One-day Saturday extensions: the weekday and Sunday pieces are the normal
-// grid; only the Saturday reopen moves. The sourced September 19 and October 3
-// replacement queues are stated separately below; other extensions omit
+// grid; only the Saturday reopen moves. The sourced September 19
+// replacement queue is stated separately below; other legacy extensions omit
 // their unsourced replacement queue. The reopen is stated
 // as hour and minute because notice 20260921's FIA drill extension ends at
 // 15:30 CT, not on the hour.
@@ -142,9 +143,6 @@ macro_rules! saturday_extended_to {
 saturday_extended_to!(EXTENDED_2026_08_01, 9, 0);
 saturday_extended_to!(EXTENDED_2026_08_29, 6, 0);
 saturday_extended_to!(EXTENDED_2026_09_19, 8, 0);
-saturday_extended_to!(EXTENDED_2026_10_03, 5, 0);
-saturday_extended_to!(EXTENDED_2026_10_24, 15, 30);
-saturday_extended_to!(EXTENDED_2026_10_31, 5, 0);
 
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
@@ -213,13 +211,6 @@ static ORDER_ENTRY_2026_09_19: &[SessionRule] = &[SessionRule {
     open_ssm: 7 * 3600 + 45 * 60,
     close_ssm: 8 * 3600,
 }];
-// 2026-10-03 — T2 — CME-SVC-SATURDAY-2026-10-03 — replacement Pre-Open.
-// Evidence: docs/evidence/globex_cryptocurrency.md.
-static ORDER_ENTRY_2026_10_03: &[SessionRule] = &[SessionRule {
-    days: SAT_ONLY,
-    open_ssm: 4 * 3600 + 45 * 60,
-    close_ssm: 5 * 3600,
-}];
 
 macro_rules! temporary_saturday {
     ($name:ident, $extended:ident, $order_entry:expr) => {
@@ -240,13 +231,6 @@ temporary_saturday!(
     EXTENDED_2026_09_19,
     ORDER_ENTRY_2026_09_19
 );
-temporary_saturday!(
-    TEMPORARY_2026_10_03,
-    EXTENDED_2026_10_03,
-    ORDER_ENTRY_2026_10_03
-);
-temporary_saturday!(TEMPORARY_2026_10_24, EXTENDED_2026_10_24, &[]);
-temporary_saturday!(TEMPORARY_2026_10_31, EXTENDED_2026_10_31, &[]);
 
 // Evidence: docs/evidence/globex_cryptocurrency.md
 static REVISIONS: &[Revision] = revisions![
@@ -290,41 +274,6 @@ static REVISIONS: &[Revision] = revisions![
     // 2026-09-20 — T1 — CME Globex notice 20260824 — revert to the standard
     // 02:00-04:00 CT window.
     (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
-    // 2026-10-03 — T1 — CME Globex notice 20260921 — reopen 05:00 CT;
-    // the operator service confirms the replacement 04:45 Pre-Open (T2).
-    (
-        2026,
-        10,
-        3,
-        &TEMPORARY_2026_10_03,
-        "CME Globex notice 20260921"
-    ),
-    // 2026-10-04 — T1 — CME Globex notice 20260921 — revert to the standard
-    // 02:00-04:00 CT window.
-    (2026, 10, 4, &CURRENT, "CME Globex notice 20260921"),
-    // 2026-10-24 — T1 — CME Globex notice 20260921 — FIA drill to 15:30 CT.
-    // Forward-dated: confirm before the day. The 13.5-hour gap is Closed.
-    (
-        2026,
-        10,
-        24,
-        &TEMPORARY_2026_10_24,
-        "CME Globex notice 20260921"
-    ),
-    // 2026-10-25 — T1 — CME Globex notice 20260921 — revert to the standard
-    // 02:00-04:00 CT window.
-    (2026, 10, 25, &CURRENT, "CME Globex notice 20260921"),
-    // 2026-10-31 — T1 — CME Globex notice 20261005 — maintenance to 05:00 CT.
-    // Forward-dated: confirm before the day. The three-hour gap is Maintenance.
-    (
-        2026,
-        10,
-        31,
-        &TEMPORARY_2026_10_31,
-        "CME Globex notice 20261005"
-    ),
-    // 2026-11-01 — T1 — CME Globex notice 20261005 — restore the standard grid.
-    (2026, 11, 1, &CURRENT, "CME Globex notice 20261005"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

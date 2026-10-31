@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Replace NSE's withheld 8 November 2026 Muhurat date with its published
+  capital-market session, including pre-open order entry, the CAS/non-CAS
+  venue union and post-close trading until 16:00 IST.
+- Preserve ICE softs' shortened Christmas Eve post-close queues and Cotton's
+  published 28 December matching session through complete trade-date
+  replacements, including the dependent 29 December queue arrangement.
+- Model CME cryptocurrency October maintenance through complete trade-date
+  exceptions with exact Saturday Pre-Open queues; detached snapshots keep
+  their ordinary-week contract.
+
+### Added
+
+- Xetra's published 30 December 2026 replacement session: matching through
+  14:10 CET and post-trading order entry through 15:00 CET.
+
 ## [1.2.3] - 2026-10-24
 
 ### Added

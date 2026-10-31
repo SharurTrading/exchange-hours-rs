@@ -1,58 +1,53 @@
 // SPDX-License-Identifier: MIT-0
 
-//! ICE Futures U.S. holiday rows, 2025 through the 2027 calendar's last entry.
+//! ICE Futures U.S. holiday rows, 2025-01-01 through 2028-01-03.
 //!
-//! Keyed by the crate's own venue-local trade date in `America/New_York`
-//! (design memo D1). ICE prints its holiday calendar and its per-holiday
-//! Exchange Notices by civil date, and for every family the crate models that
-//! civil date **is** the trade date: the softs run inside one local day, and
-//! Cotton, the NYSE FANG+ index family and the US Dollar Index family open on
-//! the evening of `D-1` for trade date `D`, which is the date ICE names.
-//!
-//! The whole block is **T1**: the `July 5, 2024 - 2025 Trading Holiday
-//! Calendar`, the `June 9, 2025 - 2026 Trading Holiday Calendar`, the `June 4,
-//! 2026 - 2027 Trading Holiday Calendar` issued as an Exchange Notice, the 2025
-//! per-holiday Exchange Notices (Independence Day and Christmas included —
-//! both retrieved live 2026-10-09 UTC through the operator's own notices
-//! listing service), the 2024-12-30 National Day of Mourning notice that
-//! states 2025-01-09 without the annual calendar listing it, the two 2025
-//! London-bank-holiday "Delayed Opens" notices that carry other dates the
-//! annual calendar does not list, the 2026 MLK and Presidents Day notices
-//! retrieved from the same service the same day (the earlier "no such notice
-//! exists" record was wrong), and the six 2026 per-holiday Exchange Notices
-//! already held that give the exact late-open and early-close instants in New
-//! York time.
-//!
-//! ICE's calendars mark a date on which a product group trades non-regular
-//! hours `open1`, footnoted "Trading Hours for these contracts will be
-//! announced in advance of the respective holiday via Exchange Notices". Where
-//! that notice exists the row carries its instants; where it does not, the
-//! operator has published that the date is **not** normal without publishing
-//! what it is, which is exactly what [`Unsourced`]
-//! records. Those dates are now few: the 2025 Independence Day and Christmas
-//! notices and the 2026 MLK and Presidents' Day notices were retrieved live
-//! from the operator's own notices listing service on 2026-10-09 UTC (the T2
-//! machine channel behind <https://www.ice.com/futures-us/notices>), which
-//! falsified the earlier "no such notice exists" records for the two 2026
-//! holidays, and the only still-withheld dates in this block are the 2027
-//! `open1` dates, whose notices are unpublished by construction — the 2026
-//! Christmas notice of October 22, 2026, retrieved live 2026-10-23 UTC,
-//! stated 2026-12-24 and 2026-12-28, so those dates no longer withhold. The
-//! retrieval history is in
-//! [`docs/evidence/iceus.md`](../../../../../docs/evidence/iceus.md).
-//!
-//! Coverage runs from the table's own 2025-01-01 window to 2028-01-03, the last trade date the
-//! 2027 calendar names.
-//! Its last two dates are audited normal: 2027-12-31 is not on ICE's calendar,
-//! and on 2028-01-03 (New Year's Day observed) every group a crate identity
-//! routes to prints `open`; the evidence files record both.
+//! Evidence: `docs/evidence/iceus.md` and the per-key evidence files named beside each table.
+
+use crate::calendar::exceptions::ExceptionBlock;
 
 use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{
     EvidenceTier::T1,
-    HolidayKind::{Closed, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
     HolidayTable, holidays,
 };
+
+// 2026-12-28 — T1 — IFUS-NOTICE-2026-CHRISTMAS — the shortened Christmas-eve
+// post-close queues feed the following open session on Monday. Each block set
+// states that queue and the complete Monday matching session.
+// Evidence: docs/evidence/ice_us_sugar.md
+static SUGAR_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-4, 13 * 3_600 + 30 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600, 13 * 3_600),
+];
+
+// Evidence: docs/evidence/ice_us_coffee.md, docs/evidence/ice_us_cocoa.md
+static COFFEE_COCOA_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-4, 13 * 3_600 + 35 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600, 13 * 3_600 + 30 * 60),
+];
+
+// Evidence: docs/evidence/ice_us_cotton.md
+static COTTON_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-4, 13 * 3_600 + 35 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
+// 2026-12-29 — T1 — IFUS-NOTICE-2026-CHRISTMAS — restate the next normal
+// Cotton day so its raw Friday queue cannot survive the Christmas closure.
+// Evidence: docs/evidence/ice_us_cotton.md
+static COTTON_AFTER_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::order_entry(-1, 14 * 3_600 + 50 * 60, 18 * 3_600),
+    ExceptionBlock::order_entry(-1, 19 * 3_600 + 30 * 60, 21 * 3_600),
+    ExceptionBlock::regular(-1, 21 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
+// Evidence: docs/evidence/ice_us_orange_juice.md
+static FCOJ_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-4, 13 * 3_600 + 35 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600, 14 * 3_600),
+];
 
 /// Sugar No. 11: the softs calendar group's common rows, plus its own
 /// 2026 DST-end week — the one run of dates where Sugar, Coffee and Cocoa
@@ -134,11 +129,9 @@ pub(crate) static SUGAR: &HolidayTable = holidays! {
         // and carries no row.
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
-        // am NY for Sugar 11 (Sugar 16 keeps its regular open, which no
-        // crate identity models separately); regular close times for all
-        // products.
-        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
+        // the shortened Thursday queue, dated by the following session it feeds.
+        (2026, 12, 28, ReplacementBlocks(&SUGAR_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -246,9 +239,9 @@ pub(crate) static COFFEE: &HolidayTable = holidays! {
         (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
-        // am NY; regular close times for all products.
-        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
+        // the shortened Thursday queue, dated by the following session it feeds.
+        (2026, 12, 28, ReplacementBlocks(&COFFEE_COCOA_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -355,9 +348,9 @@ pub(crate) static COCOA: &HolidayTable = holidays! {
         (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
-        // am NY; regular close times for all products.
-        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
+        // the shortened Thursday queue, dated by the following session it feeds.
+        (2026, 12, 28, ReplacementBlocks(&COFFEE_COCOA_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -443,9 +436,9 @@ pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
         (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - the notice prints a
-        // Regular Open for FCOJ, so the date is audited normal and carries
-        // no row.
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
+        // the shortened Thursday queue, dated by the following session it feeds.
+        (2026, 12, 28, ReplacementBlocks(&FCOJ_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - MLK Day `open1`.
@@ -542,9 +535,12 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
         (2026, 12, 24, early_close(13 * 3_600 + 5 * 60), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
-        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - late open at 8:00
-        // am NY; regular close times for all products.
-        (2026, 12, 28, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
+        // the shortened Thursday queue, dated by the following session it feeds.
+        (2026, 12, 28, ReplacementBlocks(&COTTON_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-29 - T1 - IFUS-NOTICE-2026-CHRISTMAS - ordinary Tuesday
+        // blocks remove the raw Christmas-Friday queue without losing Monday's wrap.
+        (2026, 12, 29, ReplacementBlocks(&COTTON_AFTER_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
@@ -893,6 +889,9 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // Cotton and Sugar 11 open late at 08:00, FCOJ, Sugar 16 and the
         // index families regular.
         (2026, 12, 28, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
+        // 2026-12-29 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Cotton carries the
+        // replacement removing its raw Christmas-Friday queue; other families do not.
+        (2026, 12, 29, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day, every family closed.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.

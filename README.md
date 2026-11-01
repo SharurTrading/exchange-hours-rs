@@ -526,7 +526,9 @@ the table still applies, and a date the default calendar would refuse (above the
 last audited window, any date of an identity with no table, a withheld date or a
 carried era) reads the weekly profile the identity knows there, so an unlisted
 holiday reads as an ordinary day and `coverage_on` reports the date as
-`DateCoverage::NormalWeekOnly`. Only dates below the floor still refuse. `DayPolicy` remains the caller's
+`DateCoverage::NormalWeekOnly`. Only dates below the floor still refuse. A consumer
+replaying history, such as a backtest, adds `const ExchangeCalendar::with_next_known_week()`,
+which reads a date before the identity's coverage from the next week it knows. `DayPolicy` remains the caller's
 overlay above whatever a table carries, and it composes by tightening: a caller
 can always make a trading day shorter and never longer. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
 hard-coded `DayOverride` records, then call

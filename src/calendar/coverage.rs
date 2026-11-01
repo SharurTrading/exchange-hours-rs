@@ -235,7 +235,8 @@ pub enum DateCoverage {
     /// The calendar answers the normal-week contract and claims no complete
     /// calendar: it detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays), or
-    /// [`with_last_known_week`](crate::ExchangeCalendar::with_last_known_week)
+    /// [`with_last_known_week`](crate::ExchangeCalendar::with_last_known_week) or
+    /// [`with_next_known_week`](crate::ExchangeCalendar::with_next_known_week)
     /// reads the date from the week it knows.
     NormalWeekOnly,
 }
@@ -914,6 +915,9 @@ pub struct CalendarCoverage {
     /// Whether this view reads a date no holiday layer answers from the sourced
     /// normal week instead of refusing it.
     last_known_week: bool,
+    /// Whether this view reads a date before the identity's coverage from the next
+    /// week it knows instead of refusing it.
+    next_known_week: bool,
 }
 
 impl CalendarCoverage {
@@ -926,7 +930,11 @@ impl CalendarCoverage {
     /// [`HolidayContract::NoHolidays`] either way — there is no table to detach —
     /// and keeps its complete range. A last-known-week view keeps the attached
     /// contract and only changes the verdict on dates no holiday layer answers.
-    pub(in crate::calendar) const fn new(source: CalendarSource, view: HolidayView) -> Self {
+    pub(in crate::calendar) const fn new(
+        source: CalendarSource,
+        view: HolidayView,
+        next_known_week: bool,
+    ) -> Self {
         let holidays_attached = !matches!(view, HolidayView::Detached);
         let declared = sourcing::declared(source);
         let shipped = holidays::table_for(source);
@@ -947,6 +955,7 @@ impl CalendarCoverage {
             table: if holidays_attached { shipped } else { None },
             shipped,
             last_known_week: matches!(view, HolidayView::LastKnownWeek),
+            next_known_week,
         }
     }
 
@@ -1178,7 +1187,11 @@ impl CalendarCoverage {
     #[must_use]
     pub fn coverage_on(self, date: NaiveDate) -> DateCoverage {
         if date < SUPPORT_FLOOR {
-            return DateCoverage::BeforeSupportFloor;
+            return if self.next_known_week {
+                DateCoverage::NormalWeekOnly
+            } else {
+                DateCoverage::BeforeSupportFloor
+            };
         }
         match self.gap_reason_on(date) {
             None => DateCoverage::Covered,
@@ -1263,7 +1276,7 @@ impl CalendarCoverage {
         if date < SUPPORT_FLOOR {
             return None;
         }
-        self.as_last_known(self.identity_reason_on(date))
+        self.as_view(self.identity_reason_on(date))
     }
 
     /// The reason the identity itself gives for `date`, whichever view is asking.
@@ -1469,16 +1482,25 @@ impl CalendarCoverage {
     /// two-flank date's classification answers beside the residual, a
     /// one-flank-below date's refuses.
     pub(super) fn date_level_gap_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
-        self.as_last_known(self.identity_gap_on(date))
+        self.as_view(self.identity_gap_on(date))
     }
 
     /// Reports `reason` under this view: a last-known-week view reads every
-    /// date it would otherwise refuse or qualify from the normal week.
-    const fn as_last_known(self, reason: Option<CoverageGapReason>) -> Option<CoverageGapReason> {
+    /// date it would otherwise refuse or qualify from the normal week, and a
+    /// next-known-week view reads a carried era from it.
+    const fn as_view(self, reason: Option<CoverageGapReason>) -> Option<CoverageGapReason> {
         match reason {
             Some(_) if self.last_known_week => Some(CoverageGapReason::NormalWeekOnly),
+            Some(CoverageGapReason::NormalWeekCarried) if self.next_known_week => {
+                Some(CoverageGapReason::NormalWeekOnly)
+            }
             reason => reason,
         }
+    }
+
+    /// Whether this view reads a date below the support floor instead of refusing it.
+    pub(in crate::calendar) const fn reads_before_the_floor(self) -> bool {
+        self.next_known_week
     }
 
     /// The date-level facts of the identity itself, whichever view is asking.
@@ -1517,7 +1539,13 @@ impl CalendarCoverage {
     /// asks this rather than [`Self::identity_answers`], because what a query's
     /// reach depends on is the view it runs under.
     fn view_answers(self, date: NaiveDate) -> bool {
-        self.last_known_week || self.identity_answers(date)
+        self.last_known_week
+            || self.identity_answers(date)
+            || (self.next_known_week
+                && matches!(
+                    self.identity_gap_on(date),
+                    Some(CoverageGapReason::NormalWeekCarried)
+                ))
     }
 
     /// Returns whether this identity's built-in table withholds `date` as
@@ -1612,6 +1640,7 @@ impl CalendarCoverage {
     pub(in crate::calendar) fn holiday_classification_refused_on(self, date: NaiveDate) -> bool {
         date >= SUPPORT_FLOOR
             && !self.last_known_week
+            && !self.next_known_week
             && matches!(self.holidays, HolidayContract::Audited { .. })
             && Self::bridge_span_kind(self.windows(), self.carried_below, date)
                 == Some(BridgeSpanKind::OneFlankBelow)
@@ -1839,6 +1868,7 @@ impl PartialEq for CalendarCoverage {
             && self.phase_gaps == other.phase_gaps
             && self.holidays == other.holidays
             && self.last_known_week == other.last_known_week
+            && self.next_known_week == other.next_known_week
     }
 }
 

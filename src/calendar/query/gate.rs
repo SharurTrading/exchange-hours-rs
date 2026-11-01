@@ -349,7 +349,7 @@ impl SourceGate for Identified {
         coverage: CalendarCoverage,
         date: NaiveDate,
     ) -> Result<(), CalendarQueryError> {
-        if date < SUPPORT_FLOOR {
+        if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
             return Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
                 date,
@@ -376,7 +376,7 @@ impl SourceGate for Identified {
         // phase's verdict would both mask the floor and move the answer the day
         // #117 lands. `require_answerable` deliberately passes below the floor,
         // so the check has to be made here.
-        if date < SUPPORT_FLOOR {
+        if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
             return Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
                 date,

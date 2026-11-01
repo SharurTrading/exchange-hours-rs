@@ -15,6 +15,11 @@
   `coverage_on` reports each date it reads this way as
   `DateCoverage::NormalWeekOnly`, so a consumer can disclose it or decline to infer
   a closure from it. The default calendar's answers are unchanged.
+- `ExchangeCalendar::with_next_known_week`: the forward-looking companion, for a
+  consumer replaying history such as a backtest. A date below the support floor or
+  below the identity's sourced normal week reads the next week the identity knows
+  instead of refusing. Inside coverage and after it the view changes nothing; with
+  both views no date refuses.
 
 ## [1.2.4] - 2026-11-01
 

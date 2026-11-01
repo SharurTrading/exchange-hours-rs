@@ -46,7 +46,8 @@ window, is the Holidays column of
 `ExchangeCalendar::without_holidays` detaches the layer for a caller who wants
 to own holidays outright. `ExchangeCalendar::with_last_known_week` keeps the layer
 and reads a date it has no answer for from the week the identity knows, for a
-caller who must keep operating without a sourced answer.
+caller who must keep operating without a sourced answer. `with_next_known_week`
+does the same before the identity's coverage, for a consumer replaying history.
 
 These scalar overrides are intentionally not described as a complete holiday
 calendar. They cannot express an extra intraday pause, a special reopen, a

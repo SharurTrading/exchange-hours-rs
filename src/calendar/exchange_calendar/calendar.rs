@@ -54,6 +54,7 @@ pub(in crate::calendar) enum HolidayView {
 pub struct ExchangeCalendar {
     source: CalendarSource,
     holidays: HolidayView,
+    next_known_week: bool,
 }
 
 impl ExchangeCalendar {
@@ -66,6 +67,7 @@ impl ExchangeCalendar {
         Self {
             source: CalendarSource::Exchange(exchange),
             holidays: HolidayView::Attached,
+            next_known_week: false,
         }
     }
 
@@ -78,6 +80,7 @@ impl ExchangeCalendar {
         Self {
             source: CalendarSource::MarketHoursKey(key),
             holidays: HolidayView::Attached,
+            next_known_week: false,
         }
     }
 
@@ -95,6 +98,7 @@ impl ExchangeCalendar {
         Self {
             source: self.source,
             holidays: HolidayView::Detached,
+            next_known_week: self.next_known_week,
         }
     }
 
@@ -151,6 +155,52 @@ impl ExchangeCalendar {
                 HolidayView::Detached => HolidayView::Detached,
                 HolidayView::Attached | HolidayView::LastKnownWeek => HolidayView::LastKnownWeek,
             },
+            next_known_week: self.next_known_week,
+        }
+    }
+
+    /// Answers a date before this identity's coverage from the next week it knows,
+    /// for a consumer replaying history that must not stop there, such as a
+    /// backtest.
+    ///
+    /// A default calendar refuses a date below the support floor and a date below
+    /// the identity's sourced normal week. This view is the caller's explicit choice
+    /// to read those dates forward, from the weekly profile [`Self::hours_at`] serves
+    /// there, which is the earliest one the identity knows.
+    ///
+    /// Every answer inside coverage stays the default calendar's, and a date after
+    /// coverage is unchanged; [`Self::with_last_known_week`] is the view for those,
+    /// and with both no date refuses. A bounded search on an identity with no
+    /// sessions to find still reports its exhaustion.
+    ///
+    /// These answers are not evidence. A holiday in that era reads as an ordinary
+    /// day and the hours may have differed. [`Self::coverage`] reports each such date
+    /// as [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly).
+    ///
+    /// ```
+    /// use chrono::{DateTime, Utc};
+    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    ///
+    /// let tuesday: DateTime<Utc> = "2005-03-01T16:00:00Z".parse().unwrap();
+    /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
+    /// assert!(matches!(
+    ///     nyse.is_open(tuesday),
+    ///     Err(CalendarQueryError::BeforeSupportFloor { .. })
+    /// ));
+    ///
+    /// let view = nyse.with_next_known_week();
+    /// assert_eq!(view.is_open(tuesday), Ok(true));
+    /// assert_eq!(
+    ///     view.coverage().coverage_on(tuesday.date_naive()),
+    ///     DateCoverage::NormalWeekOnly
+    /// );
+    /// ```
+    #[must_use]
+    pub const fn with_next_known_week(self) -> Self {
+        Self {
+            source: self.source,
+            holidays: self.holidays,
+            next_known_week: true,
         }
     }
 
@@ -219,8 +269,9 @@ impl ExchangeCalendar {
     /// holiday contract is
     /// [`HolidayContract::NormalWeekOnly`](crate::HolidayContract::NormalWeekOnly)
     /// — while the normal-week side is unchanged. An identity with no table is
-    /// unaffected either way. [`Self::with_last_known_week`] keeps the holiday
-    /// contract and reports each date it reads from the normal week as
+    /// unaffected either way. [`Self::with_last_known_week`] and
+    /// [`Self::with_next_known_week`] keep the holiday contract and report each
+    /// date they read from the normal week as
     /// [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly).
     ///
     /// The value borrows static tables, allocates nothing, and is
@@ -228,7 +279,7 @@ impl ExchangeCalendar {
     /// metadata is not permission to return a fabricated schedule.
     #[must_use]
     pub const fn coverage(self) -> CalendarCoverage {
-        CalendarCoverage::new(self.source, self.holidays)
+        CalendarCoverage::new(self.source, self.holidays, self.next_known_week)
     }
 
     /// Returns the schedule identity represented by this calendar.

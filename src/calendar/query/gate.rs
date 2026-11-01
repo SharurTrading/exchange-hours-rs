@@ -185,7 +185,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// nothing witnesses the holiday layer, and answering "not closed" from
     /// the normal week would fabricate one. A two-flank date keeps answering
     /// its classification beside the disclosed residual, and a date above the
-    /// last window keeps its whole-date refusal (the publication horizon
+    /// last window is decided by the date-level facts (the publication horizon
     /// governs there, so this gate never fires on one). The floor is the
     /// caller's check, as for `require_answerable`.
     fn require_holiday_classification(
@@ -325,23 +325,11 @@ impl SourceGate for Identified {
             Some(_) => DateCoverage::OutsideCoveredRange,
         };
         match verdict {
-            DateCoverage::Covered => Ok(()),
-            // A normal-week-only calendar still has a sourced-normal-week start
-            // below which its weekday profile is carried rather than sourced,
-            // so the one relaxation reaches exactly as far as that start and no
-            // further. Reported rather than hidden: refusing here would let a
-            // caller read a coverage error as a market closure.
-            DateCoverage::NormalWeekOnly => {
-                let sourced = coverage.sourced_normal_week();
-                if date >= sourced.first() {
-                    Ok(())
-                } else {
-                    Err(CalendarQueryError::OutsideCoveredRange {
-                        source: coverage.identity(),
-                        date,
-                    })
-                }
-            }
+            // `NormalWeekOnly` is reported only where the view reads the normal
+            // week: a detached calendar's carried era is decided by its own reason
+            // above, and a last-known-week view chose the week it knows everywhere.
+            // Refusing here would let a caller read a coverage error as a closure.
+            DateCoverage::Covered | DateCoverage::NormalWeekOnly => Ok(()),
             DateCoverage::BeforeSupportFloor => Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
                 date,
@@ -361,7 +349,7 @@ impl SourceGate for Identified {
         coverage: CalendarCoverage,
         date: NaiveDate,
     ) -> Result<(), CalendarQueryError> {
-        if date < SUPPORT_FLOOR {
+        if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
             return Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
                 date,
@@ -388,7 +376,7 @@ impl SourceGate for Identified {
         // phase's verdict would both mask the floor and move the answer the day
         // #117 lands. `require_answerable` deliberately passes below the floor,
         // so the check has to be made here.
-        if date < SUPPORT_FLOOR {
+        if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
             return Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
                 date,

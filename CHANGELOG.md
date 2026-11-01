@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+### Added
+
+- `ExchangeCalendar::with_last_known_week`: a caller-selected view for a consumer
+  that must keep operating without a sourced answer. Wherever a default calendar
+  would refuse a date at or above the support floor, it reads the weekly profile
+  the identity knows there instead: above the last audited holiday window, every
+  date of an identity with no table, withheld dates and carried eras. Audited rows
+  keep their arrangement, including inside a search that crosses the last window.
+  `coverage_on` reports each date it reads this way as
+  `DateCoverage::NormalWeekOnly`, so a consumer can disclose it or decline to infer
+  a closure from it. The default calendar's answers are unchanged.
+- `ExchangeCalendar::with_next_known_week`: the forward-looking companion, for a
+  consumer replaying history such as a backtest. A date below the support floor or
+  below the identity's sourced normal week reads the next week the identity knows
+  instead of refusing. Inside coverage and after it the view changes nothing; with
+  both views no date refuses.
+
 ## [1.2.4] - 2026-11-01
 
 ### Fixed

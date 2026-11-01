@@ -520,7 +520,15 @@ early-close tables sit underneath the caller's overlays for the 26 identities
 whose ledger rows name a Holidays window; read one with
 `ExchangeCalendar::holiday_on(trade_date)` and its audited window with
 `ExchangeCalendar::holiday_coverage()`, or detach the layer entirely with the
-`const ExchangeCalendar::without_holidays()`. `DayPolicy` remains the caller's
+`const ExchangeCalendar::without_holidays()`. A consumer that must keep operating
+without a sourced answer selects `const ExchangeCalendar::with_last_known_week()`:
+the table still applies, and a date the default calendar would refuse (above the
+last audited window, any date of an identity with no table, a withheld date or a
+carried era) reads the weekly profile the identity knows there, so an unlisted
+holiday reads as an ordinary day and `coverage_on` reports the date as
+`DateCoverage::NormalWeekOnly`. Only dates below the floor still refuse. A consumer
+replaying history, such as a backtest, adds `const ExchangeCalendar::with_next_known_week()`,
+which reads a date before the identity's coverage from the next week it knows. `DayPolicy` remains the caller's
 overlay above whatever a table carries, and it composes by tightening: a caller
 can always make a trading day shorter and never longer. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
 hard-coded `DayOverride` records, then call

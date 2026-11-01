@@ -32,7 +32,12 @@ each CME venue's holiday table is the verbatim mirror of its clock family's
 table, so a routed family's dissent is recorded beside the served answer instead
 of withholding the venue's date, and the globex futures families' remaining
 not-worked-up markers (the three Juneteenth dates, and Presidents' Day and Good
-Friday 2023 for five families) closed as data. The law names are unchanged.
+Friday 2023 for five families) closed as data. The 2026-10-31 (UTC) amendment
+adds `ExchangeCalendar::with_last_known_week`: a caller may explicitly select the
+weekly profile an identity knows wherever a default calendar would refuse at or
+above the floor, and `ExchangeCalendar::with_next_known_week` the next week it knows
+before its coverage, while a default calendar's answers and refusals are unchanged. The law
+names are unchanged.
 
 ## Migration status — 2026-09-30 UTC
 
@@ -186,7 +191,12 @@ required. Historical completion remains the target tracked in #332.
   unknown date during a bounded search. A known closure, absent session and
   search exhaustion remain distinct from missing evidence. Normal-week
   snapshots retain their no-holiday contract, and detached caller-supplied
-  `MarketHours` snapshots remain exactly their supplied rules. The
+  `MarketHours` snapshots remain exactly their supplied rules.
+  `ExchangeCalendar::with_last_known_week` is a caller's explicit selection of
+  the weekly profile an identity knows wherever a default calendar would refuse
+  at or above the floor, and `with_next_known_week` of the next week it knows before
+  its coverage; neither changes an answer of the default calendar, and their answers
+  there are reported as `NormalWeekOnly`, never as evidence. The
   identity-backed date-aware surface enforces this contract (#115); the
   static-table accessors (`hours_at`, `hours_for_*`, `session_profile`) and
   detached snapshots do not, as the migration status records.

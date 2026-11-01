@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-01
+
 ### Added
 
 - `ExchangeCalendar::with_last_known_week`: a caller-selected view for a consumer

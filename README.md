@@ -520,15 +520,95 @@ early-close tables sit underneath the caller's overlays for the 26 identities
 whose ledger rows name a Holidays window; read one with
 `ExchangeCalendar::holiday_on(trade_date)` and its audited window with
 `ExchangeCalendar::holiday_coverage()`, or detach the layer entirely with the
-`const ExchangeCalendar::without_holidays()`. A consumer that must keep operating
-without a sourced answer selects `const ExchangeCalendar::with_last_known_week()`:
-the table still applies, and a date the default calendar would refuse (above the
-last audited window, any date of an identity with no table, a withheld date or a
-carried era) reads the weekly profile the identity knows there, so an unlisted
-holiday reads as an ordinary day and `coverage_on` reports the date as
-`DateCoverage::NormalWeekOnly`. Only dates below the floor still refuse. A consumer
-replaying history, such as a backtest, adds `const ExchangeCalendar::with_next_known_week()`,
-which reads a date before the identity's coverage from the next week it knows. `DayPolicy` remains the caller's
+`const ExchangeCalendar::without_holidays()`.
+
+A consumer that must keep operating without a sourced answer selects
+`const ExchangeCalendar::with_last_known_week()`: the table still applies, and a
+date the default calendar would refuse (above the last audited window, any date
+of an identity with no table, a withheld date or a carried era) reads the weekly
+profile the identity knows there. Only dates below the floor still refuse. Both
+this view and the backtest view below read normal weekly hours only: a holiday or
+early close applies on its own date and is never carried to another, so an
+unlisted holiday reads as an ordinary day and `coverage_on` reports the date as
+`DateCoverage::NormalWeekOnly`.
+
+```rust
+use chrono::{DateTime, Utc};
+use exchange_hours::{DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+
+let utc = |text: &str| text.parse::<DateTime<Utc>>().expect("valid RFC 3339 instant");
+let nyse = ExchangeCalendar::new(Exchange::Nyse).with_last_known_week();
+
+// Audited rows hold on their own dates: Thanksgiving 2026 is closed, and the
+// next day closes at 13:00 New York.
+assert_eq!(nyse.is_open(utc("2026-11-26T16:00:00Z")), Ok(false));
+assert_eq!(
+    nyse.session_bounds_with(utc("2026-11-27T16:00:00Z"), SessionKind::Regular),
+    Ok(Some((utc("2026-11-27T14:30:00Z"), utc("2026-11-27T18:00:00Z"))))
+);
+
+// Past the audited window neither is carried forward: Thanksgiving 2040 reads
+// as open, and the next day keeps the normal 16:00 New York close.
+assert_eq!(nyse.is_open(utc("2040-11-22T16:00:00Z")), Ok(true));
+assert_eq!(
+    nyse.session_bounds_with(utc("2040-11-23T16:00:00Z"), SessionKind::Regular),
+    Ok(Some((utc("2040-11-23T14:30:00Z"), utc("2040-11-23T21:00:00Z"))))
+);
+
+// `coverage_on` tells the two apart, so a consumer can disclose the difference.
+let coverage = nyse.coverage();
+assert_eq!(
+    coverage.coverage_on(utc("2026-11-26T16:00:00Z").date_naive()),
+    DateCoverage::Covered
+);
+assert_eq!(
+    coverage.coverage_on(utc("2040-11-22T16:00:00Z").date_naive()),
+    DateCoverage::NormalWeekOnly
+);
+```
+
+A consumer replaying history, such as a backtest, adds
+`const ExchangeCalendar::with_next_known_week()`, which reads a date before the
+identity's coverage from the next week it knows. It changes nothing inside or
+after coverage, and with both views no date refuses.
+
+```rust
+use chrono::{DateTime, Utc};
+use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+
+let utc = |text: &str| text.parse::<DateTime<Utc>>().expect("valid RFC 3339 instant");
+let nyse = ExchangeCalendar::new(Exchange::Nyse);
+let thanksgiving_2005 = utc("2005-11-24T16:00:00Z");
+
+// The default calendar refuses a date below the support floor.
+assert!(matches!(
+    nyse.is_open(thanksgiving_2005),
+    Err(CalendarQueryError::BeforeSupportFloor { .. })
+));
+
+// The view reads it from the next week it knows, so that Thanksgiving reads as
+// open, and the next day keeps the normal 16:00 New York close.
+let backtest = nyse.with_next_known_week();
+assert_eq!(backtest.is_open(thanksgiving_2005), Ok(true));
+assert_eq!(
+    backtest.session_bounds_with(utc("2005-11-25T16:00:00Z"), SessionKind::Regular),
+    Ok(Some((utc("2005-11-25T14:30:00Z"), utc("2005-11-25T21:00:00Z"))))
+);
+assert_eq!(
+    backtest.coverage().coverage_on(thanksgiving_2005.date_naive()),
+    DateCoverage::NormalWeekOnly
+);
+
+// Inside coverage audited rows still hold: Thanksgiving 2015 is closed.
+assert_eq!(backtest.is_open(utc("2015-11-26T16:00:00Z")), Ok(false));
+
+// Past coverage this view alone still refuses; adding the last-known view answers.
+let after_coverage = utc("2040-11-22T16:00:00Z");
+assert!(backtest.is_open(after_coverage).is_err());
+assert_eq!(backtest.with_last_known_week().is_open(after_coverage), Ok(true));
+```
+
+`DayPolicy` remains the caller's
 overlay above whatever a table carries, and it composes by tightening: a caller
 can always make a trading day shorter and never longer. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
 hard-coded `DayOverride` records, then call

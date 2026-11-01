@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-01
+
 ### Fixed
 
 - Replace NSE's withheld 8 November 2026 Muhurat date with its published

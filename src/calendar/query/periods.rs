@@ -139,8 +139,8 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
 /// itself (the #107 overlay contract), so an overlaid calendar keeps its
 /// observable on a refused date too. The derivation beneath the gate is
 /// [`latest_close_for_trade_date`], whose own `require_answerable` gate keeps
-/// refusing the dates the date-level facts refuse — above the last window, a
-/// carried week, a withheld `Unsourced` row — unchanged.
+/// refusing the dates the date-level facts refuse — above the last window on a
+/// default calendar, a carried week, a withheld `Unsourced` row — unchanged.
 pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
     context: &QueryContext<'_, G>,
     day: NaiveDate,

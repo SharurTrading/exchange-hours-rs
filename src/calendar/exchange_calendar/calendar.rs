@@ -22,6 +22,18 @@ const TZ_RESOLUTION_INSTANT: DateTime<Utc> = DateTime::<Utc>::UNIX_EPOCH;
 /// reports them: opens resolve earliest and closes latest under DST ambiguity.
 pub type SessionWindow = (DateTime<Utc>, DateTime<Utc>);
 
+/// Which answer the built-in holiday layer gives a calendar's queries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(in crate::calendar) enum HolidayView {
+    /// The shipped table applies, and a date it has no answer for refuses.
+    Attached,
+    /// The shipped table applies, and a date it has no answer for reads the
+    /// sourced normal week.
+    LastKnownWeek,
+    /// No table applies.
+    Detached,
+}
+
 /// A deterministic, date-aware calendar for one exchange or product family.
 ///
 /// The calendar reselects a concrete fixed profile for every candidate local
@@ -41,7 +53,7 @@ pub type SessionWindow = (DateTime<Utc>, DateTime<Utc>);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ExchangeCalendar {
     source: CalendarSource,
-    holidays: bool,
+    holidays: HolidayView,
 }
 
 impl ExchangeCalendar {
@@ -53,7 +65,7 @@ impl ExchangeCalendar {
     pub const fn new(exchange: Exchange) -> Self {
         Self {
             source: CalendarSource::Exchange(exchange),
-            holidays: true,
+            holidays: HolidayView::Attached,
         }
     }
 
@@ -65,7 +77,7 @@ impl ExchangeCalendar {
     pub const fn for_market_hours_key(key: MarketHoursKey) -> Self {
         Self {
             source: CalendarSource::MarketHoursKey(key),
-            holidays: true,
+            holidays: HolidayView::Attached,
         }
     }
 
@@ -82,7 +94,63 @@ impl ExchangeCalendar {
     pub const fn without_holidays(self) -> Self {
         Self {
             source: self.source,
-            holidays: false,
+            holidays: HolidayView::Detached,
+        }
+    }
+
+    /// Answers from the week the identity knows wherever the default calendar
+    /// would refuse, for a consumer that must keep operating without a sourced
+    /// answer.
+    ///
+    /// A default calendar refuses a date above the identity's last audited
+    /// holiday window, because the operator's publication horizon governs
+    /// there; every date of an identity whose contract is
+    /// [`HolidayContract::NoTable`](crate::HolidayContract::NoTable); a date it
+    /// withholds as [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced);
+    /// and a date below its sourced normal week. This view is the caller's
+    /// explicit choice to read all of those from the weekly profile
+    /// [`Self::hours_at`] serves there.
+    ///
+    /// Every other answer is the default calendar's: an audited row keeps its
+    /// arrangement, including inside a search that crosses the last window.
+    /// Only a date below the support floor still refuses, as does a query in the
+    /// first days above it that has to read below it, and a bounded search on an
+    /// identity with no sessions to find still reports its exhaustion.
+    ///
+    /// These answers are not evidence. An unlisted or withheld holiday reads as
+    /// an ordinary day, and a carried era reads as the earliest week the
+    /// identity knows. [`Self::coverage`] reports each such date as
+    /// [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly), so
+    /// a consumer can disclose it or decline to infer a closure from it. A
+    /// calendar that detached its table with [`Self::without_holidays`] stays
+    /// detached.
+    ///
+    /// ```
+    /// use chrono::{DateTime, Utc};
+    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    ///
+    /// let thursday: DateTime<Utc> = "2029-03-01T15:00:00Z".parse().unwrap();
+    /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
+    /// assert!(matches!(
+    ///     nyse.is_open(thursday),
+    ///     Err(CalendarQueryError::OutsideCoveredRange { .. })
+    /// ));
+    ///
+    /// let view = nyse.with_last_known_week();
+    /// assert_eq!(view.is_open(thursday), Ok(true));
+    /// assert_eq!(
+    ///     view.coverage().coverage_on(thursday.date_naive()),
+    ///     DateCoverage::NormalWeekOnly
+    /// );
+    /// ```
+    #[must_use]
+    pub const fn with_last_known_week(self) -> Self {
+        Self {
+            source: self.source,
+            holidays: match self.holidays {
+                HolidayView::Detached => HolidayView::Detached,
+                HolidayView::Attached | HolidayView::LastKnownWeek => HolidayView::LastKnownWeek,
+            },
         }
     }
 
@@ -126,10 +194,9 @@ impl ExchangeCalendar {
     /// Resolves this identity's built-in table, honouring
     /// [`Self::without_holidays`].
     pub(in crate::calendar) const fn holiday_table(self) -> Option<&'static HolidayTable> {
-        if self.holidays {
-            holidays::table_for(self.source)
-        } else {
-            None
+        match self.holidays {
+            HolidayView::Attached | HolidayView::LastKnownWeek => holidays::table_for(self.source),
+            HolidayView::Detached => None,
         }
     }
 
@@ -152,7 +219,9 @@ impl ExchangeCalendar {
     /// holiday contract is
     /// [`HolidayContract::NormalWeekOnly`](crate::HolidayContract::NormalWeekOnly)
     /// — while the normal-week side is unchanged. An identity with no table is
-    /// unaffected either way.
+    /// unaffected either way. [`Self::with_last_known_week`] keeps the holiday
+    /// contract and reports each date it reads from the normal week as
+    /// [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly).
     ///
     /// The value borrows static tables, allocates nothing, and is
     /// `Copy + Send + Sync + 'static`. Inspecting it changes no query: the

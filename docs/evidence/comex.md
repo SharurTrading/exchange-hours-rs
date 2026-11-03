@@ -179,7 +179,7 @@ markers and eleven 2024 dates this table takes from its trading-hours service, a
 for 2025-2027. Inside a window a date with no row is audited normal; outside every
 window this table has no answer at all.
 
-**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`.
+**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`, `2028-01-17..2028-01-18`, `2028-02-21..2028-02-22`, `2028-04-13..2028-04-14`.
 The rows of every era are the D17 intersection of the families routed here: an era's rows are the family tables' own where a venue routes one family, and the joint statement where it routes several.
 Every interval from 2010-01-01 is declared, so the whole span has an answer; the eras before 2010 are out of scope below the crate's January-2010 floor.
 

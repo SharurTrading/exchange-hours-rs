@@ -298,4 +298,9 @@ LAW-SERVICE-TIERS it is recorded dormant here with no key, profile or ledger
 row. Closing condition: SharurPlatform maps an FSPI root or the maintainer
 names FSPI a planned market (#386); admission then follows the full identity
 checklist. Routing FSPI to this key or to the equity-index/crypto keys would
-be wrong.
+be wrong. Sources saved in the research store (retrieved 2026-11-03 UTC):
+`cme-forward-2026-11-03/notices/fspi_products.md` (sha256
+`06b24a98c13a1ce9de960c68167370aa5358e7d9ff26212ed9d0a7298ad701d4`; Market
+Segment 90 / MDP Channel 335) and `fspi_page.md` (sha256
+`11579e91b7de1c285524c7c62d99a5f0bead4ac538b816eb0ce3f6d62b4fee65`; 24/7
+statement).

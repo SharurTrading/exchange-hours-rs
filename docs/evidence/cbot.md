@@ -187,7 +187,7 @@ markers and thirteen 2024 dates this table takes from its trading-hours service,
 for 2025-2027. Inside a window a date with no row is audited normal; outside every
 window this table has no answer at all.
 
-**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`.
+**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`, `2028-01-17..2028-01-18`, `2028-02-21..2028-02-22`, `2028-04-13..2028-04-14`.
 The rows of every era are the venue's profile clock carried verbatim (AGENTS.md, LAW-HOLIDAY-SCOPE; the 2026-10-09 amendment completing the 2026-09-30 decision on #153, applied by #242): the venue ships the `globex_grains` row on every date the clock states one — kind, tier and document id unchanged — ships no row where the clock audits the date normal, and inherits the clock's own `Unsourced` marker where the clock withholds. A routed family that prints a different arrangement keeps its sourced row in its own family table; the disagreements the earlier intersection rule withheld are named per era below.
 Every interval from 2010-01-01 is declared, so the whole span has an answer; the eras before 2010 are out of scope below the crate's January-2010 floor.
 

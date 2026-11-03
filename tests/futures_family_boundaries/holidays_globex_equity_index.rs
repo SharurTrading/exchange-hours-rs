@@ -548,17 +548,17 @@ fn holiday_rows_move_the_trade_date_only_where_the_operator_does() {
 /// "the crate and the pre-table answer agree" comparison is not available. The
 /// detached calendar states the normal week on its own, as it always did.
 #[test]
-fn the_coverage_window_is_exactly_2010_through_2027() {
+fn the_coverage_window_is_exactly_2010_through_2028() {
     let calendar = equity_index();
     let coverage = calendar
         .holiday_coverage()
         .expect("globex_equity_index ships a table");
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(coverage.contains(day(2010, 1, 1)));
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2009, 12, 31)));
-    assert!(!coverage.contains(day(2028, 1, 1)));
+    assert!(coverage.contains(day(2028, 1, 1)));
     // The table audits six eras from 2010 through 2027 with no gap between
     // them, so `contains` is true on every date from 2010-01-01 to 2027-12-31
     // and false only outside the first and last window. The 2013-2015 and
@@ -581,16 +581,14 @@ fn the_coverage_window_is_exactly_2010_through_2027() {
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
 
     // Christmas Day 2009 is a CME Globex closure one year below the window, and
-    // New Year's Day 2028 one day above it. The identity-backed calendar
+    // 2028-04-17 above it. The identity-backed calendar
     // refuses both; the detached calendar claims no complete calendar and so
-    // still states the normal week it serves, where 2028-01-01 is a Saturday
-    // the family never trades.
+    // still states the normal week it serves.
     let bare = calendar.without_holidays();
     assert_declared_refusal(calendar.is_open(ct((2009, 12, 25), (10, 0, 0))));
-    assert_declared_refusal(calendar.is_open(ct((2028, 1, 1), (10, 0, 0))));
+    assert_declared_refusal(calendar.is_open(ct((2028, 4, 17), (10, 0, 0))));
     assert!(
-        !bare
-            .is_open(ct((2028, 1, 1), (10, 0, 0)))
+        bare.is_open(ct((2028, 4, 17), (10, 0, 0)))
             .expect("a detached calendar states the normal week it serves")
     );
 }
@@ -972,7 +970,7 @@ fn era_window_edges_answer_as_the_module_declares() {
         .expect("globex_equity_index ships a table");
 
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(!coverage.contains(day(2009, 12, 25)));
 
     assert_eq!(calendar.holiday_on(day(2009, 12, 25)), None);
@@ -1853,6 +1851,7 @@ fn era_2022_2024_window_sits_fifth_and_the_2013_2015_era_is_audited() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
     assert!(coverage.contains(day(2022, 1, 1)));
@@ -2214,6 +2213,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
 
@@ -2650,6 +2650,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
 
@@ -2664,7 +2665,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 38, "the era's rows");
     assert_eq!(venue.holiday_on(day(2012, 12, 31)), None);
-    assert!(!coverage.contains(day(2028, 1, 1)));
+    assert!(coverage.contains(day(2028, 1, 1)));
     assert_eq!(venue.holiday_on(day(2028, 1, 1)), None);
 }
 
@@ -3253,4 +3254,35 @@ fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
             "{year}-{month:02}-{date:02} publishes no Pre-Open and must stay open at 07:15 CT"
         );
     }
+}
+
+#[test]
+fn the_2028_first_windows_answer_with_their_own_rows() {
+    let calendar = equity_index();
+    // CME-SVC-2028-01-15 / 2028-02-18 / 2028-04-12 (T2): MLK and Presidents'
+    // Day early-close at noon with Tuesday merged companions; Good Friday
+    // 2028-04-14 is a full closure. 2028-01-01 (Saturday) carries no row.
+    assert_eq!(
+        calendar.holiday_on(day(2028, 1, 17)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600
+        })
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2028, 2, 21)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600
+        })
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2028, 4, 14)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
+    assert!(
+        !calendar
+            .is_open(ct((2028, 4, 14), (10, 0, 0)))
+            .expect("covered"),
+        "Good Friday 2028 has no session"
+    );
 }

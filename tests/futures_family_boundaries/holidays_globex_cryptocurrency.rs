@@ -1093,11 +1093,11 @@ fn the_coverage_window_has_two_hard_edges() {
     // contiguous, so the outer edges are what this fence pins and `windows()`
     // in the era sections below pins the split.
     assert_eq!(coverage.first(), day(2017, 12, 17));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(coverage.contains(day(2017, 12, 17)));
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2017, 12, 16)));
-    assert!(!coverage.contains(day(2028, 1, 1)));
+    assert!(coverage.contains(day(2028, 1, 1)));
 
     assert_eq!(kind_on(day(2025, 1, 1)), Some(HolidayKind::Closed));
     assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
@@ -1152,7 +1152,7 @@ fn the_coverage_window_has_two_hard_edges() {
 
     // One day past the window the attached identity refuses and the detached
     // calendar states the ordinary week.
-    for probe in [ct(2028, 1, 1, 9, 0), ct(2028, 1, 1, 20, 0)] {
+    for probe in [ct(2028, 4, 15, 9, 0), ct(2028, 4, 15, 20, 0)] {
         assert!(
             calendar.is_open(probe).is_err_and(|error| matches!(
                 error,
@@ -1729,6 +1729,7 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
     assert!(coverage.contains(day(2022, 1, 1)));
@@ -2021,6 +2022,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
 

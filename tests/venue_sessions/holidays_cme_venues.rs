@@ -657,7 +657,7 @@ fn every_venue_answers_only_inside_its_own_window() {
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1), "{exchange:?}");
-        assert_eq!(coverage.last(), day(2027, 12, 31), "{exchange:?}");
+        assert_eq!(coverage.last(), day(2028, 4, 14), "{exchange:?}");
 
         let before = coverage
             .first()

@@ -9,7 +9,7 @@
 
 ## Current holiday table — 2026-10-17 UTC (#360)
 
-Current holiday total: 220 rows. The six audited era counts are
+Current holiday total: 220 rows. A further 5 rows ship in the 2028 window (225 in all). The six audited era counts are
 2010-2012: 38, 2013-2015: 33, 2016-2018: 31, 2019-2021: 32, 2022-2024: 33, 2025-2027: 53.
 The venue remains a verbatim mirror of its profile clock, including kind,
 replacement blocks, tier and document id; no holiday row or window changes in
@@ -166,10 +166,13 @@ are in the research store's `holidays/raw/` indexes.
 | `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-09-05&toEventDate=2027-09-07> | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
 | `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-11-24&toEventDate=2027-11-26> | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
 | `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-12-22&toEventDate=2027-12-25> | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
+| `CME-SVC-2028-01-15` | 2028-01-15 .. 2028-01-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-01-15&toEventDate=2028-01-19> | retrieved 2026-11-03 UTC | T2 | `f74454cec296f0dd7055091093e7d02fa993bb27963be968dc84082249074d96` |
+| `CME-SVC-2028-02-18` | 2028-02-18 .. 2028-02-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-02-18&toEventDate=2028-02-23> | retrieved 2026-11-03 UTC | T2 | `bdd7dd926a84cebd48c702af978b6836b998723f1af86818cc93fc50da557b28` |
+| `CME-SVC-2028-04-12` | 2028-04-12 .. 2028-04-18 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-04-12&toEventDate=2028-04-18> | retrieved 2026-11-03 UTC | T2 | `71a6b95a487deee4fd2ad9fe10853ef2e95230fcd7ffa96e6708b54054939ec3` |
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 (inclusive venue-local trade dates).
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows
 taken from the operator's own published holiday schedules; **T2** for the three 2023
 markers and eleven 2024 dates this table takes from its trading-hours service, and
@@ -284,6 +287,18 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 **This era brings the venue to six audited windows.** The historical audit snapshot reported 203 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **38 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
+
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-01-17 | early close | 13:30 CT | `CME-SVC-2028-01-15` | T2 | venue mirror of its profile clock; service window |
+| 2028-01-18 | replacement blocks | merged Sun–Tue span | `CME-SVC-2028-01-15` | T2 | venue mirror of its profile clock; service window |
+| 2028-02-21 | early close | 13:30 CT | `CME-SVC-2028-02-18` | T2 | venue mirror of its profile clock; service window |
+| 2028-02-22 | replacement blocks | merged Sun–Tue span | `CME-SVC-2028-02-18` | T2 | venue mirror of its profile clock; service window |
+| 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | venue mirror of its profile clock; service window |
+
+Coverage runs contiguously to 2028-04-14 on the same per-holiday service-window audit standard as 2025-2027; dates after 2028-04-14 are unpublished.
 
 ### Documents
 

@@ -2,7 +2,8 @@
 
 //! CME cryptocurrency trade-date exceptions, audited over 2017-12-17 to
 //! 2018-12-31, 2019-01-01 to 2021-12-31, 2022-01-01 to 2024-12-31 and
-//! 2025-01-01 to 2027-12-31.
+//! 2025-01-01 to 2027-12-31, plus the split 2028 windows 2028-01-17 to
+//! 2028-01-18, 2028-02-21 to 2028-02-22 and 2028-04-14 to 2028-04-14.
 //!
 //! Source quotations, conversion steps and published scope:
 //! `docs/evidence/globex_cryptocurrency.md`.
@@ -220,7 +221,7 @@ static SATURDAY_TO_1530_BLOCKS: [ExceptionBlock; 7] = [
 /// silence instead.
 // Evidence: docs/evidence/globex_cryptocurrency.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2017, 12, 17) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2017, 12, 17) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 4, 14)],
     rows: [
 
         // 2017-12-25 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2017-12-26 trade date), confirmed with market data 2026-10-15.
@@ -598,5 +599,29 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-12-24 — T2 — CME-SVC-2027-12-22 — Globex closed for Christmas; the
         // 2027-12-23 re-open carries trade date 2027-12-27, skipping this date.
         (2027, 12, 24, HolidayKind::Closed, T2, "CME-SVC-2027-12-22"),
+        // 2028-01-17 - T2 - CME-SVC-2028-01-15 - MLK Day.
+        (2028, 1, 17, HolidayKind::Closed, T2, "CME-SVC-2028-01-15"),
+        // 2028-01-18 - T2 - CME-SVC-2028-01-15 - MLK Day merged trade date.
+        (
+            2028,
+            1,
+            18,
+            ReplacementBlocks(&MERGED_24X7_AFTER_MONDAY_HOLIDAY_BLOCKS),
+            T2,
+            "CME-SVC-2028-01-15"
+        ),
+        // 2028-02-21 - T2 - CME-SVC-2028-02-18 - Presidents' Day.
+        (2028, 2, 21, HolidayKind::Closed, T2, "CME-SVC-2028-02-18"),
+        // 2028-02-22 - T2 - CME-SVC-2028-02-18 - Presidents' Day merged trade date.
+        (
+            2028,
+            2,
+            22,
+            ReplacementBlocks(&MERGED_24X7_AFTER_MONDAY_HOLIDAY_BLOCKS),
+            T2,
+            "CME-SVC-2028-02-18"
+        ),
+        // 2028-04-14 - T2 - CME-SVC-2028-04-12 - Good Friday.
+        (2028, 4, 14, HolidayKind::Closed, T2, "CME-SVC-2028-04-12"),
     ],
 };

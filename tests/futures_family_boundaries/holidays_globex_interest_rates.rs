@@ -402,7 +402,7 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late, unsourced),
-        (47, 171, 6, 0),
+        (48, 173, 6, 0),
         "closed, early-close, late-open and unsourced rows over all six windows"
     );
 }
@@ -534,7 +534,7 @@ fn the_coverage_window_bounds_what_the_table_answers() {
         .holiday_coverage()
         .expect("this family ships a table");
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(coverage.contains(day(2026, 7, 3)));
 
     // Inside, with no row: audited normal.
@@ -586,17 +586,22 @@ fn the_coverage_window_bounds_what_the_table_answers() {
         Some(HolidayKind::Closed)
     );
 
-    // One day above the window, and a known CME holiday above it: the table
-    // does not silently extend.
+    // 2028-01-01 (Saturday) carries no row inside the extended window, and
+    // MLK Day 2028 now ships its own sourced row.
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
-    assert_eq!(calendar.holiday_on(day(2028, 1, 17)), None);
+    assert_eq!(
+        calendar.holiday_on(day(2028, 1, 17)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600
+        })
+    );
     // The probe above the window is refused: the table does not silently
-    // extend, and the identity answers no holiday question there.
+    // extend past 2028-04-14, and the identity answers no holiday question there.
     assert!(
         calendar
-            .is_open(ct((2028, 1, 17), (9, 0, 0)))
+            .is_open(ct((2028, 4, 17), (9, 0, 0)))
             .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
-        "2028-01-17 is outside the audited window"
+        "2028-04-17 is outside the audited window"
     );
 
     // The last audited trade date is an ordinary Friday.
@@ -1427,7 +1432,7 @@ fn era_window_edges_answer_as_the_module_declares() {
         .expect("globex_interest_rates ships a table");
 
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(!coverage.contains(day(2009, 12, 25)));
 
     assert_eq!(calendar.holiday_on(day(2009, 12, 25)), None);
@@ -2297,6 +2302,7 @@ fn era_2022_2024_window_sits_fifth_and_the_2013_2015_era_is_audited() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
     assert!(coverage.contains(day(2022, 1, 1)));
@@ -2662,6 +2668,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
 
@@ -3093,6 +3100,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 1), day(2028, 4, 14)),
         ]
     );
 
@@ -3107,7 +3115,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 47, "the era's rows");
     assert_eq!(venue.holiday_on(day(2012, 12, 31)), None);
-    assert!(!coverage.contains(day(2028, 1, 1)));
+    assert!(coverage.contains(day(2028, 1, 1)));
     assert_eq!(venue.holiday_on(day(2028, 1, 1)), None);
 }
 

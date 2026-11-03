@@ -9,6 +9,10 @@
 - TSX's published 2027 holiday calendar: ten closures and the 24 December
   2027 early close at 13:00 Toronto time, extending the audited window to
   2027-12-31.
+- CME Globex's first published 2028 windows: MLK Day (2028-01-17),
+  Presidents' Day (2028-02-21) and Good Friday (2028-04-14) rows in each
+  family's own shape across the eight Globex families and the four venue
+  mirrors, extending audited coverage to 2028-04-14.
 - CFE's published 2027 holiday schedule: three closures (including Good
   Friday 2027-03-26, a closure unlike 2026), seven 10:30 CT early closes and
   the 12:15 CT Thanksgiving half day, extending the third audited window to

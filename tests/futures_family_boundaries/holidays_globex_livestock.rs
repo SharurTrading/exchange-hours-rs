@@ -33,7 +33,7 @@ const LE: MarketHoursKey = MarketHoursKey::GlobexLivestock;
 
 /// The declared coverage window, as the module states it.
 const FIRST: (i32, u32, u32) = (2010, 1, 1);
-const LAST: (i32, u32, u32) = (2027, 12, 31);
+const LAST: (i32, u32, u32) = (2028, 4, 14);
 
 /// A probe instant stated in the venue's own wall clock.
 fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
@@ -368,7 +368,7 @@ fn the_table_ships_the_audited_kind_distribution() {
             .expect("the coverage window stays inside the representable calendar");
     }
 
-    assert_eq!(closed, 157, "closed rows over every audited window");
+    assert_eq!(closed, 160, "closed rows over every audited window");
     assert_eq!(early, 43, "early-close rows over every audited window");
     assert_eq!(
         late, 7,
@@ -645,7 +645,8 @@ fn the_table_answers_only_inside_its_coverage_window() {
     assert_eq!(coverage.last(), day(LAST));
     assert!(coverage.contains(day((2026, 7, 3))));
     assert!(!coverage.contains(day((2009, 12, 25))));
-    assert!(!coverage.contains(day((2028, 1, 17))));
+    assert!(coverage.contains(day((2028, 1, 17))));
+    assert!(!coverage.contains(day((2028, 4, 15))));
 
     assert_eq!(calendar.holiday_on(day((2009, 12, 31))), None);
     assert_eq!(calendar.holiday_on(day((2028, 1, 1))), None);
@@ -663,20 +664,20 @@ fn the_table_answers_only_inside_its_coverage_window() {
         bare().is_open(ct((2009, 12, 25), (10, 0, 0))),
         day((2009, 12, 25)),
     );
-    // MLK 2028 is a Monday two and a half weeks after it closes, and above
-    // every window this table audited — so the attached calendar refuses it.
+    // MLK 2028 now ships its own row; a Monday above the new horizon
+    // (2028-04-17) is refused instead.
     // The detached one has no table and therefore no horizon: it still answers
     // the normal week, which is open. The refusal belongs to the holiday layer,
     // not to the weekday profile.
     assert_above_horizon(
-        calendar.is_open(ct((2028, 1, 17), (10, 0, 0))),
-        day((2028, 1, 17)),
+        calendar.is_open(ct((2028, 4, 17), (10, 0, 0))),
+        day((2028, 4, 17)),
     );
     assert!(
         bare()
-            .is_open(ct((2028, 1, 17), (10, 0, 0)))
+            .is_open(ct((2028, 4, 17), (10, 0, 0)))
             .expect("a detached calendar claims no holiday coverage to refuse"),
-        "the detached calendar trades MLK 2028 on the normal week"
+        "the detached calendar trades 2028-04-17 on the normal week"
     );
 
     // In coverage with no row means audited normal, not unknown: Thursday
@@ -1017,7 +1018,7 @@ fn era_window_edges_answer_as_the_module_declares() {
     assert_eq!(coverage.first(), day(FIRST));
     assert_eq!(coverage.last(), day(LAST));
     assert_eq!(coverage.first(), day((2010, 1, 1)));
-    assert_eq!(coverage.last(), day((2027, 12, 31)));
+    assert_eq!(coverage.last(), day((2028, 4, 14)));
     assert!(!coverage.contains(day((2009, 12, 25))));
 
     assert_eq!(calendar.holiday_on(day((2009, 12, 25))), None);
@@ -1451,6 +1452,7 @@ fn era_2022_2024_window_sits_fifth_and_the_lower_waves_are_declared() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
     assert!(coverage.contains(day((2022, 1, 1))));
@@ -1805,6 +1807,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
 
@@ -2140,6 +2143,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
 
@@ -2154,7 +2158,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 43, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
-    assert!(!coverage.contains(day((2028, 1, 1))));
+    assert!(coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
 }
 
@@ -2357,6 +2361,7 @@ fn era_2016_2018_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
 

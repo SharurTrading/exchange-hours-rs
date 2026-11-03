@@ -290,3 +290,12 @@ states it:
   2022-09-18 "CME SER-8968R"
     https://www.cmegroup.com/notices/ser/2022/08/SER-8968R.pdf
 Evidence: docs/evidence/globex_event_contracts.md
+
+**FSPI (FutureSports Performance Indexes, Market Segment 90 / MDP Channel
+335).** A distinct 24/7 family in operator terms, expressly excluded from
+this key. No consumer route or maintainer naming reaches it, so under
+LAW-SERVICE-TIERS it is recorded dormant here with no key, profile or ledger
+row. Closing condition: SharurPlatform maps an FSPI root or the maintainer
+names FSPI a planned market; admission then follows the full identity
+checklist. Routing FSPI to this key or to the equity-index/crypto keys would
+be wrong.

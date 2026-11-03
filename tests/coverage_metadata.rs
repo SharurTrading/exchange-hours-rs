@@ -152,8 +152,8 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
     assert_eq!(
         complete.last(),
-        Some(&DateRange::new(date(2025, 1, 5), date(2027, 12, 30)).expect("ascending")),
-        "the last complete span is the complete 2025+ era inside its edges"
+        Some(&DateRange::new(date(2028, 1, 3), date(2028, 4, 13)).expect("ascending")),
+        "the last complete span is the 2028 window inside its edges"
     );
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert_eq!(
@@ -169,25 +169,24 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
     assert_eq!(
         gaps.last().map(|gap| (gap.range().first(), gap.reason())),
-        Some((date(2028, 1, 1), CoverageGapReason::NoHolidayCoverage)),
+        Some((date(2028, 4, 15), CoverageGapReason::NoHolidayCoverage)),
         "the trailing gap past the data is unchanged"
     );
 
     assert!(coverage.is_complete_on(date(2025, 6, 2)));
     // The window's own edges are not complete: 2025-01-01 reaches back to
-    // 2024-12-31 and 2027-12-31 reaches forward to 2028-01-01, both outside
-    // the audited window (#151).
+    // 2024-12-31 and 2028-04-14 reaches forward past the audited window (#151).
     assert_eq!(
-        coverage.coverage_on(date(2027, 12, 31)),
+        coverage.coverage_on(date(2028, 4, 14)),
         DateCoverage::OutsideCoveredRange
     );
     assert_eq!(
         gaps.last().map(|gap| gap.range().first()),
-        Some(date(2028, 1, 1))
+        Some(date(2028, 4, 15))
     );
     assert_eq!(
         coverage.coverage_on(date(2028, 1, 1)),
-        DateCoverage::OutsideCoveredRange
+        DateCoverage::Covered
     );
 
     let contract = coverage.holiday_contract();
@@ -422,7 +421,7 @@ fn without_holidays_selects_the_normal_week_contract() {
     // audited windows — the walk's edges are the windows the identity ships,
     // and a detached view reports the same segmentation the attached one does.
     let gaps: Vec<CoverageGap> = detached.gaps().collect();
-    assert_eq!(gaps.len(), 7);
+    assert_eq!(gaps.len(), 8);
     assert_eq!(
         gaps[0].range(),
         DateRange::new(SUPPORT_FLOOR, date(2012, 12, 31)).expect("ascending")
@@ -1173,9 +1172,9 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered, "{day}");
     }
     assert_eq!(
-        coverage.coverage_on(date(2027, 12, 31)),
+        coverage.coverage_on(date(2028, 4, 14)),
         DateCoverage::OutsideCoveredRange,
-        "2027-12-31: a date whose resolution reach leaves the audited window is              not called complete"
+        "2028-04-14: a date whose resolution reach leaves the audited window is              not called complete"
     );
 }
 
@@ -1726,13 +1725,13 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
     assert_eq!(
         complete_days(grains),
-        1094,
-        "globex_grains answers 1,094 of the 1,095 days: the retired label gap's 720 refusals \
-         lift, and only the trailing window edge (#151) refuses"
+        1095,
+        "globex_grains answers 1,095 of the 1,095 days: the retired label gap's 720 refusals \
+         lift inside 2025-2027, and the trailing window edge now sits in 2028 (#151)"
     );
     assert_eq!(
         complete_days(livestock),
-        1094,
+        1095,
         "globex_livestock answers 1,094 of the 1,095 days: the retired label gap's 754 refusals \
          lift, and only the trailing window edge (#151) refuses"
     );
@@ -1777,8 +1776,8 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     );
     assert_eq!(
         livestock_refused,
-        vec![REGRESSION_LAST],
-        "only the audited window's trailing edge refuses livestock now (#151)"
+        Vec::<NaiveDate>::new(),
+        "no day in 2025-2027 refuses livestock now: the window extends into 2028 (#151)"
     );
 
     // Grains refuses on nothing but that same trailing edge, and its queue
@@ -1811,8 +1810,8 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     }
     assert_eq!(
         grains_refused,
-        vec![REGRESSION_LAST],
-        "only the audited window's trailing edge refuses grains now (#151)"
+        Vec::<NaiveDate>::new(),
+        "no day in 2025-2027 refuses grains now: the window extends into 2028 (#151)"
     );
     assert_eq!(
         grains_queue_days, 748,

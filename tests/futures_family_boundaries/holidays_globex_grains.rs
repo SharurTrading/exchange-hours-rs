@@ -387,11 +387,11 @@ fn coverage_window_is_declared_and_does_not_extend() {
         .expect("globex_grains ships a holiday table");
 
     assert_eq!(coverage.first(), day((2010, 1, 1)));
-    assert_eq!(coverage.last(), day((2027, 12, 31)));
+    assert_eq!(coverage.last(), day((2028, 4, 14)));
     assert!(coverage.contains(day((2010, 1, 1))));
     assert!(coverage.contains(day((2027, 12, 31))));
     assert!(!coverage.contains(day((2009, 12, 31))));
-    assert!(!coverage.contains(day((2028, 1, 1))));
+    assert!(coverage.contains(day((2028, 1, 1))));
 
     assert_eq!(calendar.holiday_on(day((2009, 12, 31))), None);
     assert_eq!(calendar.holiday_on(day((2028, 1, 1))), None);
@@ -408,11 +408,14 @@ fn coverage_window_is_declared_and_does_not_extend() {
         calendar_for_market_hours_key(ZC).is_open(ct((2009, 12, 24), (12, 0, 0))),
     );
 
-    // Martin Luther King Jr. Day 2028 is above the window; the table does not
-    // extrapolate the pattern it holds for 2025, 2026 and 2027.
-    assert_eq!(calendar.holiday_on(day((2028, 1, 17))), None);
+    // Martin Luther King Jr. Day 2028 ships its own sourced closure
+    // (CME-SVC-2028-01-15); the table does not extrapolate past 2028-04-14.
+    assert_eq!(
+        calendar.holiday_on(day((2028, 1, 17))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
     assert_declared_refusal(
-        calendar_for_market_hours_key(ZC).is_open(ct((2028, 1, 17), (9, 0, 0))),
+        calendar_for_market_hours_key(ZC).is_open(ct((2028, 4, 17), (9, 0, 0))),
     );
 }
 
@@ -1207,7 +1210,7 @@ fn era_window_edges_answer_as_the_module_declares() {
         .expect("globex_grains ships a table");
 
     assert_eq!(coverage.first(), day((2010, 1, 1)));
-    assert_eq!(coverage.last(), day((2027, 12, 31)));
+    assert_eq!(coverage.last(), day((2028, 4, 14)));
     assert!(!coverage.contains(day((2009, 12, 25))));
 
     assert_eq!(calendar.holiday_on(day((2009, 12, 25))), None);
@@ -2061,6 +2064,7 @@ fn era_2022_2024_window_sits_fifth_and_the_2013_2015_era_is_audited() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
     assert!(coverage.contains(day((2022, 1, 1))));
@@ -2489,6 +2493,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
 
@@ -2872,6 +2877,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
+            (day((2028, 1, 1)), day((2028, 4, 14))),
         ]
     );
 
@@ -2886,7 +2892,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 43, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
-    assert!(!coverage.contains(day((2028, 1, 1))));
+    assert!(coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
 }
 

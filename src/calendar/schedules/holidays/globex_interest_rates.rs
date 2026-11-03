@@ -3,7 +3,7 @@
 //! Built-in holiday rows for `globex_interest_rates`, venue-local trade dates
 //! 2010-01-01 .. 2012-12-31, 2013-01-01 .. 2015-12-31,
 //! 2016-01-01 .. 2018-12-31, 2019-01-01 .. 2021-12-31,
-//! 2022-01-01 .. 2024-12-31 and 2025-01-01 .. 2027-12-31
+//! 2022-01-01 .. 2024-12-31, 2025-01-01 .. 2027-12-31 and the split 2028 windows (2028-01-17 .. 2028-01-18, 2028-02-21 .. 2028-02-22, 2028-04-14 .. 2028-04-14)
 //! (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own venue-local trade date in
@@ -297,7 +297,7 @@ pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
 /// operator's silence instead.
 // Evidence: docs/evidence/globex_interest_rates.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 4, 14)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -1056,5 +1056,29 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-12-24 — T2 — CME-SVC-2027-12-22 — Globex closed for the Christmas
         // holiday: no events published.
         (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
+        // 2028-01-17 - T2 - CME-SVC-2028-01-15 - Martin Luther King Jr. Day.
+        (2028, 1, 17, early_close(12 * 3_600), T2, "CME-SVC-2028-01-15"),
+        // 2028-01-18 - T2 - CME-SVC-2028-01-15 - MLK Day merged trade date.
+        (
+            2028,
+            1,
+            18,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2028-01-15"
+        ),
+        // 2028-02-21 - T2 - CME-SVC-2028-02-18 - Presidents' Day.
+        (2028, 2, 21, early_close(12 * 3_600), T2, "CME-SVC-2028-02-18"),
+        // 2028-02-22 - T2 - CME-SVC-2028-02-18 - Presidents' Day merged trade date.
+        (
+            2028,
+            2,
+            22,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2028-02-18"
+        ),
+        // 2028-04-14 - T2 - CME-SVC-2028-04-12 - Good Friday; no events published.
+        (2028, 4, 14, Closed, T2, "CME-SVC-2028-04-12"),
     ],
 };

@@ -28,6 +28,7 @@ as each source is re-verified.
 - <https://www.globenewswire.com/en/Attachment/DownloadAttachment?articleid=153059&fileId=93908&filename=market+model+version+1_1+januar+21+2010.pdf&filetype=3&islogo=0> — Nasdaq OMX Nordic Market Model version 1.1, 21 January 2010, attached to the migration notice: every exact January-2010 phase, including post-trading through 18:00 CET.
 - <https://www.globenewswire.com/news-release/2015/11/16/787323/0/en/IT-INET-REMINDER-Introduction-of-functional-changes-to-INET-auctions-61-15.html> — Nasdaq INET notice 61/15, 2015-11-16: the opening uncross had previously occurred exactly at 09:00 CET; five-second randomization is introduced effective 2015-11-16.
 - <https://www.nasdaq.com/docs/2026/06/17/Nasdaq_Nordic_Market_Model_2026_03_Clean.pdf> — Nasdaq Nordic Market Model 2026:03, section 3.1: confirms the resulting five-second opening edge and each principal-share continuous and closing phase.
+- <https://www.nasdaq.com/docs/2026/08/25/Nasdaq-Nordic-Market-Model-2026-05.pdf> — Nasdaq Nordic Market Model 2026:05 (valid from 2026-09-21), retrieved 2026-11-03 UTC: section 3.1 confirms each principal-share continuous and closing phase unchanged from 2026:03 (#390).
 - <https://www.nasdaq.com/european-market-activity/trading-hours> — Nasdaq European trading hours, the source set's current entry point.
 - <https://www.nasdaq.com/market-regulation/nordic/member-rules> — Nasdaq Nordic member rules, the monitoring entry point.
 - <https://www.fese.eu/app/uploads/2024/07/trading-hours-2025-1.pdf> — FESE 2025 trading-hours table, `EU-FESE-SECONDARY`: corroboration only.
@@ -136,7 +137,19 @@ The saved artifact at `captures/nasdaq-current-2026-10-12/nasdaq-trading-hours.w
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `NASDAQ-NORDIC-CASH-2026-2027` | 2026-01-01..2027-12-31 | <https://www.nasdaq.com/european-market-activity/trading-hours> | 2026-10-12 00:49:43 UTC | T1 | `9f8fe49d65db294d48e7bd94e7b4b6b098dac44f102ad74dd71c89b5aa9bff4c` |
+| `NASDAQ-NORDIC-MARKET-MODEL-2026-05` | valid from 2026-09-21 | <https://www.nasdaq.com/docs/2026/08/25/Nasdaq-Nordic-Market-Model-2026-05.pdf> | retrieved 2026-11-03 UTC | T1 | `68f09275c0ed004a1a352633ec5e1b83c55efe6565ddad8fc4a5d694508cf3ad` |
 
 Source: <https://www.nasdaq.com/european-market-activity/trading-hours>. Calendar omissions inside these fully published annual columns are audited ordinary weekdays; no substitutes are invented for weekend holidays. Above 2027 the publication horizon remains unannounced. The identity is served and reviewed monthly after the 2026-10-12 current-scope activation; its pre-2026 holiday gap remains disclosed in #332 under the dated AGENTS.md exception.
 
-The Market Model 2026:05 hours diff is tracked in #390.
+On 2026-11-03 UTC the Nasdaq Nordic Market Model 2026:05 (valid from
+2026-09-21; `NASDAQ-NORDIC-MARKET-MODEL-2026-05`) was reviewed section by
+section against 2026:04 (valid from 2026-08-31, saved beside 2026:05 in the
+research store) and the encoded 2026:03 grids — sections 3.1, 3.1.1, 3.2,
+3.2.1, 3.3, 3.4–3.6, 4.1–4.6, Appendices AA, AB and AC, and the Revision
+History. The section 3.1 principal-share rows and the section 3.3/3.6
+half-day arrangements match the encodings for Stockholm, Helsinki and
+Copenhagen, section 3.6 prints no holiday dates, and the only
+2026:04-to-2026:05 changes are the Auction Volume Discovery order type
+(Appendix AC, active only inside existing auction calls) and new First North
+warrants/certificates segments — neither touches the principal-share
+session, phase or half-day grids, so the encodings are unchanged (#390).

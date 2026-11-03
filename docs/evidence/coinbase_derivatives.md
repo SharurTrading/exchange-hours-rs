@@ -473,3 +473,8 @@ consequence is visible in `tests/golden/normal_week_grids.txt`, whose
 2026-08-22 fixture instant renders the dated grid without the Pre-Open.
 
 The 2026 Thanksgiving/Christmas session-hours publication is tracked in #388.
+Re-checked 2026-11-03 UTC: the operator's trading-resources page now lists the
+2026-11-26 Thanksgiving, 2026-11-27 day-after and 2026-12-25 Christmas dates,
+but none carries a linked Market Notice or a stated session instant, so no row
+is encodable yet; the closing condition is the CDE Market Notice stated in
+issue #388, and the next recheck is late November 2026 by the 2025 pattern.

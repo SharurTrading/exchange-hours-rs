@@ -15,7 +15,8 @@ The verification row's basis, horizon and cadence live in
 interpretive steps and residual risks behind the row. The normal week is
 constant since the January-2010 floor with one seasonal selector the
 operator's own table states; the holiday table is the family's own ASX 24
-column of the yearly trading calendars 2010–2027, converted to the crate's
+column of the yearly trading calendars 2010–2027 and the T24 trading
+calendar 2028 admitted through 2028-12-21, converted to the crate's
 trade dates.
 
 ### Normal week
@@ -93,6 +94,13 @@ carry replacement blocks with the 17:00 open — and is never a revision.
   (`SharurTrading/exchange-hours-evidence`), with the row-by-row extraction
   `asx24-rows-extraction.md` (354 operator rows 2010–2027, taxonomy-mapped;
   store PR #15).
+- The T24 trading calendar 2028 PDF (`ASX24-T24-2028`, admitted as T1 by the
+  maintainer ruling of 2026-11-03 UTC in #389, except the two Christmas and
+  New Year eves withheld below) —
+  `holidays/raw/asx24-2010-2027/T24-trading-calendar2028.pdf` in the
+  research store. Its ASX 24 clauses were checked clause by clause against
+  the T24 trading calendars 2026 and 2027, whose clauses reproduce the
+  already encoded 2026 and 2027 rows in this file.
 - The SYCOM Trading Hours PDF (capture 2010-11-20) and ASX Trade24 Trading
   Hours PDF (capture 2012-04-13), the 2011 ASX 24 trading-hours page and the
   `www2` index-derivatives trading-hours pages (captures 2020–2022) —
@@ -128,15 +136,24 @@ carry replacement blocks with the 17:00 open — and is never a revision.
   capture in the store is an Incapsula block page.
 - The informational rows (NZ holidays, and US holidays from 2016, printing
   "Normal Trading Hours") ship no crate row: they state no change.
+- **The 2028 Christmas and New Year eves are withheld (#389).** The
+  maintainer ruling of 2026-11-03 UTC admits the T24 trading calendar 2028
+  as T1 for this family except the two eve clauses: 2028-12-22 prints
+  "Day Session Normal Trading hours / Night Session Closed" and
+  2028-12-29 prints the same, where the T24 calendars 2026 and 2027 print
+  an index products early close on their eves. The eve trade dates
+  2028-12-22 and 2028-12-29 and every trade date dependent on them (the
+  night sessions opening on those eves belong to the following trade
+  dates) ship no row, and coverage ends at 2028-12-21 so no withheld date
+  is claimed audited normal; every later date refuses typed. Closing
+  condition: the ASX 24 HTML 2028 calendar or an ASX notice stating the
+  two eves, admitted as a normal schedule fix.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2027-12-31, 2028-01-01..2028-01-01 (ASX 24 trading
-calendar rows, SFE-era 2010 through the live 2026+2027 state; every date
-inside the window was audited from its year's calendar, and a date without a
-row is audited normal. The one-day 2028 window covers the final New Year
-evening leg, whose trade date the 2027 calendar's "Night Session Closed" row
-removes.)
+**Coverage:** 2010-01-01..2028-12-21 (ASX 24 trading calendar rows; every
+date inside the window was audited from its year's calendar, and a date
+without a row is audited normal)
 
 ### Documents
 
@@ -158,6 +175,7 @@ removes.)
 | `ASX24-LIVE-2023-12` | live calendar (2024 + 2023 tables) | <https://web.archive.org/web/20231211225115id_/https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | 2023-12-11T22:51:15Z | T1 | `2817e96d912def34697a37f29389c163a5ce9ef6efe3a04bd791326f21d6929a` |
 | `ASX24-LIVE-2025-03` | live calendar (2025 table) | <https://web.archive.org/web/20250316225953id_/https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | 2025-03-16T22:59:53Z | T1 | `464ac2136830bd8100b6b2713f75ce751ff5a652f86838cab441ad5ef6a5a1ba` |
 | `ASX24-LIVE-2026-10` | live calendar (2026 + 2027 tables) | <https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | retrieved 2026-10-11 UTC | T1 | `2baa937bd806874d1618c65f07848d178bb9c1a51216c62090493b79d3d1832a` |
+| `ASX24-T24-2028` | T24 trading calendar 2028 | <https://www.asx.com.au/content/dam/asx/markets/market-resources/t24-trading-calendars/T24-trading-calendar2028.pdf> | retrieved 2026-11-03 UTC | T1 | `e21cdd745476dac2ee2b947ad07ae734ef9160b21bd3c6b4d85c6b26e547cd3a` |
 | `ASX-SYCOM-HOURS-2010` | SYCOM trading hours (night/day grid + pre-open footnote) | <https://web.archive.org/web/20101120044224id_/https://www.asx.com.au/products/derivatives/trading-hours-sycom.htm> | 2010-11-20T04:42:24Z | T1 | `de2497f634bcab792514d49e4518727b45ccd6c9d8f5f4378220b565b4d94e1c` |
 | `ASX-TRADE24-HOURS-2012` | ASX Trade24 trading hours (same two-column selector) | <https://web.archive.org/web/20120413123746id_/https://www.asx.com.au/products/derivatives/asx-trade24-trading-hours.htm> | 2012-04-13T12:37:46Z | T1 | `60a870279d22505199b4a2b104e1eefcaef149381f7bf34a4d99fe7fa90ddb89` |
 | `ASX-IDX-DERIV-HOURS-2020` | index-derivatives trading hours (current selector) | <https://web.archive.org/web/20201025203044id_/https://www2.asx.com.au/markets/market-resources/trading-hours-calendars/index-derivatives> | 2020-10-25T20:30:44Z | T1 | `108572fa21b005576efe2e17a01e4bcc75139bec5a0f2cf7a4b83b3bfedd234e` |
@@ -525,5 +543,23 @@ diffs live beside the artifacts in the research store
 ### 2028
 
 | 2028-01-01 | closed | — | `ASX24-LIVE-2026-10` | T1 | the operator closed the 31 December 2027 evening night session, whose trade date is 1 January 2028 (audited from the 2027 calendar) |
+| 2028-01-03 | closed | — | `ASX24-T24-2028` | T1 | operator Closed/Non Trading Day (day and night sessions) |
+| 2028-01-04 | replacement blocks | blocks 09:40-09:50; 09:50-16:30 | `ASX24-T24-2028` | T1 | the operator closed the holiday evening's night session; the late open removes the wrapped leg and keeps the following day's own sessions |
+| 2028-01-26 | early close | 08:00 | `ASX24-T24-2028` | T1 | Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 08:00 close |
+| 2028-04-14 | replacement blocks | blocks orderentry(-1, 61200, 61800); regular(-1, 61800, 0) | `ASX24-T24-2028` | T1 | Day Before Good Friday: the night session opening on the eve ceased at midnight (operator row) and Good Friday itself is Closed/Non Trading Day, so the trade date runs that shortened evening leg and no day session |
+| 2028-04-15 | closed | — | `ASX24-T24-2028` | T1 | the operator closed the Friday evening's night session, whose trade date is the Saturday |
+| 2028-04-17 | closed | — | `ASX24-T24-2028` | T1 | operator Closed/Non Trading Day (day and night sessions) |
+| 2028-04-18 | replacement blocks | blocks 09:40-09:50; 09:50-16:30 | `ASX24-T24-2028` | T1 | the operator closed the holiday evening's night session; the late open removes the wrapped leg and keeps the following day's own sessions |
+| 2028-06-12 | early close | 07:00 | `ASX24-T24-2028` | T1 | Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 07:00 close |
 
-The T24 2028 admissibility ruling is tracked in #389.
+The eight 2028 rows above key the T24 trading calendar 2028 clauses of
+3 January (Closed), 26 January (Day Session Closed, Night Session Open),
+13 April (Night Session to cease trading at mid-night) with 14 April
+(Good Friday, Closed) and 17 April (Easter Monday, Closed), and 12 June
+(Day Session Closed, Night Session Open), converted to trade dates as
+the earlier years record. The 25 April clause (Day Session Open, Night
+Session Open) states both sessions normal and ships no row. Coverage
+ends at 2028-12-21: the eve trade dates 2028-12-22 and 2028-12-29 and
+every trade date dependent on them are withheld under the ruling in
+Gaps and residual risks, and the T24 2028 admissibility ruling is
+tracked in #389.

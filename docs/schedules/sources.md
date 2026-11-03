@@ -502,7 +502,7 @@ per-record review before any exception can drive runtime.
 
 ### `EU-NASDAQ-NORDIC`
 
-- **Official current/rulebook:** [Nasdaq European trading hours](https://www.nasdaq.com/european-market-activity/trading-hours), [Nordic member rules](https://www.nasdaq.com/market-regulation/nordic/member-rules), and the current [Nasdaq Nordic Market Model 2026:03](https://www.nasdaq.com/docs/2026/06/17/Nasdaq_Nordic_Market_Model_2026_03_Clean.pdf), section 3.1.
+- **Official current/rulebook:** [Nasdaq European trading hours](https://www.nasdaq.com/european-market-activity/trading-hours), [Nordic member rules](https://www.nasdaq.com/market-regulation/nordic/member-rules), and the current [Nasdaq Nordic Market Model 2026:05](https://www.nasdaq.com/docs/2026/08/25/Nasdaq-Nordic-Market-Model-2026-05.pdf), section 3.1.
 - **Notices/evidence:** retain the operator's [2010 INET market-model launch](https://www.globenewswire.com/news-release/2010/01/25/151379/0/en/INET-Nordic-NASDAQ-OMX-Market-Model.html), [2015 randomized-auction change](https://www.globenewswire.com/news-release/2015/11/16/787323/0/en/IT-INET-REMINDER-Introduction-of-functional-changes-to-INET-auctions-61-15.html), and Copenhagen's [2019 Trading@Closing Price notice](https://view.news.eu.nasdaq.com/view?id=b6276fe1aed34c7412a4d454976025d2d&lang=da); monitor [Nordic member rules](https://www.nasdaq.com/market-regulation/nordic/member-rules) for later changes.
 - **Status:** Stockholm, Helsinki, and Copenhagen have primary January-2010 baselines, exact randomized-auction revisions, and current post-trading phases; Copenhagen's closing-price session is also date-aware.
 

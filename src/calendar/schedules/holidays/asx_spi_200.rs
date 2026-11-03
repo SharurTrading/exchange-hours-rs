@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! ASX SPI 200 futures holiday and early-close data, audited 2010-01-01
-//! through 2027-12-31 plus the 2028-01-01 trade date of the final New Year
-//! evening leg. Evidence: `docs/evidence/asx_spi_200.md`.
+//! through 2028-12-21. Evidence: `docs/evidence/asx_spi_200.md`.
 
 use super::fences::early_close;
 use crate::calendar::ExceptionBlock;
@@ -38,7 +37,7 @@ static BLOCKS_05: [ExceptionBlock; 2] = [ExceptionBlock::order_entry(0, 34_800, 
 
 // Evidence: docs/evidence/asx_spi_200.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 1, 1)],
+    coverage: [(2010, 1, 1) ..= (2028, 12, 21)],
     rows: [
         // 2010-01-01 - T1 - ASX24-CAL-2010 - operator Closed/Non Trading Day (day and night sessions)
         (2010, 1, 1, Closed, T1, "ASX24-CAL-2010"),
@@ -646,5 +645,21 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 12, 31, early_close(14 * 3_600 + 30 * 60), T1, "ASX24-LIVE-2026-10"),
         // 2028-01-01 - T1 - ASX24-LIVE-2026-10 - the operator closed the 31 December 2027 evening night session, whose trade date is 1 January 2028 (audited from the 2027 calendar)
         (2028, 1, 1, Closed, T1, "ASX24-LIVE-2026-10"),
+        // 2028-01-03 - T1 - ASX24-T24-2028 - operator Closed/Non Trading Day (day and night sessions)
+        (2028, 1, 3, Closed, T1, "ASX24-T24-2028"),
+        // 2028-01-04 - T1 - ASX24-T24-2028 - the operator closed the holiday evening's night session; the late open removes the wrapped leg and keeps the following day's own sessions
+        (2028, 1, 4, ReplacementBlocks(&BLOCKS_05), T1, "ASX24-T24-2028"),
+        // 2028-01-26 - T1 - ASX24-T24-2028 - Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 08:00 close
+        (2028, 1, 26, early_close(8 * 3_600 ), T1, "ASX24-T24-2028"),
+        // 2028-04-14 - T1 - ASX24-T24-2028 - Day Before Good Friday: the night session opening on the eve ceased at midnight (operator row) and Good Friday itself is Closed/Non Trading Day, so the trade date runs that shortened evening leg and no day session
+        (2028, 4, 14, ReplacementBlocks(&BLOCKS_02), T1, "ASX24-T24-2028"),
+        // 2028-04-15 - T1 - ASX24-T24-2028 - the operator closed the Friday evening's night session, whose trade date is the Saturday
+        (2028, 4, 15, Closed, T1, "ASX24-T24-2028"),
+        // 2028-04-17 - T1 - ASX24-T24-2028 - operator Closed/Non Trading Day (day and night sessions)
+        (2028, 4, 17, Closed, T1, "ASX24-T24-2028"),
+        // 2028-04-18 - T1 - ASX24-T24-2028 - the operator closed the holiday evening's night session; the late open removes the wrapped leg and keeps the following day's own sessions
+        (2028, 4, 18, ReplacementBlocks(&BLOCKS_05), T1, "ASX24-T24-2028"),
+        // 2028-06-12 - T1 - ASX24-T24-2028 - Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 07:00 close
+        (2028, 6, 12, early_close(7 * 3_600 ), T1, "ASX24-T24-2028"),
     ],
 };

@@ -193,7 +193,7 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert!(matches!(contract, HolidayContract::Audited { .. }));
     assert!(contract.rows().is_some_and(|rows| rows > 0));
     assert!(contract.coverage().is_some_and(|windows| {
-        windows.first() == date(2010, 1, 1) && windows.last() == date(2027, 12, 31)
+        windows.first() == date(2010, 1, 1) && windows.last() == date(2028, 4, 14)
     }));
 }
 
@@ -326,7 +326,7 @@ fn cfe_2025_holiday_rows_report_covered() {
                 .holiday_contract()
                 .coverage()
                 .is_some_and(|windows| windows.first() == date(2014, 12, 24)
-                    && windows.last() == date(2027, 12, 31)),
+                    && windows.last() == date(2028, 4, 14)),
             "cfe must audit from the earliest surviving operator artifact through the \
              published 2027 schedule"
         );

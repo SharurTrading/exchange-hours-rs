@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-04
+
 ### Added
 
 - ASX SPI 200's T24 2028 calendar through 2028-12-21: eight trade-date rows

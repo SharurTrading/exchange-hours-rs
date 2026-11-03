@@ -6,6 +6,11 @@
 
 ### Added
 
+- ASX SPI 200's T24 2028 calendar through 2028-12-21: eight trade-date rows
+  (the New Year, Australia Day, Good Friday and Easter Monday arrangements
+  and the King's Birthday day closure); the 2028 Christmas and New Year
+  eves and their dependent trade dates stay withheld pending the ASX 24
+  HTML 2028 calendar (#389).
 - TSX's published 2027 holiday calendar: ten closures and the 24 December
   2027 early close at 13:00 Toronto time, extending the audited window to
   2027-12-31.

@@ -19,7 +19,8 @@
 use chrono::{DateTime, TimeZone, Utc};
 use chrono_tz::{Asia::Hong_Kong, Australia};
 use exchange_hours::{
-    Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
+    CalendarQueryError, DateCoverage, Holiday, HolidayKind, MarketHoursKey, SessionKind,
+    SessionState, calendar_for_market_hours_key,
 };
 
 fn sydney(year: i32, month: u32, day: u32, hour: u32, min: u32) -> DateTime<Utc> {
@@ -315,6 +316,103 @@ fn asx_holiday_rows_clip_and_delete_across_the_arrangements() {
             .is_open(sydney(2016, 1, 27, 10, 0))
             .expect("next day")
     );
+}
+
+#[test]
+fn asx_t24_2028_rows_answer_and_the_withheld_eves_refuse() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::AsxSpi200);
+    let day = |month: u32, date: u32| {
+        chrono::NaiveDate::from_ymd_opt(2028, month, date).expect("fixture")
+    };
+    // A 2028 Closed date: Easter Monday 2028-04-17 (T24: ASX 24 Closed).
+    assert!(
+        calendar
+            .is_closed_trade_date(day(4, 17), SessionKind::Both)
+            .expect("closed trade date")
+    );
+    assert!(
+        !calendar
+            .is_open(sydney(2028, 4, 17, 12, 0))
+            .expect("easter monday closed")
+    );
+    assert!(matches!(
+        calendar.holiday_on(day(4, 17)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    ));
+    assert_eq!(
+        calendar.holiday_on(day(4, 17)).map(Holiday::document_id),
+        Some("ASX24-T24-2028")
+    );
+    // A 2028 day-closed / night-open date: Australia Day 2028-01-26 runs its
+    // morning leg to 08:00, no day session, and the evening reopen.
+    assert!(
+        calendar
+            .is_open(sydney(2028, 1, 26, 6, 0))
+            .expect("morning leg")
+    );
+    assert!(
+        !calendar
+            .is_open(sydney(2028, 1, 26, 12, 0))
+            .expect("day closed")
+    );
+    assert!(
+        calendar
+            .is_open(sydney(2028, 1, 26, 18, 0))
+            .expect("night reopen")
+    );
+    assert!(matches!(
+        calendar.holiday_on(day(1, 26)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose { close_ssm }) if close_ssm == 8 * 3_600
+    ));
+    // Good Friday 2028-04-14 is the midnight-cease trade date: the shortened
+    // evening leg is end-exclusive at midnight and no day session runs.
+    assert!(
+        calendar
+            .is_open(sydney(2028, 4, 13, 20, 0))
+            .expect("thursday evening leg")
+    );
+    assert!(
+        !calendar
+            .is_open(sydney(2028, 4, 14, 0, 0))
+            .expect("midnight cease, end-exclusive")
+    );
+    assert!(
+        !calendar
+            .is_open(sydney(2028, 4, 14, 12, 0))
+            .expect("good friday day closed")
+    );
+    // The last covered date answers: 2028-12-21 is audited normal. Its
+    // `coverage_on` verdict is the trailing resolution edge (#151), so the
+    // answering claim is read from the holiday window and the session query.
+    assert!(
+        calendar
+            .holiday_coverage()
+            .expect("audited window")
+            .contains(day(12, 21))
+    );
+    assert_eq!(
+        calendar.coverage().coverage_on(day(12, 20)),
+        DateCoverage::Covered
+    );
+    assert!(
+        calendar
+            .is_open(sydney(2028, 12, 21, 12, 0))
+            .expect("last covered date")
+    );
+    assert_eq!(calendar.holiday_on(day(12, 21)), None);
+    // The withheld eves refuse typed and claim no audited row.
+    for withheld in [day(12, 22), day(12, 29)] {
+        assert_eq!(
+            calendar.coverage().coverage_on(withheld),
+            DateCoverage::OutsideCoveredRange
+        );
+        assert_eq!(calendar.holiday_on(withheld), None);
+        assert!(matches!(
+            calendar.is_closed_trade_date(withheld, SessionKind::Both),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+    }
+    assert!(calendar.is_open(sydney(2028, 12, 22, 12, 0)).is_err());
 }
 
 // --- hkex_index_futures ------------------------------------------------------

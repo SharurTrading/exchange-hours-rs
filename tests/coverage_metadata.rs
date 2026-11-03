@@ -326,7 +326,7 @@ fn cfe_2025_holiday_rows_report_covered() {
                 .holiday_contract()
                 .coverage()
                 .is_some_and(|windows| windows.first() == date(2014, 12, 24)
-                    && windows.last() == date(2028, 4, 14)),
+                    && windows.last() == date(2027, 12, 31)),
             "cfe must audit from the earliest surviving operator artifact through the \
              published 2027 schedule"
         );

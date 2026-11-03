@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Toronto Stock Exchange (TSX) holiday rows, 2010-2026 across two audited
+//! Toronto Stock Exchange (TSX) holiday rows, 2010-2027 across two audited
 //! windows.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Toronto`. TSX
@@ -78,7 +78,7 @@ const HALF_DAY_13_00: u32 = 13 * 3_600;
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
         (2010, 1, 1) ..= (2016, 12, 31),
-        (2017, 1, 1) ..= (2026, 12, 31),
+        (2017, 1, 1) ..= (2027, 12, 31),
     ],
     rows: [
         // 2010-01-01 - T1 - TSX-REL-2009-12-02 - New Year's Day: the Holiday
@@ -520,5 +520,28 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 12, 25, Closed, T1, "TSX-CAL-2026-09-28"),
         // 2026-12-28 - T1 - TSX-CAL-2026-09-28 - In Lieu of Boxing Day.
         (2026, 12, 28, Closed, T1, "TSX-CAL-2026-09-28"),
+        // 2027-01-01 - T1 - TSX-CAL-2026-11-03 - New Year's Day.
+        (2027, 1, 1, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-02-15 - T1 - TSX-CAL-2026-11-03 - Family Day.
+        (2027, 2, 15, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-03-26 - T1 - TSX-CAL-2026-11-03 - Good Friday.
+        (2027, 3, 26, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-05-24 - T1 - TSX-CAL-2026-11-03 - Victoria Day.
+        (2027, 5, 24, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-07-01 - T1 - TSX-CAL-2026-11-03 - Canada Day.
+        (2027, 7, 1, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-08-02 - T1 - TSX-CAL-2026-11-03 - Civic Holiday.
+        (2027, 8, 2, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-09-06 - T1 - TSX-CAL-2026-11-03 - Labour Day.
+        (2027, 9, 6, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-10-11 - T1 - TSX-CAL-2026-11-03 - Thanksgiving Day.
+        (2027, 10, 11, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-12-24 - T1 - TSX-CAL-2026-11-03 - Christmas Eve: closing at
+        // 1:00 PM (TSX/TSXV).
+        (2027, 12, 24, early_close(HALF_DAY_13_00), T1, "TSX-CAL-2026-11-03"),
+        // 2027-12-27 - T1 - TSX-CAL-2026-11-03 - In Lieu of Christmas Day.
+        (2027, 12, 27, Closed, T1, "TSX-CAL-2026-11-03"),
+        // 2027-12-28 - T1 - TSX-CAL-2026-11-03 - In Lieu of Boxing Day.
+        (2027, 12, 28, Closed, T1, "TSX-CAL-2026-11-03"),
     ],
 };

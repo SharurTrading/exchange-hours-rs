@@ -138,3 +138,5 @@ The saved artifact at `captures/nasdaq-current-2026-10-12/nasdaq-trading-hours.w
 | `NASDAQ-NORDIC-CASH-2026-2027` | 2026-01-01..2027-12-31 | <https://www.nasdaq.com/european-market-activity/trading-hours> | 2026-10-12 00:49:43 UTC | T1 | `9f8fe49d65db294d48e7bd94e7b4b6b098dac44f102ad74dd71c89b5aa9bff4c` |
 
 Source: <https://www.nasdaq.com/european-market-activity/trading-hours>. Calendar omissions inside these fully published annual columns are audited ordinary weekdays; no substitutes are invented for weekend holidays. Above 2027 the publication horizon remains unannounced. The identity is served and reviewed monthly after the 2026-10-12 current-scope activation; its pre-2026 holiday gap remains disclosed in #332 under the dated AGENTS.md exception.
+
+The Market Model 2026:05 hours diff is tracked in #390.

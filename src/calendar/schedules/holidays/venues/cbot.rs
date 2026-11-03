@@ -2,7 +2,7 @@
 
 //! The `Exchange::Cbot` table holiday rows — the clock family `globex_grains`, carried verbatim.
 //!
-//! Coverage is 246 rows over the six audited eras: 2010-2012 22, 2013-2015 43, 2016-2018 36, 2019-2021 39, 2022-2024 39 and 2025-2027 67.
+//! Coverage is 252 rows (the six audited eras plus the 2028 split windows) over the six audited eras: 2010-2012 22, 2013-2015 43, 2016-2018 36, 2019-2021 39, 2022-2024 39, 2025-2027 67 and 2028 6.
 //!
 //! Evidence: docs/evidence/cbot.md, and the family's evidence file for
 //! every retrieved row.
@@ -26,7 +26,7 @@ use super::super::{
 /// its clock. The clock's evidence file cites every artifact.
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -622,5 +622,38 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2027, 12, 23, ReplacementBlocks(&CLOSURE_EVE_BLOCKS), T2, "CME-SVC-2027-12-22"),
         // 2027-12-24 - T2 - CME-SVC-2027-12-22 - Christmas Friday closure, no events published.
         (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
+        // 2028-01-17 - T2 - CME-SVC-2028-01-15 - MLK Day, only a 19:00 CT open for 01-18.
+        (2028, 1, 17, Closed, T2, "CME-SVC-2028-01-15"),
+        // 2028-01-18 - T2 - CME-SVC-2028-01-15 - the merged MLK trade date.
+        (
+            2028,
+            1,
+            18,
+            ReplacementBlocks(&MERGED_SUNDAY_EVE_BLOCKS),
+            T2,
+            "CME-SVC-2028-01-15"
+        ),
+        // 2028-02-21 - T2 - CME-SVC-2028-02-18 - Presidents' Day, only a 19:00 CT open for 02-22.
+        (2028, 2, 21, Closed, T2, "CME-SVC-2028-02-18"),
+        // 2028-02-22 - T2 - CME-SVC-2028-02-18 - the merged Presidents' Day trade date.
+        (
+            2028,
+            2,
+            22,
+            ReplacementBlocks(&MERGED_SUNDAY_EVE_BLOCKS),
+            T2,
+            "CME-SVC-2028-02-18"
+        ),
+        // 2028-04-13 - T2 - CME-SVC-2028-04-12 - Good Friday eve: the complete day.
+        (
+            2028,
+            4,
+            13,
+            ReplacementBlocks(&CLOSURE_EVE_BLOCKS),
+            T2,
+            "CME-SVC-2028-04-12"
+        ),
+        // 2028-04-14 - T2 - CME-SVC-2028-04-12 - Good Friday, no events published.
+        (2028, 4, 14, Closed, T2, "CME-SVC-2028-04-12"),
     ],
 };

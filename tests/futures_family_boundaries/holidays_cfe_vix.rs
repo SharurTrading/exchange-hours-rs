@@ -2,7 +2,7 @@
 
 //! Built-in holiday rows for CFE (`cfe` venue, `cfe_vix` key) over three
 //! audited windows: 2014-12-24..2015-01-02, 2015-02-15..2016-01-20 and
-//! 2017-04-10 through 2026.
+//! 2017-04-10 through 2027.
 //!
 //! One table serves both identities, so every case below is asserted through
 //! the key and the venue agreement is asserted once at the end.
@@ -1327,13 +1327,13 @@ fn coverage_runs_over_the_three_audited_windows() {
         .expect("CFE ships a built-in table");
 
     assert_eq!(coverage.first(), day(2014, 12, 24));
-    assert_eq!(coverage.last(), day(2026, 12, 31));
+    assert_eq!(coverage.last(), day(2027, 12, 31));
     assert_eq!(
         coverage.windows(),
         vec![
             (day(2014, 12, 24), day(2015, 1, 2)),
             (day(2015, 2, 15), day(2016, 1, 20)),
-            (day(2017, 4, 10), day(2026, 12, 31)),
+            (day(2017, 4, 10), day(2027, 12, 31)),
         ],
         "the three audited windows stop at each unrecovered span's edge"
     );
@@ -1442,21 +1442,21 @@ fn coverage_runs_over_the_three_audited_windows() {
             date_of(gap)
         );
     }
-    // 2027-01-01 is a CFE holiday in fact, but Cboe has published no 2027
+    // 2028-01-03 sits past the audited window, but Cboe has published no 2028
     // schedule, so the table must not reach past its window. The identity
     // refuses the date outright: it returns no answer where its holiday layer
     // has none. The normal week is still observable on the detached snapshot,
     // which claims no coverage at all.
-    let outside = ct((2027, 1, 1), (10, 0, 0));
+    let outside = ct((2028, 1, 3), (10, 0, 0));
     assert!(
         matches!(
             calendar.is_open(outside),
             Err(CalendarQueryError::OutsideCoveredRange {
                 date,
                 ..
-            }) if date == day(2027, 1, 1)
+            }) if date == day(2028, 1, 3)
         ),
-        "2027-01-01 is outside the audited 2026 window and must be refused"
+        "2028-01-03 is outside the audited 2027 window and must be refused"
     );
     assert!(
         calendar
@@ -1635,9 +1635,55 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             replacements,
             unsourced
         ),
-        (31, 67, 22, 3, 1, 13, 2, 1, 0),
+        (34, 74, 23, 3, 1, 13, 2, 1, 0),
         "closures, 10:30/12:15/08:30/08:15 CT early closes, 17:00 late opens, combined \
          half-day rows, the mourning replacement and zero withheld dates (2017-07-03 is \
          CFEIC17-022's own 12:15 row since 2026-10-10 UTC), across the three windows"
+    );
+}
+
+#[test]
+fn the_2027_schedule_answers_with_its_own_shapes() {
+    let calendar = cfe();
+    // CBOE-HOURS-USFUT-2027 (retrieved 2026-11-03 UTC): three closures whose
+    // cells both read `None`, seven 10:30 CT early closes and the 12:15 CT
+    // Thanksgiving half day. Good Friday 2027-03-26 is a closure, unlike
+    // 2026-04-03's early close at the regular open.
+    for date in [(2027, 1, 1), (2027, 3, 26), (2027, 12, 24)] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "cfe {date:?} is closed"
+        );
+    }
+    for date in [
+        (2027, 1, 18),
+        (2027, 2, 15),
+        (2027, 5, 31),
+        (2027, 6, 18),
+        (2027, 7, 5),
+        (2027, 9, 6),
+        (2027, 11, 25),
+    ] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(early_close_at(10 * 60 + 30)),
+            "cfe {date:?} early-closes at 10:30 CT"
+        );
+    }
+    assert_eq!(
+        calendar.holiday_on(day(2027, 11, 26)).map(Holiday::kind),
+        Some(early_close_at(12 * 60 + 15)),
+        "cfe 2027-11-26 early-closes at 12:15 CT"
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2027, 3, 26), (9, 0, 0)))
+            .expect("covered"),
+        "cfe 2027-03-26 Good Friday has no regular session"
     );
 }

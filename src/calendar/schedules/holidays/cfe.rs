@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Cboe Futures Exchange holiday rows over three audited windows:
-//! 2014-12-24..2015-01-02, 2015-02-15..2016-01-20 and 2017-04-10..2026.
+//! 2014-12-24..2015-01-02, 2015-02-15..2016-01-20 and 2017-04-10..2027.
 //!
 //! Keyed by the crate's own venue-local trade date in `US/Central` (design
 //! memo D1). CFE's trading day wraps: the session for trade date `D` opens on
@@ -25,7 +25,7 @@
 //! printing a `CBOE, C2 and CFE Trading Schedule` table) and the CFE
 //! information circulars IC15-011, IC15-023, IC15-028 and IC15-039, which
 //! state the 2014 Christmas and 2015 arrangements the same way. Coverage stops
-//! at 2026-12-31 because Cboe has published no 2027 schedule; the remaining
+//! at 2027-12-31; the remaining
 //! unaudited spans (2010-01-01..2014-12-23, 2015-01-03..2015-02-14 and
 //! 2016-01-21..2017-04-09) are recorded in
 //! [`docs/evidence/cfe.md`](../../../../../docs/evidence/cfe.md) and
@@ -119,7 +119,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
         (2014, 12, 24) ..= (2015, 1, 2),
         (2015, 2, 15) ..= (2016, 1, 20),
-        (2017, 4, 10) ..= (2026, 12, 31),
+        (2017, 4, 10) ..= (2027, 12, 31),
     ],
     rows: [
         // 2014-12-24 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - Christmas Eve:
@@ -555,5 +555,29 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-HOURS-USFUT-2026"),
         // 2026-12-25 - T1 - CBOE-HOURS-USFUT-2026 - Christmas Day, both cells `None`.
         (2026, 12, 25, Closed, T1, "CBOE-HOURS-USFUT-2026"),
+        // 2027-01-01 - T1 - CBOE-HOURS-USFUT-2027 - New Year's Day, both cells `None`.
+        (2027, 1, 1, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-01-18 - T1 - CBOE-HOURS-USFUT-2027 - MLK Jr. Day, 10:30 CT.
+        (2027, 1, 18, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-02-15 - T1 - CBOE-HOURS-USFUT-2027 - Presidents' Day, 10:30 CT.
+        (2027, 2, 15, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-03-26 - T1 - CBOE-HOURS-USFUT-2027 - Good Friday, both cells
+        // `None` (a closure, unlike the 2026 early close at the regular open).
+        (2027, 3, 26, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-05-31 - T1 - CBOE-HOURS-USFUT-2027 - Memorial Day, 10:30 CT.
+        (2027, 5, 31, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-06-18 - T1 - CBOE-HOURS-USFUT-2027 - Juneteenth observed, 10:30 CT.
+        (2027, 6, 18, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-07-05 - T1 - CBOE-HOURS-USFUT-2027 - Independence Day observed, 10:30 CT.
+        (2027, 7, 5, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-09-06 - T1 - CBOE-HOURS-USFUT-2027 - Labor Day, 10:30 CT.
+        (2027, 9, 6, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-11-25 - T1 - CBOE-HOURS-USFUT-2027 - Thanksgiving Day, 10:30 CT.
+        (2027, 11, 25, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-11-26 - T1 - CBOE-HOURS-USFUT-2027 - Thanksgiving half day, 12:15 CT.
+        (2027, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-12-24 - T1 - CBOE-HOURS-USFUT-2027 - Christmas Day observed, both
+        // cells `None`.
+        (2027, 12, 24, Closed, T1, "CBOE-HOURS-USFUT-2027"),
     ],
 };

@@ -225,21 +225,6 @@ fn era_window(
         })
 }
 
-/// Whether the audited windows run contiguously from the 2010 floor, which is
-/// the claim the 2019-2021 era paragraphs make in prose.
-fn contiguous_from_floor(coverage: &exchange_hours::HolidayCoverage) -> bool {
-    let windows = coverage.windows();
-    let Some(first) = windows.first() else {
-        return false;
-    };
-    if first.0 != NaiveDate::from_ymd_opt(2010, 1, 1).expect("the floor is a valid date") {
-        return false;
-    }
-    windows
-        .windows(2)
-        .all(|pair| pair[0].1.succ_opt().expect("a window end has a successor") == pair[1].0)
-}
-
 /// The kind breakdown one era-share sentence states, spelled from the shipped
 /// tables' derivation.
 ///
@@ -359,16 +344,32 @@ fn the_whole_table_sentences_derive_from_the_shipped_tables() {
                 years.0, years.1
             );
             if years.0 == 2019 {
+                // Contiguity is claimed only through 2027-12-31: the 2028
+                // split windows leave unaudited spans between them.
+                let pre_2028: Vec<_> = coverage
+                    .windows()
+                    .iter()
+                    .filter(|(_, last)| {
+                        *last
+                            <= NaiveDate::from_ymd_opt(2027, 12, 31)
+                                .expect("the 2027 edge is a valid date")
+                    })
+                    .copied()
+                    .collect();
                 assert!(
-                    contiguous_from_floor(&coverage),
-                    "{family}: the 2019-2021 paragraph claims every interval from 2010-01-01 is \
-                     inside a declared window"
+                    pre_2028.first().map(|(first, _)| *first)
+                        == NaiveDate::from_ymd_opt(2010, 1, 1)
+                        && pre_2028.windows(2).all(|pair| {
+                            pair[0].1.succ_opt().expect("a window end has a successor") == pair[1].0
+                        }),
+                    "{family}: the 2019-2021 paragraph claims every interval from 2010-01-01 \
+                     through 2027-12-31 is inside a declared window"
                 );
                 assert!(
                     flowed(&section.body).contains(
-                        "Every interval from 2010-01-01 is inside a declared window, so \
-                         `holiday_coverage` answers for the whole span rather than reporting an \
-                         unaudited gap.",
+                        "Every interval from 2010-01-01 through 2027-12-31 is inside a declared \
+                         window; the 2028 split windows leave unaudited spans between them, which \
+                         report as covered gaps rather than audited normal.",
                     ),
                     "{family}: the 2019-2021 paragraph must state the contiguity claim its \
                      windows derive"

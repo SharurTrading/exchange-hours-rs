@@ -456,7 +456,7 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
         .expect("the family ships a built-in table");
 
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
     assert!(coverage.contains(day(2026, 4, 3)));
     assert!(coverage.contains(day(2016, 1, 1)));
     // 2015-12-31 entered the table with the 2011-2015 wave: it is the last
@@ -1807,6 +1807,9 @@ fn era_2022_2024_window_sits_third_and_the_floor_era_answers() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 17), day(2028, 1, 18)),
+            (day(2028, 2, 21), day(2028, 2, 22)),
+            (day(2028, 4, 13), day(2028, 4, 14)),
         ]
     );
     assert!(coverage.contains(day(2022, 1, 1)));
@@ -2112,6 +2115,9 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2028, 1, 17), day(2028, 1, 18)),
+            (day(2028, 2, 21), day(2028, 2, 22)),
+            (day(2028, 4, 13), day(2028, 4, 14)),
         ]
     );
 
@@ -3543,4 +3549,19 @@ fn every_block_row_spells_the_envelope_the_regular_session_it_is() {
             "{year}-{month:02}-{date:02}: is_open is unaffected by the spelling"
         );
     }
+}
+
+#[test]
+fn the_2028_rows_carry_their_sourced_kinds() {
+    let calendar = nkd();
+    assert_eq!(
+        calendar.holiday_on(day(2028, 1, 17)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600
+        })
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2028, 4, 14)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
 }

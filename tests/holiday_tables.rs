@@ -494,7 +494,7 @@ fn policy_calendar_mirrors_the_builtin_accessors() {
         .holiday_coverage()
         .expect("the family ships a table");
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2028, 4, 14));
 
     let detached = calendar.without_holidays();
     assert!(detached.has_day_policy());

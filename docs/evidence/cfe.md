@@ -24,7 +24,7 @@ VIX futures normal-week history is complete from January 2010. Old-system pre-op
 
 ## Holidays
 
-**Coverage:** 2014-12-24..2015-01-02, 2015-02-15..2016-01-20, 2017-04-10..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2014-12-24..2015-01-02, 2015-02-15..2016-01-20, 2017-04-10..2027-12-31 (inclusive trade dates). Tier: T1 throughout.
 
 One table serves the `cfe` venue and the `cfe_vix` key: Cboe publishes one holiday schedule for all CFE futures, and VIX futures are the only family the crate routes to the venue, so the venue intersection is that one family's own table.
 
@@ -360,6 +360,7 @@ The pre-2017 documents below were recovered 2026-10-06 UTC as Wayback `id_` repl
 | `CBOE-SU-2025-THANKSGIVING` | 2025-01-01 .. 2026-12-31 | <https://cdn.cboe.com/resources/schedule_update/2025/CFE-Modified-Trading-Hours-for-the-Thanksgiving-Day-Holiday.pdf> | retrieved 2026-09-21 UTC | T1 | `585ae94eb540d1ca810a8684ecd63d29e9e7969ea0ff37a74c9cc82e88acea55` |
 | `CBOE-SU-2025-CHRISTMAS` | 2025-01-01 .. 2026-12-31 | <https://cdn.cboe.com/resources/schedule_update/2025/CFE-Modified-Trading-Hours-for-the-Christmas-Day-Holiday.pdf> | retrieved 2026-09-21 UTC | T1 | `f2fef1107ab5e774aec3c8c3fb0cda5354b16d3608a9e3b1752ff3dd34fbc3f5` |
 | `CBOE-HOURS-USFUT-2026` | 2025-01-01 .. 2026-12-31 | <https://www.cboe.com/about/hours/us-futures> | retrieved 2026-09-12 04:55 UTC | T1 | `b1b38ba66a870c06b9169eed58329407cc0ea23903a44d96e5284f7bf97e7759` |
+| `CBOE-HOURS-USFUT-2027` | 2027-01-01 .. 2027-12-31 | <https://www.cboe.com/about/hours/us-futures> | retrieved 2026-11-03 01:57 UTC | T1 | `abd00372eea9aec0b442713fd4bcd4a300c3ca414f165ceceaacfba84494c9c4` |
 
 **Retrieval times are date-level for the twelve 2025 id rows.** The store records the 2025 pass at day granularity only: `live_index.json` carries no capture timestamp per artifact, and the filesystem timestamps that remain are the retrieval host's local clock, not UTC. The date each was fetched is on record; the wall-clock time is not, so none is written here rather than a time being inferred from a file mtime (LAW-UTC-DATES, LAW-NO-FABRICATED-DATES). `CBOE-HOURS-USFUT-2026`'s time is the one the store already recorded.
 
@@ -382,11 +383,29 @@ The pre-2017 documents below were recovered 2026-10-06 UTC as Wayback `id_` repl
 | 2026-12-24 | early close | `Christmas Early Close,2026-12-24,08:30:00 - 12:15:00,5:00 PM (Wed) to 8:30 AM (Thu)` — 12:15 CT | `CBOE-HOURS-USFUT-2026` | T1 | Cboe event date 2026-12-24; no Thursday-evening leg is printed because trade date 2026-12-25 is closed |
 | 2026-12-25 | closed | `Christmas Day,2026-12-25,None,None` | `CBOE-HOURS-USFUT-2026` | T1 | Cboe event date 2026-12-25; both columns empty |
 
+### 2027
+
+Retrieved 2026-11-03 01:57 UTC: the hours page now carries the 2027 schedule and its CSV twin (`https://www.cboe.com/us/futures/holidays/csv/`, `# Generated: 2026:11:02 16:08:24`, sha256 `4b510832269ef6329be6b0105ee5faf0a11d26528a1b54d6f4001034526de1cc`) prints the same eleven rows.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `New Year's Day,2027-01-01,None,None` | `CBOE-HOURS-USFUT-2027` | T1 | both columns empty |
+| 2027-01-18 | early close | `Martin Luther King Jr. Day,2027-01-18,None,5:00 PM (Sun) to 10:30 AM (Mon) and 5:00 PM (Mon) to 8:30 AM (Tue)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | same two-leg shape as 2026 |
+| 2027-02-15 | early close | `Presidents' Day,2027-02-15,None,5:00 PM (Sun) to 10:30 AM (Mon) and 5:00 PM (Mon) to 8:30 AM (Tue)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | same two-leg shape as 2026 |
+| 2027-03-26 | closed | `Good Friday,2027-03-26,None,None` | `CBOE-HOURS-USFUT-2027` | T1 | both columns empty; a closure, unlike 2026-04-03 |
+| 2027-05-31 | early close | `Memorial Day,2027-05-31,None,5:00 PM (Sun) to 10:30 AM (Mon) and 5:00 PM (Mon) to 8:30 AM (Tue)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | Cboe event date 2027-05-31 |
+| 2027-06-18 | early close | `Juneteenth Observed,2027-06-18,None,5:00 PM (Thu) to 10:30 AM (Fri)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | Cboe event date 2027-06-18 |
+| 2027-07-05 | early close | `Independence Day Observed,2027-07-05,None,5:00 PM (Sun) to 10:30 AM (Mon) and 5:00 PM (Mon) to 8:30 AM (Tue)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | Cboe event date 2027-07-05 |
+| 2027-09-06 | early close | `Labor Day,2027-09-06,None,5:00 PM (Sun) to 10:30 AM (Mon) and 5:00 PM (Mon) to 8:30 AM (Tue)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | Cboe event date 2027-09-06 |
+| 2027-11-25 | early close | `Thanksgiving Day,2027-11-25,None,5:00 PM (Wed) to 10:30 AM (Thu) and 5:00 PM (Thu) to 8:30 AM (Fri)` — 10:30 CT | `CBOE-HOURS-USFUT-2027` | T1 | the Thursday-evening leg belongs to trade date 2027-11-26 |
+| 2027-11-26 | early close | `Thanksgiving Early Close,2027-11-26,08:30:00 - 12:15:00` — 12:15 CT | `CBOE-HOURS-USFUT-2027` | T1 | only the close moves |
+| 2027-12-24 | closed | `Christmas Day Observed,2027-12-24,None,None` | `CBOE-HOURS-USFUT-2027` | T1 | both columns empty |
+
 **Gaps, 2025:** none in this window. Every date Cboe's 2025 notices modify ships a row, and every other 2025 trade date is audited normal. No 2025 row is a late open.
 
 **Interpretive steps, 2025.** The 2025 corpus is per-holiday notices rather than one table, and their layouts are not uniform, so each row below was read from its own notice's bytes at word coordinates. On the seven Monday or Thursday holidays whose regular cell is empty while an extended block is printed — MLK, Presidents, Memorial, Juneteenth, Labor, Thanksgiving and the Thursday half day's own leg — the crate reads an **early close** of the leg that opened at 17:00 CT the previous evening, exactly as the 2026 section reads the same shape; the Trade Date row of each notice confirms it, naming the day after the holiday. Three dates are read differently, each because its own notice prints something the others do not: **2025-01-01** and **2025-07-04** print no cell under the holiday column and are skipped by the Trade Date row, so they are `closed`; **2025-04-18** prints neither a Friday close nor a Friday trade date and is likewise `closed`; and **2025-01-09** is stated in prose as a trading day with no regular hours and ships as `ReplacementBlocks`. The 2025-11-28 and 2025-12-24 half days are `09:00` rows in the sense the 2026 section means: Cboe prints `RTH Start 8:30 AM` and a shortened close, so only the close moves. This reading is fenced per date in `tests/futures_family_boundaries/holidays_cfe_vix.rs`.
 
-**Gaps, 2026:** none inside the window, and the horizon is the operator's. Cboe has published no 2027 CFE holiday schedule: verified 2026-09-26 UTC, <https://www.cboe.com/about/hours/us-futures> carries only a “2026 Futures Holiday Schedule” heading, and its CSV twin <https://www.cboe.com/us/futures/holidays/csv/> lists 2026 rows only (`# Generated: 2026:09:18 17:47:39` at the first check). Re-checked 2026-09-29 UTC with fresh live reads of both channels (artifacts under `holidays/raw/cfe/forward-2027/`): the CSV has regenerated with the same twelve 2026 rows (`# Generated: 2026:09:29 16:16:41`) and still names no 2027 date. Re-checked again 2026-10-02 UTC (artifact `cboe_us_futures_holidays_csv.live-20261002T235346Z.csv` and `INDEX-recheck-2026-10-02.md` under `holidays/raw/cfe/forward-2027/`): the CSV has regenerated again (`# Generated: 2026:10:02 16:15:30`) with the same twelve 2026 rows and still names no 2027 date. Nothing is being withheld by this crate — there is simply no 2027 schedule yet. **Closing condition:** the Cboe 2027 futures holiday schedule, at which point the window extends to 2027-12-31. Re-checked monthly per LAW-WATCH. No row in this window changes intraday phase topology, and no row is a late open.
+**Gaps, 2026:** none inside the window. The 2027 schedule was published by 2026-11-03 UTC (`CBOE-HOURS-USFUT-2027`, CSV `# Generated: 2026:11:02 16:08:24`) and its eleven rows are encoded below; the window now ends 2027-12-31. **Closing condition for 2028:** the Cboe 2028 futures holiday schedule. Re-checked monthly per LAW-WATCH.
 
 **Interpretive steps, 2026:** Cboe prints two cells per holiday, `Regular Trading Hours` and `Extended Trading Hours`. On nine of these dates the regular cell reads `None` while the extended cell still names a block. On the crate's trade-date key that is an **early close** of the leg which opened at 17:00 CT the previous evening, not a closure: the block printed as “5:00 PM (Sun) to 10:30 AM (Mon)” *is* trade date Monday's own session, and the second block “5:00 PM (Mon) to 8:30 AM (Tue)” belongs to the next trade date and needs no row. Two dates are different. 2026-01-01 is `closed` because the only block printed is the Thursday-evening leg of trade date 2026-01-02, so no session at all belongs to 2026-01-01; and 2026-12-25 prints `None,None`. This reading answers the retrieval's own advisory on 2026-01-01 and is fenced in `tests/futures_family_boundaries/holidays_cfe_vix.rs`.
 

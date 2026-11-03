@@ -688,7 +688,7 @@ fn above_the_last_window_still_refuses_everywhere() {
     for (name, probe) in [
         ("sgx_securities", (2027, 6, 15)),
         ("nse_india", (2027, 6, 15)),
-        ("cfe", (2027, 6, 15)),
+        ("cfe", (2028, 6, 15)),
         ("tadawul", (2028, 6, 13)),
         ("b3", (2027, 6, 15)),
         ("sse", (2027, 6, 15)),

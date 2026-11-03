@@ -471,3 +471,5 @@ Knowledge-bound row, dated at the UTC date of the review that verified the
 claim, never moves forward, and a sourced onset day replaces it. One
 consequence is visible in `tests/golden/normal_week_grids.txt`, whose
 2026-08-22 fixture instant renders the dated grid without the Pre-Open.
+
+The 2026 Thanksgiving/Christmas session-hours publication is tracked in #388.

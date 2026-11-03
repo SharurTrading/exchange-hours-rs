@@ -4347,6 +4347,46 @@ mod tsx {
     }
 
     #[test]
+    fn the_2027_list_answers_through_the_identity_backed_surface() {
+        let calendar = tsx();
+        // TMX's 2027 section (TSX-CAL-2026-11-03, retrieved 2026-11-03 UTC):
+        // ten closures plus the Christmas Eve 13:00 TSX/TSXV close.
+        for date in [
+            (2027, 1, 1),
+            (2027, 2, 15),
+            (2027, 3, 26),
+            (2027, 5, 24),
+            (2027, 7, 1),
+            (2027, 8, 2),
+            (2027, 9, 6),
+            (2027, 10, 11),
+            (2027, 12, 27),
+            (2027, 12, 28),
+        ] {
+            assert_closure(calendar, date, "tsx");
+        }
+        assert_eq!(
+            calendar.holiday_on(day(2027, 12, 24)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600
+            }),
+            "tsx 2027-12-24 carries the printed 1:00 PM close"
+        );
+        assert!(
+            calendar
+                .is_open(toronto((2027, 12, 24), (12, 59, 59)))
+                .expect("covered"),
+            "tsx 2027-12-24 still trades at 12:59:59"
+        );
+        assert!(
+            !calendar
+                .is_open(toronto((2027, 12, 24), (13, 0, 0)))
+                .expect("covered"),
+            "tsx 2027-12-24 is closed at the 1:00 PM close (end-exclusive)"
+        );
+    }
+
+    #[test]
     fn an_ordinary_weekday_answers_with_the_end_exclusive_close() {
         let calendar = tsx();
         assert_eq!(calendar.holiday_on(day(2026, 6, 10)), None);
@@ -4459,7 +4499,7 @@ mod tsx {
         let calendar = tsx();
         let coverage = calendar.holiday_coverage().expect("tsx ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
-        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert_eq!(coverage.last(), day(2027, 12, 31));
         // The 2011-2012 release-era capture gap closed 2026-10-03 UTC: the
         // 2011-12-12 year-end schedule keys the in-lieu rows, 2011-12-23
         // trades to its regular 4:00 p.m. close per the same timetable, and
@@ -4494,14 +4534,13 @@ mod tsx {
                 "tsx {year}-{month:02}-{date:02} answers as an ordinary trading day"
             );
         }
-        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
         assert!(matches!(
             calendar.is_open(toronto((2009, 12, 31), (12, 0, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ));
-        // 2027 is not published: TMX adds the next year in Q4, so queries past
-        // 2026-12-31 refuse rather than answer from an unaudited normal week.
-        let outside = toronto((2027, 1, 4), (12, 0, 0));
+        // 2028 is not published: TMX adds the next year in Q4, so queries past
+        // 2027-12-31 refuse rather than answer from an unaudited normal week.
+        let outside = toronto((2028, 1, 3), (12, 0, 0));
         assert!(matches!(
             calendar.is_open(outside),
             Err(CalendarQueryError::OutsideCoveredRange { .. })
@@ -4520,11 +4559,11 @@ mod tsx {
         let rows = rows_per_year(tsx());
         assert_eq!(
             rows.len(),
-            181,
-            "169 closures and twelve Christmas Eve closes — the 2011 in-lieu \
+            192,
+            "179 closures and thirteen Christmas Eve closes — the 2011 in-lieu \
              rows and 2012 New Year in-lieu key the 2011-12-12 schedule"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 17] = [
+        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
             (2010, (9, 1, 0, 0)),
             (2011, (10, 0, 0, 0)),
             (2012, (10, 1, 0, 0)),
@@ -4542,6 +4581,7 @@ mod tsx {
             (2024, (10, 1, 0, 0)),
             (2025, (10, 1, 0, 0)),
             (2026, (10, 1, 0, 0)),
+            (2027, (10, 1, 0, 0)),
         ];
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
@@ -4565,7 +4605,8 @@ mod tsx {
                                 | 2021
                                 | 2024
                                 | 2025
-                                | 2026,
+                                | 2026
+                                | 2027,
                             12,
                             24
                         )

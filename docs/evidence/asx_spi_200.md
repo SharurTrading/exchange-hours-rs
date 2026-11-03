@@ -525,3 +525,5 @@ diffs live beside the artifacts in the research store
 ### 2028
 
 | 2028-01-01 | closed | — | `ASX24-LIVE-2026-10` | T1 | the operator closed the 31 December 2027 evening night session, whose trade date is 1 January 2028 (audited from the 2027 calendar) |
+
+The T24 2028 admissibility ruling is tracked in #389.

@@ -28,7 +28,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2016-12-31, 2017-01-01..2026-12-31
+**Coverage:** 2010-01-01..2016-12-31, 2017-01-01..2027-12-31
 (inclusive trade dates in `America/Toronto`; tier T1 throughout).
 
 The operator's holiday statement for 2017-2026 is TMX Group's own "Calendar"
@@ -70,18 +70,13 @@ series' Mondo Visione verbatim mirror, below) keys the 2011 in-lieu rows and
 the 2012 New Year in-lieu (2012-01-02), so the two 2010-2016 windows run as
 one continuous span.
 
-**2027 is not published.** The page's newest section is 2026; TMX historically
-adds the next year's calendar in Q4. Verified 2026-09-28: no 2027 list exists
-on the page or behind its "Settlement Schedule" links. Nothing past 2026-12-31
-is claimed; **closing condition:** the operator's 2027 calendar section.
-Re-checked 2026-10-02 UTC with a fresh live read of the page (artifact
-`tsx_calendar_page.live-20261002T235528Z.html` and `INDEX-recheck-2026-10-02.md`
-under `holidays/raw/equities/tsx/forward-2027/` in the research store): the
-page's bytes still carry `2027` zero times and its newest sections are still
-the 2026 and 2025 lists.
+**2027 published 2026-11-03 UTC.** Earlier checks (2026-09-28, 2026-10-02 UTC)
+found no 2027 list; the 2026-11-03 live read (`TSX-CAL-2026-11-03`) carries the
+2027 section and the eleven 2027 rows below are encoded from it. Nothing past
+2027-12-31 is claimed; **closing condition:** the operator's 2028 section.
 
 **The Christmas Eve half days are the operator's own sentences.** From 2024 on each Christmas
-Eve entry carries `*`, footnoted `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA
+Eve entry carries `*`, footnoted `* Closing at 1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA
 X/DRK)`; 2018-2020 print the same instant as a page sentence, `Markets will close at 1:00 PM
 on December 24th, <year>.`, and 2021's January capture printed `*Markets will close at 1:00pm
 on December 24th, 2021 subject to Board Approval` — a conditional the 2022-01-28 capture's
@@ -370,7 +365,7 @@ July-to-December precedent).
 | 2024-08-05 | closed | `Civic Holiday - Monday, August 5, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 | 2024-09-02 | closed | `Labour Day - Monday, September 2, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 | 2024-10-14 | closed | `Thanksgiving Day - Monday, October 14, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
-| 2024-12-24 | early close | `Christmas Eve - Tuesday, December 24th, 2024*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2024-12-17` | T1 | the July states printed the list without this row; the December state adds it, so the row keys to the December capture |
+| 2024-12-24 | early close | `Christmas Eve - Tuesday, December 24th, 2024*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2024-12-17` | T1 | the July states printed the list without this row; the December state adds it, so the row keys to the December capture |
 | 2024-12-25 | closed | `Christmas Day - Wednesday, December 25, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 | 2024-12-26 | closed | `Boxing Day - Thursday, December 26, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 
@@ -386,7 +381,7 @@ July-to-December precedent).
 | 2025-08-04 | closed | `Civic Holiday - Monday, August 4, 2025` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2025-09-01 | closed | `Labour Day - Monday, September 1, 2025` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2025-10-13 | closed | `Thanksgiving Day - Monday, October 13, 2025` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
-| 2025-12-24 | early close | `Christmas Eve - Wednesday, December 24, 2025*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2026-09-28` | T1 | the printed event date; the TSX/TSXV half of the footnote is the day's final close, 13:00 Toronto time |
+| 2025-12-24 | early close | `Christmas Eve - Wednesday, December 24, 2025*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2026-09-28` | T1 | the printed event date; the TSX/TSXV half of the footnote is the day's final close, 13:00 Toronto time |
 | 2025-12-25 | closed | `Christmas Day - Thursday, December 25, 2025` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2025-12-26 | closed | `Boxing Day - Friday, December 26, 2025` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 
@@ -402,9 +397,25 @@ July-to-December precedent).
 | 2026-08-03 | closed | `Civic Holiday - Monday, August 3, 2026` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2026-09-07 | closed | `Labour Day - Monday, September 7, 2026` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2026-10-12 | closed | `Thanksgiving Day - Monday, October 12, 2026` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
-| 2026-12-24 | early close | `Christmas Eve - Thursday, December 24, 2026*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2026-09-28` | T1 | the printed event date; the TSX/TSXV half of the footnote is the day's final close, 13:00 Toronto time |
+| 2026-12-24 | early close | `Christmas Eve - Thursday, December 24, 2026*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2026-09-28` | T1 | the printed event date; the TSX/TSXV half of the footnote is the day's final close, 13:00 Toronto time |
 | 2026-12-25 | closed | `Christmas Day - Friday, December 25, 2026` | `TSX-CAL-2026-09-28` | T1 | the operator's own printed date; trade date is the same civil day |
 | 2026-12-28 | closed | `In Lieu of Boxing Day - Monday, December 28, 2026` | `TSX-CAL-2026-09-28` | T1 | the operator's own in-lieu print (Boxing Day falls on the Saturday); trade date is the same civil day |
+
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `New Year's Day - Friday, January 1, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-02-15 | closed | `Family Day - Monday, February 15, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-03-26 | closed | `Good Friday - Friday, March 26, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-05-24 | closed | `Victoria Day - Monday, May 24, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-07-01 | closed | `Canada Day - Thursday, July 1, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-08-02 | closed | `Civic Holiday - Monday, August 2, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-09-06 | closed | `Labour Day - Monday, September 6, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-10-11 | closed | `Thanksgiving Day - Monday, October 11, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own printed date; trade date is the same civil day |
+| 2027-12-24 | early close | `Christmas Eve - Friday, December 24, 2027*` — `* Closing at 1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA X/DRK)` | `TSX-CAL-2026-11-03` | T1 | the printed event date; the TSX/TSXV half of the footnote is the day's final close, 13:00 Toronto time |
+| 2027-12-27 | closed | `In Lieu of Christmas Day - Monday, December 27, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own in-lieu print; trade date is the same civil day |
+| 2027-12-28 | closed | `In Lieu of Boxing Day - Tuesday, December 28, 2027` | `TSX-CAL-2026-11-03` | T1 | the operator's own in-lieu print; trade date is the same civil day |
 
 ### Documents
 
@@ -467,6 +478,7 @@ July-to-December precedent).
 | `TSX-CAL-2024-12-17` | 2024-01-01 .. 2025-12-31 (the updated 2024 list with the Christmas Eve row; the 2025 list) | <https://web.archive.org/web/20241217084235id_/https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar> | Wayback `id_` replay of capture `20241217084235`, retrieved 2026-09-29T07:16:12Z | T1 | `02c0cc75ea2fae867884d53fa6b237b7dcfea10509dbc3b9707e06658096eff8` |
 | `TSX-CAL-2025-01-24` | 2024-01-01 .. 2025-12-31 (both lists corroborated) | <https://web.archive.org/web/20250124071909id_/https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar> | Wayback `id_` replay of capture `20250124071909`, retrieved 2026-09-29T07:16:27Z | T1 | `e327500acbb2d9d5da49478c8f1ec8242eba10324624f5ea2d72af52cbb861b9` |
 | `TSX-CAL-2026-09-28` | 2025-01-01 .. 2026-12-31 | <https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar> | retrieved 2026-09-28 01:06 | T1 | `983d3108683e59f3b6045ffd862e699113316a14960f54880ef33a627718e7d2` |
+| `TSX-CAL-2026-11-03` | 2027-01-01 .. 2027-12-31 | <https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar> | retrieved 2026-11-03 01:57 UTC | T1 | `90c806a9fadbf5255ea702495eb30e1b532816ff45db9ae395cc4b7367e3de45` |
 
 `TSX-CAL-2019-08-20`, `TSX-CAL-2020-03-29`, `TSX-CAL-2021-01-25`, `TSX-CAL-2023-01-16`,
 `TSX-CAL-2023-12-15`, `TSX-CAL-2024-07-23` and `TSX-CAL-2025-01-24` corroborate the captures
@@ -481,10 +493,10 @@ the thirty-two release replays above with the same sha and index discipline.
 
 - **Interpretive step, order-entry classification.** The 07:00–09:30 Pre-Open is `order_entry`: no trade can match inside it, and the first print of the day is the 09:30 Market-on-Open cross that starts continuous trading.
 - **Interpretive step, conditional extension.** The Price Movement Extension rule is modelled as the venue's maximum envelope. On ordinary days and symbols the 16:00–16:10 interval is cancel-only, but when the extension fires it is the delayed Market-on-Close cross for that symbol and it prints, so the window is not order-entry-only. The separate 16:10–16:15 Post Market Cancel Session is not modelled at all.
-- **Interpretive step, the Christmas Eve half.** The footnote states two closes — `1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)`. The row encodes the TSX/TSXV 13:00 close because this identity is the Toronto Stock Exchange cash-equity venue; the ALPHA/ALPHA X/DRK book systems are separate order books, not part of this row's scope, and no TSX-listed session is clipped by their later close.
+- **Interpretive step, the Christmas Eve half.** The footnote states two closes — `1:00 PM (TSX/TSXV) and 1:30 PM (ALPHA/ALPHA X/DRK)`. The row encodes the TSX/TSXV 13:00 close because this identity is the Toronto Stock Exchange cash-equity venue; the ALPHA/ALPHA X/DRK book systems are separate order books, not part of this row's scope, and no TSX-listed session is clipped by their later close.
 - **No dated revision.** The reviewed grid holds for the whole audit window, so every instant resolves to the one profile. A sourced revision later replaces this with a real timeline row and needs no routing change. Closing condition for a future change: a TMX notice stating an unconditional day-level effective date.
 - **The 2011-10-11..2012-01-02 release-era gap closed 2026-10-03 UTC (tracked as [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221)).** The 2011 year-end arrangement and the 2012 New Year in-lieu rode the release of 2011-12-12 (*TMX Group Holiday Operating Schedule*), which no archive captured — Wayback's 2011 release tree is enumerated file-by-file to its last capture (`cdx-tmx-2011tree-all.txt`, `cdx-month-2011-11.txt`, `cdx-month-2011-12.txt` in the store), CC holds no capture of the 2011 tree, the wires' migrated ids are unguessable, and Mondo Visione's own article was never captured by Wayback (all slug variants; the 2026-10-03 domain-wide `tmx.*holiday.*` CDX sweep in the store) or archive.today, and Common Crawl answers "no captures" for the article URL in every settled collection (`cc-mv-probe-2026-10-03.log`; three collections stay gateway-dead). The recovery came from **Mondo Visione's own news archive**: the site's 2024-era CMS re-imported its pre-2025 articles under date-suffixed slugs (`<slug>-<YYYYMMD>`), and its paginated news index (page 14956, saved in the store) names the re-imported 2011-12-12 edition at `tmx-group-holiday-operating-schedule-1-20111212` — served **live with the release text in full**: `Toronto Stock Exchange, TSX Venture Exchange, Montréal Exchange and TMX Select will be closed on Monday, December 26, 2011 in lieu of Christmas Day, Tuesday, December 27, 2011 in lieu of Boxing Day, and Monday, January 2, 2012 in lieu of New Year's Day`, with the timetable's TSX/TSXV/TMX Select rows and a `Friday, December 23, 2011 Open until 4:00 p.m. (EST)` line (the regular close, so December 23 needs no early-close row). The mirror's verbatim-ness is pinned: the same site's 2016-11-30 edition, captured by Wayback 2016-12-01, reads word-for-word against the operator's own CNW wire mirror `TMX-REL-2016-11-30`. Residual risk: the residual risk the earlier passes recorded (a release published and never captured) is discharged by this artifact; the audited-normal claims inside the window reach as far as the recovered mirrors, complete year lists and notice archives named above. The old slug `tmx-group-holiday-operating-schedule-2` still serves only a JS shell (saved), as do the site's other article pages.
-- **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing past it (verified 2026-09-28). Closing condition: TMX's 2027 calendar section; the row is re-checked monthly per LAW-WATCH.
+- **Holiday horizon.** The audited holiday window stops at 2027-12-31; TMX published the 2027 section and it was retrieved 2026-11-03 UTC (`TSX-CAL-2026-11-03`). Closing condition for the next extension: TMX's 2028 calendar section; the row is re-checked monthly per LAW-WATCH.
 
 ## Module narrative (moved from src/calendar/schedules/equities/americas/tsx.rs on 2026-10-02 UTC)
 

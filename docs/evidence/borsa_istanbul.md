@@ -415,3 +415,5 @@ https://www.borsaistanbul.com/en/announcement/13446/new-arrangement-borsa-istanb
 2016-11-14 extended day and 2019-10-04 midday-call removal:
 https://www.borsaistanbul.com/en/announcement/13376/borsa-istanbul-trading-session-hours-change
 https://www.borsaistanbul.com/duyuru/11640/pay-piyasasi-seansinda-gun-ortasi-tek-fiyat-bolumu-hk-201956-sayili-duyuru
+
+The 2027 calendar publication check is tracked in #391.

@@ -108,10 +108,10 @@ venue consequence is nil: the D17 intersection had decided every era date on the
 families that already covered it, and `globex_livestock` agrees with each of those
 decisions, so the four venue tables' answers are unchanged.
 
-**Six audited eras.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14`.
+**Six audited eras.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14`.
 The eras through 2023 are the operator's own published holiday schedules at **T1**, from CME's per-holiday PDFs and .xls workbooks; 2024 shares T1 and the operator's `trading-hours-by-product` responses at **T2**; and 2025-2027 is that service alone, at T2.
 The eras are contiguous from 2010-01-01, so every date they span has an answer.
-`HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
+`HolidayCoverage::windows()` lists the 9, and `contains` answers per date.
 
 ### 2010
 

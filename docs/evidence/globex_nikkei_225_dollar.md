@@ -24,7 +24,7 @@
 
 **Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 (inclusive venue-local trade dates; the first window opens at the support floor, where the modelled old grid begins, and the ledger basis records both of the dated changes that shaped it).
 
-**Six audited eras.** The table declares 6 coverage
+**Six audited eras.** The table declares 9 coverage
 windows: `2010-01-01..2012-12-31` and `2013-01-01..2015-12-31`, from the
 operator's own published holiday schedules at **T1** — the 2026-09-29 wave that
 closed the 2011-2015 span of what the inventory had recorded as the unaudited
@@ -41,7 +41,7 @@ the 2010-01-01..2010-04-10 old-grid interval joined the first window on
 2026-09-30 UTC, once its grid was modelled from the operator's own page (the
 era block below records the derivation and the per-sheet readings), and dates
 before the floor refuse as pre-floor rather than as unaudited.
-`HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
+`HolidayCoverage::windows()` lists the 9, and `contains` answers per date.
 **Channel.** Every row below comes from
 `https://www.cmegroup.com/services/trading-hours-by-product?id=<set>&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=<from>&toEventDate=<to>`
 — the endpoint `cmegroup.com/trading-hours.html` itself calls to render its per-asset-class

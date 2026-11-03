@@ -3,7 +3,7 @@
 //! CME cryptocurrency trade-date exceptions, audited over 2017-12-17 to
 //! 2018-12-31, 2019-01-01 to 2021-12-31, 2022-01-01 to 2024-12-31 and
 //! 2025-01-01 to 2027-12-31, plus the split 2028 windows 2028-01-17 to
-//! 2028-01-18, 2028-02-21 to 2028-02-22 and 2028-04-14 to 2028-04-14.
+//! 2028-01-18, 2028-02-21 to 2028-02-22 and 2028-04-13 to 2028-04-14.
 //!
 //! Source quotations, conversion steps and published scope:
 //! `docs/evidence/globex_cryptocurrency.md`.

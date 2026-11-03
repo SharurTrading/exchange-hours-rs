@@ -199,10 +199,10 @@ answers, since those dates have no published schedule this crate could read. Ins
 window a date with no row is audited normal; outside every window this table has no
 answer at all.
 
-**Six audited eras, with no gap between them.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`.
+**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`.
 The eras through 2023 are the operator's own published holiday schedules at **T1**, from CME's per-holiday PDFs and .xls workbooks; 2024 shares T1 and the operator's `trading-hours-by-product` responses at **T2**; and 2025-2027 is that service alone, at T2.
 Every interval from 2010-01-01 through 2027-12-31 is declared; the 2028 split windows leave unaudited spans between them. The eras before 2010 are out of scope below the crate's January-2010 floor.
-`HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
+`HolidayCoverage::windows()` lists the 9, and `contains` answers per date.
 
 ### 2010
 
@@ -821,3 +821,5 @@ On 2026-06-19 and 2026-07-03 the `12:00 closed` event carries trade date 2026-06
 - **executable, was not representable — resolved 2026-09-25 UTC by Stage 4 (#116).** The Saturday session of 2027-06-19, `05:00 open; 17:00 closed`, carrying trade date 2027-06-21. Same class as the two 2026 Saturdays, and now a row on the same terms: the Saturday from `CME-SVC-2027-06-17` and the Sunday Pre-Open, Sunday-17:00 open and Monday final close from `CME-SVC-2027-06-20`, which the Saturday window does not print.
 - **coverage edge.** CME's published future runs to 2028-01-01 and the table stops at 2027-12-31, so trade date 2028-01-03 - the first trading day of 2028 - is outside coverage and the crate has no holiday answer for it. 2028-01-01 itself is a Saturday on which CME publishes nothing, which is the ordinary Saturday answer.
 - **no T1 rendering.** No per-asset-class T1 rendering could be driven out of the operator page for any holiday in this window except Thanksgiving 2026, which was used to validate the service group by group. Every row here is T2.
+
+The byte-exact recapture of these relay captures is tracked in #385.

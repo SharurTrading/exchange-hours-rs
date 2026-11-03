@@ -262,10 +262,10 @@ answers, since those dates have no published schedule this crate could read. Ins
 window a date with no row is audited normal; outside every window this table has no
 answer at all.
 
-**Six audited eras, with no gap between them.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`.
+**Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`.
 The eras through 2023 are the operator's own published holiday schedules at **T1**, from CME's per-holiday PDFs and .xls workbooks; 2024 shares T1 and the operator's `trading-hours-by-product` responses at **T2**; and 2025-2027 is that service alone, at T2.
 Every interval from 2010-01-01 through 2027-12-31 is declared; the 2028 split windows leave unaudited spans between them. The eras before 2010 are out of scope below the crate's January-2010 floor.
-`HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
+`HolidayCoverage::windows()` lists the 9, and `contains` answers per date.
 
 ### 2010
 
@@ -418,7 +418,7 @@ Coverage adds the three captured 2028 split windows above; spans between them ar
 
 ### Gaps and residual risks, 2013-2015
 
-**This era brings the family to six audited windows.** The table as a whole carries 225 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — and the six eras hold 38, 33, 31, 35, 33 and 53 rows. This era's share is **33 rows**: 9 stated closures and 24 early closes. Every row is at T1.
+**This era brings the family to six audited windows.** The table as a whole carries 225 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — and the six eras hold 38, 33, 31, 32, 33 and 53 rows. This era's share is **33 rows**: 9 stated closures and 24 early closes. Every row is at T1.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 

@@ -215,13 +215,13 @@ static SATURDAY_TO_1530_BLOCKS: [ExceptionBlock; 7] = [
 /// not trade: those dates lie outside every window, so `holiday_on` has no
 /// answer there rather than reporting a normal date.
 ///
-/// Coverage ends at 2027-12-31, the
-/// end of the operator's published future. Inside a window a date with no row
+/// Coverage ends at 2027-12-31 for the contiguous eras, then the three
+/// captured 2028 split windows. Inside a window a date with no row
 /// is audited normal, except where an `Unsourced` row marks the operator's
 /// silence instead.
 // Evidence: docs/evidence/globex_cryptocurrency.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2017, 12, 17) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 4, 14)],
+    coverage: [(2017, 12, 17) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
     rows: [
 
         // 2017-12-25 - T2 - MARKET-DATA - closed: no trade date (only a 16:00 pre-open and a 17:00 open, both carrying the 2017-12-26 trade date), confirmed with market data 2026-10-15.

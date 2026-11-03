@@ -152,8 +152,8 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
     assert_eq!(
         complete.last(),
-        Some(&DateRange::new(date(2028, 1, 3), date(2028, 4, 13)).expect("ascending")),
-        "the last complete span is the 2028 window inside its edges"
+        Some(&DateRange::new(date(2028, 4, 13), date(2028, 4, 13)).expect("ascending")),
+        "the last complete span is the Good Friday split window inside its edges"
     );
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert_eq!(
@@ -186,7 +186,8 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
     assert_eq!(
         coverage.coverage_on(date(2028, 1, 1)),
-        DateCoverage::Covered
+        DateCoverage::OutsideCoveredRange,
+        "2028-01-01 sits in the unaudited span before the first 2028 split window"
     );
 
     let contract = coverage.holiday_contract();
@@ -421,7 +422,7 @@ fn without_holidays_selects_the_normal_week_contract() {
     // audited windows — the walk's edges are the windows the identity ships,
     // and a detached view reports the same segmentation the attached one does.
     let gaps: Vec<CoverageGap> = detached.gaps().collect();
-    assert_eq!(gaps.len(), 8);
+    assert_eq!(gaps.len(), 13);
     assert_eq!(
         gaps[0].range(),
         DateRange::new(SUPPORT_FLOOR, date(2012, 12, 31)).expect("ascending")

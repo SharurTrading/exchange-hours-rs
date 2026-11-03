@@ -296,6 +296,6 @@ Evidence: docs/evidence/globex_event_contracts.md
 this key. No consumer route or maintainer naming reaches it, so under
 LAW-SERVICE-TIERS it is recorded dormant here with no key, profile or ledger
 row. Closing condition: SharurPlatform maps an FSPI root or the maintainer
-names FSPI a planned market; admission then follows the full identity
+names FSPI a planned market (#386); admission then follows the full identity
 checklist. Routing FSPI to this key or to the equity-index/crypto keys would
 be wrong.

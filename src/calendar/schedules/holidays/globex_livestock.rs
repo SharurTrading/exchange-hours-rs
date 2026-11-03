@@ -81,14 +81,14 @@ use super::{
 /// 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2. They are
 /// contiguous from 2010-01-01, so no interval between them is unaudited.
 ///
-/// Coverage ends at 2027-12-31, the end of
-/// the operator's published future, and CME's 2028-01-01 record sits outside
-/// every window and ships no row. Inside a window a date with no row is audited
+/// Coverage ends at 2027-12-31 for the contiguous eras, then the three
+/// captured 2028 split windows; CME's 2028-01-01 record sits in an unaudited
+/// span and ships no row. Inside a window a date with no row is audited
 /// normal, except where an `Unsourced` row marks the operator's silence
 /// instead.
 // Evidence: docs/evidence/globex_livestock.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 4, 14)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 17), (2028, 2, 21) ..= (2028, 2, 21), (2028, 4, 13) ..= (2028, 4, 14)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),

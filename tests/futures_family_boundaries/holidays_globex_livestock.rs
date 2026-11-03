@@ -1452,7 +1452,9 @@ fn era_2022_2024_window_sits_fifth_and_the_lower_waves_are_declared() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 17))),
+            (day((2028, 2, 21)), day((2028, 2, 21))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
     assert!(coverage.contains(day((2022, 1, 1))));
@@ -1807,7 +1809,9 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 17))),
+            (day((2028, 2, 21)), day((2028, 2, 21))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
 
@@ -2143,7 +2147,9 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 17))),
+            (day((2028, 2, 21)), day((2028, 2, 21))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
 
@@ -2158,7 +2164,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 43, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
-    assert!(coverage.contains(day((2028, 1, 1))));
+    assert!(!coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
 }
 
@@ -2361,7 +2367,9 @@ fn era_2016_2018_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 17))),
+            (day((2028, 2, 21)), day((2028, 2, 21))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
 
@@ -2538,4 +2546,21 @@ fn era_2016_2018_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2016_2018_ROWS.len(), "every recorded row ships");
+}
+
+#[test]
+fn the_2028_rows_carry_their_sourced_kinds() {
+    let calendar = calendar();
+    assert_eq!(
+        calendar.holiday_on(day((2028, 1, 17))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert_eq!(
+        calendar.holiday_on(day((2028, 2, 21))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert_eq!(
+        calendar.holiday_on(day((2028, 4, 14))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
 }

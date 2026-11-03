@@ -9,8 +9,8 @@
 
 ## Current holiday table — 2026-10-17 UTC (#360)
 
-Current holiday total: 228 rows. A further 5 rows ship in the 2028 window (233 in all). The six audited era counts are
-2010-2012: 34, 2013-2015: 38, 2016-2018: 34, 2019-2021: 33, 2022-2024: 35, 2025-2027: 54.
+Current holiday total: 233 rows. The six audited era counts are
+2010-2012: 34, 2013-2015: 38, 2016-2018: 34, 2019-2021: 33, 2022-2024: 35, 2025-2027: 54, 2028 (split windows): 5.
 The venue remains a verbatim mirror of its profile clock, including kind,
 replacement blocks, tier and document id; no holiday row or window changes in
 this correction. The module total and this total are fenced against public
@@ -223,7 +223,7 @@ are in the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 (inclusive venue-local trade dates).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 (inclusive venue-local trade dates).
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows
 taken from the operator's own published holiday schedules; **T2** for the three 2023
 markers and fourteen 2024 dates this table takes from its trading-hours service, and
@@ -348,7 +348,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2028-02-22 | replacement blocks | merged Sun–Tue span | `CME-SVC-2028-02-18` | T2 | venue mirror of its profile clock; service window |
 | 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | venue mirror of its profile clock; service window |
 
-Coverage runs contiguously to 2028-04-14 on the same per-holiday service-window audit standard as 2025-2027; dates after 2028-04-14 are unpublished.
+Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
 ### Documents
 
@@ -843,8 +843,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   January-2010 floor; the two are different claims, and outside the holiday window the
   crate answers the normal week correctly and has no holiday answer at all.
 - **2028-01-01 ships no row.** CME's service publishes a 2027-12-30 .. 2028-01-02
-  window and every family's table ends at 2027-12-31, so the venue's window ends
-  there too. Extending it is stage 2.4's refresh, not a gap in this change.
+  window ended at 2027-12-31 at that review; the 2028 split windows now ship above, so the venue's window extends with its clock's.
 
 **Interpretive steps, 2025-2027.**
 

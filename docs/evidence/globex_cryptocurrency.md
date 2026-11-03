@@ -38,12 +38,12 @@ coverage verdict changes.
 
 ## Holidays
 
-**Coverage:** 2017-12-17..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 (inclusive venue-local trade dates; the first window opens at the five-day grid's launch).
+**Coverage:** 2017-12-17..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 (inclusive venue-local trade dates; the first window opens at the five-day grid's launch).
 
 **Three contiguous audited eras.** The table declares 3 coverage windows:
 `2019-01-01..2021-12-31`, from CME's own published Globex holiday schedules at **T1**;
 `2022-01-01..2024-12-31`, from the 2022 workbooks and 2023 one-pagers at T1 and CME's service
-responses at **T2**; and `2025-01-01..2027-12-31, 2028-01-01..2028-04-14`, from the trading-hours service at T2. They are
+responses at **T2**; and `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`, from the trading-hours service at T2. They are
 adjacent, so no gap lies between them. Everything before 2019 lies outside every declared window,
 and `holiday_on` therefore has **no answer** there rather than reporting an unaudited date as
 normal: the 2013-2015 era is declared by the six families CME published a holiday schedule for,
@@ -362,7 +362,7 @@ and its schedule `groupCode` as `BF`).
 | 2028-02-22 | replacement blocks | merged 24x7 span | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
 | 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
 
-Coverage runs contiguously to 2028-04-14 on the same per-holiday service-window audit standard as 2025-2027; dates after 2028-04-14 are unpublished.
+Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
 ### Documents
 

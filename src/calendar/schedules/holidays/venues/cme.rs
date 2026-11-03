@@ -2,7 +2,7 @@
 
 //! The `Exchange::Cme` table holiday rows — the clock family `globex_equity_index`, carried verbatim.
 //!
-//! Coverage is 228 rows over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54 and 2028 5.
+//! Coverage is 233 rows (the six audited eras plus the 2028 split windows) over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54 and 2028 5.
 //!
 //! Evidence: docs/evidence/cme.md, and the family's evidence file for
 //! every retrieved row.
@@ -26,7 +26,7 @@ use super::super::{
 /// its clock. The clock's evidence file cites every artifact.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 1) ..= (2028, 4, 14)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),

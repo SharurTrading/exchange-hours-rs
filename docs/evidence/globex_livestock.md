@@ -93,7 +93,7 @@ are in the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 (inclusive venue-local trade dates).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14 (inclusive venue-local trade dates).
 This wave is 33 rows over 2022-01-01..2024-12-31, **21 at T1** and **12 at T2**. 2026-10-09 (UTC) re-keyed 2023-02-20 and 2023-04-07 from the operator's own summary sheets at T1. The T1 rows are read from the 2022 per-asset-class workbooks, the 2023 one-pagers, and the two 2024 entries CME's own cmegroup.com worksheets `new-years-day-2024.pdf` and `christmas-day-2023.pdf` serve; the T2 rows are the operator's own `trading-hours-by-product` responses, which carry the rest of 2024 and the one 2023 holiday date its one-pagers do not cover. 1 of the 33 is `unsourced`.
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows read from the
 operator's own published holiday schedules; **T2** for 2025-2027 and the 2022-2024 rows
@@ -108,7 +108,7 @@ venue consequence is nil: the D17 intersection had decided every era date on the
 families that already covered it, and `globex_livestock` agrees with each of those
 decisions, so the four venue tables' answers are unchanged.
 
-**Six audited eras.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-01..2028-04-14`.
+**Six audited eras.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14`.
 The eras through 2023 are the operator's own published holiday schedules at **T1**, from CME's per-holiday PDFs and .xls workbooks; 2024 shares T1 and the operator's `trading-hours-by-product` responses at **T2**; and 2025-2027 is that service alone, at T2.
 The eras are contiguous from 2010-01-01, so every date they span has an answer.
 `HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
@@ -218,7 +218,7 @@ the ordinary week stands on it.
 | 2028-02-21 | closed | — | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
 | 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
 
-Coverage runs contiguously to 2028-04-14 on the same per-holiday service-window audit standard as 2025-2027; dates after 2028-04-14 are unpublished.
+Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
 ### Documents
 
@@ -369,7 +369,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 
 ### Gaps and residual risks, 2019-2021
 
-**This era brought the family to four audited windows; the waves since have brought it to six.** The table as a whole carries 211 rows over 7 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 — and this era's share is **34 rows**: 27 full closures, 7 early closes and 0 `Unsourced` rows. Every row is at T1. The 2016-2018 interval the era left unworked, and which `holiday_coverage` reported as outside every window until the #110 wave, is the six windows' third.
+**This era brought the family to four audited windows; the waves since have brought it to six.** The table as a whole carries 211 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14 — and this era's share is **34 rows**: 27 full closures, 7 early closes and 0 `Unsourced` rows. Every row is at T1. The 2016-2018 interval the era left unworked, and which `holiday_coverage` reported as outside every window until the #110 wave, is the six windows' third.
 **Juneteenth 2019, 2020 and 2021 — the three `Unsourced` markers deleted 2026-10-09 (UTC); the dates are audited normal.** CME published no Juneteenth schedule in any of the three years: each year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — is CME's own account of every Globex holiday schedule it published that year and carries no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either; and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. The wave that first swept these years shipped `Unsourced` markers on the ground that bundle silence cannot answer a date the operator later marks as a holiday, and the #224 review re-ran the channels and left the markers standing; the 2026-10-09 sourcing directive overturned that verdict: the operator's own consolidated enumeration of its published arrangements is an affirmative statement of which dates carry arrangements, Juneteenth first appears in CME's published set in 2022 (`2022-juneteenth-holiday-schedule.xls`), 2019 and 2020 predate the date's becoming a U.S. federal holiday entirely, and 2021-06-19 is a **Saturday** the operator's regular week already closes. Each date therefore audits normal inside its window and ships no row. Residual: an operator document stating that one of these dates carried an arrangement would re-open it as a schedule fix.
 
 - `2019-04-18` — this family ships no row; the `lumber` line early close 13:55 CT.
@@ -707,7 +707,7 @@ beside it, given with the product id and the `eventDate` it was read from.
 **Interpretive steps, 2027.**
 
 - **2027-12-23 is audited normal and ships no row.** CME's holiday date for Christmas 2027 is Thursday 2027-12-23, but the Livestock line that day prints `08:00 preopen; 08:30 open; 13:05 closed; 14:30 pcp; 16:00 closed` for trade date 2027-12-23 — the family's ordinary Thursday grid, instant for instant, against the reference week 2026-10-18 .. 2026-10-24. Under design memo D3 a row exists only where an answer changes, so the date is recorded here as audited and carries none. The Globex closure is the following day, 2027-12-24, which does ship one; 2027-12-25 is a Saturday.
-- **2028-01-01 is outside coverage.** The operator's published future reaches it — CME's 2027-12-30 .. 2028-01-02 response prints no Livestock events for that Saturday — but the declared window ends at 2027-12-31, so no row is keyed to it and `holiday_on` answers `None` there. Extending the window is a later wave's decision, not a gap in this one.
+- **2028-01-01 sits in an unaudited span.** It falls between the 2027 window and the first 2028 split window, so no row is keyed to it; the 2028 MLK/Presidents/Good Friday rows ship in the split windows above.
 - Lean Hogs (`HE`) corroborates every 2027 row from `raw/cme-2025-2027/live/extra/extra_2027-*.json`.
 
 ### 2013
@@ -806,7 +806,7 @@ beside it, given with the product id and the `eventDate` it was read from.
 
 ### Gaps and residual risks, 2013-2015
 
-**This era brings the family to five audited windows; the 2016-2018 wave has since added a sixth.** The table as a whole carries 211 rows over 7 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 — and this era's share is **43 rows**: 27 stated closures, 12 early closes, 3 late opens and 1 combined late-open-and-early-close row. Every row is at T1.
+**This era brings the family to five audited windows; the 2016-2018 wave has since added a sixth.** The table as a whole carries 211 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14 — and this era's share is **43 rows**: 27 stated closures, 12 early closes, 3 late opens and 1 combined late-open-and-early-close row. Every row is at T1.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 

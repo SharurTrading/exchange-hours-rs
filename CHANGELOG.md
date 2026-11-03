@@ -12,7 +12,7 @@
 - CME Globex's first published 2028 windows: MLK Day (2028-01-17),
   Presidents' Day (2028-02-21) and Good Friday (2028-04-14) rows in each
   family's own shape across the eight Globex families and the four venue
-  mirrors, extending audited coverage to 2028-04-14.
+  mirrors, adding audited split windows for those three holidays (coverage last date 2028-04-14; spans between the windows are unaudited).
 - CFE's published 2027 holiday schedule: three closures (including Good
   Friday 2027-03-26, a closure unlike 2026), seven 10:30 CT early closes and
   the 12:15 CT Thanksgiving half day, extending the third audited window to

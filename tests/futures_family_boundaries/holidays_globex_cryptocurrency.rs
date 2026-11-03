@@ -1097,7 +1097,7 @@ fn the_coverage_window_has_two_hard_edges() {
     assert!(coverage.contains(day(2017, 12, 17)));
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2017, 12, 16)));
-    assert!(coverage.contains(day(2028, 1, 1)));
+    assert!(!coverage.contains(day(2028, 1, 1)));
 
     assert_eq!(kind_on(day(2025, 1, 1)), Some(HolidayKind::Closed));
     assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
@@ -1729,7 +1729,9 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
-            (day(2028, 1, 1), day(2028, 4, 14)),
+            (day(2028, 1, 17), day(2028, 1, 18)),
+            (day(2028, 2, 21), day(2028, 2, 22)),
+            (day(2028, 4, 13), day(2028, 4, 14)),
         ]
     );
     assert!(coverage.contains(day(2022, 1, 1)));
@@ -2022,7 +2024,9 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day(2019, 1, 1), day(2021, 12, 31)),
             (day(2022, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
-            (day(2028, 1, 1), day(2028, 4, 14)),
+            (day(2028, 1, 17), day(2028, 1, 18)),
+            (day(2028, 2, 21), day(2028, 2, 22)),
+            (day(2028, 4, 13), day(2028, 4, 14)),
         ]
     );
 
@@ -2378,4 +2382,17 @@ fn october_31_replacement_covers_both_dst_fold_instants_and_restores_the_week() 
         "a detached normal-week snapshot has no date exceptions"
     );
     assert_eq!(calendar.is_open(inside_exception), Ok(false));
+}
+
+#[test]
+fn the_2028_rows_carry_their_sourced_kinds() {
+    let calendar = crypto();
+    assert_eq!(
+        calendar.holiday_on(day(2028, 1, 17)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2028, 4, 14)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
 }

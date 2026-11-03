@@ -22,7 +22,7 @@
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 (inclusive venue-local trade dates; the first window opens at the support floor, where the modelled old grid begins, and the ledger basis records both of the dated changes that shaped it).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 (inclusive venue-local trade dates; the first window opens at the support floor, where the modelled old grid begins, and the ledger basis records both of the dated changes that shaped it).
 
 **Six audited eras.** The table declares 6 coverage
 windows: `2010-01-01..2012-12-31` and `2013-01-01..2015-12-31`, from the
@@ -34,7 +34,7 @@ closed the 2011-2015 span of what the inventory had recorded as the unaudited
 `2022-01-01..2024-12-31`, from the 2022 workbooks and 2023 one-pagers at T1,
 CME's service
 responses at **T2**, and the sixteen dates no operator document covered,
-confirmed with market data at **T2 `MARKET-DATA`** (2026-10-15); and `2025-01-01..2027-12-31, 2028-01-01..2028-04-14`, from the trading-hours service at T2. The
+confirmed with market data at **T2 `MARKET-DATA`** (2026-10-15); and `2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14`, from the trading-hours service at T2. The
 2022-2024 and 2025-2027 windows are adjacent; nothing between the support floor
 and the table's last audited day lies outside every declared window any longer —
 the 2010-01-01..2010-04-10 old-grid interval joined the first window on
@@ -391,9 +391,9 @@ the window start — first to the dated 2010-04-11 grid start with the six 2010
 rows, then, with the old grid modelled from the operator's own page, to the
 2010-01-01 floor, where the remaining #225 interval closed as audited data.**
 The table as a whole carries 232 rows
-over 7 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31,
+over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31,
 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31,
-2025-01-01..2027-12-31, 2028-01-01..2028-04-14 — of which the 2011-2015 share is **62 rows**: 12 closures,
+2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — of which the 2011-2015 share is **62 rows**: 12 closures,
 44 early closes and 6 late opens, every one at T1, none `Unsourced`; the
 2010 share is the seven rows of the era blocks above (the 2010-01-01 venue-wide
 closure on the modelled old grid, plus the six post-changeover rows). The 2011
@@ -439,7 +439,7 @@ not this family's (LAW-SESSION-NOT-EXPIRY), and no row above keys to one.
 | 2028-02-22 | replacement blocks | merged Sun–Tue span | `CME-SVC-B-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
 | 2028-04-14 | closed | — | `CME-SVC-B-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
 
-Coverage runs contiguously to 2028-04-14 on the same per-holiday service-window audit standard as 2025-2027; dates after 2028-04-14 are unpublished.
+Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
 ### Documents
 
@@ -612,7 +612,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 
 ### Gaps and residual risks, 2019-2021
 
-**This era declared the family's fourth audited window when it shipped; the 2026-09-29 wave added the three before it.** The table as a whole carries 232 rows over 7 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-01..2028-04-14 — and this era's share is **33 rows**: 8 full closures, 25 early closes and 0 `Unsourced` rows. Every row is at T1. Every date before the 2010-01-01 window precedes the support floor, so `holiday_coverage` answers across the whole span rather than reporting an unaudited gap (the 2010 share — the venue-wide New Year closure and the six post-changeover rows — rides the 2011-2015 section's count; restated 2026-10-04 UTC after #243's window move to the floor and #278's five 2025 rows outran the numbers this paragraph froze at the #226 state).
+**This era declared the family's fourth audited window when it shipped; the 2026-09-29 wave added the three before it.** The table as a whole carries 232 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — and this era's share is **33 rows**: 8 full closures, 25 early closes and 0 `Unsourced` rows. Every row is at T1. Every date before the 2010-01-01 window precedes the support floor, so `holiday_coverage` answers across the whole span rather than reporting an unaudited gap (the 2010 share — the venue-wide New Year closure and the six post-changeover rows — rides the 2011-2015 section's count; restated 2026-10-04 UTC after #243's window move to the floor and #278's five 2025 rows outran the numbers this paragraph froze at the #226 state).
 **Juneteenth 2019, 2020 and 2021 — the three `Unsourced` markers deleted 2026-10-09 (UTC); the dates are audited normal.** CME published no Juneteenth schedule in any of the three years: each year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — is CME's own account of every Globex holiday schedule it published that year and carries no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either; and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. The wave that first swept these years shipped `Unsourced` markers on the ground that bundle silence cannot answer a date the operator later marks as a holiday, and the #224 review re-ran the channels and left the markers standing; the 2026-10-09 sourcing directive overturned that verdict: the operator's own consolidated enumeration of its published arrangements is an affirmative statement of which dates carry arrangements, Juneteenth first appears in CME's published set in 2022 (`2022-juneteenth-holiday-schedule.xls`), 2019 and 2020 predate the date's becoming a U.S. federal holiday entirely, and 2021-06-19 is a **Saturday** the operator's regular week already closes. Each date therefore audits normal inside its window and ships no row. Residual: an operator document stating that one of these dates carried an arrangement would re-open it as a schedule fix.
 
 ### 2022
@@ -1311,10 +1311,12 @@ https://web.archive.org/web/20110811113223id_/http://www.cmegroup.com/trading_ho
 2015-09-20: CME Globex Notice #20150817, quoted above; trade date Monday
   2015-09-21, session-opening day Sunday 2015-09-20.
 
-**Nikkei TACO (SER-9832RR, effective Sunday 2026-11-15 for trade date Monday
-2026-11-16, codes NKQ/NIQ).** TACO is a trade-type variant of this family
-under LAW-SERVICE-TIERS: the consumer maps it to the underlying family with
-its variant flag, so no session-grid change and no own key ship here. An own
-key is earned only when a consumer maps NKQ/NIQ distinctly; that is the
-closing condition. The outright NKD profile, holiday table and horizon are
-unchanged.
+**Nikkei TACO (SER-9832RR; #386).** Source: CME SER-9832RR PDF text saved as
+`cme-forward-2026-11-03/notices/ser9832rr_pdf.txt` in the research store
+(sha256 `7ac3614b9072fcd497cdeb4c056bd57bed7b24785b5654ab81cece6080e52267`),
+retrieved 2026-11-03 UTC; session date Sunday 2026-11-15, first trade date
+Monday 2026-11-16. TACO is a trade-type variant of this family under
+LAW-SERVICE-TIERS: the consumer maps it to the underlying family with its
+variant flag, so no session-grid change and no own key ship here. An own key
+is earned only when a consumer maps the TACO codes distinctly; that is the
+closing condition (#386). This family's own 2028 rows ship above.

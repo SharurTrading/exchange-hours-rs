@@ -1404,7 +1404,9 @@ fn era_2022_2024_window_sits_fifth_and_the_2013_2015_era_is_audited() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 18))),
+            (day((2028, 2, 21)), day((2028, 2, 22))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
     assert!(coverage.contains(day((2022, 1, 1))));
@@ -1807,7 +1809,9 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 18))),
+            (day((2028, 2, 21)), day((2028, 2, 22))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
 
@@ -2234,7 +2238,9 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
-            (day((2028, 1, 1)), day((2028, 4, 14))),
+            (day((2028, 1, 17)), day((2028, 1, 18))),
+            (day((2028, 2, 21)), day((2028, 2, 22))),
+            (day((2028, 4, 13)), day((2028, 4, 14))),
         ]
     );
 
@@ -2249,7 +2255,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
     }
     assert_eq!(rows, 33, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
-    assert!(coverage.contains(day((2028, 1, 1))));
+    assert!(!coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
 }
 
@@ -2797,4 +2803,34 @@ fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
             "{year}-{month:02}-{date:02} publishes no Pre-Open and must stay open at 07:15 CT"
         );
     }
+}
+
+#[test]
+fn the_2028_rows_carry_their_sourced_kinds() {
+    let calendar = calendar();
+    assert_eq!(
+        calendar.holiday_on(day((2028, 1, 17))).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 30 * 60
+        })
+    );
+    assert_eq!(
+        calendar.holiday_on(day((2028, 2, 21))).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 30 * 60
+        })
+    );
+    assert_eq!(
+        calendar.holiday_on(day((2028, 4, 14))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+}
+
+#[test]
+fn the_2028_merged_companions_are_replacement_blocks() {
+    let calendar = calendar();
+    assert!(matches!(
+        calendar.holiday_on(day((2028, 1, 18))).map(Holiday::kind),
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
 }

@@ -252,10 +252,12 @@ const QUARTER_PAST_EIGHT: u32 = 8 * 3_600 + 15 * 60;
 /// has a table at all: that span lies outside every window, so
 /// `holiday_on` has no answer there rather than reporting a normal date.
 ///
-/// Coverage ends at the
-/// operator's published future: CME's trading-hours service answers through New
-/// Year 2028, and LAW-NO-FABRICATED-DATES permits encoding an unconditional,
-/// fully sourced future ahead of its effective day. Inside a window a date with
+/// Coverage runs past New Year 2028: the 2025-2027 era answers through
+/// 2027-12-31, and three captured 2028 holiday windows — 2028-01-17..18,
+/// 2028-02-21..22 and 2028-04-13..14 — extend it to 2028-04-14, per
+/// LAW-NO-FABRICATED-DATES encoding an unconditional, fully sourced future
+/// ahead of its effective day; the spans between them are unaudited and
+/// refuse as covered gaps. Inside a window a date with
 /// no row was audited and found normal, except where an `Unsourced` row marks
 /// the operator's silence instead.
 // Evidence: docs/evidence/globex_equity_index.md

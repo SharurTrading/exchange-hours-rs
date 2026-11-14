@@ -2,7 +2,7 @@
 
 //! The `Exchange::Cme` table holiday rows — the clock family `globex_equity_index`, carried verbatim.
 //!
-//! Coverage is 233 rows (the six audited eras plus the 2028 split windows) over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54 and 2028 5.
+//! Coverage is 233 rows over nine windows - the six audited eras plus the three 2028 split windows: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54 and 2028 5.
 //!
 //! Evidence: docs/evidence/cme.md, and the family's evidence file for
 //! every retrieved row.

@@ -96,7 +96,7 @@ are in the research store's `holidays/raw/` indexes.
 **Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-17, 2028-02-21..2028-02-21, 2028-04-13..2028-04-14 (inclusive venue-local trade dates).
 This wave is 33 rows over 2022-01-01..2024-12-31, **21 at T1** and **12 at T2**. 2026-10-09 (UTC) re-keyed 2023-02-20 and 2023-04-07 from the operator's own summary sheets at T1. The T1 rows are read from the 2022 per-asset-class workbooks, the 2023 one-pagers, and the two 2024 entries CME's own cmegroup.com worksheets `new-years-day-2024.pdf` and `christmas-day-2023.pdf` serve; the T2 rows are the operator's own `trading-hours-by-product` responses, which carry the rest of 2024 and the one 2023 holiday date its one-pagers do not cover. 1 of the 33 is `unsourced`.
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows read from the
-operator's own published holiday schedules; **T2** for 2025-2027 and the 2022-2024 rows
+operator's own published holiday schedules; **T2** for 2025-2027, the three 2028 split windows and the 2022-2024 rows
 the operator's trading-hours service answers. Inside a window a date with no row is
 audited normal; outside every window this table has no answer at all.
 

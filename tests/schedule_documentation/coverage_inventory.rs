@@ -1076,7 +1076,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
          and the 2026-10-03 UTC recovery of the 2011-12-12 year-end schedule — the release \
          series' Mondo Visione verbatim mirror, served live — closed tsx's last span \
-         2011-10-11..2012-01-02, making tsx complete to 2026-12-31 (#221); the same day's \
+         2011-10-11..2012-01-02, making tsx complete to the horizon it then had, 2026-12-31 \
+         (2027-12-31 since the 2026-11-03 capture; #221); the same day's \
          recovery of the series' 2015/2016 edition on the operator's derivatives site \
          closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027; \
          the same date's charter Post-Close trade-date decision (#152) retired the label \

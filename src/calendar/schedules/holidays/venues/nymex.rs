@@ -2,7 +2,7 @@
 
 //! The `Exchange::Nymex` table holiday rows — the clock family `globex_energy`, carried verbatim.
 //!
-//! Coverage is 225 rows (the six audited eras plus the 2028 split windows) over the six audited eras: 2010-2012 38, 2013-2015 33, 2016-2018 31, 2019-2021 32, 2022-2024 33, 2025-2027 53 and 2028 5.
+//! Coverage is 225 rows over nine windows - the six audited eras plus the three 2028 split windows: 2010-2012 38, 2013-2015 33, 2016-2018 31, 2019-2021 32, 2022-2024 33, 2025-2027 53 and 2028 5.
 //!
 //! Evidence: docs/evidence/nymex.md, and the family's evidence file for
 //! every retrieved row.

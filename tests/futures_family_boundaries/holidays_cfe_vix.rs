@@ -21,8 +21,8 @@
 //! 2025-01-09 is the only `ReplacementBlocks` row the table ships. The
 //! pre-2025 rows are the 2017 rules-page shapes, the recovered 2014-2016 press
 //! releases and information circulars, and the per-holiday notices of
-//! 2018-2024, tested per year band below, with 2017-07-03 the windows' one
-//! `Unsourced` date.
+//! 2018-2024, tested per year band below; 2017-07-03 was the windows' one
+//! `Unsourced` date until 2026-10-10 UTC, when CFEIC17-022 keyed its 12:15 row.
 
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::US;
@@ -1562,14 +1562,15 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
 }
 
 /// §4.1 case 4, as a negative over the whole coverage: the table ships only
-/// closures, early closes, late opens, the one replacement day and the one
+/// closures, early closes, late opens and the one replacement day, with no
 /// withheld date.
 ///
-/// The counts are per date, read back from the shipped table: 140 rows in all,
-/// thirty-one closures, sixty-seven 10:30 CT early closes, twenty-one 12:15 CT
+/// The counts are per date, read back from the shipped table: 151 rows in all,
+/// thirty-four closures, seventy-four 10:30 CT early closes, twenty-three 12:15 CT
 /// ones, three 08:30 CT ones, the single pre-migration 08:15 CT Good Friday,
 /// thirteen 17:00 CT late opens, two combined late-open-and-early-close half
-/// days, the single mourning replacement and the single `Unsourced` date. The
+/// days, the single mourning replacement and no `Unsourced` date (2017-07-03
+/// has keyed CFEIC17-022's own 12:15 row since 2026-10-10 UTC). The
 /// distinct instants are counted separately so a row that silently takes a
 /// neighbouring holiday's close fails here.
 #[test]

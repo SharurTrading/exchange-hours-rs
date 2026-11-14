@@ -2,7 +2,7 @@
 
 //! The `Exchange::Cbot` table holiday rows — the clock family `globex_grains`, carried verbatim.
 //!
-//! Coverage is 252 rows (the six audited eras plus the 2028 split windows) over the six audited eras: 2010-2012 22, 2013-2015 43, 2016-2018 36, 2019-2021 39, 2022-2024 39, 2025-2027 67 and 2028 6.
+//! Coverage is 252 rows over nine windows - the six audited eras plus the three 2028 split windows: 2010-2012 22, 2013-2015 43, 2016-2018 36, 2019-2021 39, 2022-2024 39, 2025-2027 67 and 2028 6.
 //!
 //! Evidence: docs/evidence/cbot.md, and the family's evidence file for
 //! every retrieved row.

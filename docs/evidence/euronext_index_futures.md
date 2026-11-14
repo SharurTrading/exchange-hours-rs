@@ -17,7 +17,7 @@ None. The family's module carries no `revisions!` block: its normal week is one 
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates in `Europe/Paris`; tier T1 throughout).
+**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates in `Europe/Paris`; tier T1 throughout).
 
 The operator publishes **one** holiday calendar per year covering its cash and derivatives markets together, so the family reads the same retrieved corpus the sibling Paris cash table reads, at the derivatives scope each generation states:
 
@@ -47,6 +47,7 @@ The operator publishes **one** holiday calendar per year covering its cash and d
 | `EURONEXT-HH-2023-11-27` | 2022-01-01 .. 2024-12-31 (the 2022 restatement, the 2023 and 2024 per-market tables) | <https://web.archive.org/web/20231127145642id_/https://live.euronext.com/en/resources/trading-hours-holidays> | Wayback `id_` replay of capture `20231127145642`, retrieved 2026-09-29 06:18 UTC | T1 | `550939767ce4869dc486c45e24f1b11c0276b6f53a8b4a5fa5f99e60c088a23c` |
 | `EURONEXT-HH-2025-12-06` | 2025-01-01 .. 2025-12-31 (the page's 2025 table) | <https://web.archive.org/web/20251206154319id_/https://live.euronext.com/en/resources/trading-hours-holidays> | Wayback `id_` replay of capture `20251206154319`, retrieved 2026-09-28 01:50 UTC | T1 | `dc96c4f7f1e6a51cd2e6743385faa5cbc4156623ec45499c89e2ec3871398a18` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |
+| `EURONEXT-IF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.euronext.com/en/media/16439/download> | retrieved 2026-11-14 07:12 | T1 | `199618806d085c381a373449588495e5ba11e6ea96d1c8d7f77361fc6f18035e` |
 | `EURONEXT-FCE-SPEC-2026-10-11` | the CAC 40 Index futures contract page (the family's Paris normal-week row) | <https://www.euronext.com/en/products/indices/paris/FCE> | retrieved 2026-10-11 | T1 | `02d46ecbdbf3e2c91e6fef6cc1ef87e05f55a3c87a4e95e98aae8a513b1f181a` |
 | `EURONEXT-FTI-SPEC-2026-10-11` | the AEX Index futures contract page (the family's Amsterdam normal-week row) | <https://www.euronext.com/en/products/indices/amsterdam/FTI> | retrieved 2026-10-11 | T1 | `46196226abc331a593bf043723166cf10ac6a4e136f185e26a9adf49056bf646` |
 | `EURONEXT-HH-LIVE-2026-10-11` | no rows keyed (the live page's 2026 table, re-read beside the contract pages) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-10-11 | T1 | `3537229c30525deecc5ce8d715db3ebb3f16416092d361cd1f2b440581b7fe3a` |
@@ -242,7 +243,25 @@ The operator publishes **one** holiday calendar per year covering its cash and d
 | 2026-12-25 | closed | Christmas: the INFO-FLASH Paris cell | `EURONEXT-IF-2026` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 | 2026-12-31 | unsourced | Paris `**Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2026` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 
-The sixteen shared rows are copied byte for byte from [euronext_paris](euronext_paris.md) § Documents, whose store paths and retrieval stamps they inherit; the three index-futures rows above are the store's `normal-weeks/euronext-index-futures-2026-10-11/` artifacts (store PR #15, retrieval 2026-10-11).
+### 2027
+
+The operator's 2027 holiday-calendar notice (`EURONEXT-IF-2027`, dated 06 November 2026,
+retrieved 2026-11-14) publishes one calendar for the cash and derivatives markets together;
+this family reads its shared Paris cell: `Closed` on 1 January, Good Friday 26 March and
+Easter Monday 29 March; `*Half Trading Day`
+on 24 and 31 December with the hours deferred to the end-of-year appendix; `Full Trading Day`
+on every other printed row. The two eves ship `Unsourced` — no banked artifact states the
+index futures' own half-day instants, exactly as the 2026 eves do.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | New Year's Day: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-03-26 | closed | Good Friday: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-03-29 | closed | Easter Monday: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-12-24 | unsourced | Paris `*Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-12-31 | unsourced | Paris `*Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+
+The seventeen shared rows are copied byte for byte from [euronext_paris](euronext_paris.md) § Documents, whose store paths and retrieval stamps they inherit; the three index-futures rows above are the store's `normal-weeks/euronext-index-futures-2026-10-11/` artifacts (store PR #15, retrieval 2026-10-11).
 
 ## Sources
 
@@ -257,5 +276,5 @@ The sixteen shared rows are copied byte for byte from [euronext_paris](euronext_
 - **The December half-day instants.** From 2014 the derivatives eves are stated only as a group closing `at various times` from a lower bound, and from 2022 the per-market cells defer to the end-of-year appendices whose banked editions state the cash segments only; the index futures' own half-day closes are therefore `unsourced` on every eve that has one (2010, 2014–2015, 2018–2021, 2024–2026). Named closer: a derivatives-scoped end-of-year appendix (an Instructions 4-03 edition printing the index-derivatives segments) or an archived derivatives-hours notice per year.
 - **The Large-in-Scale Facility is out of scope, recorded here.** The contract pages state `Large-in-Scale Facility: 07:30 - 22:00 CET/CEST` beside the Central Order Book row. LiSF is Euronext's off-book wholesale facility for large-in-scale trades — the same kind of off-book system the Eurex families exclude when they decline to model TES/OTC block columns — so the family's session is the Central Order Book's 08:00–22:00 grid. The pages' clearing note names a Day session `[07:30 - 18:30]` and an Evening session `[18:30 - 22:00]` in its clearing sentence; the Trading-hours row that states the order book's own hours is the family's session language, and the 07:30 leg the clearing sentence reflects is the LiSF open.
 - **The Euronext Block and Oslo/Dublin/Milan rows.** The scope sentences name Euronext Block beside the cash and derivatives markets; Block is a separate trading venue, not this family's market, and its exclusion is the documented scope. The Oslo, Dublin and Milan rows print `Full Trading Day` for Paris and are not keyed.
-- **Holiday horizon.** The audited window stops at 2026-12-31: the operator has published nothing for 2027 (verified 2026-09-28 in the sibling file's sweep, re-read 2026-10-11). Closing condition: Euronext's 2027 calendar; the row is re-checked monthly per LAW-WATCH.
+- **Holiday horizon.** The audited window reaches 2027-12-31: the operator's 2027 holiday calendar published 06 November 2026 (`EURONEXT-IF-2027`, retrieved 2026-11-14; the earlier negative verification of 2026-09-28/10-11 stands as history). The two December eves ship `Unsourced` with the closing condition "the 2027 end-of-year appendix to the Euronext Instructions 4-01/4-03"; the row is re-checked monthly per LAW-WATCH.
 - **The 2026 INFO-FLASH's printed header date reads `07 November 2026`** while its publishing path and file name say 2025-11-07; both are recorded as printed and neither dates any row — the document is cited only for its table cells, exactly as the sibling file records.

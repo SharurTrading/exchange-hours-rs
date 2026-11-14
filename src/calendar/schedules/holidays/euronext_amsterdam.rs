@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Euronext Amsterdam cash-equity holidays, 2010-2026.
+//! Euronext Amsterdam cash-equity holidays, 2010-2027. The 2027 rows are the
+//! Amsterdam column of the operator's 06 November 2026 holiday-calendar
+//! notice: `Closed` on 1 January, Good Friday 26 March and Easter Monday 29
+//! March, `*Half Trading Day` on both December eves with the hours deferred
+//! to the end-of-year appendix (`Unsourced`), and `Full Trading Day` on every
+//! other printed row.
 //!
 //! Evidence: `docs/evidence/euronext_amsterdam.md`.
 
@@ -12,7 +17,7 @@ use super::{HolidayTable, holidays};
 /// Amsterdam's own calendar rows and audited window.
 // Evidence: docs/evidence/euronext_amsterdam.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - EURONEXT-PR-2010 - Amsterdam cash calendar.
         (2010, 1, 1, Closed, T1, "EURONEXT-PR-2010"),
@@ -230,5 +235,17 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 12, 25, Closed, T1, "EURONEXT-IF-2026"),
         // 2026-12-31 - T1 - EURONEXT-IF-2026 - Amsterdam cash calendar.
         (2026, 12, 31, Unsourced, T1, "EURONEXT-IF-2026"),
+        // 2027-01-01 - T1 - EURONEXT-IF-2027 - Amsterdam cash calendar.
+        (2027, 1, 1, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-03-26 - T1 - EURONEXT-IF-2027 - Amsterdam cash calendar.
+        (2027, 3, 26, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-03-29 - T1 - EURONEXT-IF-2027 - Amsterdam cash calendar.
+        (2027, 3, 29, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-12-24 - T1 - EURONEXT-IF-2027 - Amsterdam prints `*Half
+        // Trading Day` and the appendix hours are announced but unstated.
+        (2027, 12, 24, Unsourced, T1, "EURONEXT-IF-2027"),
+        // 2027-12-31 - T1 - EURONEXT-IF-2027 - the same Amsterdam half-day
+        // cell and unstated appendix instants.
+        (2027, 12, 31, Unsourced, T1, "EURONEXT-IF-2027"),
     ],
 };

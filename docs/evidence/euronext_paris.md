@@ -37,7 +37,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates in `Europe/Paris`; tier T1 throughout).
+**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates in `Europe/Paris`; tier T1 throughout).
 
 The operator's holiday statement has shipped under four generations: the NYSE Euronext
 per-year press releases, cash-market notice and Info-Flash of 2010-2013 (each announced in
@@ -102,13 +102,28 @@ Trading Manuals"); the earlier "2026 end of year Trading hours: To be announced"
 longer appears on the page, which announces the same withholding in different words. Fresh
 read saved under `holidays/raw/equities/euronext_paris/forward-2027/`. Re-checked again 2026-10-09 (UTC): the live page still links only the 2025 edition (`/media/14656/download`); no 2026 end-of-year appendix has published, so the two rows stand.
 
-**2027 is not published.** The live page's newest calendar is the 2026 one and no 2027 edition
-exists on live.euronext.com (sitemap grep over `holiday|calendar|trading-hours`, queried
-2026-09-28T01:03Z). Re-checked 2026-09-29 UTC: the fresh live read names 2027 only inside the
-operator's `Innovate for Growth 2027` strategy material — no 2027 calendar rows, no
-"Calendar 2027" heading, and no half-day or closure cell for any 2027 date. Nothing past
-2026-12-31 is claimed. **Closing condition:** the operator's
-2027 calendar.
+**2027 is published (06 November 2026).** The operator's notice "2027 Holiday Calendar for
+Euronext's Cash and Derivatives markets" (`EURONEXT-IF-2027`, Date block `06 November 2026`,
+`www.euronext.com/en/media/16439/download`, retrieved 2026-11-14 07:12 UTC) prints the
+per-market columns for the served markets: Paris `Closed` on Friday 1 January (New Year's
+Day), Friday 26 March (Good Friday) and Monday 29 March (Easter Monday); `*Half Trading Day`
+on Friday 24 December (Christmas Eve) and Friday 31 December 2027; `Full Trading Day` on every
+other printed row, including Maundy Thursday 25 March, Ascension 6 May, Whit Monday 17 May,
+the orthodox dates of 30 April / 3 May / 21 June, Oxi Day 28 October and the 27 December
+substitute (Dublin-only). Both hours pages corroborate (`EURONEXT-HH-LIVE-2026-11-14`, the
+`live.euronext.com` page rendering the 2027 table; the `www.euronext.com` page likewise). The
+two half days carry the same announced-but-unstated instants the 2026 eves carried at their
+publication — the notice states the hours "will be announced in an end-of-year appendix to
+the Euronext Instructions 4-01 4-03 Trading Manuals" — so 2027-12-24 and 2027-12-31 ship as
+`Unsourced` with the closing condition "the 2027 end-of-year appendix to the Euronext
+Instructions 4-01/4-03". Nothing is inferred from the earlier appendices; the operator's own
+precedent is not evidence of 2027. The notice also states a Trading After Hours change for
+2027 ("In contrast to previous years … TAH will be open in 2027 on: Wednesday 2 June, all
+business days in August, Monday 1 November, Tuesday 7 December and Wednesday 8 December.
+There will be no TAH on Friday 24 and Friday 31 December"); no served profile models TAH, so
+it records here and keys no row. The
+2026-09-28/29 negative statement above stands as history: at those retrievals no 2027
+edition existed, which is why the window then stopped at 2026-12-31.
 
 **Rows of other markets never touch Paris.** The "Half trading day, Wednesday before Easter"
 row is Oslo-only (Paris prints `Full Trading Day` on 2025-04-16 and 2026-04-01); the Irish May
@@ -319,6 +334,16 @@ exists.
 | 2026-12-25 | closed | `Friday 25 December 2026 (Christmas)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Paris cell, printed identically on the live page; trade date is the same civil day |
 | 2026-12-31 | unsourced | `Thursday 31 December 2026` — Paris `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
 
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `Friday 1 January 2027 (New Year's Day)` — Paris `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Paris cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-03-26 | closed | `Friday 26 March 2027 (Good Friday)` — Paris `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Paris cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-03-29 | closed | `Monday 29 March 2027 (Easter Monday)` — Paris `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Paris cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-12-24 | unsourced | `Friday 24 December 2027 (Christmas Eve)` — Paris `*Half Trading Day`, hours deferred to the end-of-year appendix | `EURONEXT-IF-2027` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+| 2027-12-31 | unsourced | `Friday 31 December 2027` — Paris `*Half Trading Day`, hours deferred to the end-of-year appendix | `EURONEXT-IF-2027` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -348,6 +373,9 @@ exists.
 | `EURONEXT-EOY-2025` | 2025-12-24 and 2025-12-31 | <https://www.euronext.com/media/14656/download> | retrieved 2026-09-28 01:50 | T1 | `5850b4b4f5a031e637a0c44a0c7c1388ddc638c652133e66636c674af19bb6b9` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |
 | `EURONEXT-HH-LIVE-2026-09-28` | 2025-01-01 .. 2026-12-31 (the page's 2026 table; the 2025 table corroborated) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-09-28 01:07 | T1 | `5a1165a52361a81350fa69401910c76f046f28e16f757dadb6d33d68ccb6e5e3` |
+| `EURONEXT-IF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.euronext.com/en/media/16439/download> | retrieved 2026-11-14 07:12 | T1 | `199618806d085c381a373449588495e5ba11e6ea96d1c8d7f77361fc6f18035e` |
+| `EURONEXT-HH-LIVE-2026-11-14` | 2027 table rendered and corroborated (the page's newest calendar; the 2026 table unchanged, "2026 end of year Trading hours To be announced" still printed) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `20f722ae1d664576defa88e803142cde22da9ee8657cdbccec93403658a52bbe` |
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-11-14` | 2027 table rendered on the corporate page (corroboration) | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `936665412c34d9df104214ebeb0e82d6b32bf42e24172edba546fb26fd133ef4` |
 
 `EURONEXT-HH-LIVE-2026-09-28` keys no 2026 row: the live page's 2026 table is cell for cell
 the INFO-FLASH's Paris column, and the INFO-FLASH keys the rows. The INFO-FLASH's printed
@@ -382,7 +410,7 @@ documents; `EURONEXT-HH-2025-01-02` keys no row — it witnesses the identity of
 - **Horizon at the floor since the 2026-10-05 no-changes verification.** The earliest artifact cited for the legacy grid had been the operator's special-day appendix for 24 and 31 December 2010, keying the ledger horizon at 2010-12-24 and leaving January-2010..December-2010 carried; the sweep recorded below found the operator's own notice `PAR_20101126_06372_EUR` of 26/11/2010 — an artifact dated inside that span — restating the ordinary 07:15 pre-opening and 09:00 opening, and no declared normal-week change anywhere in the surviving 2010 channels, so the ledger horizon moved to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The 2026-09-30 bounded-search record stands below as the sweep's negative on the timetable-page channels. **Bounded search, 2026-09-30 UTC:** the operator's earliest 2010-scope document is the Calendar of Cash Business Days 2010 (`EURONEXT-CCBD-2010`, notice `PAR_20091015_05039_EUR`, dated 15/10/2009; the 2018-11-11 bulk capture the #219 sweep's URL family holds, previously believed uncaptured) — and it prints the 2010 closures and the December eves' 2:00 p.m. CET close but no weekday timetable, so it cannot key the grid. The domain-wide CDX sweep of 2009-2015 (79 364 collapsed url keys, the #219 retry sweep) holds no trading-manual appendix, timetable page or rulebook chapter URL from 2009-2011, and the pre-2010 `fic/` document URLs resolve to site shells. A Cash Market Trading Manual appendix 4-01/4-03 edition dated inside 2010 would corroborate the grid; its absence is no longer a refusal, because the sweep's negative plus the in-window 07:15/09:00 restatement source the era from the floor.
 - **Holiday coverage 2010-2013, recovered 2026-09-29 UTC (closed [#219](https://github.com/SharurTrading/exchange-hours-rs/issues/219)).** The first session's CDX sweeps covered only the page-URL families; re-running the sweep domain-wide over `euronext.com` 2009-2015 (79 364 collapsed url keys) surfaced the `trading/nyse-euronext-trading-calendar` page — whose 2014-01-12 capture restates the complete 2013 calendar — and the operator's `Trading Calendar Archives` index, which lists every year's holiday document with its own `sites/www.euronext.com/files/<name>.pdf` URL. The 2010, 2011, 2012 and 2013 documents are captured (bulk crawl 2018-11-11) and key the rows above at T1; the audited window now opens 2010-01-01. Residual: the `Calendar of Cash Business Days 2010` PDF itself (`calendar_of_cash_business_days_15_oct_2009.pdf`) has no Wayback capture and the 2010 rows rest on the 2010 press release plus the December-2010 appendix; the 2013 eve instants hold the narrowest of two conflicting operator statements (see the coverage section).
 - **The 2024 half-day eves, recovered 2026-09-29 UTC (closed [#219](https://github.com/SharurTrading/exchange-hours-rs/issues/219)).** The 2024 end-of-year appendix to the Euronext Instructions 4-01/4-03 exists at `euronext.com/media/12642/download` and is served live by the operator's own channel (retrieved 2026-09-29, sha-pinned in the research store); no Wayback capture of the file exists, so the row rests on the live retrieval plus the 2025-01-02 capture of the operator page that links this URL with the label `2024 end of year - appendix to Euronext Instructions 4-01 4-03 Trading Manuals`. Its Paris C-mode equity segments print the same grid the 2025 appendix prints (continuous to 13:55, uncross 14:00, TAL 14:00-14:05), so both 2024 eves are `EarlyClose` at 50 700 seconds. Residual: if the operator ever replaces the file at that media id, the identity witness remains the page capture and the live bytes are re-verified against the store's sha256.
-- **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing for 2027 (verified 2026-09-28). Closing condition: Euronext's 2027 holiday calendar; the row is re-checked monthly per LAW-WATCH.
+- **Holiday horizon.** The audited holiday window reaches 2027-12-31: the operator's 2027 holiday calendar published 06 November 2026 (`EURONEXT-IF-2027`) and both hours pages corroborate (retrieved 2026-11-14). The two December eves ship `Unsourced` with the closing condition "the 2027 end-of-year appendix to the Euronext Instructions 4-01/4-03"; the row is re-checked monthly per LAW-WATCH.
 
 **The 2026-10-05 no-changes verification moved the horizon to the floor.** The
 maintainer's directive of that date asked whether the carried span

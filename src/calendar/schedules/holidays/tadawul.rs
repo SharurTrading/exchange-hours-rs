@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Saudi Exchange (Tadawul) Main Market holiday rows, 2021-2027.
+//! Saudi Exchange (Tadawul) Main Market holiday rows, 2021-2029.
 //!
 //! Keyed by the venue-local trade date in `Asia/Riyadh`. The Main Market
 //! trades Sunday-Thursday, so an operator holiday that falls on a Friday or
@@ -18,26 +18,38 @@
 //! dates are read from the operator's printed calendar, never computed. The
 //! 2025 Founding Day entry is the operator's own observance statement — Sunday
 //! 23 February 2025, not Saturday the 22nd — so the row keys to the printed
-//! day. All five years in the window were on the page at its
-//! 2026-09-28 retrieval, so coverage reaches 2027-12-31; the page's oldest
-//! complete entry is the 2020 Eid Al Fiter, whose year cannot stand alone
-//! because the same page states no Eid Al Adha 2020, so coverage begins at
-//! 2021-01-01 and 2013-06-29..2020-12-31 is an unaudited span with the
-//! closing condition recorded in
+//! day. The one 2026-09-28 capture carries 2020-2029, so the Eid windows it
+//! prints for 2028 and 2029 key rows beside the encoded years: Eid Al Fiter
+//! 27/02/2028-02/03/2028 (discontinue end of trading day 24/02/2028, resume
+//! 05/03/2028), Eid Al Adha 03/05/2028-09/05/2028 (resume 10/05/2028), Eid Al
+//! Fiter 12/02/2029-18/02/2029 (resume 19/02/2029) and Eid Al Adha
+//! 22/04/2029-26/04/2029 (resume 29/04/2029), with the printed weekend legs
+//! keying no row. Coverage ends 2029-04-29 — the resume day the final Eid
+//! entry witnesses, the capture's last stated date: the 2028 tab prints no Founding Day entry (every year since the 2022 institution states the day)
+//! year's tab does) and no National-Day observance statement (23/09/2028 is a
+//! Saturday and the tab states no Sunday substitute), and the 2029 tab so far
+//! lists only the two Eid windows, so the trade dates those gaps put at risk —
+//! 2028-02-22, 2028-09-24 and 2029-02-22 — ship `Unsourced` rows rather than
+//! an audited-normal claim. The page's oldest complete entry is the 2020 Eid
+//! Al Fiter, whose year cannot stand alone because the same page states no
+//! Eid Al Adha 2020, so coverage begins at 2021-01-01 and
+//! 2013-06-29..2020-12-31 is an unaudited span with the closing condition
+//! recorded in
 //! [`docs/evidence/tadawul.md`](../../../../../docs/evidence/tadawul.md).
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, Unsourced};
 use super::{HolidayTable, holidays};
 
 /// The Saudi Exchange Main Market's built-in holiday rows and the window they
 /// were audited over.
 ///
 /// Every row is one entry of the operator's holiday calendar page. A date
-/// inside the window with no row is audited normal.
+/// inside the window with no row is audited normal; the three page-gap dates
+/// carry `Unsourced` rows and change no answer.
 // Evidence: docs/evidence/tadawul.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2021, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2021, 1, 1) ..= (2029, 4, 29)],
     rows: [
         // 2021-05-13 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter: the
         // entry states `First day of Eid Al Fiter is 13/5/2021. Last day of
@@ -263,5 +275,86 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-09-23 - T1 - TADAWUL-HOLCAL-2026-09-28 - National Day,
         // Thursday.
         (2027, 9, 23, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-02-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Founding Day's fixed
+        // date, a Tuesday; the page's 2028 tab prints no entry (every year
+        // since the 2022 institution states the day), so the claim is
+        // withheld.
+        (2028, 2, 22, Unsourced, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-02-27 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter: the
+        // entry states `Trading will discontinue at the end of trading day
+        // 24/02/2028. Trading will resume after the holiday on 05/03/2028`;
+        // the printed range opens Sunday 27/02 (the 25th-26th are the
+        // weekend).
+        (2028, 2, 27, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-02-28 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter, Monday.
+        (2028, 2, 28, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-02-29 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Tuesday (2028 is a leap year).
+        (2028, 2, 29, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-03-01 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Wednesday.
+        (2028, 3, 1, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-03-02 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Thursday; trading resumes Sunday 05/03.
+        (2028, 3, 2, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-05-03 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha: the
+        // entry states `Trading will discontinue at the end of trading day
+        // 02/05/2028. Trading will resume after the holiday on 10/05/2028`;
+        // the printed range opens Wednesday 03/05.
+        (2028, 5, 3, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-05-04 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha,
+        // Thursday (the 5th-6th printed legs are the weekend).
+        (2028, 5, 4, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-05-07 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha, Sunday.
+        (2028, 5, 7, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-05-08 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha, Monday.
+        (2028, 5, 8, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-05-09 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha,
+        // Tuesday; trading resumes Wednesday 10/05.
+        (2028, 5, 9, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2028-09-24 - T1 - TADAWUL-HOLCAL-2026-09-28 - the Sunday after
+        // National Day's fixed date (23/09/2028 is a Saturday): the 2025
+        // Founding Day precedent shows the observance can move to the printed
+        // Sunday, but the page's 2028 tab states no National-Day entry at
+        // all, so the claim is withheld.
+        (2028, 9, 24, Unsourced, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-12 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter: the
+        // entry states `Trading will discontinue at the end of trading day
+        // 11/02/2029. Trading will resume after the holiday on 19/02/2029`;
+        // the printed range opens Monday 12/02.
+        (2029, 2, 12, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-13 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Tuesday.
+        (2029, 2, 13, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-14 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Wednesday.
+        (2029, 2, 14, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-15 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter,
+        // Thursday (the 16th-17th printed legs are the weekend).
+        (2029, 2, 15, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-18 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter, Sunday;
+        // trading resumes Monday 19/02.
+        (2029, 2, 18, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-02-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Founding Day's fixed
+        // date, a Thursday; the page's 2029 tab so far lists only the two Eid
+        // windows (every year since 2022 states the day), so the claim is
+        // withheld.
+        (2029, 2, 22, Unsourced, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-04-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha: the
+        // entry states `Trading will discontinue at the end of trading day
+        // 19/04/2029. Trading will resume after the holiday on 29/04/2029`;
+        // the printed range opens Sunday 22/04 and every leg is a trade date.
+        (2029, 4, 22, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-04-23 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha, Monday.
+        (2029, 4, 23, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-04-24 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha, Tuesday.
+        (2029, 4, 24, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-04-25 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha,
+        // Wednesday.
+        (2029, 4, 25, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
+        // 2029-04-26 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha,
+        // Thursday; trading resumes Sunday 29/04, the resume day the entry
+        // witnesses and the audited window's last date.
+        (2029, 4, 26, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
     ],
 };

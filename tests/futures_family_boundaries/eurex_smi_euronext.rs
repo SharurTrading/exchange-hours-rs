@@ -437,24 +437,36 @@ fn the_euronext_table_classifies_its_answerable_dates_and_withholds_the_unstated
         .holiday_coverage()
         .expect("the family ships a built-in table");
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2026, 12, 31));
+    assert_eq!(coverage.last(), day(2027, 12, 31));
 
-    // The one closure inside the answerable range: Christmas 2026.
-    let christmas = day(2026, 12, 25);
-    assert_eq!(
-        calendar.holiday_on(christmas).map(Holiday::kind),
-        Some(HolidayKind::Closed)
-    );
+    // The closures inside the answerable range: Christmas 2026 and the 2027
+    // calendar's three dates.
+    for closure in [
+        day(2026, 12, 25),
+        day(2027, 1, 1),
+        day(2027, 3, 26),
+        day(2027, 3, 29),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(closure).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+    }
     assert!(
         !calendar
             .is_open(paris((2026, 12, 25), (12, 0, 0)))
             .expect("the coverage contract must answer a covered date")
     );
 
-    // The two 2026 half days are announced with unstated instants: the table
-    // withholds them and the classification refuses typed instead of claiming
-    // an ordinary or shortened day.
-    for eve in [day(2026, 12, 24), day(2026, 12, 31)] {
+    // The 2026 and 2027 half days are announced with unstated instants: the
+    // table withholds them and the classification refuses typed instead of
+    // claiming an ordinary or shortened day.
+    for eve in [
+        day(2026, 12, 24),
+        day(2026, 12, 31),
+        day(2027, 12, 24),
+        day(2027, 12, 31),
+    ] {
         assert_eq!(
             calendar.holiday_on(eve).map(Holiday::kind),
             Some(HolidayKind::Unsourced),
@@ -476,14 +488,20 @@ fn the_euronext_table_classifies_its_answerable_dates_and_withholds_the_unstated
     // The 2022/2023 eves print Full Day Trading for Paris.
     assert_eq!(calendar.holiday_on(day(2022, 12, 23)), None);
 
-    // The window's far edge: 2027 is unpublished and refuses with the table
+    // The window's far edge: 2028 is unpublished and refuses with the table
     // attached; detaching it restores the pure normal week inside the sourced
-    // range only.
-    let outside = paris((2027, 1, 4), (12, 0, 0));
+    // range only. The covered 2027 Monday beside the New Year closure answers.
+    let outside = paris((2028, 1, 2), (12, 0, 0));
     assert!(matches!(
         calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2028, 1, 2)
     ));
+    assert!(
+        calendar
+            .is_open(paris((2027, 1, 4), (12, 0, 0)))
+            .expect("the covered 2027 Monday answers from the normal week"),
+        "2027 publishes with the 06 November 2026 notice"
+    );
 }
 
 /// The canonical wire name round-trips through serde and `FromStr`.

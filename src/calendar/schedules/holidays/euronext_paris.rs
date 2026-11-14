@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Euronext Paris holiday rows, 2010-2026.
+//! Euronext Paris holiday rows, 2010-2027.
 //!
 //! Keyed by the crate's own venue-local trade date in `Europe/Paris`. Euronext
 //! Paris runs no overnight session, so an event date and its trade date are one
@@ -35,7 +35,13 @@
 //! December 2023 half days are **Dublin's** substitutes and the Paris column
 //! prints `Full Day Trading`; Paris ships no row for them. The 2026 eves
 //! print `**Half Trading Day` with the hours "To be announced" —
-//! `Unsourced`. This table encodes **Paris only**; the other markets' columns
+//! `Unsourced`. The 2027 calendar (the operator's notice of 06 November 2026)
+//! prints the same shape for Paris: `Closed` on 1 January, Good Friday 26
+//! March and Easter Monday 29 March, `*Half Trading Day` on both December
+//! eves with the hours again deferred to the end-of-year appendix, and every
+//! other printed row (Maundy Thursday, Ascension, Whit Monday, the May and
+//! June orthodox dates, Oxi Day, the 27 December substitute) `Full Trading
+//! Day`. This table encodes **Paris only**; the other markets' columns
 //! are out of this identity's scope, and the follow-up for them is recorded
 //! in [`docs/evidence/euronext_paris.md`](../../../../../docs/evidence/euronext_paris.md).
 
@@ -80,7 +86,7 @@ const HALF_DAY_17_35: u32 = 17 * 3_600 + 35 * 60;
 /// not yet published ("To be announced" in the operator's own table).
 // Evidence: docs/evidence/euronext_paris.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - EURONEXT-PR-2010 - New Year's Day: `Friday 1
         // January 2010 (New Year's Day)`.
@@ -366,5 +372,21 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // `**Half Trading Day` but the 2026 end-of-year hours are announced
         // and unstated ("To be announced"), so no instant is claimed.
         (2026, 12, 31, Unsourced, T1, "EURONEXT-IF-2026"),
+        // 2027-01-01 - T1 - EURONEXT-IF-2027 - New Year's Day: Paris
+        // `Closed`.
+        (2027, 1, 1, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-03-26 - T1 - EURONEXT-IF-2027 - Good Friday: Paris `Closed`.
+        (2027, 3, 26, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-03-29 - T1 - EURONEXT-IF-2027 - Easter Monday: Paris
+        // `Closed`.
+        (2027, 3, 29, Closed, T1, "EURONEXT-IF-2027"),
+        // 2027-12-24 - T1 - EURONEXT-IF-2027 - Christmas Eve: Paris prints
+        // `*Half Trading Day` but the 2027 end-of-year hours are announced
+        // and unstated ("will be announced in an end-of-year appendix"), so
+        // no instant is claimed.
+        (2027, 12, 24, Unsourced, T1, "EURONEXT-IF-2027"),
+        // 2027-12-31 - T1 - EURONEXT-IF-2027 - New Year's Eve: the same
+        // `*Half Trading Day` Paris cell and unstated appendix instants.
+        (2027, 12, 31, Unsourced, T1, "EURONEXT-IF-2027"),
     ],
 };

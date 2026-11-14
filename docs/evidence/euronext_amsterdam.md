@@ -52,9 +52,10 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates in
-`Europe/Amsterdam`; tier T1 throughout). The table owns 108 rows: 83 closures,
-23 early closes and two `Unsourced` dates. No 2027 calendar is published.
+**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates in
+`Europe/Amsterdam`; tier T1 throughout). The table owns 113 rows: 86 closures,
+23 early closes and four `Unsourced` dates. The 2027 calendar published
+06 November 2026 extends the audited window.
 
 The pre-2022 operator calendars explicitly cover the European cash markets,
 including Amsterdam. From 2022 the operator publishes separate market
@@ -76,9 +77,9 @@ Calendar prose from 2014-2021 states all instruments close by 14:05, except
 The 2024 and 2025 appendices print their own Amsterdam J0/AEX row:
 `09:00 Random - 13:55`, `14:00 Random`, and
 `14:00 - 14:05 Continuous TAL Random`. Its TAL end is 14:05, so both
-years' December eves close there. The 2026 calendar announces half days
-on 2026-12-24 and 2026-12-31 but supplies no end-of-year hours; these dates
-remain `Unsourced` until that appendix is published. The named calendar
+years' December eves close there. The 2026 and 2027 calendars announce half days
+on 2026-12-24, 2026-12-31, 2027-12-24 and 2027-12-31 but supply no end-of-year hours; these dates
+remain `Unsourced` until those appendices are published. The named calendar
 rows are unconditional dates, so the unknown hours are explicit gaps
 inside the audited window rather than a shortened publication horizon.
 
@@ -285,6 +286,24 @@ exists.
 | 2026-12-25 | closed | `Friday 25 December 2026 (Christmas)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
 | 2026-12-31 | unsourced | `Thursday 31 December 2026` — Amsterdam `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
 
+### 2027
+
+The operator's 2027 holiday-calendar notice (dated 06 November 2026, `EURONEXT-IF-2027`,
+retrieved 2026-11-14) prints the Amsterdam column: `Closed` on Friday 1 January (New Year's
+Day), Friday 26 March (Good Friday) and Monday 29 March (Easter Monday); `*Half Trading Day`
+on Friday 24 December (Christmas Eve) and Friday 31 December 2027 with the hours "will be
+announced in an end-of-year appendix to the Euronext Instructions 4-01 4-03 Trading
+Manuals"; `Full Trading Day` on every other printed row, including the 27 December substitute
+(Dublin-only). Both hours pages corroborate.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `Friday 1 January 2027 (New Year's Day)` — Amsterdam `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Amsterdam cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-03-26 | closed | `Friday 26 March 2027 (Good Friday)` — Amsterdam `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Amsterdam cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-03-29 | closed | `Monday 29 March 2027 (Easter Monday)` — Amsterdam `Closed` | `EURONEXT-IF-2027` | T1 | the notice's Amsterdam cell, printed identically on both hours pages; trade date is the same civil day |
+| 2027-12-24 | unsourced | `Friday 24 December 2027 (Christmas Eve)` — Amsterdam `*Half Trading Day`, hours deferred to the end-of-year appendix | `EURONEXT-IF-2027` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+| 2027-12-31 | unsourced | `Friday 31 December 2027` — Amsterdam `*Half Trading Day`, hours deferred to the end-of-year appendix | `EURONEXT-IF-2027` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -314,6 +333,9 @@ exists.
 | `EURONEXT-EOY-2025` | 2025-12-24 and 2025-12-31 | <https://www.euronext.com/media/14656/download> | retrieved 2026-09-28 01:50 | T1 | `5850b4b4f5a031e637a0c44a0c7c1388ddc638c652133e66636c674af19bb6b9` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |
 | `EURONEXT-HH-LIVE-2026-09-28` | 2025-01-01 .. 2026-12-31 (the page's 2026 table; the 2025 table corroborated) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-09-28 01:07 | T1 | `5a1165a52361a81350fa69401910c76f046f28e16f757dadb6d33d68ccb6e5e3` |
+| `EURONEXT-IF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.euronext.com/en/media/16439/download> | retrieved 2026-11-14 07:12 | T1 | `199618806d085c381a373449588495e5ba11e6ea96d1c8d7f77361fc6f18035e` |
+| `EURONEXT-HH-LIVE-2026-11-14` | 2027 table rendered and corroborated (the page's newest calendar; the 2026 table unchanged, "2026 end of year Trading hours To be announced" still printed) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `20f722ae1d664576defa88e803142cde22da9ee8657cdbccec93403658a52bbe` |
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-11-14` | 2027 table rendered on the corporate page (corroboration) | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `936665412c34d9df104214ebeb0e82d6b32bf42e24172edba546fb26fd133ef4` |
 
 `EURONEXT-HH-LIVE-2026-09-28` keys no 2026 row: the live page's 2026 table is cell for cell
 the INFO-FLASH's Amsterdam column, and the INFO-FLASH keys the rows. The INFO-FLASH's printed

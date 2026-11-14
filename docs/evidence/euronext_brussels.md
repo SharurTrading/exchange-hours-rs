@@ -52,7 +52,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2026-01-01..2026-12-31 (inclusive Brussels cash-market trade dates; T1).
+**Coverage:** 2026-01-01..2027-12-31 (inclusive Brussels cash-market trade dates; T1).
 
 ### 2026
 
@@ -75,12 +75,31 @@ not a same-timezone inference or another market’s dates.
 The page says the exact half-day hours will be announced in an end-of-year
 appendix to the trading manuals. Neither December 24 nor December 31 therefore
 certifies an ordinary session or a guessed early close. This audited window is
-2026-01-01 through 2026-12-31, with seven rows: five `Closed` and two `Unsourced`.
+2026-01-01 through 2027-12-31: seven 2026 rows (five `Closed` and two
+`Unsourced`) and five 2027 rows (three `Closed` and two `Unsourced`) below.
 Dates without a Brussels exception in this window retain the existing named
-normal profile. No historical holiday window, normal-week cutover, 2027 calendar
+normal profile. No historical holiday window, normal-week cutover
 or minute-level half-day claim is introduced. The normal-profile horizon and the
 earlier normal-week baseline gap above remain unchanged; older holiday calendars and the
 unpublished half-day appendix would close the corresponding residual gaps.
+
+### 2027
+
+The operator's 2027 holiday-calendar notice (dated 06 November 2026,
+retrieved 2026-11-14) prints the Brussels column: `Closed` on Friday 1 January
+(New Year's Day), Friday 26 March (Good Friday) and Monday 29 March (Easter
+Monday); `*Half Trading Day` on Friday 24 December and Friday 31 December 2027
+with the hours "will be announced in an end-of-year appendix to the Euronext
+Instructions 4-01 4-03 Trading Manuals"; `Full Trading Day` on every other
+printed row, including the 27 December substitute (Dublin-only).
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | Brussels `Closed` | `EURONEXT-IF-2027` | T1 | own named market column; no clock conversion |
+| 2027-03-26 | closed | Brussels `Closed` | `EURONEXT-IF-2027` | T1 | own named market column; no clock conversion |
+| 2027-03-29 | closed | Brussels `Closed` | `EURONEXT-IF-2027` | T1 | own named market column; no clock conversion |
+| 2027-12-24 | unsourced | Brussels `*Half Trading Day` | `EURONEXT-IF-2027` | T1 | announced half day; hours withheld pending the 2027 appendix |
+| 2027-12-31 | unsourced | Brussels `*Half Trading Day` | `EURONEXT-IF-2027` | T1 | announced half day; hours withheld pending the 2027 appendix |
 
 The linked annual cash-calendar PDF (`EURONEXT-IF-2026`), independently
 retrieved again on 2026-10-12 00:44 UTC, prints “Date: 07 November 2026”, which is
@@ -96,3 +115,5 @@ only to disclose this lineage conflict.
 |---|---|---|---|---|---|
 | `EURONEXT-CASH-CALENDAR-CURRENT-2026-10-12` | 2026 cash calendar; named market columns | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-10-12 00:42 UTC | T1 | `f4f3d2ee85e88557db2aa6a29bf9ec23d1d2d82eaaa1a8cca2d91175c94fc831` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |
+| `EURONEXT-IF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.euronext.com/en/media/16439/download> | retrieved 2026-11-14 07:12 | T1 | `199618806d085c381a373449588495e5ba11e6ea96d1c8d7f77361fc6f18035e` |
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-11-14` | 2027 table rendered on the corporate page (corroboration) | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `936665412c34d9df104214ebeb0e82d6b32bf42e24172edba546fb26fd133ef4` |

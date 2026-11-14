@@ -333,6 +333,15 @@ forward, and only a sourced onset day replaces it.
   announces the Night Session date, while [Nasdaq Equity 1](https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html)
   conditions commencement on Equity Data Plan readiness and a later Nasdaq
   readiness filing. Add the revision only after that filing confirms the day.
+  Sweep update 2026-11-14 (UTC): [ETA2026-64](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-64)
+  restates the production extension unconditionally ("system hours will be
+  extended to 9:00 p.m. ET Sunday through 8:00 p.m. ET Friday, with a daily
+  one-hour pause from 8:00 p.m. to 9:00 p.m. ET Monday through Thursday
+  (excluding holidays), effective December 6, 2026"), [ETA2026-66](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-66)
+  witnesses pre-production, and [UTP2026-33](https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33)
+  dates the UTP SIP side — all banked under `normal-weeks/nasdaq-night-session-2026-11-14/`
+  in the research store. The recorded readiness filing is still the closer; the
+  work-up is tracked as the crate's follow-up.
 - **Cboe EDGX — 2026-12-06:** the [opening-process specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process)
   announces the first overnight opening for the 2026-12-07 business date. The
   [SEC approval order](https://www.sec.gov/files/rules/sro/cboeedgx/2026/34-105587.pdf)
@@ -343,7 +352,13 @@ forward, and only a sourced onset day replaces it.
   (SIP) Amendment launch against [SR-FINRA-2026-015](https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf)
   before this date. The announced Sunday-through-Friday reporting regime is not
   modeled while its day remains conditional; add all three TRF revisions only
-  when the SIP implementation day is confirmed.
+  when the SIP implementation day is confirmed. Sweep update 2026-11-14 (UTC):
+  [UTP2026-33](https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33) and
+  [ETA2026-39](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-39) both
+  state the 2026-12-06 SIP/TRF operating-hours extension; the NYSE-side notice
+  calls the CTA and UTP plan amendments "recently approved" (SEC releases
+  34-105269/34-105268 cited there). These are reporting-facility hours, not a
+  matching venue's sessions — the dormant TRF rows are unaffected.
 - **NYSE Arca — target 2026-12-06:** the operator's
   [extended-hours program](https://www.nyse.com/trade/equities/extended-hours-trading)
   remains conditional on SIP, DTCC, and exchange-readiness milestones. Do not

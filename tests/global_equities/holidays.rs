@@ -2,7 +2,7 @@
 
 //! Built-in holiday rows for the served cash-equity venues whose tables
 //! shipped with the 2025-2027 wave: `b3` (2025-2026 extended back to 2011,
-//! the 2010 span unaudited), `tadawul` (2021-2027, the earlier span
+//! the 2010 span unaudited), `tadawul` (2021-2029-04-26, the earlier span
 //! unaudited) and `borsa_istanbul` (2012-03-02..2026-12-31), the APAC venues `nzx` (2010-2024 backfilled beside the
 //! operator's 2025-2027-01-04 rolling horizon; the 2016 mid-year span closed
 //! on 2026-10-03 UTC by the operator's own dairy-derivatives holiday
@@ -1064,12 +1064,64 @@ fn tadawul_closures_per_year_match_the_operators_printed_entries() {
 }
 
 #[test]
+fn tadawul_2028_2029_eid_windows_match_the_printed_entries() {
+    let calendar = calendar_for(Exchange::Tadawul);
+    // 2028-2029: the Eid windows the same capture prints. The 2028 Eid Al
+    // Fiter range spans the leap day; the 2028 Eid Al Adha range's
+    // Friday-Saturday legs (5-6 May) and the 2029 Eid Al Fiter range's
+    // Friday-Saturday legs (16-17 February) are weekends and key no row.
+    for date in [
+        (2028, 2, 27),
+        (2028, 2, 28),
+        (2028, 2, 29),
+        (2028, 3, 1),
+        (2028, 3, 2),
+        (2028, 5, 3),
+        (2028, 5, 4),
+        (2028, 5, 7),
+        (2028, 5, 8),
+        (2028, 5, 9),
+        (2029, 2, 12),
+        (2029, 2, 13),
+        (2029, 2, 14),
+        (2029, 2, 15),
+        (2029, 2, 18),
+        (2029, 4, 22),
+        (2029, 4, 23),
+        (2029, 4, 24),
+        (2029, 4, 25),
+        (2029, 4, 26),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2028-2029 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    for date in [
+        (2028, 2, 25),
+        (2028, 2, 26),
+        (2028, 5, 5),
+        (2028, 5, 6),
+        (2029, 2, 16),
+        (2029, 2, 17),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "a Friday or Saturday leg needs no row in a Sun-Thu week: {date:?}"
+        );
+    }
+}
+
+#[test]
 fn tadawul_trading_resumes_on_the_printed_days() {
     let calendar = calendar_for(Exchange::Tadawul);
     // The entries state resume days: 25/07/2021, 13/07/2022, 25/04/2023,
     // 02/07/2023, 25/09/2023, 14/04/2024, 23/06/2024, 03/04/2025, 11/06/2025,
-    // 24/03/2026, 31/05/2026, 14/03/2027, 23/05/2027 — each open with the
-    // ordinary 10:00 regular open.
+    // 24/03/2026, 31/05/2026, 14/03/2027, 23/05/2027, 05/03/2028, 10/05/2028,
+    // 19/02/2029, 29/04/2029 — each open with the ordinary 10:00 regular open.
+    // The 2029 Eid Al Adha resume day is the audited window's last witnessed
+    // date: the entry states trading resumes 29/04/2029, so coverage ends
+    // there rather than on the holiday's last closed day.
     for date in [
         (2021, 7, 25),
         (2022, 7, 13),
@@ -1084,6 +1136,10 @@ fn tadawul_trading_resumes_on_the_printed_days() {
         (2026, 5, 31),
         (2027, 3, 14),
         (2027, 5, 23),
+        (2028, 3, 5),
+        (2028, 5, 10),
+        (2029, 2, 19),
+        (2029, 4, 29),
     ] {
         assert!(
             calendar
@@ -1116,7 +1172,7 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
         .holiday_coverage()
         .expect("Tadawul ships a built-in table");
     assert_eq!(coverage.first(), day(2021, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2029, 4, 29));
     assert_eq!(
         calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
         None,
@@ -1158,16 +1214,58 @@ fn tadawul_window_ships_only_closures() {
         .holiday_coverage()
         .expect("Tadawul ships a built-in table");
     let mut closed = 0_usize;
+    let mut unsourced = 0_usize;
     let mut date = coverage.first();
     while date <= coverage.last() {
         match calendar.holiday_on(date).map(Holiday::kind) {
             None => {}
             Some(HolidayKind::Closed) => closed += 1,
+            Some(HolidayKind::Unsourced) => unsourced += 1,
             Some(kind) => panic!("{date} ships a kind Tadawul's calendar does not state: {kind:?}"),
         }
         date = date.succ_opt().expect("the window stays representable");
     }
-    assert_eq!(closed, 78, "closures, Tadawul 2021-2027");
+    assert_eq!(closed, 98, "closures, Tadawul 2021-2029-04-26");
+    assert_eq!(unsourced, 3, "the 2028/2029 page-gap dates withhold");
+}
+
+#[test]
+fn tadawul_page_gap_dates_refuse_rather_than_claim() {
+    let calendar = calendar_for(Exchange::Tadawul);
+    // The operator's 2028 tab prints no Founding Day entry, no National-Day
+    // observance (2028-09-23 is a Saturday and no Sunday substitute is
+    // stated), and the 2029 tab so far lists only the Eid windows — so the
+    // three trade dates those gaps put at risk ship `Unsourced` rows that
+    // change no answer: the classification refuses instead of claiming the
+    // day normal, and the closure question refuses with it.
+    for date in [(2028, 2, 22), (2028, 9, 24), (2029, 2, 22)] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "tadawul {date:?}: the page states nothing, so nothing is claimed"
+        );
+        assert!(
+            calendar
+                .is_open(riyadh(date, (11, 0, 0)))
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "tadawul {date:?}: is_open must refuse rather than claim"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "tadawul {date:?}: the closure question must refuse"
+        );
+    }
+    // The 2028 leap-day Eid row sits inside the audited Eid Al Fiter window:
+    // it answers Closed like its neighbours.
+    assert_eq!(
+        calendar.holiday_on(day(2028, 2, 29)).map(Holiday::kind),
+        Some(HolidayKind::Closed),
+        "2028-02-29 is inside the printed Eid range"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -3482,10 +3580,34 @@ mod euronext_paris {
             (2026, 4, 3),
             (2026, 4, 6),
             (2026, 5, 1),
+            (2027, 3, 26),
+            (2027, 3, 29),
         ];
         for date in closed {
             assert_closed(calendar, date, "euronext_paris", &paris_time);
         }
+        // 2027-01-01 is fenced separately: the row itself answers Closed, but
+        // its behind-derivation reads 2026-12-31 — the announced-but-unstated
+        // 2026 eve — so the trade-date question refuses while noon answers
+        // shut from the Closed row, exactly as 2026-12-25 does behind the
+        // withheld 2026-12-24.
+        assert_eq!(
+            calendar.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "2027-01-01 carries the printed closure row"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2027, 1, 1), SessionKind::Both)
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "the 2027-01-01 closure question must refuse on the unresolved 2026 eve"
+        );
+        assert!(
+            !calendar
+                .is_open(paris_time((2027, 1, 1), (12, 0, 0)))
+                .expect("the closed day answers from its own row"),
+            "the withheld 2026 eve cannot reach the closed 2027 day"
+        );
         // The 2010 rows sit inside the span the 2026-10-05 no-changes
         // verification sourced from the floor, so the holiday rows and the
         // session questions agree: each printed closure deletes the day.
@@ -3856,12 +3978,18 @@ mod euronext_paris {
     }
 
     #[test]
-    fn the_2026_half_days_are_announced_but_unstated() {
+    fn the_2026_and_2027_half_days_are_announced_but_unstated() {
         let calendar = paris();
-        // The 2026 table prints `**Half Trading Day` for both December eves,
-        // but the hours live in the end-of-year appendix, which is announced
-        // and unpublished — so the rows claim nothing.
-        for date in [(2026, 12, 24), (2026, 12, 31)] {
+        // The 2026 and 2027 tables print `**Half Trading Day` / `*Half
+        // Trading Day` for their December eves, but the hours live in the
+        // end-of-year appendix, which is announced and unpublished — so the
+        // rows claim nothing.
+        for date in [
+            (2026, 12, 24),
+            (2026, 12, 31),
+            (2027, 12, 24),
+            (2027, 12, 31),
+        ] {
             assert_eq!(
                 calendar
                     .holiday_on(day(date.0, date.1, date.2))
@@ -3944,7 +4072,7 @@ mod euronext_paris {
         let calendar = paris();
         let coverage = calendar.holiday_coverage().expect("paris ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
-        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert_eq!(coverage.last(), day(2027, 12, 31));
         // 2010-01-01 is the window's first row and sits inside the span the
         // 2026-10-05 no-changes verification sourced from the floor: the
         // holiday row and the session probes agree that the day is closed.
@@ -3966,23 +4094,28 @@ mod euronext_paris {
                 .is_open(paris_time((2012, 7, 2), (12, 0, 0)))
                 .expect("covered")
         );
-        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
+        assert_eq!(
+            calendar.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
         assert!(matches!(
             calendar.is_open(paris_time((2009, 12, 31), (12, 0, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ));
-        // 2027 is not published anywhere on the operator's site, so the year
-        // the wave scopes is deliberately absent and queries past 2026-12-31
-        // refuse. The detached snapshot still answers the pure normal week.
-        let outside = paris_time((2027, 1, 4), (12, 0, 0));
-        assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        // 2027 publishes with the 06 November 2026 notice, so the year is
+        // covered; the New Year closure deletes the day. The detached snapshot
+        // still answers the pure normal week on the same date.
+        let inside_2027 = paris_time((2027, 1, 4), (12, 0, 0));
+        assert!(
+            calendar
+                .is_open(inside_2027)
+                .expect("2027-01-04 is the covered Monday after the closure"),
+            "the covered 2027 Monday answers from the normal week"
+        );
         assert!(
             calendar
                 .without_holidays()
-                .is_open(outside)
+                .is_open(inside_2027)
                 .expect("a detached snapshot claims no coverage")
         );
         assert_eq!(calendar.without_holidays().holiday_coverage(), None);
@@ -3991,8 +4124,8 @@ mod euronext_paris {
     #[test]
     fn every_shipped_row_matches_the_sheets_per_year() {
         let rows = rows_per_year(paris());
-        assert_eq!(rows.len(), 108, "83 closures, 23 half days, two gaps");
-        let expected: [(i32, (usize, usize, usize, usize)); 17] = [
+        assert_eq!(rows.len(), 113, "86 closures, 23 half days, four gaps");
+        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
             (2010, (3, 2, 0, 0)),
             (2011, (3, 2, 0, 0)),
             (2012, (5, 2, 0, 0)),
@@ -4010,6 +4143,7 @@ mod euronext_paris {
             (2024, (6, 2, 0, 0)),
             (2025, (6, 2, 0, 0)),
             (2026, (5, 0, 0, 2)),
+            (2027, (3, 0, 0, 2)),
         ];
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
@@ -4036,7 +4170,7 @@ mod euronext_paris {
                 );
             } else if kind == "unsourced" {
                 assert!(
-                    matches!(date, (2026, 12, 24 | 31)),
+                    matches!(date, (2026 | 2027, 12, 24 | 31)),
                     "the gaps are exactly the announced-but-unstated eves: {date:?}"
                 );
             } else {

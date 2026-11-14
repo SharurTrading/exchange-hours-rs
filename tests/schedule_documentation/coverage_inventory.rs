@@ -860,8 +860,8 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // clock, so every cross-family dispute retired and the single
         // remaining withheld date is the family's own 2023-01-16 marker.
         ("cbot", 1),
-        ("euronext_paris", 2),
-        ("euronext_amsterdam", 2),
+        ("euronext_paris", 4),
+        ("euronext_amsterdam", 4),
         ("bme", 2),
         // 0 since the 2026-10-14 UTC wave-2 build: the incompleteness is the
         // 2013-2016 unpublished-closure era the family declares (#332) — the
@@ -880,6 +880,11 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.
         ("nse_india", 6),
+        // 3 since the 2026-11-14 wave: the 2028/2029 Eid windows the operator
+        // page already printed key the extension to the witnessed resume day,
+        // and the three dates its 2028/2029 tabs leave unworked (2028-02-22,
+        // 2028-09-24, 2029-02-22) ship `Unsourced` rows that claim nothing.
+        ("tadawul", 3),
     ]
 }
 
@@ -1019,8 +1024,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (39, 11, 8),
-        "the inventory's verdict shapes: thirty-nine complete, eleven incomplete, eight with no 2025 \
+        (38, 12, 8),
+        "the inventory's verdict shapes: thirty-eight complete, twelve incomplete, eight with no 2025 \
          coverage (cme and cbot joined the complete group on 2026-10-15 UTC, when the market-data \
          confirmation of 2023-01-16 closed their last date-level gaps - their verdicts keep the \
          incomplete word for #116/#223's tracked programmes and the disclosed quarter-hour and \
@@ -1048,8 +1053,10 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          incomplete on its 184 Unsourced dates; xetra \
          reclassified complete to 2027-12-31 on 2026-10-04 UTC under the maintainer's horizon \
          ruling — 2027 coverage is not a requirement and unpublished 2027 never withholds a \
-         verdict; #197's b3/tadawul are \
-         complete; the 2026-10-14 UTC wave-2 builds add asx_spi_200 complete to the audited \
+         verdict; #197's b3 stays complete while tadawul joined the incomplete group on 2026-11-14 \
+         UTC, when the 2028/2029 Eid windows keyed the extension and the three page-gap dates \
+         (2028-02-22, 2028-09-24, 2029-02-22) began shipping `Unsourced`; the 2026-10-14 UTC \
+         wave-2 builds add asx_spi_200 complete to the audited \
          window and hkex_index_futures incomplete on its uncaptured 2013-2016 UK/US AHT-suspension \
          instantiation (#332); nyse is complete to 2027 and nasdaq joined the complete group on 2026-10-09 \
          UTC, when the operator's own Equity Trader Alerts 2010-73 and 2011-54 (still served \
@@ -1063,7 +1070,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          Hours page — #231's last half discharged); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
          the LSE public mirror closes its five 2025 withheld dates on 2026-10-11 UTC, \
-         euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
+         euronext_paris two announced-but-unstated 2026 eves (four since 2026-11-14: the \
+         published 2027 calendar adds its two eves), the 2026-09-29/30 UTC backfills \
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
          and the 2026-10-03 UTC recovery of the 2011-12-12 year-end schedule — the release \

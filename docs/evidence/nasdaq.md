@@ -439,6 +439,10 @@ statement).
 | `NQ-NW-2013-13998` | no rows keyed (the conforming filing to "the 4 a.m. Filing"; rule 4120(c)(7)(B) "7 a.m." to "4:00 a.m."; Normal-week bounded-search record) | <https://www.federalregister.gov/documents/full_text/text/2013/06/13/2013-13998.txt> | retrieved 2026-09-30 | T1 | `db82e74989cc1950a094ef217b751b3f1cd0a0d4b5735cbeabfa612f20f06e90` |
 | `NASDAQ-SYS-2010-A` | no rows keyed (the 2010 systems-hours inventory; Normal-week bounded-search record) | <https://web.archive.org/web/20100101193510id_/http://nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf> | Wayback `id_` replay of capture `20100101193510`, retrieved 2026-09-30 04:52 UTC | T1 | `57a5d35d99f03690814c2c74157fc5a2b2417b964e03cd3a1adae2803f4d8c81` |
 | `NASDAQ-SYS-2010-B` | no rows keyed (the December 2010 edition, doc code Q10-0079; Normal-week bounded-search record) | <https://web.archive.org/web/20101230180554id_/http://ftp.nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf> | Wayback `id_` replay of capture `20101230180554`, retrieved 2026-09-30 04:52 UTC | T1 | `062e5fda19370bdf65abc22f2de32147df8b68566c4888355fcfa10cd5d80799` |
+| `NQ-NIGHT-ETA2026-64` | no rows keyed (the Expanded 23/5 production statement: system hours extended effective 2026-12-06; the encoding work-up is tracked as the crate's follow-up) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-64> | retrieved 2026-11-14 07:12 UTC | T1 | `4ad899e0b4b13627027ccc7cada889abb23c66baca9933bda15ca67324668714` |
+| `NQ-NIGHT-ETA2026-66` | no rows keyed (Global Trading Hours pre-production availability; the 3:55 a.m. test end is expressly revisable) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-66> | retrieved 2026-11-14 07:12 UTC | T1 | `1f8486e5d014a9b6986c65bb690e55f194d41b5cc400bb8428e6b7c141892175` |
+| `NQ-NIGHT-UTP2026-33` | no rows keyed (the UTP SIP Extended Trading Hours schedule, effective 2026-12-06) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33> | retrieved 2026-11-14 07:12 UTC | T1 | `e744283cf6e21d220b9c6ef0dad33edbbbe0ad8de9e4417259d1033e2c17c797` |
+| `NQ-NIGHT-ETA2026-39` | no rows keyed (the FINRA/Nasdaq TRF and WorkX hours alignment, effective 2026-12-06) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-39> | retrieved 2026-11-14 07:12 UTC | T1 | `4b61ede2a57af6ca7687cce395ba716a45dba2f5da22155496953657a82d344f` |
 
 ## Sources
 
@@ -455,6 +459,10 @@ as each source is re-verified.
 - <https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf> — *Nasdaq Systems — Hours of Operation*, the operator's system inventory and phase table (2020 edition; read through the web archive, see the ledger's channel notes).
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21> — Nasdaq Equity Trader Alert 2013-21, the 04:00 pre-market open effective Monday 2013-03-18.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46> — Nasdaq Equity Trader Alert 2026-46, the announced Night Session.
+- <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-64> — Nasdaq Equity Trader Alert 2026-64 (`NQ-NIGHT-ETA2026-64`), the Expanded 23/5 production statement: system hours "extended to 9:00 p.m. ET Sunday through 8:00 p.m. ET Friday, with a daily one-hour pause from 8:00 p.m. to 9:00 p.m. ET Monday through Thursday (excluding holidays), effective December 6, 2026" — T1, banked 2026-11-14.
+- <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-66> — Nasdaq Equity Trader Alert 2026-66 (`NQ-NIGHT-ETA2026-66`), Global Trading Hours pre-production availability and the revisable 3:55 a.m. test end — T1, banked 2026-11-14.
+- <https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33> — UTP notice 2026-33 (`NQ-NIGHT-UTP2026-33`), the UTP SIP Extended Trading Hours schedule effective 2026-12-06 — T1, banked 2026-11-14.
+- <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-39> — Nasdaq Equity Trader Alert 2026-39 (`NQ-NIGHT-ETA2026-39`), the FINRA/Nasdaq TRF and WorkX hours alignment effective 2026-12-06 — T1, banked 2026-11-14.
 - <https://listingcenter.nasdaq.com/assets/rulebook/nasdaq/filings/SR-NASDAQ-2025-109_Approval.pdf> — the SEC approval order for the Night Session rule.
 - The operator's `nasdaq_sys_hours.pdf` floor-era captures, 2010-01-01 and 2010-12-30 (Wayback replays, digests in the `### Documents` table) — the operator's systems-hours inventory of that era, whose Stock Market row prints Support Hours 07:00-20:00 and Market Hours 09:30-16:00; support hours are not a trading session (LAW-SESSION-NOT-EXPIRY), so they carry the record's negative rather than a row.
 - The operator's SEC rule filings, read as Federal Register full texts (digests in the `### Documents` table): SR-NASDAQ-2010-008 (75 FR 8156) quoting the in-force rulebook text, the 2012-2013 filings printing the Rule 4120(b)(4) footnote (`2012-1285`, `2012-5367`, `2012-21815`, `2012-26253`, `2013-04614`), SR-NASDAQ-2013-033 (78 FR 17464) with its marked rule text and implementation day, and the conforming filing (2013-13998).
@@ -512,6 +520,26 @@ as each source is re-verified.
   [`Pending effective-date confirmations`](../schedules/updating.md#pending-effective-date-confirmations)
   in `updating.md`; `nasdaq_unconfirmed_night_session_is_not_encoded` in
   `tests/venue_sessions/nasdaq.rs` fences the non-encoding.
+  **Sweep update, 2026-11-14 (UTC):** the evidence base advanced without
+  discharging that recorded condition. ETA2026-64 (2026-10-30,
+  `NQ-NIGHT-ETA2026-64`) restates the production extension unconditionally in
+  its own sentence — "system hours will be extended to 9:00 p.m. ET Sunday
+  through 8:00 p.m. ET Friday, with a daily one-hour pause from 8:00 p.m. to
+  9:00 p.m. ET Monday through Thursday (excluding holidays), effective December
+  6, 2026" — and names the "Global Trading Session (9:00 p.m. to 9:30 a.m. ET)";
+  ETA2026-66 (`NQ-NIGHT-ETA2026-66`) witnesses pre-production from 2026-11-01
+  with the 3:55 a.m. test end expressly "subject to revision"; UTP2026-33
+  (`NQ-NIGHT-UTP2026-33`) states the UTP SIP transmission schedule will support
+  Extended Trading Hours on the same day; ETA2026-39 (`NQ-NIGHT-ETA2026-39`)
+  dates the FINRA/Nasdaq TRF and WorkX alignment. All four artifacts are banked
+  under `normal-weeks/nasdaq-night-session-2026-11-14/` in the research store.
+  What is still missing for encoding: the Nasdaq readiness filing the recorded
+  condition names, a production statement of the overnight session's own end
+  (the only sourced end is pre-production's revisable 3:55 a.m.), and the
+  session-topology determinations (matching vs order entry, holiday
+  interaction, the Sunday-evening trade-date assignment). The work-up is
+  tracked as [#396](https://github.com/SharurTrading/exchange-hours-rs/issues/396);
+  the fence above still holds.
 - **System coverage (2026-09-02).** No discrepancy. ACT, Weblink ACT 2.0, ACES,
   the Nasdaq Testing Facility and index dissemination are excluded classes;
   Nasdaq Fixed Income and Nasdaq Futures belong to neither this SRO nor cash

@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- Euronext's published 2027 holiday calendar (the operator's notice of
+  06 November 2026): three closures (New Year's Day, Good Friday and Easter
+  Monday 2027) for `euronext_paris`, `euronext_amsterdam`, `euronext_brussels`,
+  `euronext_lisbon` and `euronext_index_futures`, with the two 2027 December
+  half days withheld (`Unsourced`) pending the end-of-year appendix; each
+  table's audited window extends to 2027-12-31.
+- Tadawul's 2028-2029 Eid windows, already printed by the operator's holiday
+  calendar: Eid Al Fiter 2028-02-27..03-02 (leap day included), Eid Al Adha
+  2028-05-03..09, Eid Al Fiter 2029-02-12..18 and Eid Al Adha 2029-04-22..26,
+  extending the audited window to the witnessed 2029-04-29 resume day; the
+  three dates the operator's
+  2028/2029 tabs leave unworked (2028-02-22, 2028-09-24, 2029-02-22) ship
+  `Unsourced` and claim nothing.
+
 ## [1.3.1] - 2026-11-04
 
 ### Added

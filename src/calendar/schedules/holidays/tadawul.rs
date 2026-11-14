@@ -25,7 +25,7 @@
 //! Fiter 12/02/2029-18/02/2029 (resume 19/02/2029) and Eid Al Adha
 //! 22/04/2029-26/04/2029 (resume 29/04/2029), with the printed weekend legs
 //! keying no row. Coverage ends 2029-04-29 — the resume day the final Eid
-//! entry witnesses, the capture's last stated date: the 2028 tab prints no Founding Day entry (every complete
+//! entry witnesses, the capture's last stated date: the 2028 tab prints no Founding Day entry (every year since the 2022 institution states the day)
 //! year's tab does) and no National-Day observance statement (23/09/2028 is a
 //! Saturday and the tab states no Sunday substitute), and the 2029 tab so far
 //! lists only the two Eid windows, so the trade dates those gaps put at risk —
@@ -276,8 +276,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // Thursday.
         (2027, 9, 23, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
         // 2028-02-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Founding Day's fixed
-        // date, a Tuesday; the page's 2028 tab prints no entry (every
-        // complete year's tab states the day), so the claim is withheld.
+        // date, a Tuesday; the page's 2028 tab prints no entry (every year
+        // since the 2022 institution states the day), so the claim is
+        // withheld.
         (2028, 2, 22, Unsourced, T1, "TADAWUL-HOLCAL-2026-09-28"),
         // 2028-02-27 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Fiter: the
         // entry states `Trading will discontinue at the end of trading day
@@ -336,7 +337,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2029, 2, 18, Closed, T1, "TADAWUL-HOLCAL-2026-09-28"),
         // 2029-02-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Founding Day's fixed
         // date, a Thursday; the page's 2029 tab so far lists only the two Eid
-        // windows, so the claim is withheld.
+        // windows (every year since 2022 states the day), so the claim is
+        // withheld.
         (2029, 2, 22, Unsourced, T1, "TADAWUL-HOLCAL-2026-09-28"),
         // 2029-04-22 - T1 - TADAWUL-HOLCAL-2026-09-28 - Eid Al Adha: the
         // entry states `Trading will discontinue at the end of trading day

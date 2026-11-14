@@ -10,8 +10,8 @@
 //! The whole block is **T1**: the operator's own holiday calendar, read across
 //! the same four generations as the sibling Paris cash table — the NYSE
 //! Euronext press releases of 2010 and 2011, the per-year pages of 2014-2021,
-//! the per-market tables from 2022 and the 2026 and 2027 INFO-FLASH notices —
-//! because the
+//! the per-market tables from 2022, the 2026 INFO-FLASH and the 2027
+//! holiday-calendar notice — because the
 //! operator publishes **one** holiday calendar per year covering its cash and
 //! derivatives markets together. Every row is therefore the shared calendar's
 //! Paris cell (or, before the per-market columns, the group-wide list), and

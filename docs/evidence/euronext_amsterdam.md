@@ -335,6 +335,7 @@ Manuals"; `Full Trading Day` on every other printed row, including the 27 Decemb
 | `EURONEXT-HH-LIVE-2026-09-28` | 2025-01-01 .. 2026-12-31 (the page's 2026 table; the 2025 table corroborated) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-09-28 01:07 | T1 | `5a1165a52361a81350fa69401910c76f046f28e16f757dadb6d33d68ccb6e5e3` |
 | `EURONEXT-IF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.euronext.com/en/media/16439/download> | retrieved 2026-11-14 07:12 | T1 | `199618806d085c381a373449588495e5ba11e6ea96d1c8d7f77361fc6f18035e` |
 | `EURONEXT-HH-LIVE-2026-11-14` | 2027 table rendered and corroborated (the page's newest calendar; the 2026 table unchanged, "2026 end of year Trading hours To be announced" still printed) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `20f722ae1d664576defa88e803142cde22da9ee8657cdbccec93403658a52bbe` |
+| `EURONEXT-CASH-CALENDAR-CURRENT-2026-11-14` | 2027 table rendered on the corporate page (corroboration) | <https://www.euronext.com/en/trading/trading-hours-holidays> | retrieved 2026-11-14 07:12 | T1 | `936665412c34d9df104214ebeb0e82d6b32bf42e24172edba546fb26fd133ef4` |
 
 `EURONEXT-HH-LIVE-2026-09-28` keys no 2026 row: the live page's 2026 table is cell for cell
 the INFO-FLASH's Amsterdam column, and the INFO-FLASH keys the rows. The INFO-FLASH's printed

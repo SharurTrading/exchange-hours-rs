@@ -246,21 +246,22 @@ The operator publishes **one** holiday calendar per year covering its cash and d
 ### 2027
 
 The operator's 2027 holiday-calendar notice (`EURONEXT-IF-2027`, dated 06 November 2026,
-retrieved 2026-11-14) prints the Paris derivatives column beside the cash columns:
-`Closed` on 1 January, Good Friday 26 March and Easter Monday 29 March; `*Half Trading Day`
+retrieved 2026-11-14) publishes one calendar for the cash and derivatives markets together;
+this family reads its shared Paris cell: `Closed` on 1 January, Good Friday 26 March and
+Easter Monday 29 March; `*Half Trading Day`
 on 24 and 31 December with the hours deferred to the end-of-year appendix; `Full Trading Day`
 on every other printed row. The two eves ship `Unsourced` — no banked artifact states the
 index futures' own half-day instants, exactly as the 2026 eves do.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2027-01-01 | closed | New Year's Day: the notice's Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
-| 2027-03-26 | closed | Good Friday: the notice's Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
-| 2027-03-29 | closed | Easter Monday: the notice's Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-01-01 | closed | New Year's Day: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-03-26 | closed | Good Friday: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
+| 2027-03-29 | closed | Easter Monday: the notice's shared Paris cell, `Closed` | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 | 2027-12-24 | unsourced | Paris `*Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 | 2027-12-31 | unsourced | Paris `*Half Trading Day` with the hours announced and unstated; no instant is claimed | `EURONEXT-IF-2027` | T1 | the operator's printed event date; one Paris civil day per trade date, so the conversion is the identity |
 
-The sixteen shared rows are copied byte for byte from [euronext_paris](euronext_paris.md) § Documents, whose store paths and retrieval stamps they inherit; the three index-futures rows above are the store's `normal-weeks/euronext-index-futures-2026-10-11/` artifacts (store PR #15, retrieval 2026-10-11).
+The seventeen shared rows are copied byte for byte from [euronext_paris](euronext_paris.md) § Documents, whose store paths and retrieval stamps they inherit; the three index-futures rows above are the store's `normal-weeks/euronext-index-futures-2026-10-11/` artifacts (store PR #15, retrieval 2026-10-11).
 
 ## Sources
 

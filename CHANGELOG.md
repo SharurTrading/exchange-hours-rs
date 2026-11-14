@@ -20,7 +20,7 @@
   2028/2029 tabs leave unworked (2028-02-22, 2028-09-24, 2029-02-22) ship
   `Unsourced` and claim nothing.
 
-## [1.3.1] - 2026-11-04
+## [1.3.1] - 2026-11-03
 
 ### Added
 

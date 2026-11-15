@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-16
+
 ### Fixed
 
 - Prose and count corrections from the round-2 review of the 1.3.1 records

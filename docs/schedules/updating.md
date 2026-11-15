@@ -340,8 +340,20 @@ forward, and only a sourced onset day replaces it.
   (excluding holidays), effective December 6, 2026"), [ETA2026-66](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-66)
   witnesses pre-production, and [UTP2026-33](https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33)
   dates the UTP SIP side — all banked under `normal-weeks/nasdaq-night-session-2026-11-14/`
-  in the research store. The recorded readiness filing is still the closer; the
-  work-up is tracked as the crate's follow-up.
+  in the research store. **Work-up 2026-11-15 (UTC):** the closer is now a named
+  instrument — Equity 1 §1(a)(19) requires a filed-and-effective "Night Session
+  Proposed Rule Change" under Section 19(b) before the session commences (the
+  SR-NASDAQ-2025-109 approval order, 34-105199, states the gate in one
+  sentence), and that filing is not witnessed on FR or listingcenter as of
+  2026-11-15, so 2026-12-06 stays conditional and nothing encodes yet; watch
+  for the confirming filing (deadline 2027-10-10) and for the
+  `nasdaq_sys_hours.pdf` republication as a corroborating signal. The topology
+  is settled at T1 for the discharge: a tradable matching session 21:00–04:00
+  ET Sun–Thu, System Hours Sun 21:00 → Fri 20:00 with the Mon–Thu 20:00–21:00
+  pause, 21:00–midnight executions on the next calendar day's trade date, and
+  the holiday reopen shapes of 34-105199, Friday closures and early closes
+  alike reopening Sunday 21:00 — evidence wave banked under
+  `normal-weeks/nasdaq-night-session-2026-11-15/` (#396).
 - **Cboe EDGX — 2026-12-06:** the [opening-process specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process)
   announces the first overnight opening for the 2026-12-07 business date. The
   [SEC approval order](https://www.sec.gov/files/rules/sro/cboeedgx/2026/34-105587.pdf)

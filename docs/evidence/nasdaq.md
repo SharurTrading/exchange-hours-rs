@@ -443,6 +443,14 @@ statement).
 | `NQ-NIGHT-ETA2026-66` | no rows keyed (Global Trading Hours pre-production availability; the 3:55 a.m. test end is expressly revisable) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-66> | retrieved 2026-11-14 07:12 UTC | T1 | `1f8486e5d014a9b6986c65bb690e55f194d41b5cc400bb8428e6b7c141892175` |
 | `NQ-NIGHT-UTP2026-33` | no rows keyed (the UTP SIP Extended Trading Hours schedule, effective 2026-12-06) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=UTP2026-33> | retrieved 2026-11-14 07:12 UTC | T1 | `e744283cf6e21d220b9c6ef0dad33edbbbe0ad8de9e4417259d1033e2c17c797` |
 | `NQ-NIGHT-ETA2026-39` | no rows keyed (the FINRA/Nasdaq TRF and WorkX hours alignment, effective 2026-12-06) | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-39> | retrieved 2026-11-14 07:12 UTC | T1 | `4b61ede2a57af6ca7687cce395ba716a45dba2f5da22155496953657a82d344f` |
+| `NQ-NIGHT-EQ1-RULEBOOK-2026-11-15` | no rows keyed (live Nasdaq Equity 1; §1(a)(19) names the Night Session Proposed Rule Change gate, §1(a)(9) System Hours, §1(a)(17)-(23) the session definitions) | <https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%201> | retrieved 2026-11-15 01:04 UTC | T1 | `9f1d836f4666a77718c58a2a8d68df1df22950f2ba0e3b57a46ee9f9d252fc08` |
+| `NQ-NIGHT-EQ4-RULEBOOK-2026-11-15` | no rows keyed (live Nasdaq Equity 4; Rule 4120(b)(1)(B)(v) the Night Session trades throughout, the 8 p.m. halt/9 p.m. resume and order cancellations; Rule 4756 entry hours) | <https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%204> | retrieved 2026-11-15 01:05 UTC | T1 | `31df3e32782f204e639fd9130df506a56bd25bd4c1d660b743128586891e622a` |
+| `NQ-NIGHT-34-105199` | no rows keyed (SEC approval order for SR-NASDAQ-2025-109, 2026-04-10; the 19(b) gate sentence at 91 FR 20233; "All NMS Stocks would be eligible to trade" at 20224; holiday closure/reopen shapes) | <https://listingcenter.nasdaq.com/assets/rulebook/nasdaq/filings/SR-NASDAQ-2025-109_Approval.pdf> | retrieved 2026-11-15 01:05 UTC | T1 | `7abf8ed33f22c6426fa23fb6b5f3242afdab6457f0c0cde67eea14b5f3a8b172` |
+| `NQ-NIGHT-CTA-CQ-APPROVAL` | no rows keyed (Release 34-105779, 2026-06-26; the Processor trade-date window "between 8:00 p.m. ET on the day before … and 8:00 p.m. ET on the same day") | <https://www.govinfo.gov/content/pkg/FR-2026-07-01/pdf/2026-13234.pdf> | retrieved 2026-11-15 01:11 UTC | T1 | `1b30551f7c61bbf44de4dd8bad3de9c6b8ff11421cd53d7da01f7ec3806bb910` |
+| `NQ-NIGHT-UTP-APPROVAL` | no rows keyed (Release 34-105780, 2026-06-26; the identical trade-date definition at the UTP layer) | <https://www.govinfo.gov/content/pkg/FR-2026-07-01/pdf/2026-13212.pdf> | retrieved 2026-11-15 01:11 UTC | T1 | `e26190ad7f07bdead92ec1b90d4bcb69ee37b4c5a475983d1b44d757a9e713e6` |
+| `NQ-NIGHT-24X-RELIEF` | no rows keyed (Release 34-106061, 2026-08-07; "the Equity Data Plans have not established readiness … by December 6, 2026, or a later date soon thereafter") | <https://www.govinfo.gov/content/pkg/FR-2026-08-14/pdf/2026-16572.pdf> | retrieved 2026-11-15 01:18 UTC | T1 | `e85f643300798ac9f29f62af12dc2e742e86b86c3712bd9b5ce08eeeef2ed028` |
+| `NQ-NIGHT-GTH-FAQS` | no rows keyed (operator FAQ 1464-26: routable strategies 9 p.m.-4 a.m., all limit orders accepted but pegs/cross designations, 4 a.m. cancellation; trade-date reporting split at midnight) | <https://www.nasdaq.com/docs/nasdaq-global-trading-hours-faqs> | retrieved 2026-11-15 01:08 UTC | T1 | `67dcf8cbd75570496849b1e734b81dad75909e367ee6f50f0a706adb7da2a966` |
+| `NQ-NIGHT-GTH-HUB` | no rows keyed (the operator's 23/5 hub: December 6 "pending SIP readiness as well as any applicable SEC rule changes"; the holiday-evening reopen statement) | <https://www.nasdaq.com/products/north-american-markets/market-structure-policy/24-hour-trading-hub> | retrieved 2026-11-15 01:07 UTC | T1 | `c4da333127db70726adffbd7d1ccf3912574e728d5cae1d462de80e886518757` |
 
 ## Sources
 
@@ -533,11 +541,46 @@ as each source is re-verified.
   Extended Trading Hours on the same day; ETA2026-39 (`NQ-NIGHT-ETA2026-39`)
   dates the FINRA/Nasdaq TRF and WorkX alignment. All four artifacts are banked
   under `normal-weeks/nasdaq-night-session-2026-11-14/` in the research store.
-  What is still missing for encoding: the Nasdaq readiness filing the recorded
-  condition names, a production statement of the overnight session's own end
-  (the only sourced end is pre-production's revisable 3:55 a.m.), and the
-  session-topology determinations (matching vs order entry, holiday
-  interaction, the Sunday-evening trade-date assignment). The work-up is
+  **Work-up determination, 2026-11-15 UTC** (evidence wave banked under
+  `normal-weeks/nasdaq-night-session-2026-11-15/`, INDEX.md there carries the
+  full chain): the recorded condition's closer is now a **named instrument** —
+  Nasdaq Equity 1 §1(a)(19) requires, before the Night Session commences, that
+  the Equity Data Plans establish an equivalent consolidated-data mechanism
+  and notify the Exchange they are prepared, and that Nasdaq **file a "Night
+  Session Proposed Rule Change" under Section 19(b)** confirming compliance
+  and the Plans' readiness; the SEC approval order for SR-NASDAQ-2025-109
+  (Release 34-105199, 2026-04-10) states the gate in one sentence: "The
+  proposed rule change must be filed with the Commission and approved, or
+  otherwise become effective pursuant to Section 19(b) of the Exchange Act,
+  before Nasdaq can commence trading in the Night Session." **That filing is
+  not witnessed on any public channel as of 2026-11-15**: the Federal Register
+  API search for the phrase (through 2026-11-13) returns only the original
+  filing notice, the Amendments-2/3-and-order publication and seven ancillary
+  recitals; Nasdaq's own filing list (through SR-NASDAQ-2026-098) carries no
+  confirming change, and SR-NASDAQ-2026-064 itself calls the 23/5 rules
+  "previously approved but not yet operative"; Release 34-106061 (2026-08-07)
+  records the Equity Data Plans as "not established readiness", "by December
+  6, 2026, or a later date soon thereafter". December 6 therefore **stays
+  conditional** (LAW-NO-FABRICATED-DATES) and nothing encodes until the
+  confirming filing is witnessed on FR or listingcenter; the rule's own
+  18-month deadline for it runs to 2027-10-10. The topology questions the old
+  note left open are settled at T1 for the moment it discharges: the Night
+  Session is a **tradable matching session** (Equity 4 Rule 4120(b)(1)(B)(v)
+  "will trade thereafter throughout the Night Session"; "All NMS Stocks would
+  be eligible to trade", 34-105199; a distinct matching instance) on
+  21:00–04:00 ET Sunday–Thursday with all outstanding orders cancelled at
+  20:00 and again just prior to 04:00; System Hours become Sunday 21:00 →
+  Friday 20:00 with the 20:00–21:00 Mon–Thu pause; executions 21:00–midnight
+  carry the next calendar day's trade date (CTA/CQ and UTP approval orders
+  34-105779/34-105780; the operator hub and FAQs), so the Sunday open belongs
+  to Monday's trade date; holiday closures take effect from 20:00 the prior
+  calendar day with a 21:00 holiday-evening reopen unless the closure is a
+  Friday, in which case the reopen is Sunday 21:00; early-close days resume
+  21:00 the same day unless the early-closing day is a Friday, in which case
+  the resume is likewise Sunday 21:00. The maintainer's "tradable overnight" reading is
+  confirmed — every restriction found (limit orders only, no unpriced or peg
+  orders, LOP, member-only direct access) is an order-type or access
+  restriction; none demotes the session to order entry. The work-up is
   tracked as [#396](https://github.com/SharurTrading/exchange-hours-rs/issues/396);
   the fence above still holds.
 - **System coverage (2026-09-02).** No discrepancy. ACT, Weblink ACT 2.0, ACES,

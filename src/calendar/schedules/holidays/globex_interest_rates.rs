@@ -290,11 +290,13 @@ pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
 /// has a table at all: that span lies outside every window, so
 /// `holiday_on` has no answer there rather than reporting a normal date.
 ///
-/// Coverage ends at
-/// 2027-12-31, the end of the operator's published future, and CME's 2028-01-01
-/// record sits outside every window and ships no row. Inside a window a date
-/// with no row is audited normal, except where an `Unsourced` row marks the
-/// operator's silence instead.
+/// The 2025-2027 era runs to 2027-12-31, and three captured 2028 holiday
+/// windows — 2028-01-17..18, 2028-02-21..22 and 2028-04-13..14 — extend
+/// coverage to 2028-04-14; the spans between them are unaudited and refuse
+/// as covered gaps, dates after 2028-04-14 are not yet encoded, and CME's
+/// 2028-01-01 record sits outside every window and ships no row. Inside a
+/// window a date with no row is audited normal, except where an `Unsourced`
+/// row marks the operator's silence instead.
 // Evidence: docs/evidence/globex_interest_rates.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],

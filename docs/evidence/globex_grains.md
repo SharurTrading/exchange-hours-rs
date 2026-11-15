@@ -214,7 +214,7 @@ are in the research store's `holidays/raw/` indexes.
 This wave is 39 rows over 2022-01-01..2024-12-31, **25 at T1** and **14 at T2**. The T1 rows are read from the 2022 per-asset-class workbooks, the 2023 one-pagers, and the two 2024 entries CME's own cmegroup.com worksheets `new-years-day-2024.pdf` and `christmas-day-2023.pdf` serve; the T2 rows are the operator's own `trading-hours-by-product` responses, which carry the rest of 2024 and the zero 2023 holiday dates its one-pagers do not cover. 0 of the 39 are `unsourced`.
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024
 rows read from the operator's own published holiday schedules; **T2** for
-2025-2027 and the 2022-2024 rows the operator's trading-hours service
+2025-2027 and the three 2028 split windows, and the 2022-2024 rows the operator's trading-hours service
 answers, since those dates have no published schedule this crate could read. Inside a
 window a date with no row is audited normal; outside every window this table has no
 answer at all.
@@ -319,19 +319,6 @@ Every interval from 2010-01-01 through 2027-12-31 is declared; the 2028 split wi
 | 2015-12-24 | early close | `1205 CT / 1305 ET / 1805 UTC (1230 CT for Mini-Sized grain)` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT |
 | 2015-12-25 | closed | `Christmas Day Observed - Globex closed` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | CME prints no session running through this date |
 
-### 2028
-
-| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
-|---|---|---|---|---|---|
-| 2028-01-17 | closed | — | `CME-SVC-2028-01-15` | T2 | service window; mirrors the family's 2027 shape |
-| 2028-01-18 | replacement blocks | merged Sunday-eve span | `CME-SVC-2028-01-15` | T2 | service window; mirrors the family's 2027 shape |
-| 2028-02-21 | closed | — | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
-| 2028-02-22 | replacement blocks | merged Sunday-eve span | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
-| 2028-04-13 | replacement blocks | closure-eve complete day | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
-| 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
-
-Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
-
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -370,7 +357,7 @@ Coverage adds the three captured 2028 split windows above; spans between them ar
 
 ### Gaps and residual risks, 2013-2015
 
-**This era brings the family to six audited windows.** The table as a whole carries 252 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — and this era's share is **43 rows**: 27 stated closures, 6 early closes, 7 late opens and 3 combined late-open-and-early-close rows. Every row is at T1.
+**This era brought the family to six audited windows; the 2028 capture has since made it nine.** The table as a whole carries 252 rows over 9 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31, 2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14 — and this era's share is **43 rows**: 27 stated closures, 6 early closes, 7 late opens and 3 combined late-open-and-early-close rows. Every row is at T1.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -918,8 +905,23 @@ and each row's `Derived from` cell records which one produced it.
 
 - **No T1 rendering of the instants**, as for 2025 and 2026.
 - **2027-12-26 .. 2027-12-29 service coverage — closed 2026-11-03 UTC.** `CME-SVC-2027-12-26`
-  (T2) prints trade dates 2027-12-27..30 on the full ordinary grid, so those dates are now
+  (T2) prints trade dates 2027-12-27..31 on the full ordinary grid (the corn line's own
+  tradingDates run through 2027-12-31; only the live-cattle and lumber lines stop at 12-30),
+  so those dates are now
   per-date audited normal; no row changed.
+
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-01-17 | closed | — | `CME-SVC-2028-01-15` | T2 | service window; mirrors the family's 2027 shape |
+| 2028-01-18 | replacement blocks | merged Sunday-eve span | `CME-SVC-2028-01-15` | T2 | service window; mirrors the family's 2027 shape |
+| 2028-02-21 | closed | — | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
+| 2028-02-22 | replacement blocks | merged Sunday-eve span | `CME-SVC-2028-02-18` | T2 | service window; mirrors the family's 2027 shape |
+| 2028-04-13 | replacement blocks | closure-eve complete day | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
+| 2028-04-14 | closed | — | `CME-SVC-2028-04-12` | T2 | service window; mirrors the family's 2027 shape |
+
+Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
 ### Gaps across the block
 
@@ -963,9 +965,10 @@ and each row's `Derived from` cell records which one produced it.
   trade date — 2025-06-10 → 2025-06-11 mid-week, 2025-06-13 → 2025-06-16 over a weekend,
   2025-11-25 → 2025-11-26 into the closure eve). The `CoverageGapReason::PostCloseQueueTradeDateLabel`
   declaration the scope carried is retired, the fence that pins the convention replaces it,
-  and the queue dates answer completely: the walk fence now pins 1,094 of the 1,095 days
-  complete (the trailing window edge refuses 2027-12-31, whose reach crosses into 2028, as
-  for every scope) and 748 queue days — the 720 former refusals plus the 28 block days.
+  and the queue dates answer completely: the walk fence now pins 1,095 of the 1,095 days
+  complete (the captured 2028 windows extend the trailing edge, so 2027-12-31's reach
+  crosses into audited 2028 windows instead of refusing) and 748 queue days — the 720
+  former refusals plus the 28 block days.
   Livestock, which carries the same queue from its own 2016-06-06 onset, retired the same
   declaration by the same decision; its record is in
   [`docs/evidence/globex_livestock.md`](globex_livestock.md).

@@ -808,7 +808,8 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 - **closed 2026-10-04 UTC — the five 2025 merged trade dates ship on the Equity Index
   line's own bytes.** 2025-01-21,
   2025-02-18, 2025-05-27, 2025-06-20 and 2025-09-02 are the 2025 half of the seventeen
-  merged trade dates this family models. From 2026-09-26 UTC, when this bullet was
+  merged trade dates this family modeled when this bullet closed (nineteen since
+  the 2028 capture). From 2026-09-26 UTC, when this bullet was
   recorded as a witness gap, until this change the table shipped **twelve** of the
   seventeen and answered these five from the `early_close(12:00)` rows keyed to
   2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19 and 2025-09-01, so at 2025-01-19 18:00 CT
@@ -1055,10 +1056,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   from `CME-SVC-B-2027-06-20`.
 - **residual risk** — the trade-date divergence described under 2025 applies to 2027-01-18,
   2027-02-15, 2027-05-31, 2027-06-18, 2027-07-05, 2027-09-06 and 2027-11-25.
-- **coverage limit** — CME's published future for this family ends with the 2027-12-30 ..
+- **coverage limit, extended by the 2028 capture** — at this window's capture CME's published future
+  for this family ended with the 2027-12-30 ..
   2028-01-02 window, whose only non-normal record is Saturday 2028-01-01 and which CME itself
-  labels normal for this grid. Coverage therefore stops at 2027-12-31 and 2028-01-01 ships no
-  row; a query for it gets the normal week and `holiday_on` answers `None` because the date
+  labels normal for this grid, so coverage stopped at 2027-12-31 then. The 2026-11-03 capture
+  added the three 2028 split windows (2028-01-17..18, 2028-02-21..22, 2028-04-13..14), so coverage
+  now runs to 2028-04-14. 2028-01-01 still ships no
+  row from the unaudited span between the windows; a query for it gets the normal week and
+  `holiday_on` answers `None` because the date
   is outside the window, which `holiday_coverage` is what distinguishes.
 
 ### 2016
@@ -1176,7 +1181,8 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
   for is what shipped, keyed at the DST transitions the page's own dual
   spellings name.
 - **witness gap (recorded 2026-09-26 UTC, tracked as #162; closed 2026-10-04 UTC)** — the
-  family carried twelve of the seventeen merged trade dates and none of the 2025 five,
+  family carried twelve of the then-seventeen merged trade dates (nineteen since
+  the 2028 capture) and none of the 2025 five,
   because no `NKD`/`NIY` witness exists for those windows and the channel that
   would carry one returns an empty event list. The five now ship on the ten-product
   captures' `ES` line, whose own events print the merged trade dates; the record is in the

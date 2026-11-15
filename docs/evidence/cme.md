@@ -7,7 +7,7 @@
 - **Source sets:** [`US-CME-GROUP`](../schedules/sources.md#us-cme-group)
 - **Ledger row:** [verification.md](../schedules/verification.md)
 
-## Current holiday table — 2026-10-17 UTC (#360)
+## Current holiday table — 2026-11-03 UTC (#360; the 2027/2028 captures extended it)
 
 Current holiday total: 233 rows. The six audited era counts are
 2010-2012: 34, 2013-2015: 38, 2016-2018: 34, 2019-2021: 33, 2022-2024: 35, 2025-2027: 54, 2028 (split windows): 5.
@@ -227,7 +227,7 @@ are in the research store's `holidays/raw/` indexes.
 Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows
 taken from the operator's own published holiday schedules; **T2** for the three 2023
 markers and fourteen 2024 dates this table takes from its trading-hours service, and
-for 2025-2027. Inside a window a date with no row is audited normal; outside every
+for 2025-2027 and the three 2028 split windows. Inside a window a date with no row is audited normal; outside every
 window this table has no answer at all.
 
 **Six audited eras, with no gap between them.** The table declares 9 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`, `2028-01-17..2028-01-18`, `2028-02-21..2028-02-22`, `2028-04-13..2028-04-14`.
@@ -334,7 +334,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 ### 2013-2015 (T1)
 
-**This era brings the venue to six audited windows.** The historical audit snapshot reported 208 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **34 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): the venue answers from its clock, the equity-index grid, so a row ships where the clock states one and every other non-abstaining routed family states the same, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
+**This era brought the venue to six audited windows; the 2028 capture has since made it nine.** The historical audit snapshot reported 208 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share in that snapshot was **34 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): the venue answers from its clock, the equity-index grid, so a row ships where the clock states one and every other non-abstaining routed family states the same, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -441,7 +441,7 @@ Coverage adds the three captured 2028 split windows above; spans between them ar
 
 ### 2019-2021 (T1)
 
-**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The historical audit snapshot reported 208 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **38 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates` and `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): a closure ships only where the equity-index clock and every other non-abstaining routed family state the same one, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
+**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The historical audit snapshot reported 208 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share in that snapshot was **38 rows**: the profile clock's own rows, none of them withheld.. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates` and `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): a closure ships only where the equity-index clock and every other non-abstaining routed family state the same one, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
 
 ### Documents
 

@@ -2498,10 +2498,10 @@ fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
 // The five 2025 merged trade dates (issue #162, closed 2026-10-04 UTC).
 // ---------------------------------------------------------------------------
 
-/// `globex_nikkei_225_dollar` models seventeen merged trade dates — the
+/// `globex_nikkei_225_dollar` models nineteen merged trade dates — the
 /// day-after-holiday dates on which CME assigns the Sunday- or
 /// Wednesday-evening-through-holiday span to the *following* business day — and
-/// ships all seventeen. The five 2025 dates (2025-01-21, 2025-02-18,
+/// ships all nineteen. The five 2025 dates (2025-01-21, 2025-02-18,
 /// 2025-05-27, 2025-06-20, 2025-09-02) ship as `replacement blocks` rows read
 /// from the ten-product captures' Equity Index line: no `NKD`/`NIY` event
 /// exists for those windows (the targeted `THBP-B` responses,

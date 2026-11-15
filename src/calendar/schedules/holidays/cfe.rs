@@ -13,13 +13,18 @@
 //! reads `None` and whose extended cell still names a block is the overnight
 //! leg of that trade date stopping early — an **early close**, not a closure.
 //!
-//! The whole block is **T1**. Three document families key the windows: the
+//! The whole block is **T1**. Four document families key the windows: the
 //! operator's own `CFE Holiday Schedule` page on `cfe.cboe.com` (Wayback `id_`
 //! captures 2017-04-10 through 2019-12-15), which prints the complete 2017
 //! holiday calendar and the per-holiday-type hours tables; the per-holiday CFE
 //! notices under `cdn.cboe.com/resources/schedule_update/<publication
-//! year>/`, which state each 2018-2026 holiday's session instants and carry
-//! the observed-day arrangements the page's default rules only describe; and —
+//! year>/`, which state each 2018-2025 holiday's session instants but the 2018 New Year
+//! pair's (no notice for those dates survives; the rules page keys both rows) and carry
+//! the observed-day arrangements the page's default rules only describe; the
+//! operator's own Cboe US-futures hours page and its CSV twin
+//! (`CBOE-HOURS-USFUT-2026` retrieved 2026-09-12, `CBOE-HOURS-USFUT-2027`
+//! retrieved 2026-11-03 UTC), which print the full year's two-column holiday
+//! table and key the 2026 and 2027 rows; and —
 //! recovered 2026-10-06 UTC from `ir.cboe.com` and the operator's own circular
 //! series — the CBOE Holdings holiday press releases of 2014-2017 (each
 //! printing a `CBOE, C2 and CFE Trading Schedule` table) and the CFE
@@ -33,9 +38,9 @@
 //!
 //! Era shapes the per-date reader should know. The Monday/Thursday and mid-week
 //! floating holidays keep the overnight leg running to 10:30 CT with no regular
-//! session (`early close 10:30`), 2015 and 2017 through 2026 alike. Good Friday
-//! is a closure in 2017-2018-2019-2020-2022-2024-2025 and an early close at
-//! the regular open in 2021-2023-2026 — each year's own notice states which;
+//! session (`early close 10:30`), 2015 and 2017 through 2027 alike. Good Friday
+//! is a closure in 2017-2018-2019-2020-2022-2024-2025-2027 and an early close at
+//! the regular open in 2021-2023-2026 — each year's own document states which;
 //! 2015-04-03 is the one pre-2017 early close, at the operator's own printed
 //! 08:15 CT. Independence Day and Christmas eves close at 12:15 CT where the
 //! operator's notice says so (2014-12-24, 2015-12-24, 2019-07-03, 2023-07-03,

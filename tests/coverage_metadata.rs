@@ -108,8 +108,10 @@ fn the_support_floor_is_local_first_of_january_2010() {
 
 #[test]
 fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
-    // `globex_nikkei_225_dollar` is the one scope that still reaches 2027-12-31
-    // with nothing withheld *in the 2025+ era*: it ships no order-entry phase
+    // `globex_nikkei_225_dollar` is the one scope that still reaches the
+    // 2028 split windows with nothing withheld *in the 2025+ era* (complete
+    // through 2028-04-13, the Good Friday window's inner edge): it ships no
+    // order-entry phase
     // at all, so the post-close queue convention the charter records for
     // `globex_grains` and `globex_livestock` (#152, retired as a declaration
     // 2026-10-03) cannot apply to it. Since the #225
@@ -1713,15 +1715,15 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     // The date-scoped engine answers the dates the evidence does not withhold.
     // The #152 label declaration — the last whole-interval refusal these two
     // scopes carried — is retired (2026-10-03, the charter's Post-Close
-    // trade-date convention), so both scopes now answer the whole interval
-    // except the trailing resolution edge (#151): the last audited day's reach
-    // crosses into 2028, outside every window, exactly as
-    // `globex_nikkei_225_dollar`'s complete span ends 2027-12-30. Derivation:
+    // trade-date convention), so both scopes now answer the whole interval:
+    // the captured 2028 windows extend the trailing edge into 2028 (#151), so
+    // the last audited day's reach no longer refuses. Derivation:
     // the previous walk pinned `globex_grains` at 375 covered days and
     // `globex_livestock` at 341, with every refusal a 15:00-CT queue day (720
     // and 754 of them, recorded beside the retired declaration and in the two
     // evidence files) and no other refusal anywhere in the interval — so the
-    // retirement lifts 720 + 754 refusals and leaves 1,095 − 1 = 1,094.
+    // retirement lifts 720 + 754 refusals and leaves 1,095 of the 1,095 days
+    // complete.
     let grains = key_coverage(MarketHoursKey::GlobexGrains);
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
     assert_eq!(
@@ -1733,16 +1735,16 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     assert_eq!(
         complete_days(livestock),
         1095,
-        "globex_livestock answers 1,094 of the 1,095 days: the retired label gap's 754 refusals \
-         lift, and only the trailing window edge (#151) refuses"
+        "globex_livestock answers 1,095 of the 1,095 days: the retired label gap's 754 refusals \
+         lift, and the captured 2028 windows extend the trailing edge (#151)"
     );
 
     // The queue day is still exactly a day that accepts orders at 15:00 CT;
     // after the retirement it is a **covered** day — the charter convention
-    // dates its trade date by the session it feeds — with the one exception
-    // the audited window's own trailing edge makes (#151): 2027-12-31 accepts
-    // orders and still refuses, because its reach crosses into 2028, exactly
-    // as `globex_nikkei_225_dollar`'s complete span ends 2027-12-30.
+    // dates its trade date by the session it feeds — and the captured 2028
+    // windows remove the former trailing-edge exception (#151): 2027-12-31
+    // accepts orders and is covered like every other day of the interval,
+    // because its reach into 2028 now sits inside the split windows.
     // Livestock carried 754 such days — the count its retired declaration
     // refused — and grains 748: the 720 the retired declaration refused plus
     // the 28 block days whose restated or adjusted queue accepts beside a

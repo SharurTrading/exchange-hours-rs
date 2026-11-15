@@ -7,14 +7,15 @@
 //! runs no overnight session, so an event date and its trade date are one
 //! civil day and the conversion is the identity.
 //!
-//! The whole block is **T1**: the operator's own statements. 2017-2026 is read
+//! The whole block is **T1**: the operator's own statements. 2017-2027 is read
 //! from TMX Group's "Stock Market Holidays - Stock Markets Closed" calendar at
 //! `tsx.com/en/trading/calendars-and-trading-hours/calendar` — one server-
 //! rendered page carrying the current year's list in full and the next year's
 //! from Q4, pinned by Wayback `id_` captures of its two paths (the 2018
 //! relaunch path's first capture 2018-09-11 restates the complete 2017 list
 //! in its archive section; the `/en/` path carries 2024-2025) plus the live
-//! retrieval of 2026-09-28. **2010-2014** is read from the operator's own
+//! retrievals of 2026-09-28 (2025-2026) and 2026-11-03 (2027). **2010-2014**
+//! is read from the operator's own
 //! per-holiday closure news releases and Holiday (Operating) Schedule
 //! releases on `tmx.com` (found 2026-09-30 UTC by domain-wide CDX sweeps of
 //! `tsx.com` and `tmx.com`; the all-time release sweep enumerated every
@@ -33,8 +34,8 @@
 //! [`docs/evidence/tsx.md`](../../../../../docs/evidence/tsx.md).
 //!
 //! The Christmas Eve early closes are the operator's own sentences: the
-//! 2018-2021 and 2024-2026 rows ride the calendar page's `1:00 PM (TSX/TSXV)`
-//! footnote and sentence (the 1:30 PM half applies to the ALPHA/ALPHA X/DRK
+//! 2018-2021 and 2024-2027 rows ride the calendar page's `1:00 PM (TSX/TSXV)`
+//! footnote and sentence (the 1:30 half applies to the ALPHA/ALPHA X/DRK
 //! book systems and is outside this venue's scope; the 2021 sentence was
 //! printed `subject to Board Approval` in January 2021 and the 2022-01-28
 //! capture witnesses the discharged state), the 2010 and 2012 rows ride
@@ -67,7 +68,7 @@ const HALF_DAY_13_00: u32 = 13 * 3_600;
 /// releases, TMX Money's own market-hours page for the 2014 list, an archived
 /// `tsx.com` "Calendar & Events" state for the 2015-2016 lists, or one
 /// archived/live state of the "Stock Markets Closed" calendar page for
-/// 2017-2026. A date inside a window with no row is audited normal: the
+/// 2017-2027. A date inside a window with no row is audited normal: the
 /// release practice printed one notice per market closure and the archive
 /// sweep enumerated every one, the year-end schedules print the year-end
 /// arrangement in full (the 2011 edition's timetable closes Friday,

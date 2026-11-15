@@ -4721,7 +4721,7 @@ mod tsx {
             assert_eq!(census(&rows, year), tally, "{year} census");
         }
         // The early closes are exactly the printed Christmas Eve half days of
-        // 2010, 2012, 2013, 2014, 2015, 2018-2021, 2024, 2025 and 2026 — no
+        // 2010, 2012, 2013, 2014, 2015, 2018-2021, 2024, 2025, 2026 and 2027 — no
         // other kind states an instant.
         for (date, kind, instant) in &rows {
             if kind == "early close" {

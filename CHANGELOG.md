@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Prose and count corrections from the round-2 review of the 1.3.1 records
+  (#395): module-doc and evidence prose now state the shipped 2028 split
+  windows wherever it claimed coverage ended 2027-12-31, the Nikkei ledger
+  counts its nineteen merged trade dates, the TSX and CFE records name the
+  sources that key their 2027 rows, the archived TSX artifacts are quoted as
+  they print (`1:30`, not `1:30 PM`), and test comments and verdict cells
+  match the values their fences assert. No shipped data row, coverage window,
+  or asserted test value changed.
+
 ### Added
 
 - Euronext's published 2027 holiday calendar (the operator's notice of

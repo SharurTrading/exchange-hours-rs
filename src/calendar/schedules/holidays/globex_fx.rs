@@ -68,7 +68,7 @@
 //! Three shapes: `Closed` on a full Globex closure, `EarlyClose` on the
 //! half-days CME publishes for the family, and `ReplacementBlocks` on the three
 //! trade dates of 2026-06-22, 2026-07-06 and 2027-06-21, whose operator day
-//! carries a Saturday session, and on the seventeen merged trade dates the
+//! carries a Saturday session, and on the nineteen merged trade dates the
 //! evidence file's year tables list. The 2025-2027 window has **no** late
 //! open — CME never reopens this family after a closure there other than at its
 //! normal 17:00 CT — and it carries no `Unsourced` row, because every date
@@ -233,11 +233,13 @@ use super::{
 /// has a table at all: that span lies outside every window, so
 /// `holiday_on` has no answer there rather than reporting a normal date.
 ///
-/// Coverage ends at
-/// 2027-12-31, the end of the operator's published future, and CME's 2028-01-01
-/// record sits outside every window and ships no row. Inside a window a date
-/// with no row is audited normal, except where an `Unsourced` row marks the
-/// operator's silence instead.
+/// The 2025-2027 era runs to 2027-12-31, and three captured 2028 holiday
+/// windows — 2028-01-17..18, 2028-02-21..22 and 2028-04-13..14 — extend
+/// coverage to 2028-04-14; the spans between them are unaudited and refuse
+/// as covered gaps, dates after 2028-04-14 are not yet encoded, and CME's
+/// 2028-01-01 record sits outside every window and ships no row. Inside a
+/// window a date with no row is audited normal, except where an `Unsourced`
+/// row marks the operator's silence instead.
 // Evidence: docs/evidence/globex_fx.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
@@ -816,7 +818,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         ),
         // 2027-12-24 - T2 - CME-SVC-2027-12-22 - Christmas Friday closure, no events.
         (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
-        // 2028-01-18 - T2 - CME-SVC-2028-01-15 - MLK Day merged trade date (Monday trades normally).
+        // 2028-01-18 - T2 - CME-SVC-2028-01-15 - MLK Day merged trade date; the
+        // Monday holiday publishes no final close, so this trade date owns the
+        // whole Sun–Tue span.
         (
             2028,
             1,
@@ -825,7 +829,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             T2,
             "CME-SVC-2028-01-15"
         ),
-        // 2028-02-22 - T2 - CME-SVC-2028-02-18 - Presidents' Day merged trade date (Monday trades normally).
+        // 2028-02-22 - T2 - CME-SVC-2028-02-18 - Presidents' Day merged trade
+        // date; the Monday holiday publishes no final close, so this trade date
+        // owns the whole Sun–Tue span.
         (
             2028,
             2,

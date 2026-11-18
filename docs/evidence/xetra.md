@@ -294,7 +294,7 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2028-12-25 | closed | `Christmas Day — Monday Dec 25, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
 | 2028-12-26 | closed | `Boxing Day — Tuesday Dec 26, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
 
-**Gaps, 2028:** none in the closure set. The table's weekend entries — `Saturday Jan 01, 2028` (New Year's Day), `Sunday Dec 24, 2028` (Christmas Eve\*\*) and `Sunday Dec 31, 2028` (New Year's Eve\*\*) — key no weekday row. Ascension (4 May), Whit Monday (15 May) and Corpus Christi (1 June) are named by no 2028 artifact — the trading-holiday note is scoped to 2026 — so they ship as ordinary days (see the readings above and #200).
+**Gaps, 2028:** none in the closure set. The table's weekend entries — `Saturday Jan 01, 2028` (New Year's Day), `Sunday Dec 24, 2028` (Christmas Eve\*\*) and `Sunday Dec 31, 2028` (New Year's Eve\*\*) — key no weekday row. Ascension (25 May), Whit Monday (5 June) and Corpus Christi (15 June) are named by no 2028 artifact — the trading-holiday note is scoped to 2026 — so they ship as ordinary days (see the readings above and #200).
 
 ### 2029
 
@@ -309,7 +309,7 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2029-12-26 | closed | `Boxing Day — Wednesday Dec 26, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
 | 2029-12-31 | closed | `New Year's Eve** — Monday Dec 31, 2029` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
 
-**Gaps, 2029:** none. Every one of the table's eight 2029 dates falls on a weekday and ships; no 2029 trading holiday is named by any artifact, so Ascension (24 May), Whit Monday (4 June) and Corpus Christi (13 June) ship as ordinary days.
+**Gaps, 2029:** none. Every one of the table's eight 2029 dates falls on a weekday and ships; no 2029 trading holiday is named by any artifact, so Ascension (10 May), Whit Monday (21 May) and Corpus Christi (31 May) ship as ordinary days.
 
 ### 2030
 
@@ -324,7 +324,7 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2030-12-26 | closed | `Boxing Day — Thursday Dec 26, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
 | 2030-12-31 | closed | `New Year's Eve** — Tuesday Dec 31, 2030` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
 
-**Gaps, 2030:** none. Every one of the table's eight 2030 dates falls on a weekday and ships; the 2030 trading holidays (Ascension 17 May, Whit Monday 27 May, Corpus Christi 6 June) are named by no artifact and ship as ordinary days.
+**Gaps, 2030:** none. Every one of the table's eight 2030 dates falls on a weekday and ships; the 2030 trading holidays (Ascension 30 May, Whit Monday 10 June, Corpus Christi 20 June) are named by no artifact and ship as ordinary days.
 
 ### 2031
 
@@ -339,7 +339,7 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2031-12-26 | closed | `Boxing Day — Friday Dec 26, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
 | 2031-12-31 | closed | `New Year's Eve** — Wednesday Dec 31, 2031` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
 
-**Gaps, 2031:** none. Every one of the table's eight 2031 dates falls on a weekday and ships; the 2031 trading holidays (Ascension 29 May, Whit Monday 9 June, Corpus Christi 19 June) are named by no artifact and ship as ordinary days.
+**Gaps, 2031:** none. Every one of the table's eight 2031 dates falls on a weekday and ships; the 2031 trading holidays (Ascension 22 May, Whit Monday 2 June, Corpus Christi 12 June) are named by no artifact and ship as ordinary days.
 
 ### 2032
 
@@ -351,7 +351,7 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 | 2032-12-24 | closed | `Christmas Eve** — Friday Dec 24, 2032` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
 | 2032-12-31 | closed | `New Year's Eve** — Friday Dec 31, 2032` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
 
-**Gaps, 2032:** none in the closure set. The table's weekend entries — `Saturday May 01, 2032` (Labor Day), `Saturday Dec 25, 2032` (Christmas Day) and `Sunday Dec 26, 2032` (Boxing Day) — key no weekday row. The 2032 trading holidays (Ascension 13 May, Whit Monday 24 May, Corpus Christi 2 June) are named by no artifact and ship as ordinary days.
+**Gaps, 2032:** none in the closure set. The table's weekend entries — `Saturday May 01, 2032` (Labor Day), `Saturday Dec 25, 2032` (Christmas Day) and `Sunday Dec 26, 2032` (Boxing Day) — key no weekday row. The 2032 trading holidays (Ascension 6 May, Whit Monday 17 May, Corpus Christi 27 May) are named by no artifact and ship as ordinary days.
 
 **The 2028-2032 caveat.** The table the rows above key carries the operator's own asterisk footnote, verbatim: `* The overview is for information purposes only. Changes for future years are not excluded.` — recorded here as the residual risk it is: the operator expressly reserves the right to change these years, so a later column revision (an added or withdrawn date, a moved holiday) lands as a schedule fix on the monthly LAW-WATCH review, and the current columns are the unconditional day-level statement in force at retrieval, not a guarantee of the years' eventual calendars. The 2027 cross-check that gated the encoding: the table's 2027 column — `Friday Jan 01, 2027`, `Friday Mar 26, 2027`, `Monday Mar 29, 2027`, `Saturday May 01, 2027`, `Friday Dec 24, 2027`, `Saturday Dec 25, 2027`, `Sunday Dec 26, 2027`, `Friday Dec 31, 2027` — agrees with the five shipped 2027 weekday rows exactly, the three weekend dates keying no row as the shipped table already records.
 

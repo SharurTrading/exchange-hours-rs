@@ -72,7 +72,7 @@ below 2026-03-11 is therefore the carried baseline declared in
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2014-12-31, 2015-01-01..2017-12-31, 2019-01-01..2020-12-31, 2021-01-01..2021-12-31, 2022-12-23..2023-01-02, 2024-01-01..2026-12-31 (gilt trade dates, Europe/London; sterling-based-product closures under NYSE Liffe, the IFEU Migrated-Liffe Fixed Income editions, the exchange-wide Trading Schedule editions where the Migrated companion is unwitnessed, and the Fixed Income editions and Christmas documents thereafter).
+**Coverage:** 2010-01-01..2014-12-31, 2015-01-01..2017-12-31, 2019-01-01..2020-12-31, 2021-01-01..2021-12-31, 2022-12-23..2023-01-02, 2024-01-01..2027-01-01 (gilt trade dates, Europe/London; sterling-based-product closures under NYSE Liffe, the IFEU Migrated-Liffe Fixed Income editions, the exchange-wide Trading Schedule editions where the Migrated companion is unwitnessed, and the Fixed Income editions and Christmas documents thereafter).
 
 The pattern is stable across every audited era: the exchange closes 1
 January, Good Friday and Christmas Day outright; the gilt row additionally
@@ -83,7 +83,8 @@ stays **open on 1 May when it falls in a weekday-only closure year** (the
 gilt closure for Friday 1 May 2015 either — see the 2015 section).
 Christmas-eve and New-Year-eve half days close at the instant the era's
 document prints — 12:15 GMT in the LIFFE attachments (2010–2013), 13:00 GMT
-on 2022-12-23, and 12:15 GMT on 2022-12-30 and both 2025 eves. The 2016 and
+on 2022-12-23, and 12:15 GMT on 2022-12-30, both 2025 eves and both 2026
+eves. The 2016 and
 2017 editions mark their 18:00-GMT December-eve early closes with per-row
 asterisks the gilt rows do not carry, so the gilt eves there are audited
 normal. Rows are keyed to the London civil session date; these sessions are
@@ -92,9 +93,14 @@ same-day, so no wrap reassignment arises.
 **Announced eves with unpublished instants ship `Unsourced`**: LON3770 says
 the 2014 eves close "at various times commencing at midday" — no exact
 instant — the 2015 edition marks the gilt rows themselves as partial trading
-days without an instant, and the 2021, 2024 and 2026 schedule editions defer
+days without an instant, and the 2021 and 2024 schedule editions defer
 their partial trading days to a circular the captured set does not hold.
-Those dates are inside a window and expressly **not** audited normal.
+Those dates are inside a window and expressly **not** audited normal. The
+2026 edition deferred its eves the same way, but the deferral was
+discharged on 2026-11-18 UTC when the operator's November 2026 Christmas
+document (`IFEU-XMAS-2026`) printed the gilt cessation instants for both
+days; the two rows upgraded from `Unsourced` to sourced 12:15 early closes
+the same day.
 
 **2019 and 2020 ride the exchange-wide Trading Schedule editions, whose
 family-level rows the gilt family's own Migrated edition would carry; that
@@ -429,6 +435,25 @@ January edition is corroboration in the store.
 
 ### 2026
 
+The December rows below reconcile two operator documents. The August 2026
+Fixed Income edition (`IFEU-FI-2026`) printed the 25 and 28 December
+closures and deferred both eves ("will be confirmed via an Exchange
+circular"), which is why they shipped `Unsourced` from 2026-10-11 until
+2026-11-18 UTC; the operator's November 2026 Christmas document
+(`IFEU-XMAS-2026`) then printed the family's instants and discharged the
+deferral. Its Thursday 24 December page prints both gilt rows — "Long Gilt
+Futures and Options" and "Short, Medium and Ultra Long Gilt Futures" — with
+designated settlement periods 12:13–12:15 (GMT) and "Trading ceases 12:15
+(GMT)"; its Friday 25 December page prints "The Exchange will be closed."
+(restating the edition's closure); its Monday 28 December page prints the
+exchange "OPEN … EXCEPT for" a named list that includes "Short, Medium,
+Long and Ultra Long Gilt Futures and Long Gilt Options" (restating the
+edition's Boxing-Day-in-lieu gilt closure); its Tuesday 29 December page
+prints the exchange "OPEN for trading (Regular hours and Settlement
+periods) for all contracts" and its Wednesday 30 December page prints no
+gilt row, so both dates are audited normal for the family; and its Thursday
+31 December page prints the same two 12:15 gilt rows as the 24th.
+
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | − "Thursday 1 January 2026 (New Year's Day)" | `IFEU-FI-2026` | T1 | IFEU schedule exchange-closure list; same local civil trade date |
@@ -437,10 +462,22 @@ January edition is corroboration in the store.
 | 2026-05-04 | closed | − gilt row "Closed", 4 May column | `IFEU-FI-2026` | T1 | IFEU fixed-income availability table; 1 May prints "Open" and is audited normal |
 | 2026-05-25 | closed | − gilt row "Closed", 25 May column | `IFEU-FI-2026` | T1 | IFEU fixed-income availability table; same local civil trade date |
 | 2026-08-31 | closed | − gilt row "Closed", 31 Aug column | `IFEU-FI-2026` | T1 | IFEU fixed-income availability table; same local civil trade date |
-| 2026-12-24 | unsourced | announced partial trading day; "will be confirmed via an Exchange circular" | `IFEU-FI-2026` | T1 | The edition names the partial day without an instant; the date is expressly not audited normal |
-| 2026-12-25 | closed | − "Friday 25 December 2026 (Christmas Day)" | `IFEU-FI-2026` | T1 | IFEU schedule exchange-closure list; same local civil trade date |
-| 2026-12-28 | closed | − gilt row "Closed", 28 Dec column | `IFEU-FI-2026` | T1 | IFEU fixed-income availability table, Boxing Day in lieu; same local civil trade date |
-| 2026-12-31 | unsourced | announced partial trading day; "will be confirmed via an Exchange circular" | `IFEU-FI-2026` | T1 | The edition names the partial day without an instant; the date is expressly not audited normal |
+| 2026-12-24 | early close | 12:15 GMT — gilt rows "Trading ceases 12:15 (GMT)" (12:13–12:15 designated settlement periods) | `IFEU-XMAS-2026` | T1 | The Christmas document's Thursday 24 December page; discharges the edition's untimed-eve deferral, same London civil trade date |
+| 2026-12-25 | closed | − "Friday 25 December 2026 (Christmas Day)" | `IFEU-FI-2026` | T1 | IFEU schedule exchange-closure list, restated by the Christmas document's "The Exchange will be closed."; same local civil trade date |
+| 2026-12-28 | closed | − gilt row "Closed", 28 Dec column | `IFEU-FI-2026` | T1 | IFEU fixed-income availability table, Boxing Day in lieu, restated by the Christmas document's open-except gilt list; same local civil trade date |
+| 2026-12-31 | early close | 12:15 GMT — gilt rows "Trading ceases 12:15 (GMT)" (12:13–12:15 designated settlement periods) | `IFEU-XMAS-2026` | T1 | The Christmas document's Thursday 31 December page; discharges the edition's untimed-eve deferral, same London civil trade date |
+
+### 2027
+
+The November 2026 Christmas document extends the family's audit past the
+year boundary: its Friday 01 January 2027 page prints "The Exchange will be
+CLOSED.", an exchange closure that includes every IFEU contract. The rest
+of 2027 is unpublished — the 2027 Fixed Income edition has not been
+captured — and sits outside the window.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | − "The Exchange will be CLOSED." | `IFEU-XMAS-2026` | T1 | The Christmas document's Friday 01 January 2027 page; same local civil trade date |
 
 ### Documents
 
@@ -448,7 +485,8 @@ Artifacts live in the research store under
 `normal-weeks/ice-gilts-2026-10-11/` (product pages, the circular, the live
 August 2026 schedule and Christmas PDFs, the T2 workbook, the notice zips),
 `holidays/raw/ice-europe-gilts-2010-2027/` (the archived schedule
-editions, a second copy of the zips and the 2009 zip) and
+editions, a second copy of the zips and the 2009 zip, and the November 2026
+Christmas document captured 2026-11-18 UTC beside them) and
 `holidays/raw/ice-history-2026-10-13/` (the 2015–2020 editions, extracted
 beside their PDFs, with `INDEX.md`, `INVENTORY.tsv` and `SHA256SUMS.txt`
 fences). Digests below re-verified against the store bytes on 2026-10-14
@@ -474,6 +512,7 @@ PDFs inside the named zip.
 | `IFEU-FI-2024` | 2024-01-01..2024-12-31 | <https://web.archive.org/web/20241203121313id_/https://www.ice.com/publicdocs/futures/Trading_Schedule_Migrated_Liffe_Contracts.pdf> | Wayback `id_` replay of capture `20241203121313`, retrieved 2026-10-11 UTC | T1 | `9fc431d63fed0b3d4b037b411b6ce5c1f26d616942f2b33de650c25860408894` |
 | `IFEU-FI-2025` | 2025-01-01..2025-12-31 | <https://web.archive.org/web/20260728113518id_/https://www.ice.com/publicdocs/futures/Trading_Schedule_Migrated_Liffe_Contracts.pdf> | Wayback `id_` replay of capture `20260728113518`, retrieved 2026-10-11 UTC | T1 | `45d51a2c389a5d634f2c9404b930573e84b1c5c601eeaf98c7444f28d040377e` |
 | `IFEU-XMAS-2025` | 2025-12-24..2025-12-31 | <https://www.ice.com/publicdocs/futures/IFEu_Christmas_New_Year_Trading_Hours_2025.pdf> | retrieved 2026-10-11 UTC | T1 | `ec7a173ea733a17c4e3fd12006bd0ea703bfce95b3f5c7e6cd8192f6a85c6cd0` |
+| `IFEU-XMAS-2026` | 2026-12-24..2027-01-01 | <https://www.ice.com/publicdocs/futures/IFEu_Christmas_New_Year_Trading_Hours_2026.pdf> | retrieved 2026-11-18 UTC | T1 | `09adfc0b9977f96bfd8b3f7d31bc232932b1dc0b0584d7cd274de7b9066a16eb` |
 | `IFEU-FI-2026` | 2026-01-01..2026-12-31 | <https://www.ice.com/publicdocs/futures/Trading_Schedule_Migrated_Liffe_Contracts.pdf> | retrieved 2026-10-11 UTC | T1 | `8947f6eb6659cbe3ecb8ed909562a1013c6ca788e9167c74811d4d52f5865ff6` |
 | `ICE-CIRC-26-063` | the 2026-07-06 cutover | <https://www.ice.com/publicdocs/circulars/26063.pdf> | retrieved 2026-10-11 UTC | T1 | `385479b77d7c78467006909dafb69d8691edd507e94eb1c305c5b0f909d1c6f7` |
 | `ICE-EU-DST-2026` | the 2026 split restated | <https://www.ice.com/publicdocs/futures/Trading_Schedule_Temporary_Trading_Hours_for_DST.pdf> | retrieved 2026-10-11 UTC | T1 | `c9ffb649c802465a7f5ceedef403140c36a3575966cd619e3d4a1526fe6d9579` |
@@ -487,7 +526,7 @@ PDFs inside the named zip.
 - <https://www.ice.com/products/37650336/Long-Gilt-Future> — the Long Gilt product page; the monitoring entry point for the family grid and its Pre-Open column.
 - <https://www.ice.com/publicdocs/futures/Trading_Schedule_Migrated_Liffe_Contracts.pdf> — the IFEU Trading Schedule: Fixed Income, Equity and Indices, republished as editions; the holiday-table monitoring entry point.
 - <https://www.theice.com/publicdocs/Trading_Schedule.pdf> — the exchange-wide annual Trading Schedule (the 2019/2020 era's witnessed class for this family; commodity-scoped per-contract tables, so it keys only the exchange-level closures here).
-- <https://www.ice.com/publicdocs/futures/IFEu_Christmas_New_Year_Trading_Hours_2025.pdf> — the December Christmas/New Year trading-hours document series.
+- <https://www.ice.com/publicdocs/futures/IFEu_Christmas_New_Year_Trading_Hours_2026.pdf> — the December Christmas/New Year trading-hours document series (the November 2026 edition is the current witness; the 2025 edition remains in the store beside it).
 - <https://www.ice.com/publicdocs/circulars/26063.pdf> — ICE Futures Europe circular 26/063; the circulars index is <https://www.ice.com/futures-europe/circulars>.
 - <https://www.ice.com/publicdocs/nyse_liffe/historical_notices/> — the NYSE Liffe historical-notice zip archive (2005–2014 offered).
 - <https://www.ice.com/publicdocs/futures/Excel_Trading_Schedule.xlsx> — the operator's T2 Excel trading-schedule workbook, whose Change Tracker cites the governing circular per change.
@@ -519,12 +558,16 @@ PDFs inside the named zip.
   window both state — and the disputed 00:35–00:45 quarter-hour is withheld.
   Closing condition: a desk answer or the operator's next spec-page revision.
 - **Announced eves with unpublished instants** (2014-12-24, 2014-12-31,
-  2015-12-24, 2015-12-31, 2021-12-24, 2021-12-31, 2024-12-24, 2024-12-31,
-  2026-12-24, 2026-12-31) are `Unsourced` rows, never audited normal.
-  Closing condition per year: the operator's Christmas circular.
-- **2027** is unpublished (the 2027 edition and the Christmas-2026 circular
-  both 404 live, checked 2026-10-11 UTC). The audited window ends at
-  2026-12-31; no 2027 date is asserted normal.
+  2015-12-24, 2015-12-31, 2021-12-24, 2021-12-31, 2024-12-24, 2024-12-31)
+  are `Unsourced` rows, never audited normal. The 2026 pair left this list
+  on 2026-11-18 UTC, when the November 2026 Christmas document sourced both
+  instants. Closing condition per year: the operator's Christmas circular.
+- **2027 beyond 1 January** is unpublished (the 2027 Fixed Income edition
+  has not been captured; the Christmas-2026 circular itself 404'd live when
+  checked 2026-10-11 UTC and was captured from the operator's site on
+  2026-11-18 UTC once published). The audited window ends at 2027-01-01;
+  no later 2027 date is asserted normal. Closing condition: the 2027
+  edition.
 - The live product page names Medium, Short and Ultra Long Gilt as related
   products of the Long Gilt page and the shared-grid claim rests on that page
   family plus the DST document's split table; the Short/Ultra product pages

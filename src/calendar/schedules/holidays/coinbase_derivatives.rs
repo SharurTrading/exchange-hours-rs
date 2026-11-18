@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Coinbase Derivatives holiday rows, from the venue's first trade date
-//! 2021-06-28 through 2026-09-07.
+//! 2021-06-28 through 2026-11-27.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). CDE's Market Notices are already keyed by **trade date**
@@ -33,7 +33,7 @@
 //! All of it is recorded in
 //! [`docs/evidence/coinbase_derivatives.md`](../../../../../docs/evidence/coinbase_derivatives.md).
 //!
-//! Seven dates carry an early close. The 2022 Thanksgiving pair
+//! Eight dates carry an early close. The 2022 Thanksgiving pair
 //! (2022-11-24 closed, 2022-11-25 early close 12:15 CT) is the
 //! flanking-intersection closure of 2026-10-05 (the maintainer's recurring-
 //! arrangement principle, #296): notice 22-10 itself is unreachable on every
@@ -47,9 +47,11 @@
 //! technical early close rather than a published holiday schedule.
 //!
 //! Every row is **T1**, a numbered CDE Market Notice. Coverage runs from the
-//! `FairX` launch day to 2026-09-07, the end of the window the first table
-//! shipped; the notices for 2026-09-08 onward belong to the published-future
-//! refresh, and CDE has published nothing for 2027.
+//! `FairX` launch day to 2026-11-27, the end of the window notice 26-41 (the
+//! 2026 Thanksgiving schedule, posted 11/17/2026) publishes; the notices
+//! between 2026-09-08 and 26-41 carried no 23x5 arrangement, and the operator
+//! has published no Christmas 2026 or 2027 holiday schedule - 26-40 and
+//! 26-40.1 are 24x7 Saturday maintenance windows outside this grid.
 
 use super::fences::early_close;
 use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
@@ -57,7 +59,7 @@ use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 /// The venue's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/coinbase_derivatives.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2021, 6, 28) ..= (2026, 9, 7)],
+    coverage: [(2021, 6, 28) ..= (2026, 11, 27)],
     rows: [
         // 2021-07-05 - T1 - CDE-MN-21-03 - Independence Day observed
         (2021, 7, 5, Closed, T1, "CDE-MN-21-03"),
@@ -181,5 +183,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 7, 3, Closed, T1, "CDE-MN-26-29"),
         // 2026-09-07 - T1 - CDE-MN-26-36 - Labor Day
         (2026, 9, 7, Closed, T1, "CDE-MN-26-36"),
+        // 2026-11-26 - T1 - CDE-MN-26-41 - Thanksgiving Day: Energy, Copper & Platinum and Equity
+        // each print "Closed for holiday" while the 24x7 tier prints "See Friday" and stays open
+        (2026, 11, 26, Closed, T1, "CDE-MN-26-41"),
+        // 2026-11-27 - T1 - CDE-MN-26-41 - Thanksgiving half day: Equity 12:00 CT, Energy, Copper &
+        // Platinum 13:45 CT; the Friday trade date commences Thursday 11/26 17:00 CT per the grid
+        (2026, 11, 27, early_close(12 * 3_600), T1, "CDE-MN-26-41"),
     ],
 };

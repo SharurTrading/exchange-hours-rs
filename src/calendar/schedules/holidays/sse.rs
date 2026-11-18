@@ -32,7 +32,10 @@
 //! [`docs/evidence/sse.md`](../../../../../docs/evidence/sse.md).
 //!
 //! SSE publishes the next year's arrangement each December; no 2027 notice
-//! exists as of the 2026-09-29 retrieval, so the window ends 2026-12-31. The
+//! exists as of the 2026-11-18 re-check — the State Council's own 2027 civil
+//! arrangement (国办发明电〔2026〕10号, published 2026-11-05) states the 放假
+//! windows but not the exchange's 休市 sessions, so it keys no row — and the
+//! window ends 2026-12-31. The
 //! 2010 arrangement (上证交字〔2009〕42号) is unrecovered — the operator's
 //! media-center reprints begin with the 2011 notice and the pre-2011-era
 //! pages are not in the archive — so 2010 sits outside the audited window as

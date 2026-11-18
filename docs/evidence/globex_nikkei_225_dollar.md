@@ -441,6 +441,27 @@ not this family's (LAW-SESSION-NOT-EXPIRY), and no row above keys to one.
 
 Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
+- **2026-11-18 — New Year 2028 re-checked a non-event for this grid, from the
+  stored live B-set capture.** The CDX enumeration of archived captures
+  carrying the New Year window (eventDates 2027-12-31 .. 2028-01-02) lists
+  only the ten-product A set and a nine-product equity set; no archived
+  capture of this window carries a Nikkei id, so this family's non-event does
+  not rest on them. It rests on the stored live B-set retrieval of the
+  overlapping 2027-12-30 .. 2028-01-02 window (retrieved 2026-09-12,
+  `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-30_2028-01-02.json` in
+  the research store), which the 2027 gaps section already read as labelling
+  the window normal for this grid, and which re-read on 2026-11-18 prints NIY
+  167 and NKD 168 with the ordinary Friday `16:00 closed` for CME trade date
+  2027-12-31, an empty 2028-01-01 Saturday, and `16:00 preopen; 17:00 open`
+  carrying CME trade date 2028-01-03 on the Sunday. The trading-hours page
+  capture of 2026-11-16 states no session change: its only 2028 mentions are
+  the 2027 settlement-notices row (`New Year's Eve | 31 December 2027 -
+  3 January 2028`, a pointer at the settlement-times PDF) and the routine
+  `2028 New Year's Day Notes` order-cycle clarification. No row ships, and
+  2028-01-03 stays in the unaudited span before the first 2028 window. The
+  sweep's archived A-set/equity artifacts live in the research store at
+  `holidays/raw/cme-ny2028-resweep-2026-11-18/`.
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |

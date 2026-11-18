@@ -2,7 +2,7 @@
 
 //! ICE Futures Europe gilt-futures holiday and early-close table: audited
 //! windows 2010-01-01..2014-12-31, 2015-01-01..2017-12-31, 2019-01-01..2020-12-31,
-//! 2021, 2022-12-23..2023-01-02 and 2024..2026.
+//! 2021, 2022-12-23..2023-01-02 and 2024-01-01..2027-01-01.
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, EarlyClose, Unsourced};
@@ -10,11 +10,11 @@ use super::{HolidayTable, holidays};
 
 // The Christmas-eve and New-Year-eve half days: the NYSE Liffe notices'
 // attachments print the gilt rows closing 12:15 GMT (2010-2013), and the IFEU
-// Christmas documents print "Trading ceases 12:15 (GMT)" (2022-12-30 and both
-// 2025 eves). 2022-12-23 printed a later 13:00 cessation.
+// Christmas documents print "Trading ceases 12:15 (GMT)" (2022-12-30 and the
+// 2025 and 2026 eves). 2022-12-23 printed a later 13:00 cessation.
 
-// The announced but time-unpublished eves of 2014, 2015, 2021, 2024 and 2026
-// stay `Unsourced`: the operator said "partial trading day" without stating an
+// The announced but time-unpublished eves of 2014, 2015, 2021 and 2024 stay
+// `Unsourced`: the operator said "partial trading day" without stating an
 // instant. 2016 and 2017's editions asterisk only non-gilt contracts for their
 // 18:00 early closes, so the gilt eves there are audited normal.
 // Evidence: docs/evidence/ice_europe_gilts.md
@@ -29,7 +29,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2019, 1, 1) ..= (2020, 12, 31),
         (2021, 1, 1) ..= (2021, 12, 31),
         (2022, 12, 23) ..= (2023, 1, 2),
-        (2024, 1, 1) ..= (2026, 12, 31),
+        (2024, 1, 1) ..= (2027, 1, 1),
     ],
     rows: [
         (2010, 1, 1, Closed, T1, "LIFFE-ZIP-2009"),
@@ -169,9 +169,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 5, 4, Closed, T1, "IFEU-FI-2026"),
         (2026, 5, 25, Closed, T1, "IFEU-FI-2026"),
         (2026, 8, 31, Closed, T1, "IFEU-FI-2026"),
-        (2026, 12, 24, Unsourced, T1, "IFEU-FI-2026"),
+        (2026, 12, 24, EarlyClose { close_ssm: CLOSE_1215_SSM }, T1, "IFEU-XMAS-2026"),
         (2026, 12, 25, Closed, T1, "IFEU-FI-2026"),
         (2026, 12, 28, Closed, T1, "IFEU-FI-2026"),
-        (2026, 12, 31, Unsourced, T1, "IFEU-FI-2026"),
+        (2026, 12, 31, EarlyClose { close_ssm: CLOSE_1215_SSM }, T1, "IFEU-XMAS-2026"),
+        (2027, 1, 1, Closed, T1, "IFEU-XMAS-2026"),
     ],
 };

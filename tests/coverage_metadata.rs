@@ -1822,21 +1822,22 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
          are the queue days there are"
     );
 
-    // Eurex answers the whole regression interval the #157 retirement opened:
-    // 2025-01-01..2026-12-30 — the 729 days the `tba` declaration refused that
-    // are not the window's own edge — are complete from the shipped
-    // all-derivatives rows (the 2014-2018 German-scope rows ship beside them,
-    // and 2010-01-01..2024-12-31 answered Covered before the retirement too),
-    // 2026-12-31 still refuses on the resolution edge (#151) because its next
-    // session reaches 2027-01-01, outside every window, and 2027 lies outside
-    // the audited windows as before. 729 complete days of 1,095.
+    // Eurex answers the whole regression interval. The #157 retirement opened
+    // 2025-01-01..2026-12-30 from the shipped all-derivatives rows (the
+    // 2014-2018 German-scope rows ship beside them, and
+    // 2010-01-01..2024-12-31 answered Covered before the retirement too); the
+    // Holiday regulations page's own `Non-trading days at Eurex 2026 - 2030`
+    // table (retrieved 2026-11-18 UTC) then extended the audited window
+    // through 2030-12-31, so 2027 answers inside the window and even
+    // 2026-12-31's resolution edge (#151) — its next session reaching
+    // 2027-01-01 — now answers. 1,095 complete days of 1,095.
     let eurex = exchange_coverage(Exchange::Eurex);
     assert_eq!(
         complete_days(eurex),
-        729,
-        "the retired #157 declaration's refused days answer, and nothing else in \
-         2025-2027 does: 2026-12-31 refuses on the resolution edge (#151) and 2027 is \
-         outside the audited windows"
+        1095,
+        "the retired #157 declaration's refused days answer, the regulations-table \
+         extension puts 2027 inside the audited window, and 2026-12-31's resolution \
+         edge (#151) answers with it: nothing in 2025-2027 refuses"
     );
     let unpublished: Vec<(DateRange, Option<&str>)> = eurex
         .gaps()
@@ -1860,20 +1861,10 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
         }
         refused
     };
-    assert_eq!(
-        refused.first().copied(),
-        Some(date(2026, 12, 31)),
-        "the first refusal inside 2025-2027 is the audited window's own trailing edge"
-    );
-    assert_eq!(
-        refused.last().copied(),
-        Some(REGRESSION_LAST),
-        "the last refusal is 2027-12-31, outside every window"
-    );
-    assert_eq!(
-        refused.len(),
-        366,
-        "2027 refuses whole (365 days), plus 2026-12-31's resolution edge (#151)"
+    assert!(
+        refused.is_empty(),
+        "no day of 2025-2027 refuses: the window runs to 2030-12-31, so neither the \
+         former 2027 outside-window refusal nor 2026-12-31's resolution edge remains"
     );
 }
 

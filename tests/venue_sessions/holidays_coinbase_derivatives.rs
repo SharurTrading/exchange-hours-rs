@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Built-in holiday rows for Coinbase Derivatives, from the venue's first
-//! trade date 2021-06-28 through 2026-09-07.
+//! trade date 2021-06-28 through 2026-11-27.
 //!
 //! The venue profile is CDE's 23x5 grid, so every row states what the
-//! operator's Market Notice states for the product groups on that grid. Fifty
-//! rows are full closures, seven are early closes where the groups on the grid
-//! printed different instants and the row carries the earliest. The 2022
-//! Thanksgiving pair is the flanking-intersection closure of 2026-10-05
-//! (#296): Thursday closed and Friday early-closed at the narrowest sourced
-//! instant (Equity 12:15 CT, both flanking years), with the exact 2022
-//! instant the disclosed residual a desk copy of notice 22-10 replaces.
+//! operator's Market Notice states for the product groups on that grid.
+//! Fifty-two rows are full closures, eight are early closes where the groups
+//! on the grid printed different instants and the row carries the earliest.
+//! The 2022 Thanksgiving pair is the flanking-intersection closure of
+//! 2026-10-05 (#296): Thursday closed and Friday early-closed at the
+//! narrowest sourced instant (Equity 12:15 CT, both flanking years), with the
+//! exact 2022 instant the disclosed residual a desk copy of notice 22-10
+//! replaces. The 2026 pair is notice 26-41: Thursday closed, Friday
+//! early-closed at Equity's 12:00 CT — this year the operator printed 12:00,
+//! not the 12:15 the earlier Thanksgiving notices printed.
 //!
 //! `ERA_ROWS` is the hand-checked list, in order, the whole window is swept
 //! against. The count sweep alone cannot see a row moved to another audited
@@ -42,6 +45,7 @@ fn day(year: i32, month: u32, date: u32) -> NaiveDate {
 }
 
 /// The early close instants the notices print, in venue-local seconds.
+const P_12_00: u32 = 12 * 3_600;
 const P_12_15: u32 = 12 * 3_600 + 15 * 60;
 const P_12_45: u32 = 12 * 3_600 + 45 * 60;
 const P_13_45: u32 = 13 * 3_600 + 45 * 60;
@@ -51,7 +55,7 @@ const P_13_45: u32 = 13 * 3_600 + 45 * 60;
 /// Read row by row off the operator's own Market Notices; the research store
 /// keeps the bytes and `docs/evidence/coinbase_derivatives.md` quotes them.
 #[rustfmt::skip]
-const ERA_ROWS: [(i32, u32, u32, HolidayKind); 58] = [
+const ERA_ROWS: [(i32, u32, u32, HolidayKind); 60] = [
     (2021,  7,  5, HolidayKind::Closed),
     (2021,  9,  6, HolidayKind::Closed),
     (2021, 11, 25, HolidayKind::Closed),
@@ -110,6 +114,8 @@ const ERA_ROWS: [(i32, u32, u32, HolidayKind); 58] = [
     (2026,  6, 19, HolidayKind::Closed),
     (2026,  7,  3, HolidayKind::Closed),
     (2026,  9,  7, HolidayKind::Closed),
+    (2026, 11, 26, HolidayKind::Closed),
+    (2026, 11, 27, HolidayKind::EarlyClose { close_ssm: P_12_00 }),
 ];
 
 /// Every date in the audited window that carries a row, in ascending order.
@@ -153,9 +159,11 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
         .expect("Coinbase Derivatives ships a built-in table");
 
     // The venue's first trade date is FairX's launch Monday; the table starts
-    // there because no earlier trade date exists to carry a holiday.
+    // there because no earlier trade date exists to carry a holiday, and its
+    // end is the last trade date notice 26-41 (the 2026 Thanksgiving schedule,
+    // posted 11/17/2026, retrieved 2026-11-18) publishes.
     assert_eq!(coverage.first(), day(2021, 6, 28));
-    assert_eq!(coverage.last(), day(2026, 9, 7));
+    assert_eq!(coverage.last(), day(2026, 11, 27));
     // 2021-06-27, the Sunday before the launch, sits one day below the window:
     // since the 2026-10-07 bridged-residual ruling (#296) it is a one-flank
     // bridged date whose session questions answer from the sourced normal
@@ -181,17 +189,18 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
         "the pre-launch classification refuses: nothing witnesses the holiday layer"
     );
     for (outside, instant) in [
-        (day(2026, 9, 8), ct((2026, 9, 8), (10, 0, 0))),
-        // Thanksgiving 2026 is a holiday CDE will observe, but its notice had
-        // not issued at retrieval, so the table must not reach it.
-        (day(2026, 11, 26), ct((2026, 11, 26), (10, 0, 0))),
+        (day(2026, 11, 28), ct((2026, 11, 28), (10, 0, 0))),
+        // Christmas Eve 2026 is a holiday CDE will likely observe — the 2025
+        // notice was posted 11/25 — but no notice had issued at retrieval, so
+        // the table must not reach it.
+        (day(2026, 12, 24), ct((2026, 12, 24), (10, 0, 0))),
     ] {
         assert_eq!(
             calendar.holiday_on(outside),
             None,
             "{outside} is outside the audited window"
         );
-        // The two 2026 dates are past the table's last audited day: the
+        // Both dates are past the table's last audited day: the
         // publication horizon governs there, not the bridge, so the whole
         // date refuses as `OutsideCoveredRange`. The detached calendar is the
         // reference that still answers.
@@ -326,6 +335,95 @@ fn the_flank_interpolated_thanksgiving_pair_answers() {
 }
 
 #[test]
+fn the_2026_thanksgiving_notice_rows_answer() {
+    let calendar = cde();
+
+    // Notice 26-41 (posted 11/17/2026, retrieved 2026-11-18): both groups on
+    // the venue's 23x5 grid print `Closed for holiday` for Thursday, so the
+    // trade date is closed — including the Wednesday-evening leg that would
+    // have fed it.
+    let thursday = calendar
+        .holiday_on(day(2026, 11, 26))
+        .expect("the Thanksgiving closure carries a row");
+    assert_eq!(thursday.kind(), HolidayKind::Closed);
+    assert_eq!(thursday.document_id(), "CDE-MN-26-41");
+    assert!(
+        !calendar
+            .is_open(ct((2026, 11, 25), (18, 0, 0)))
+            .expect("the wrap leg's own day answers"),
+        "the Wednesday-evening leg feeds trade date 11/26 and is gone"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2026, 11, 25), (10, 0, 0)))
+            .expect("the wrap leg's own day answers"),
+        "Wednesday's own day session is untouched"
+    );
+
+    // Friday's grid prints Equity 12:00 CT and Energy, Copper & Platinum
+    // 13:45 CT — 12:00 this year, not the 12:15 the earlier Thanksgiving
+    // notices printed. The venue row is the intersection, so it carries the
+    // earliest printed instant.
+    let friday = calendar
+        .holiday_on(day(2026, 11, 27))
+        .expect("the Thanksgiving half day carries a row");
+    assert_eq!(
+        friday.kind(),
+        HolidayKind::EarlyClose { close_ssm: P_12_00 }
+    );
+    assert_eq!(friday.document_id(), "CDE-MN-26-41");
+
+    // The Friday trade date commences Thursday 11/26 17:00 CT per the notice
+    // grid, and the Thursday-evening leg's own resolution stays inside the
+    // audited window.
+    assert!(
+        calendar
+            .is_open(ct((2026, 11, 26), (18, 0, 0)))
+            .expect("the Thursday-evening leg feeds trade date 11/27"),
+        "the Thursday-evening leg opens the Friday trade date"
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct((2026, 11, 26), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2026, 11, 27)),
+        "the Thursday-evening leg is dated by the Friday trade date it feeds"
+    );
+
+    // The closed Thursday answers its own instants: its next session lives on
+    // the audited Friday, so nothing in the resolution reaches past the
+    // horizon.
+    assert!(
+        !calendar
+            .is_open(ct((2026, 11, 26), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "Thanksgiving Thursday is shut all day"
+    );
+
+    // The half day ends end-exclusive at the printed 12:00 CT, and the later
+    // Energy close does not widen the venue row.
+    assert!(
+        calendar
+            .is_open(ct((2026, 11, 27), (11, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "the half day still trades one second before the printed close"
+    );
+    for probe in [
+        ct((2026, 11, 27), (12, 0, 0)),
+        ct((2026, 11, 27), (13, 44, 59)),
+        ct((2026, 11, 27), (17, 30, 0)),
+    ] {
+        assert!(
+            !calendar
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "the venue is shut from {probe:?}: the early close is end-exclusive \
+             and no Friday-evening session follows it"
+        );
+    }
+}
+
+#[test]
 fn a_normal_trading_day_notice_ships_no_row() {
     let calendar = cde();
 
@@ -446,13 +544,13 @@ fn detaching_the_table_restores_the_normal_week() {
     let calendar = cde();
     let labor_day = ct((2026, 9, 7), (10, 0, 0));
     let half_day = ct((2021, 11, 26), (13, 0, 0));
+    // The Saturday after the half day is the first date past the audited
+    // window, which notice 26-41 extended to 2026-11-27: the publication
+    // horizon governs there, so the whole date refuses as
+    // `OutsideCoveredRange`. The 2021 half day is pre-floor. Both refusals
+    // are the coverage contract, never a `false`.
+    let past_the_horizon = ct((2026, 11, 28), (10, 0, 0));
 
-    // MLK Day 2026 stands in for the closure half of the claim, because it is
-    // the window's last-era closure the calendar can still answer: Labor Day
-    // 2026 is the table's last row and the query refuses it as
-    // `OutsideCoveredRange` naming 2026-09-08, the day after it. The 2021 half
-    // day is pre-floor. Both refusals are the coverage contract, never a
-    // `false`.
     let mlk_day = ct((2026, 1, 19), (10, 0, 0));
     assert!(
         !calendar
@@ -460,20 +558,39 @@ fn detaching_the_table_restores_the_normal_week() {
             .expect("MLK Day 2026 is inside the audited window"),
         "the holiday layer closes MLK Day"
     );
+    // Labor Day 2026 sat at the old window's edge and refused there; the
+    // extension moved it inside the answered span, where the holiday layer
+    // simply closes it. Thanksgiving Thursday, the window's last closure,
+    // answers now too (fenced in
+    // `the_2026_thanksgiving_notice_rows_answer`).
+    assert!(
+        !calendar
+            .is_open(labor_day)
+            .expect("Labor Day 2026 is inside the audited window"),
+        "the holiday layer closes Labor Day"
+    );
     assert_refused_variant(
-        &calendar.is_open(labor_day),
+        &calendar.is_open(past_the_horizon),
         DateCoverage::OutsideCoveredRange,
-        "the table's last closure is past the audited window it is read from",
+        "the Saturday past the audited window is outside it",
     );
     assert_refuses_before_floor(calendar.is_open(half_day), calendar, half_day);
     // Detaching is what restores the normal week, and it is the only surface
-    // that can state it here: with the layer gone MLK Day is an ordinary
-    // session.
+    // that can state it on the refusing date: with the layer gone that
+    // Saturday answers the ordinary closed weekend, and MLK Day is an
+    // ordinary session.
     assert!(
         calendar
             .without_holidays()
             .is_open(mlk_day)
             .expect("the detached calendar answers the normal week")
+    );
+    assert!(
+        !calendar
+            .without_holidays()
+            .is_open(past_the_horizon)
+            .expect("the detached calendar answers the normal week"),
+        "the detached Saturday is an ordinary weekend close, not a refusal"
     );
     assert_eq!(calendar.without_holidays().holiday_coverage(), None);
     assert_eq!(

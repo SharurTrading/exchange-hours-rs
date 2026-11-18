@@ -56,7 +56,7 @@ as each source is re-verified.
 - <https://links.sgx.com/1.0.0/corporate-announcements/AYXNAX3DG8RCFZT7/20170718_SGX_to_adjust_equities_market_structure_after_supportive_feedback.pdf> — SGX announcement of 2017-07-18, restoring the midday break from 2017-11-13.
 - <https://links.sgx.com/1.0.0/corporate-announcements/46OQY4VBYIHO4ARN/20190514_SGX_to_launch_securities_market_trade_at_close_session_on_3_June.pdf> — SGX announcement of 2019-05-14, launching Trade at Close on 2019-06-03.
 - <https://www.sgx.com/stock-exchange/trading> — the operator's own securities-market trading page (this page's own holiday and half-day statements), read 2026-09-28 (UTC) as bytes from SGX's content API: `holidays/raw/equities/sgx_securities/2025-2027/api2_content-api_stock-exchange_trading.json` (research store), sha256 `45dbdc61…`. The live page is an SPA shell to non-JS clients (`live_sgx_trading_hours_holidays.html`, sha256 `d87ad3e0…`); the JSON above is the feed the page itself renders.
-- <https://www.mom.gov.sg/employment-practices/public-holidays> — the Singapore holiday calendar the operator designates (page last updated 19 June 2026), retrieved 2026-09-28 (UTC) as `holidays/raw/equities/sgx_securities/2025-2027/live_mom_public_holidays.html`, sha256 `a4f175a7…`; it prints the gazetted 2025, 2026 and 2027 dates.
+- <https://www.mom.gov.sg/employment-practices/public-holidays> — the Singapore holiday calendar the operator designates (page last updated 19 June 2026), retrieved 2026-09-28 (UTC) as `holidays/raw/equities/sgx_securities/2025-2027/live_mom_public_holidays.html`, sha256 `a4f175a7…`; it prints the gazetted 2025, 2026 and 2027 dates. The 2027 tab was re-captured 2026-11-18 (UTC) as `live_mom_public_holidays-20261118.html`, sha256 `be7fa748…`, with `INDEX-recheck-2026-11-18.md` beside it (see the window-end paragraph and the gaps list).
 
 ## Holidays
 
@@ -469,8 +469,22 @@ the endpoint answered changed bytes — editorial deltas elsewhere on the page
 (market-maker programme wording and a board-lot FAQ that mentions a February
 2027 implementation) — and the holiday sheet is content-identical: the
 half-day statement still scopes itself to `2025 & 2026` and names no 2027
-dates. **Closing condition:**
-SGX's next annual securities schedule naming the 2027 half days, at which
+dates. Re-checked again 2026-11-18 UTC (artifacts
+`api2_content-api_stock-exchange_trading.live-20261118T090437Z.json`,
+`live_mom_public_holidays-20261118.html` and
+`INDEX-recheck-2026-11-18.md` in the same store directory): the endpoint
+answered changed bytes whose only `2027` strings are that same board-lot FAQ
+note, and the holiday sheet is again content-identical — still scoped to
+`2025 & 2026`. The state side is now banked for when the operator speaks:
+MOM's live page prints the gazetted 2027 tab (ten rows, eleven dated days,
+including its own "Monday, 8 February 2027, will be a public holiday …"
+substitution sentence), captured beside the operator artifact. The operator
+leg is still the missing half — the designation is read as scoped to the
+sheet's printed years, and MOM alone has never keyed a row — so no 2027 row
+keys. **Closing condition:**
+SGX's own content-api bytes stating the 2027 treatment — the annual
+securities schedule naming the 2027 half days and closures, or the sheet
+extended to 2027 — at which
 point the window extends. Re-checked monthly per LAW-WATCH.
 
 **Tier.** The rows key at T2 because the artifact behind every row is the
@@ -620,6 +634,18 @@ shells and key nothing.
   scoped to closures. **Closing condition:** a 2014-2016 artifact printing
   the operator's half-day treatment (a sheet edition with the legend, or a
   participant notice).
+- **2027 is unpublished on the operator channel** (re-checked 2026-11-18
+  UTC) — the `SGX-ST-SCHED` sheet still scopes its half-day statement to
+  2025 & 2026, so the audited window stops at 2026-12-31 and no 2027 date is
+  asserted normal. The state side is published and captured: MOM's gazetted
+  2027 list (ten rows, eleven dated days) is held as
+  `live_mom_public_holidays-20261118.html` with `INDEX-recheck-2026-11-18.md`
+  in the store's `sgx_securities/2025-2027/` directory, but MOM alone has
+  never keyed a row and the designation is read as scoped to the sheet's
+  printed years. **Closing condition:** the SGX content-API bytes carrying
+  the 2027 closure designation — a half-day sheet extended to 2027, or a
+  2027 securities trading schedule naming the year's closures and half days
+  (tracked as #401).
 - **the 2019 Trade-at-Close half-day question** — no surviving artifact
   prints the half-day grid as it stood after the 2019-06-03 Trade-at-Close
   launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid

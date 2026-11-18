@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Xetra cash-market date exceptions.
-//! Audited windows: 2010-01-01..2024-12-31 and 2025-01-01..2027-12-31.
+//! Audited windows: 2010-01-01..2024-12-31 and 2025-01-01..2032-12-31.
+//!
+//! The 2025-2027 rows key the page's per-year columns (`DB-TC-PAGE-2025`
+//! capture, then the live page `DB-TC-PAGE`); the 2028-2032 rows key the same
+//! page's `Non-trading days at Frankfurter Wertpapierbörse (FWB®)` table
+//! covering 2026-2032 (`DB-TC-PAGE-2028-2032`), whose caveat — "* The
+//! overview is for information purposes only. Changes for future years are
+//! not excluded." — is recorded as a residual risk in the evidence file, and
+//! whose `**` dates are full closures when they fall on a weekday.
 //!
 //! Evidence: [`docs/evidence/xetra.md`](../../../../../docs/evidence/xetra.md).
 
@@ -33,7 +41,7 @@ static FINAL_SESSION_2026: [ExceptionBlock; 7] = [
 /// A date inside an audited window with no row follows its normal-week profile.
 // Evidence: docs/evidence/xetra.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2032, 12, 31)],
     rows: [
         // DB-TC-PDF-2010: the operator's own calendar sentence for 2010
         // 2010-01-01 - T1 - DB-TC-PDF-2010 - New Year's Day.
@@ -316,5 +324,83 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-12-31 - T1 - DB-TC-PAGE - New Year's Eve: "No trading but
         // settlement is open".
         (2027, 12, 31, Closed, T1, "DB-TC-PAGE"),
+
+        // 2028-2032: `DB-TC-PAGE-2028-2032`, the page table's later columns; weekend entries key no row.
+        // 2028-04-14 - T1 - DB-TC-PAGE-2028-2032 - Good Friday.
+        (2028, 4, 14, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2028-04-17 - T1 - DB-TC-PAGE-2028-2032 - Easter Monday.
+        (2028, 4, 17, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2028-05-01 - T1 - DB-TC-PAGE-2028-2032 - Labor Day.
+        (2028, 5, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2028-12-25 - T1 - DB-TC-PAGE-2028-2032 - Christmas Day.
+        (2028, 12, 25, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2028-12-26 - T1 - DB-TC-PAGE-2028-2032 - Boxing Day.
+        (2028, 12, 26, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-01-01 - T1 - DB-TC-PAGE-2028-2032 - New Year's Day.
+        (2029, 1, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-03-30 - T1 - DB-TC-PAGE-2028-2032 - Good Friday.
+        (2029, 3, 30, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-04-02 - T1 - DB-TC-PAGE-2028-2032 - Easter Monday.
+        (2029, 4, 2, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-05-01 - T1 - DB-TC-PAGE-2028-2032 - Labor Day.
+        (2029, 5, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-12-24 - T1 - DB-TC-PAGE-2028-2032 - Christmas Eve: "No trading
+        // but settlement is open".
+        (2029, 12, 24, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-12-25 - T1 - DB-TC-PAGE-2028-2032 - Christmas Day.
+        (2029, 12, 25, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-12-26 - T1 - DB-TC-PAGE-2028-2032 - Boxing Day.
+        (2029, 12, 26, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2029-12-31 - T1 - DB-TC-PAGE-2028-2032 - New Year's Eve: "No trading
+        // but settlement is open".
+        (2029, 12, 31, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-01-01 - T1 - DB-TC-PAGE-2028-2032 - New Year's Day.
+        (2030, 1, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-04-19 - T1 - DB-TC-PAGE-2028-2032 - Good Friday.
+        (2030, 4, 19, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-04-22 - T1 - DB-TC-PAGE-2028-2032 - Easter Monday.
+        (2030, 4, 22, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-05-01 - T1 - DB-TC-PAGE-2028-2032 - Labor Day.
+        (2030, 5, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-12-24 - T1 - DB-TC-PAGE-2028-2032 - Christmas Eve: "No trading
+        // but settlement is open".
+        (2030, 12, 24, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-12-25 - T1 - DB-TC-PAGE-2028-2032 - Christmas Day.
+        (2030, 12, 25, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-12-26 - T1 - DB-TC-PAGE-2028-2032 - Boxing Day.
+        (2030, 12, 26, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2030-12-31 - T1 - DB-TC-PAGE-2028-2032 - New Year's Eve: "No trading
+        // but settlement is open".
+        (2030, 12, 31, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-01-01 - T1 - DB-TC-PAGE-2028-2032 - New Year's Day.
+        (2031, 1, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-04-11 - T1 - DB-TC-PAGE-2028-2032 - Good Friday.
+        (2031, 4, 11, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-04-14 - T1 - DB-TC-PAGE-2028-2032 - Easter Monday.
+        (2031, 4, 14, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-05-01 - T1 - DB-TC-PAGE-2028-2032 - Labor Day.
+        (2031, 5, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-12-24 - T1 - DB-TC-PAGE-2028-2032 - Christmas Eve: "No trading
+        // but settlement is open".
+        (2031, 12, 24, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-12-25 - T1 - DB-TC-PAGE-2028-2032 - Christmas Day.
+        (2031, 12, 25, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-12-26 - T1 - DB-TC-PAGE-2028-2032 - Boxing Day.
+        (2031, 12, 26, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2031-12-31 - T1 - DB-TC-PAGE-2028-2032 - New Year's Eve: "No trading
+        // but settlement is open".
+        (2031, 12, 31, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2032-01-01 - T1 - DB-TC-PAGE-2028-2032 - New Year's Day.
+        (2032, 1, 1, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2032-03-26 - T1 - DB-TC-PAGE-2028-2032 - Good Friday.
+        (2032, 3, 26, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2032-03-29 - T1 - DB-TC-PAGE-2028-2032 - Easter Monday.
+        (2032, 3, 29, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2032-12-24 - T1 - DB-TC-PAGE-2028-2032 - Christmas Eve: "No trading
+        // but settlement is open".
+        (2032, 12, 24, Closed, T1, "DB-TC-PAGE-2028-2032"),
+        // 2032-12-31 - T1 - DB-TC-PAGE-2028-2032 - New Year's Eve: "No trading
+        // but settlement is open".
+        (2032, 12, 31, Closed, T1, "DB-TC-PAGE-2028-2032"),
     ],
 };

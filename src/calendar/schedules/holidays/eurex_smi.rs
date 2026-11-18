@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Eurex SMI® index futures holiday rows, 2010 through 2026.
+//! Eurex SMI® index futures holiday rows, 2010 through 2030.
 //!
 //! Keyed by the crate's own venue-local trade date in `Europe/Zurich` (design
 //! memo D1). The conversion is the identity here: every FSMI phase the crate
@@ -10,13 +10,21 @@
 //! The block is **T1** throughout, keyed by the same operator documents as the
 //! sibling `eurex` tables: the annual **Trading Calendar** editions 2010-2024
 //! (`EUREX-CAL-2010` through `EUREX-CAL-2024`, each printing an `Overview of
-//! holidays by countries`) and the day-by-day **Holiday regulations** page for
-//! 2025-2026 (`EUREX-HOLREG-2025`, `EUREX-HOLREG-2026`), each corroborated by
-//! the matching edition PDF. Two of the editions' scope lines reach this
-//! family and only these two:
+//! holidays by countries`) and the **Holiday regulations** page for
+//! 2025-2030 — § 2025 as captured on 2025-09-13 and § 2026 of its day-by-day
+//! channel (`EUREX-HOLREG-2025`, `EUREX-HOLREG-2026`), then the page's own
+//! `Non-trading days at Eurex 2026 - 2030` table for 2027-2030
+//! (`EUREX-HOLREG-2027-2030`, one id for the multi-year artifact), the same
+//! unconditional operator statement that keyed 2025 and 2026 (the page carries
+//! no preliminary caveat; the separate Indicative Trading Calendars page's
+//! "preliminary and indicative" label governs its own calendars and keys
+//! nothing here). Two of the editions' scope lines reach this family, and
+//! only these two:
 //!
-//! - the `in all derivatives` lists close every product and key their rows
-//!   here exactly as they key the sibling tables; and
+//! - the `in all derivatives` lists — and, for 2027-2030, the page table's
+//!   Eurex-wide rows, which state the same closure set for every product —
+//!   close every product and key their rows here exactly as they key the
+//!   sibling tables; and
 //! - the recurring Swiss clause — `Eurex is closed for trading and clearing
 //!   (exercise and settlement) in Swiss fixed income as well as equity and
 //!   equity index derivatives; no cash payment in CHF: …` — names Swiss equity
@@ -25,6 +33,14 @@
 //!   the 2015 edition's separate `No cash payment in CHF, GBP and KRW:
 //!   25 May` line is the same annotation on that year's all-derivatives Whit
 //!   Monday closure and keys nothing of its own.
+//!
+//! **The Swiss clause has no 2027-2030 dates.** The clause's date lists exist
+//! in the editions' country panels and the page's day-by-day sections, and
+//! the page publishes a day-by-day section for 2026 only — no 2027-2030
+//! section, panel or other channel states a Swiss-scope addition yet, so the
+//! 2027-2030 rows below are the Eurex-wide set alone. A later section that
+//! prints Swiss dates lands as a schedule fix; the residual is recorded in
+//! [`docs/evidence/eurex_smi.md`](../../../../../docs/evidence/eurex_smi.md).
 //!
 //! The German-scope notes — `Eurex is closed for trading and exercise in
 //! German equity and equity index derivatives as well as ETF and ETC
@@ -38,10 +54,9 @@
 //! Swiss clause does, and the family's own test fences the split.
 //!
 //! Eurex publishes no early closes — 24 and 31 December are full trading
-//! closures with clearing open — so every row is `Closed`. Coverage stops at
-//! 2026-12-31: the operator's 2027-2036 calendars exist only "on a preliminary
-//! and indicative basis … and are subject to change", which is not an
-//! unconditional dated future, so LAW-NO-FABRICATED-DATES keeps them out.
+//! closures with clearing open — so every row is `Closed`. Weekend-falling
+//! table dates ship no row, mirroring the shipped 2026 handling of Saturday
+//! 26 December and the 2020-2021 years without a weekend 1 August.
 //! [`TABLE`](super::eurex::TABLE) serves `Exchange::Eurex` and the `eurex`
 //! key; [`FIXED_INCOME`](super::eurex::FIXED_INCOME)
 //! serves the `eurex_fixed_income` key; this table serves the `eurex_smi` key.
@@ -55,12 +70,14 @@ use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 /// Swiss-scope closures, and the window they were audited over.
 ///
 /// Serves the `eurex_smi` key. The 57 Swiss-scope rows (the clause dates the
-/// editions list per year, two to four each) sit beside the 108 all-derivatives
-/// rows the sibling tables ship; the German-scope rows the sibling `TABLE`
-/// alone carries appear here on no date.
+/// editions list per year, two to four each) sit beside the 134 all-derivatives
+/// rows the sibling tables ship as of the 2027-2030 extension, of which
+/// the 26 new rows are the page table's Eurex-wide set alone, the Swiss
+/// clause having no published 2027-2030 dates; the German-scope rows the
+/// sibling `TABLE` alone carries appear here on no date.
 // Evidence: docs/evidence/eurex_smi.md
 pub(crate) static SMI: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2030, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - EUREX-CAL-2010 - New Year's Day.
         (2010, 1, 1, Closed, T1, "EUREX-CAL-2010"),
@@ -392,5 +409,59 @@ pub(crate) static SMI: &HolidayTable = holidays! {
         (2026, 12, 25, Closed, T1, "EUREX-HOLREG-2026"),
         // 2026-12-31 - T1 - EUREX-HOLREG-2026 - New Year's Eve, a full trading closure.
         (2026, 12, 31, Closed, T1, "EUREX-HOLREG-2026"),
+
+        // 2027-2030: `EUREX-HOLREG-2027-2030`, the page table's Eurex-wide set; no Swiss-scope channel publishes those years.
+        // 2027-01-01 - T1 - EUREX-HOLREG-2027-2030 - New Year's Day.
+        (2027, 1, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2027-03-26 - T1 - EUREX-HOLREG-2027-2030 - Good Friday.
+        (2027, 3, 26, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2027-03-29 - T1 - EUREX-HOLREG-2027-2030 - Easter Monday.
+        (2027, 3, 29, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2027-12-24 - T1 - EUREX-HOLREG-2027-2030 - Christmas Eve, a full trading closure.
+        (2027, 12, 24, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2027-12-31 - T1 - EUREX-HOLREG-2027-2030 - New Year's Eve, a full trading closure.
+        (2027, 12, 31, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2028-04-14 - T1 - EUREX-HOLREG-2027-2030 - Good Friday.
+        (2028, 4, 14, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2028-04-17 - T1 - EUREX-HOLREG-2027-2030 - Easter Monday.
+        (2028, 4, 17, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2028-05-01 - T1 - EUREX-HOLREG-2027-2030 - Labour Day.
+        (2028, 5, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2028-12-25 - T1 - EUREX-HOLREG-2027-2030 - Christmas Day.
+        (2028, 12, 25, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2028-12-26 - T1 - EUREX-HOLREG-2027-2030 - Boxing Day.
+        (2028, 12, 26, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-01-01 - T1 - EUREX-HOLREG-2027-2030 - New Year's Day.
+        (2029, 1, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-03-30 - T1 - EUREX-HOLREG-2027-2030 - Good Friday.
+        (2029, 3, 30, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-04-02 - T1 - EUREX-HOLREG-2027-2030 - Easter Monday.
+        (2029, 4, 2, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-05-01 - T1 - EUREX-HOLREG-2027-2030 - Labour Day.
+        (2029, 5, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-12-24 - T1 - EUREX-HOLREG-2027-2030 - Christmas Eve, a full trading closure.
+        (2029, 12, 24, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-12-25 - T1 - EUREX-HOLREG-2027-2030 - Christmas Day.
+        (2029, 12, 25, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-12-26 - T1 - EUREX-HOLREG-2027-2030 - Boxing Day.
+        (2029, 12, 26, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2029-12-31 - T1 - EUREX-HOLREG-2027-2030 - New Year's Eve, a full trading closure.
+        (2029, 12, 31, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-01-01 - T1 - EUREX-HOLREG-2027-2030 - New Year's Day.
+        (2030, 1, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-04-19 - T1 - EUREX-HOLREG-2027-2030 - Good Friday.
+        (2030, 4, 19, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-04-22 - T1 - EUREX-HOLREG-2027-2030 - Easter Monday.
+        (2030, 4, 22, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-05-01 - T1 - EUREX-HOLREG-2027-2030 - Labour Day.
+        (2030, 5, 1, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-12-24 - T1 - EUREX-HOLREG-2027-2030 - Christmas Eve, a full trading closure.
+        (2030, 12, 24, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-12-25 - T1 - EUREX-HOLREG-2027-2030 - Christmas Day.
+        (2030, 12, 25, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-12-26 - T1 - EUREX-HOLREG-2027-2030 - Boxing Day.
+        (2030, 12, 26, Closed, T1, "EUREX-HOLREG-2027-2030"),
+        // 2030-12-31 - T1 - EUREX-HOLREG-2027-2030 - New Year's Eve, a full trading closure.
+        (2030, 12, 31, Closed, T1, "EUREX-HOLREG-2027-2030"),
     ],
 };

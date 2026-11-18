@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Xetra holiday rows, 2025-2027: the FWB non-trading-days closure set, with
-//! 20:00 early closes only on the trading holidays the operator names.
+//! Xetra holiday rows, 2025-2032: the FWB non-trading-days closure set, with
+//! 20:00 early closes only on the trading holidays the operator names (2026
+//! only) and weekend-falling table entries keying no row.
 
 use super::prelude::*;
 
@@ -18,25 +19,30 @@ fn calendar() -> ExchangeCalendar {
 }
 
 #[test]
-fn coverage_opens_at_the_2010_floor_and_stops_at_the_2027_schedule() {
+fn coverage_opens_at_the_2010_floor_and_stops_at_the_2032_schedule() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
         .expect("xetra ships a built-in table");
     assert_eq!(coverage.first(), day(2010, 1, 1));
-    assert_eq!(coverage.last(), day(2027, 12, 31));
+    assert_eq!(coverage.last(), day(2032, 12, 31));
     let windows = coverage.windows();
     assert_eq!(
         windows,
         vec![
             (day(2010, 1, 1), day(2024, 12, 31)),
-            (day(2025, 1, 1), day(2027, 12, 31)),
+            (day(2025, 1, 1), day(2032, 12, 31)),
         ],
         "two audited windows, one per document wave"
     );
     // Outside the windows the table has no answer at all.
     assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None);
+    assert_eq!(calendar.holiday_on(day(2033, 1, 2)), None);
+    // Inside the second window the page's weekend-falling entries key no row:
+    // 2028's New Year's Day (Saturday) and both starred eves (Sundays).
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
+    assert_eq!(calendar.holiday_on(day(2028, 12, 24)), None);
+    assert_eq!(calendar.holiday_on(day(2028, 12, 31)), None);
 }
 
 #[test]
@@ -371,6 +377,120 @@ fn every_printed_2027_closure_ships() {
     );
 }
 
+/// The page table's 2028-2032 columns: every weekday entry ships as `Closed`
+/// under the year-spanning document id, every weekend-falling entry (with its
+/// `**` marker where printed) keys no row, and the named trading-holiday note
+/// staying scoped to 2026 keeps every Ascension/Whit Monday/Corpus Christi of
+/// these years an ordinary day. Flipping any shipped row or promoting a
+/// weekend entry fails here.
+#[test]
+fn every_printed_2028_through_2032_closure_ships() {
+    let calendar = calendar();
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[
+            // 2028: the Saturday New Year and the Sunday starred eves key no
+            // row, so five weekday entries ship.
+            day(2028, 4, 14),
+            day(2028, 4, 17),
+            day(2028, 5, 1),
+            day(2028, 12, 25),
+            day(2028, 12, 26),
+            // 2029: all eight page dates are weekdays.
+            day(2029, 1, 1),
+            day(2029, 3, 30),
+            day(2029, 4, 2),
+            day(2029, 5, 1),
+            day(2029, 12, 24),
+            day(2029, 12, 25),
+            day(2029, 12, 26),
+            day(2029, 12, 31),
+            // 2030: all eight page dates are weekdays.
+            day(2030, 1, 1),
+            day(2030, 4, 19),
+            day(2030, 4, 22),
+            day(2030, 5, 1),
+            day(2030, 12, 24),
+            day(2030, 12, 25),
+            day(2030, 12, 26),
+            day(2030, 12, 31),
+            // 2031: all eight page dates are weekdays.
+            day(2031, 1, 1),
+            day(2031, 4, 11),
+            day(2031, 4, 14),
+            day(2031, 5, 1),
+            day(2031, 12, 24),
+            day(2031, 12, 25),
+            day(2031, 12, 26),
+            day(2031, 12, 31),
+            // 2032: the Saturday Labor Day and the weekend Christmas block key
+            // no row, so five weekday entries ship.
+            day(2032, 1, 1),
+            day(2032, 3, 26),
+            day(2032, 3, 29),
+            day(2032, 12, 24),
+            day(2032, 12, 31),
+        ],
+    );
+    // The weekend-falling page entries key no row, exactly as 2027's Saturday
+    // Christmas Day and Sunday Boxing Day already record.
+    for weekend in [
+        (2028, 1, 1),
+        (2028, 12, 24),
+        (2028, 12, 31),
+        (2032, 5, 1),
+        (2032, 12, 25),
+        (2032, 12, 26),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(weekend.0, weekend.1, weekend.2)),
+            None,
+            "the page's weekend entry {weekend:?} keys no row"
+        );
+    }
+    // The starred weekday eves are full closures, not half days (the footnote
+    // reads "No trading but settlement is open if the holiday is not on a
+    // Saturday or Sunday" — 2029-12-24 and 2032-12-24 are Mondays/Fridays).
+    for eve in [
+        (2029, 12, 24),
+        (2029, 12, 31),
+        (2032, 12, 24),
+        (2032, 12, 31),
+    ] {
+        assert!(
+            !calendar
+                .is_open(de(eve, (10, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{eve:?} is a closure, not an early close"
+        );
+        let row = calendar
+            .holiday_on(day(eve.0, eve.1, eve.2))
+            .expect("the starred eve ships a row");
+        assert_eq!(row.kind(), HolidayKind::Closed);
+        assert_eq!(row.document_id(), "DB-TC-PAGE-2028-2032");
+    }
+    // The named trading-holiday note remains scoped to 2026, so Ascension,
+    // Whit Monday and Corpus Christi of the extension years ship no early
+    // close and answer as ordinary days (the #200 watch stands). The probes
+    // are the years' actual movable dates: Ascension 2028-05-25, Whit Monday
+    // 2029-05-21, Corpus Christi 2030-06-20 and Ascension 2032-05-06.
+    for ordinary in [(2028, 5, 25), (2029, 5, 21), (2030, 6, 20), (2032, 5, 6)] {
+        assert_eq!(
+            calendar.holiday_on(day(ordinary.0, ordinary.1, ordinary.2)),
+            None,
+            "no 2028-2032 trading holiday is named: {ordinary:?} is audited normal"
+        );
+        assert!(
+            calendar
+                .is_open(de(ordinary, (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{ordinary:?} trades as an ordinary day"
+        );
+    }
+}
+
 #[test]
 fn an_ordinary_weekday_trades_to_the_end_exclusive_late_retail_close() {
     let calendar = calendar();
@@ -451,6 +571,11 @@ fn mutating_a_shipped_row_fails_a_test() {
         .holiday_on(day(2027, 3, 26))
         .expect("2027-03-26 ships a row");
     assert_eq!(closure_2027.document_id(), "DB-TC-PAGE");
+    // The 2028-2032 closures cite the multi-year table retrieval.
+    let closure_2030 = calendar
+        .holiday_on(day(2030, 4, 19))
+        .expect("2030-04-19 ships a row");
+    assert_eq!(closure_2030.document_id(), "DB-TC-PAGE-2028-2032");
     // A historical closure cites the per-year calendar that prints its year.
     let closure_2019 = calendar
         .holiday_on(day(2019, 6, 10))

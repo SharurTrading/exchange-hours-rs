@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-19
+
 ### Added
 
 - Coinbase Derivatives' published 2026 Thanksgiving schedule (the operator's

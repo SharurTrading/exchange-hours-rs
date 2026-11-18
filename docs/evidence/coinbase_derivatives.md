@@ -42,7 +42,7 @@ they are recorded here in revision-row grammar and checked against
 
 ## Holidays
 
-**Coverage:** 2021-06-28..2026-09-07 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2021-06-28..2026-11-27 (inclusive trade dates). Tier: T1 throughout.
 
 Below the window, the pre-launch span 2010-01-01..2021-06-27 answers its **session** questions as the one-flank bridged residual since the 2026-10-07 ruling (AGENTS.md "Modeling conventions", #296 — the metadata reports `HolidayWindowsBridged`, the complete-calendar claim stays withheld) while the **holiday-table classification** (`is_closed_trade_date`) refuses a typed `UnresolvedGap` on every span date: nothing witnesses a pre-launch holiday layer, and the sourced pre-launch grid answers the venue closed.
 
@@ -61,9 +61,15 @@ Three closures exercise the first half of that rule and each names the session i
 with a separate `24x7 Crypto` row open as well. All three ship `closed` in the module; the module
 doc comment says so too.
 
-The window opens at the venue's first trade date, FairX's launch Monday 2021-06-28, and closes at
-2026-09-07, where the table the crate first shipped stopped; the notices for 2026-09-08 onward
-belong to the published-future refresh.
+The window opens at the venue's first trade date, FairX's launch Monday 2021-06-28. It closed at
+2026-09-07 from the first shipment until 2026-11-18 UTC, when notice **26-41** ("2026 Thanksgiving
+Schedule", posted 11/17/2026) was retrieved and extended the window to **2026-11-27**, the last
+trade date that notice publishes. The dates between 2026-09-08 and 2026-11-25 carried no 23x5
+arrangement — the only notices issued in that span above 26-36 are the maintenance and product
+notices recorded below as out of scope — so no row was available to ship there, and the
+publication horizon governed. Beyond 2026-11-27 it governs again: no Christmas 2026 or 2027
+holiday notice has issued (the 2025 pattern puts a Christmas notice around 11/25), and 26-40 and
+26-40.1 are 24x7 Saturday maintenance windows outside this grid.
 
 On a half day the groups can print different instants. Ordinary half days are the Friday after
 Thanksgiving, Christmas Eve and New Year's Eve: in 2021-11-26, 2023-11-24, 2025-11-28 and
@@ -131,12 +137,21 @@ so the residual under-report is visible: for 2024-12-24 the 23x5 Crypto group re
 | `CDE-MN-26-27.1` | 2026-06-19 .. 2026-06-19 | <https://assets.ctfassets.net/k3n74unfin40/4Vy8yQyOCHG8dWW20SjNTU/033e076b88302e28249198bd72b518b5/CDE_Market_Notice_26-27.1_Amendment_to_26.27_2026_Juneteenth_Schedule_for_Gold_Silver_24x7.pdf> | retrieved 2026-09-19 02:02-02:45 UTC (live) | T1 | `c141366e2f50eeacfd26def14e0ad6a9de448b0f319d79a5007933769881c10f` |
 | `CDE-MN-26-29` | 2026-07-03 .. 2026-07-03 | <https://assets.ctfassets.net/k3n74unfin40/70J0u2Lv7TOspmrGMI30QI/95ee852baac3d551aabe41acb334837d/CDE_Market_Notice_26-29__2026_Independence_Day_Schedule.pdf> | retrieved 2026-09-19 02:02-02:45 UTC (live) | T1 | `481e0f35da824519f4046129cc66142ae004b90fe19b2749b2073f8b89dea736` |
 | `CDE-MN-26-36` | 2026-09-07 .. 2026-09-07 | <https://assets.ctfassets.net/k3n74unfin40/3QC7hwlE6hRHicbNapLlWn/e36b89318d9dbcfc17c931f70912e4c4/Market_Notice_26-36__2026_Labor_Day.pdf> | retrieved 2026-09-19 02:02-02:45 UTC (live) | T1 | `c21dc783a6e6c560540126a30572e932654d8531f4e7225f0b3221514116616d` |
+| `CDE-MN-26-37` | n/a | <https://assets.ctfassets.net/k3n74unfin40/6cvYvCxcHFMAGEjOM1Cfoy/3830c45e49154425f5c14ffc1b24c0bb/CDE_Market_Notice_26-37_Q4_2026_Quarterly_Maintenance_Window___FIA_DR_Testing.pdf> | retrieved 2026-11-18 08:48 UTC (live) | T1 | `97f2d841c43239aba313f7a4c594381767ffb759ee0a2bcc869c1de80f869754` |
+| `CDE-MN-26-38` | n/a | <https://assets.ctfassets.net/k3n74unfin40/2sRoZMeIy9pkFuSqCO2hTD/504ebb20d57091e0795bcb74630bbfd7/CDE_Market_Notice_26-38_Perp_Style_Futures_Expiry_Change.pdf> | retrieved 2026-11-18 08:48 UTC (live) | T1 | `a73215ef95477238e79c6bf04a428c69ab3a9bc15687afa631819dbd41869d8e` |
+| `CDE-MN-26-39` | n/a | <https://assets.ctfassets.net/k3n74unfin40/3hHvaXDpBYPl0tU9saI05D/14f5318561aac87c31ea1eda3eeeee92/CDE_Market_Notice_26-39_Single_Stock_Perpetual_Futures.pdf> | retrieved 2026-11-18 08:48 UTC (live) | T1 | `087febbcc3d3ccce88e091a5cc8864b418b8d7e057324bd134f296d0aae741b3` |
+| `CDE-MN-26-40` | n/a | <https://assets.ctfassets.net/k3n74unfin40/3B4vmLmGERXDxO5qegRqsF/666b45f07105724e19a7e30adfe7cb37/9a251f3f-921e-42a7-b516-81e2ed4a87cf.pdf> | retrieved 2026-11-18 08:48 UTC (live) | T1 | `9c872f322f194925f29ed9c2bedbd29b962157b59ba4cc50140d1a5abf92bf43` |
+| `CDE-MN-26-40.1` | n/a | <https://assets.ctfassets.net/k3n74unfin40/12446Fbkb979ABegaKd3A5/ed18e15fd1630b815612eafc2b707b1f/456e7f48-590d-445b-aa34-a8b43e58e435.pdf> | retrieved 2026-11-18 08:48 UTC (live) | T1 | `230533aab8d077bb89d542f9ba8f7804378edb57da42124a6bce4302d528c964` |
+| `CDE-MN-26-41` | 2026-11-26 .. 2026-11-27 | <https://assets.ctfassets.net/k3n74unfin40/6mrPgfFMekNod6VM9XYhXe/edb6b7ccd00a0e13dc6f5868d956de2e/Market_Notice_26-41_2026_Thanksgiving.pdf> | retrieved 2026-11-18 08:46 UTC (live) | T1 | `1b679f80bb7592f059e574e21894b76fd2dbd6c6638b402bec36c36d307065b6` |
 | `CDE-NOTICES-INDEX-2026-09-19` | 2021-06-01 .. 2026-09-10 | <https://www.coinbase.com/derivatives/market-notices> | retrieved 2026-09-19 02:02 UTC via the public reader (direct coinbase.com returns 403); raw bytes `cde_market_notices_raw.html`, sha256 `54816ca2d73db15058f89afecb88861b13fe7f16c2a22bcc3092cc4ddc5d0dbc` | T1 | `54816ca2d73db15058f89afecb88861b13fe7f16c2a22bcc3092cc4ddc5d0dbc` |
+| `CDE-NOTICES-INDEX-2026-11-18` | 2021-06-01 .. 2026-11-18 | <https://www.coinbase.com/derivatives/market-notices> | retrieved 2026-11-18 08:44 UTC direct with `curl --http1.1` and a Windows Chrome User-Agent, which answered HTTP 200 — the first session where the listing needed neither the public reader nor an archive; raw bytes `cde_market_notices_raw_20261118.html`, sha256 `0e654dc1f206c1063c9832a467851eb790361f4cfd34b2bdb8cb24b5f3ddffdc`, source of every `assets.ctfassets.net` address the 2026-11-18 rows above resolve | T1 | `0e654dc1f206c1063c9832a467851eb790361f4cfd34b2bdb8cb24b5f3ddffdc` |
 
-All bytes are in the research store under `holidays/raw/cde-2021-2025/` with a URL, UTC retrieval
-time and sha256 per artifact in its `INDEX.md`; the operator statements behind every row are the
-`OPS` literal in that directory's `build_block.py`, and the verified result is
-`holidays/cde-2021-2026.json`.
+All bytes are in the research store with a URL, UTC retrieval time and sha256 per artifact in the
+owning directory's `INDEX.md`: the 2021-2026 notices under `holidays/raw/cde-2021-2025/` (the
+operator statements behind every row through 2026-09-07 are the `OPS` literal in that directory's
+`build_block.py`, and the verified result is `holidays/cde-2021-2026.json`), the 2026-09-26
+published-future refresh under `holidays/raw/cde-2026-2027/`, and the 2026-11-18 retrieval of
+notice 26-41 and its five sibling notices under `holidays/raw/cde-thanksgiving-2026/`.
 
 ### 2021
 
@@ -225,6 +240,55 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 | 2026-06-19 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-27.1` | T1 | CDE's own Trade Date column names Friday 6/19; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2026-07-03 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-29` | T1 | CDE's own Trade Date column names Friday 7/3; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2026-09-07 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-36` | T1 | CDE's own Trade Date column names Monday 9/7; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-11-26 | closed | Energy, Copper & Platinum `Closed for holiday`; Equity `Closed for holiday` | `CDE-MN-26-41` | T1 | CDE's own Trade Date column names Thursday 11/26; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text; the off-grid `24x7 Crypto, Gold & Silver` row prints `See Friday` for the date and the off-grid Equity Index PSF row prints `Closed for holiday` beside it, neither claiming a row |
+| 2026-11-27 | early close | Equity `11/27 12:00 CT`; Energy, Copper & Platinum `11/27 13:45 CT` | `CDE-MN-26-41` | T1 | CDE's own Trade Date column names Friday 11/27; the venue row takes the earliest close among the groups on the 23x5 grid (Energy, Copper & Platinum, Equity), so it never reports a window in which no product prints; the notice prose dates the trade date's commencement at Thursday 11/26 17:00 CT for these groups (`11/26 17:00 CT` in the Friday OPEN/START cells) and the settlements section states `Equity products will settle at 12:00 CT`, corroborating the grid |
+
+### Notice 26-41 verbatim
+
+Retrieved 2026-11-18 08:46 UTC
+(`holidays/raw/cde-thanksgiving-2026/pdf/CDE_Market_Notice_26-41_2026_Thanksgiving.pdf`, sha256
+`1b679f80bb7592f059e574e21894b76fd2dbd6c6638b402bec36c36d307065b6`). Header: `Notice: 26-41`,
+`Date: 11/17/2026`, `Subject: Coinbase Derivatives 2026 Thanksgiving Schedule`. The load-bearing
+prose, from the notice body:
+
+> In observance of Thanksgiving, the November 26, 2026 trading session will be closed for select
+> Coinbase Derivatives, LLC products.
+>
+> For enabled firms, 24x7 Products will remain open throughout the holiday. Friday, November 27,
+> 2026 trade date will commence on Wednesday, November 25, 2026, at 16:00 CT.
+>
+> For Equity Index Perp Style Futures (AIP, CHN, DEF, TEK, US5), the Friday, November 27, 2026
+> trade date will commence on Thursday, November 26, 2026, at 19:00 CT.
+
+and the Hours of Operation grid, verbatim, one line per product group with the OPEN/START and
+CLOSE/ROLL cells for the Wednesday 11/25, Thursday 11/26 and Friday 11/27 trade-date columns:
+
+- `Energy, Copper & Platinum` — Wednesday `11/24 17:00 CT` / `11/25 16:00 CT`; Thursday `Closed
+  for holiday`; Friday `11/26 17:00 CT` / `11/27 13:45 CT`
+- `Equity` — Wednesday `11/24 17:00 CT` / `11/25 16:00 CT`; Thursday `Closed for holiday`; Friday
+  `11/26 17:00 CT` / `11/27 12:00 CT`
+- `Equity Index PSF` — Wednesday `11/24 16:00 CT` / `11/25 16:00 CT`; Thursday `Closed for
+  holiday`; Friday `11/26 19:00 CT` / `11/27 12:00 CT`
+- `24x7 Crypto, Gold & Silver` — Wednesday `11/24 16:00 CT` / `11/25 16:00 CT`; Thursday `See
+  Friday`; Friday `11/25 16:00 CT` / `11/27 16:00 CT`
+
+and the settlements section, verbatim, where it bears on the grid:
+
+> Trade date Friday, November 27, 2026
+>
+> - Equity products will settle at 12:00 CT
+> - Energy products will settle early at 13:45 CT
+> - All other products will settle at their regular times
+
+The two rows the module ships read the groups on the venue's 23x5 grid (`Energy, Copper &
+Platinum`, `Equity`) off that grid: Thursday closed under both, Friday early-closed at the
+earliest on-grid close, 12:00 CT. The notice prints **12:00**, not the 12:15 CT the 2021-2025
+Thanksgiving notices printed for Equity; the instant was verified against the PDF bytes — "12:00"
+occurs three times (the Equity grid cell, the Equity Index PSF cell and the settlements line)
+and "12:15" does not occur at all. The `Equity Index PSF` row is the 24x5 perp-style tier that
+claims no key and adds no row (its Wednesday cells open at 16:00 CT, the 24x5 shape, not the
+23x5 17:00), and the `24x7 Crypto, Gold & Silver` row's Friday cell opens at `11/25 16:00 CT`,
+the 24x7 commencement the second prose paragraph states.
 
 ### Gaps and residual risks, 2021-2026
 
@@ -350,19 +414,51 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 - **Notice 24-27 keys no row.** It states that the 2025-01-09 session (a National Day of Mourning)
   "will observe a normal trading day", so 2025-01-09 is an audited-normal date.
 - **The half-day rows under-report the later-closing groups.** See the `## Holidays` preamble: the
-  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-12-24, 2025-11-28 and
-  2025-12-24, five of the six early closes. The sixth, 2024-11-29, is not a disagreement: all
-  three groups printed 13:45 CT, so nothing is under-reported there. A caller trading a group that prints a later close on those dates
+  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-12-24, 2025-11-28,
+  2025-12-24 and 2026-11-27, six of the seven early closes. The seventh, 2024-11-29, is not a
+  disagreement: all three groups then printed 13:45 CT, so nothing is under-reported there. On
+  2026-11-27 the row carries Equity's 12:00 CT while Energy, Copper & Platinum printed 13:45 CT;
+  the off-grid Equity Index PSF group printed the same 12:00 CT close, and the 24x7 tier traded
+  through the holiday to 16:00 CT. A caller trading a group that prints a later close on those dates
   should use its own key; no key is claimed for the 24x7 crypto tier or the 24x5 equity-index PSF
   group.
+- **Notices 26-37, 26-38, 26-39, 26-40 and 26-40.1 key no row.** All five were retrieved
+  2026-11-18 UTC beside 26-41 (`holidays/raw/cde-thanksgiving-2026/`, one quoted line each below)
+  so the out-of-scope decision is auditable; none states an arrangement for a trade date on the
+  23x5 grid.
+  - **26-37** (posted 09/24/2026, effective 2026-10-24) — the Q4 quarterly weekend maintenance
+    and FIA DR test: `24x7 Products Transition to CLOSE / Start of Maintenance` at `Oct-24,
+    5:00 AM` and `24x7 Products Transition to OPEN / End of Maintenance` at `Oct-24, 2:00 PM`.
+    A Saturday, which the 23x5 week (Sunday–Friday) does not contain, and a `24x7 Products`
+    window only; the 2026-10-03 re-check below had already recorded it as listed-only.
+  - **26-38** (posted 10/19/2026, effective 2026-10-26) — contract-lifecycle data, not a session
+    arrangement: `Effective Monday, October 26, 2026 the contracts listed below, currently
+    structured as five-year long dated futures, will have their expiration dates removed and
+    will become true perpetual futures contracts with no expiration.`
+  - **26-39** (posted 11/09/2026, effective 2026-12-13) — a product launch on a new off-grid
+    tier: fifty seven (57) Single Stock Perpetual Futures for trade date 2026-12-14, `eligible
+    for trading from Sunday 19:00 CT to Friday 16:00 CT`. No `MarketHoursKey` is claimed for
+    that tier, and a launch is not a holiday.
+  - **26-40** (posted 11/17/2026, effective 2027-01-23) — 2027 quarterly weekend maintenance for
+    `24x7 Products`: `Jan-23, 9:00 AM` `24x7 Products Transition to CLOSE / Start of
+    Maintenance` through `Jan-23, 12:00 PM` `24x7 Products Transition to OPEN / End of
+    Maintenance`, then `Q2: Saturday, April 10, 2027`, `Q3: Saturday, July 24, 2027` and
+    `Q4: Saturday, October 23, 2027 (aligned with FIA DR test)`. Saturdays again, 24x7 again.
+  - **26-40.1** (posted 11/17/2026, effective 2027-01-23) — `This notice amends Market Notice
+    26-40 (published 11/17/2026) to reflect the updated Q1 maintenance window of 7:00 AM –
+    10:00 AM CT.` Same 24x7-only, Saturday scope; where the two notices disagree on the Q1
+    window the amendment's printed window governs, and neither touches a 23x5 trade date.
+  A 24x7 product-family key — deliberately not claimed here — would own every window above.
 - **Trade date 2021-09-03 is carried as audited normal.** Notice 21-04 says markets are "closed
   from 16:00 CT Friday, September 2nd", but 2 September 2021 was a Thursday and the Friday before
   Labor Day was the 3rd; the notice's subject ("Labor Day Observed Monday, September 6th, 2021"),
   its reopening sentence and the identical construction in notice 21-03 ("closed from 16:00 CT
   Friday, July 2nd") all place the closure on the Monday. The operator's date is a typo; the
   affected trade date is 2021-09-06, which ships `closed`.
-- **The 2026-09-08 onward notices are not retrieved here.** They belong to the published-future
-  refresh, not to this window; the last row this table ships is 2026-09-07. Re-checked 2026-10-02
+- **The 2026-09-08 onward notices were not retrieved in the original window shipment.** They
+  belonged to the published-future refresh, not to this window, whose last row stayed 2026-09-07
+  until the 2026-11-18 retrieval of notice 26-41 extended the audited window to 2026-11-27.
+  Re-checked 2026-10-02
   UTC through the exchange's notices listing, rendered through the public reader because the
   direct channel answers HTTP 403 (artifacts and `INDEX-recheck-2026-10-02.md` under
   `holidays/raw/cde/` in the research store): the newest notices are 26-33.3 and 26-37 (both
@@ -386,6 +482,12 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   and the holiday horizon stays 2026-09-07; per the 2025 pattern (the Thanksgiving notice posted
   10/30, the Christmas notice 11/25) the next expected holiday publication is late October, and
   the listing is re-checked monthly per LAW-WATCH.
+  The 2026-11-18 retrieval closed the Thanksgiving part of this gap: notice 26-41 (posted
+  11/17/2026, effective 11/26/2026) was fetched direct — `www.coinbase.com` answered the
+  Windows-Chrome-UA `--http1.1` request with HTTP 200, the first session where the listing
+  needed neither the public reader nor an archive — and its two trade dates are encoded above,
+  extending the window to 2026-11-27 (`holidays/raw/cde-thanksgiving-2026/`). The Christmas
+  2026 notice remains outstanding with the same closing condition, tracked in #388.
 
 ## Sources
 
@@ -473,8 +575,12 @@ consequence is visible in `tests/golden/normal_week_grids.txt`, whose
 2026-08-22 fixture instant renders the dated grid without the Pre-Open.
 
 The 2026 Thanksgiving/Christmas session-hours publication is tracked in #388.
-Re-checked 2026-11-03 UTC: the operator's trading-resources page now lists the
-2026-11-26 Thanksgiving, 2026-11-27 day-after and 2026-12-25 Christmas dates,
-but none carries a linked Market Notice or a stated session instant, so no row
-is encodable yet; the closing condition is the CDE Market Notice stated in
-issue #388, and the next recheck is late November 2026 by the 2025 pattern.
+Re-checked 2026-11-03 UTC: the operator's trading-resources page listed the
+2026-11-26 Thanksgiving, 2026-11-27 day-after and 2026-12-25 Christmas dates
+without a linked Market Notice or a stated session instant. The Thanksgiving
+half of that gap closed on 2026-11-18 UTC: notice 26-41 (posted 11/17/2026)
+issued with its own session grid, and the module ships its rows for trade
+dates 2026-11-26 and 2026-11-27. The Christmas 2026 notice remains the
+tracked closing condition of #388; by the 2025 pattern (the Thanksgiving
+notice posted 10/30, the Christmas notice 11/25) it is expected around late
+November, and the listing is re-checked monthly per LAW-WATCH.

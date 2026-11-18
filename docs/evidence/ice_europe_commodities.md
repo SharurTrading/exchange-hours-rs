@@ -31,6 +31,7 @@ as each source is re-verified.
 
 - The commodities segment is modelled by one contract, Brent Crude Futures. Other ICE Europe commodity families are not covered by this row.
 - The row deliberately duplicates the `iceeu` profile; if either is ever re-sourced, both must be reviewed together.
+- **Dormant note, 2026-11-18 UTC: the operator's 2027 schedule is published and captured.** The live "IFEU Trading Schedule: Oil, Utilities and Agricultural" edition (header "November 2026") now carries a "2027 Trading Schedule" section with a `Year: 2027` holiday table (2027-01-01 New Year's Day Closed, MLK Day 18 January marked `A`, and the year's rows following). Captured at T1 from <https://www.ice.com/publicdocs/Trading_Schedule.pdf>; artifact `holidays/raw/ice-dormant-2027-schedules-2026-11-18/20261118090229_Trading_Schedule.pdf` (sha256 `518da0a932f71d81bd1f04b09ecd6598731531f90d587382dbcf3e3b23e0ac1e`) with its `pdftotext` extraction and the wave's `INDEX.md` in the research store. No runtime row moves: this identity is dormant, so the 2027 table is worked up into data only when a consumer reaches it (LAW-SERVICE-TIERS); this capture is the dormant-tier obligation, not a completeness claim.
 
 ## Shared module
 

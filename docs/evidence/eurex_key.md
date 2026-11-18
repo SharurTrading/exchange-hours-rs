@@ -33,15 +33,16 @@ they are recorded here in revision-row grammar and checked against
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2010-01-01..2030-12-31 (inclusive trade dates). Tier: T1 throughout.
 
 The key shares the `eurex` exchange row's `TABLE`: the all-derivatives closures plus the dated German-scope closures the 2014, 2016, 2017 and 2018 editions state for the German equity and equity-index products, which are FDAX and FDXM inside the family's documented scope. The `eurex_fixed_income` key ships its own all-derivatives-only `FIXED_INCOME` table, because the operator's German-scope notes never name fixed income (see [eurex_fixed_income](eurex_fixed_income.md)).
 
 **Documents.**
 
 - `EUREX-HOLREG-2026` — Eurex “Holiday regulations”, § 2026, day by day. <https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations> (raw bytes retrieved 2026-09-12 04:19 UTC, sha256 `7b28acd2d2fb126c01461ef5a4ae11fe93e8b6f318001c6304bbce0fc78f3821`) — **T1**. Corroborated by the Trading Calendar 2026 PDF, p.2 “Overview of holidays by countries” <https://www.eurex.com/resource/blob/4873184/0ca7669a8cb9a2f917d99a801fb3f2de/data/tradingcalendar_2026_en.pdf> (retrieved 2026-09-12 04:18 UTC, sha256 `b0796b42819b38c0757d727d9b789360ba84cd0d45cea215544f86342158ac65`, PDF CreationDate 2026-07-02).
+- `EUREX-HOLREG-2027-2030` — the same page's `Non-trading days at Eurex 2026 - 2030` table, 2027-2030 columns. <https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations> (raw bytes retrieved 2026-11-18 08:47:32 UTC, sha256 `47e905aed14cabcb657e363bade142fb8d2861523c052ecfe3b4e3b6a873f8ae`) — **T1**.
 
-All bytes, with each artifact's URL, UTC retrieval time and sha256, are in the research store under `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/INDEX.md` and `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027-fix/INDEX.md`; the normalised result is `holidays/cfe-eurex-ice-cde-smfe-2026-2027.json`, verified `matches: true` with zero discrepancies in its round-2 adversarial verdict.
+The 2027-2030 rows key the Holiday regulations page's own multi-year table — the same unconditional operator statement whose § 2025 and § 2026 day-by-day sections key 2025 and 2026. The resolution of the earlier indicative-page conflict, the 2026 cross-check, the stability comparison and the country-scope residual are recorded in [eurex](eurex.md) and inherited here; the key ships exactly the rows the exchange row's table ships for these years. All bytes, with each artifact's URL, UTC retrieval time and sha256, are in the research store under `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/INDEX.md`, `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027-fix/INDEX.md` and `holidays/raw/eurex-2027-2030/INDEX.md`; the normalised result is `holidays/cfe-eurex-ice-cde-smfe-2026-2027.json`, verified `matches: true` with zero discrepancies in its round-2 adversarial verdict.
 
 ### 2010
 
@@ -244,9 +245,63 @@ All bytes, with each artifact's URL, UTC retrieval time and sha256, are in the r
 | 2026-12-25 | closed | `Eurex is closed for trading and clearing (exercise, settlement and cash) in all derivatives.` | `EUREX-HOLREG-2026` | T1 | Eurex event date 2026-12-25 (Christmas Day) |
 | 2026-12-31 | closed | `Eurex is closed for trading in all derivatives: 24 December, 31 December` — a full trading closure; clearing stays open | `EUREX-HOLREG-2026` | T1 | Eurex event date 2026-12-31 (New Year's Eve) |
 
-**Gaps, 2026:** **Eurex 2027 does not ship.** Eurex's 2027-2036 trading calendars are published “on a preliminary and indicative basis … and are subject to change”, which is not the unconditional, day-level future LAW-NO-FABRICATED-DATES requires, so the five 2027 closures the indicative CSV carries (2027-01-01, 2027-03-26, 2027-03-29, 2027-12-24, 2027-12-31) are recorded here and encoded nowhere. Closed by the Eurex “Trading Calendar 2027” PDF and the 2027 section of the Holiday regulations page; re-checked 2026-10-02 UTC with the exchange row's evidence file (`eurex.md`), whose fresh reads of all three channels that day found the conflict standing. **Additional German closures are unresolved.** The Trading Calendar 2026 PDF states that Eurex “is closed for trading and exercise in German equity and equity index derivatives as well as ETF and ETC derivatives which are based on Xetra® listings: to be announced”. DAX and Mini-DAX futures are German equity index derivatives, so that line could add closures beyond the seven above for FDAX and FDXM; the day-by-day Holiday regulations page lists no German-specific 2026 closure and German Unity Day 2026-10-03 falls on a Saturday, so the practical exposure is probably nil, but the operator has not said so. Closed by a Eurex announcement resolving that line.
+**Gaps, 2026:** none remain. The former "**Eurex 2027 does not ship**" state was superseded on 2026-11-18 UTC by the resolution recorded in [eurex](eurex.md): the Holiday regulations page's own `Non-trading days at Eurex 2026 - 2030` table keys 2027-2030 and the indicative CSV remains non-keying. The Trading Calendar 2026 PDF's German-scope `to be announced` line verified to **no closures** on 2026-10-05 UTC (#157, retired), and no 2027-2030 country-scope section exists on the page at all, so no German-scope addition is encodable for the extension years.
 
 **Interpretive steps, 2026:** None. Eurex states its closures as whole days for “all derivatives”, every phase the crate models runs inside one Berlin civil day, and Eurex publishes no early close — 24 and 31 December are full trading closures with clearing open, not half days. So each event date is its own trade date and each row is `Closed`.
+
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `New Year's Day — Friday 01 Jan 2027` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-01-01 (New Year's Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2027-03-26 | closed | `Good Friday — Friday 26 Mar 2027` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-03-26 (Good Friday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2027-03-29 | closed | `Easter Monday — Monday 29 Mar 2027` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-03-29 (Easter Monday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2027-12-24 | closed | `Christmas Eve* — Friday 24 Dec 2027` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-12-24 (Christmas Eve); one Berlin civil day per trade date, so the conversion is the identity |
+| 2027-12-31 | closed | `New Year's Eve* — Friday 31 Dec 2027` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-12-31 (New Year's Eve); one Berlin civil day per trade date, so the conversion is the identity |
+
+**Gaps, 2027:** none in the Eurex-wide set. The table's weekend entries (`Saturday 01 May 2027` Labour Day, `Saturday 25 Dec 2027` Christmas Day, `Sunday 26 Dec 2027` Boxing Day) key no weekday row; no country-scope section exists for 2027 (see [eurex](eurex.md)).
+
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-04-14 | closed | `Good Friday — Friday 14 Apr 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-04-14 (Good Friday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2028-04-17 | closed | `Easter Monday — Monday 17 Apr 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-04-17 (Easter Monday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2028-05-01 | closed | `Labour Day — Monday 01 May 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-05-01 (Labour Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2028-12-25 | closed | `Christmas Day — Monday 25 Dec 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-12-25 (Christmas Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2028-12-26 | closed | `Boxing Day — Tuesday 26 Dec 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-12-26 (Boxing Day); one Berlin civil day per trade date, so the conversion is the identity |
+
+**Gaps, 2028:** none in the Eurex-wide set. The table's weekend entries (`Saturday 01 Jan 2028` New Year's Day, `Sunday 24 Dec 2028` Christmas Eve\*, `Sunday 31 Dec 2028` New Year's Eve\*) key no weekday row; no country-scope section exists for 2028.
+
+### 2029
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2029-01-01 | closed | `New Year's Day — Monday 01 Jan 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-01-01 (New Year's Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-03-30 | closed | `Good Friday — Friday 30 Mar 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-03-30 (Good Friday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-04-02 | closed | `Easter Monday — Monday 02 Apr 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-04-02 (Easter Monday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-05-01 | closed | `Labour Day — Tuesday 01 May 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-05-01 (Labour Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-12-24 | closed | `Christmas Eve* — Monday 24 Dec 2029` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-24 (Christmas Eve); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-12-25 | closed | `Christmas Day — Tuesday 25 Dec 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-25 (Christmas Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-12-26 | closed | `Boxing Day — Wednesday 26 Dec 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-26 (Boxing Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2029-12-31 | closed | `New Year's Eve* — Monday 31 Dec 2029` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-31 (New Year's Eve); one Berlin civil day per trade date, so the conversion is the identity |
+
+**Gaps, 2029:** none. All eight of the table's 2029 dates fall on weekdays and ship; no country-scope section exists for 2029.
+
+### 2030
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2030-01-01 | closed | `New Year's Day — Tuesday 01 Jan 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-01-01 (New Year's Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-04-19 | closed | `Good Friday — Friday 19 Apr 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-04-19 (Good Friday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-04-22 | closed | `Easter Monday — Monday 22 Apr 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-04-22 (Easter Monday); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-05-01 | closed | `Labour Day — Wednesday 01 May 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-05-01 (Labour Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-12-24 | closed | `Christmas Eve* — Tuesday 24 Dec 2030` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-24 (Christmas Eve); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-12-25 | closed | `Christmas Day — Wednesday 25 Dec 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-25 (Christmas Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-12-26 | closed | `Boxing Day — Thursday 26 Dec 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-26 (Boxing Day); one Berlin civil day per trade date, so the conversion is the identity |
+| 2030-12-31 | closed | `New Year's Eve* — Tuesday 31 Dec 2030` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-31 (New Year's Eve); one Berlin civil day per trade date, so the conversion is the identity |
+
+**Gaps, 2030:** none. All eight of the table's 2030 dates fall on weekdays and ship; no country-scope section exists for 2030.
 
 ## Sources
 

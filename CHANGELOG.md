@@ -4,6 +4,38 @@
 
 ## [Unreleased]
 
+### Added
+
+- Coinbase Derivatives' published 2026 Thanksgiving schedule (the operator's
+  Market Notice 26-41 of 17 November 2026): Thursday 26 November 2026 closes
+  and Friday 27 November 2026 closes early at 12:00 CT, extending the
+  venue's audited holiday window from 2026-09-07 to 2026-11-27. No Christmas
+  2026 or 2027 holiday notice has issued yet (#388).
+- Eurex's published 2027-2030 non-trading days (the Holiday regulations
+  page's own `Non-trading days at Eurex 2026 - 2030` table, the same
+  unconditional channel that keyed 2025 and 2026): twenty-six Eurex-wide
+  closure rows in each of `eurex`, `eurex_fixed_income` and `eurex_smi`,
+  extending all three audited windows to 2030-12-31. The table's
+  weekend-falling entries key no row, and no 2027-2030 country-scope section
+  exists, so those years carry the Eurex-wide set alone; a later country
+  addition lands as a schedule fix.
+- Xetra's published 2028-2032 non-trading days (the cash-market page's own
+  multi-year table, read under its information-purposes caveat, recorded as
+  a residual risk): thirty-four closure rows, extending the audited window
+  to 2032-12-31. No 2028-2032 trading-holiday close instants are named by
+  any artifact, so no early close is inferred.
+- ICE Futures Europe gilt futures' New Year's Day 2027 closure (the
+  operator's November 2026 Christmas document), extending the family's
+  audited window to 2027-01-01; the rest of 2027 is unpublished.
+
+### Fixed
+
+- ICE Futures Europe gilt futures' announced 2026 Christmas and New Year's
+  eves (2026-12-24 and 2026-12-31) upgrade from `Unsourced` to sourced
+  12:15 GMT early closes: the August 2026 Fixed Income edition deferred both
+  eves to a circular, and the operator's November 2026 Christmas document
+  discharges the deferral with the family's printed cessation instants.
+
 ## [1.3.2] - 2026-11-16
 
 ### Fixed

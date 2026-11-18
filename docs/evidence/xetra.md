@@ -18,13 +18,15 @@ DAX constituent-share envelope with its January-2010 intraday auction, 2020-11-2
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in `Europe/Berlin`; tier T1 throughout).
+**Coverage:** 2010-01-01..2024-12-31, 2025-01-01..2032-12-31 (inclusive venue-local trade dates in `Europe/Berlin`; tier T1 throughout).
 
-The rows key on Deutsche Börse's own cash-market trading calendar. For 2010-2024 each year's closure set is stated in one sentence on the operator's per-year `Trading calendar` PDF — at FWB® Frankfurter Wertpapierbörse "there will be trading Mondays to Fridays in \<year\>, with the exception of ..." — and 2010-2014 rows cite the `Trading Calendar <year>` grid editions (`DB-TC-PDF-<year>`, the `DB_HK_<year>` documents of the xetra.com and deutsche-boerse.com archives) while 2015-2024 rows cite the `xetra-trading-calendar-<year>` PDFs (`DB-TC-PDF-<year>`); the English dispatch page editions of 2012-2014 (`DB-TC-PAGE-<year>`) restate the same sentences and corroborate. For 2025-2027 the rows key on the `Non-trading days at Frankfurter Wertpapierbörse (FWB®) ... (Xetra and Börse Frankfurt)` table of the operator's `Trading calendar and trading hours` page and the per-year PDFs that restate each year's set in the same one-sentence form: the 2025-04-22 capture of the page (`DB-TC-PAGE-2025`) and the `Trading calendar 2025` PDF it links (`DB-TC-PDF-2025`) govern 2025; the live page (`DB-TC-PAGE`) and its `Trading calendar 2026` PDF (`DB-TC-PDF-2026`) govern 2026 and the original 2027 rows. The `Trading Calendar 2027` edition (`DB-TC-PDF-2027`), retrieved 2026-10-31 UTC, corroborates the five existing 2027 weekday closures without adding a final holiday-hour instant.
+The rows key on Deutsche Börse's own cash-market trading calendar. For 2010-2024 each year's closure set is stated in one sentence on the operator's per-year `Trading calendar` PDF — at FWB® Frankfurter Wertpapierbörse "there will be trading Mondays to Fridays in \<year\>, with the exception of ..." — and 2010-2014 rows cite the `Trading Calendar <year>` grid editions (`DB-TC-PDF-<year>`, the `DB_HK_<year>` documents of the xetra.com and deutsche-boerse.com archives) while 2015-2024 rows cite the `xetra-trading-calendar-<year>` PDFs (`DB-TC-PDF-<year>`); the English dispatch page editions of 2012-2014 (`DB-TC-PAGE-<year>`) restate the same sentences and corroborate. For 2025-2027 the rows key on the `Non-trading days at Frankfurter Wertpapierbörse (FWB®) ... (Xetra and Börse Frankfurt)` table of the operator's `Trading calendar and trading hours` page and the per-year PDFs that restate each year's set in the same one-sentence form: the 2025-04-22 capture of the page (`DB-TC-PAGE-2025`) and the `Trading calendar 2025` PDF it links (`DB-TC-PDF-2025`) govern 2025; the live page (`DB-TC-PAGE`) and its `Trading calendar 2026` PDF (`DB-TC-PDF-2026`) govern 2026 and the original 2027 rows. The `Trading Calendar 2027` edition (`DB-TC-PDF-2027`), retrieved 2026-10-31 UTC, corroborates the five existing 2027 weekday closures without adding a final holiday-hour instant; the live fetch of 2026-11-18 UTC reproduces it byte-identically (same sha256), and the byte is banked beside the 2028-2032 keying artifact in the research store under `holidays/raw/equities/xetra/2028-2032/`. For **2028-2032** the rows key the same page table's later columns — the table spans 2026-2032, and the 2026-11-18 live retrieval (`DB-TC-PAGE-2028-2032`) is the artifact those rows cite; its table text is identical to the stored 2026-09-28 live edition, so the operator had printed those columns unchanged for weeks before the keying retrieval.
 
 Three readings of the historical sentences are the operator's own, not the crate's. First, a "settlement day" is a **closure**: the sentence places the day in the exception list — the market does not trade — while noting that settlement (Clearstream) runs; this is the same statement the modern `**` footnote prints as "No trading but settlement is open", and both eras ship `Closed`. Second, the sentence is the year's complete closure statement, so its omissions trade: 2011 names no 3 October (a Monday that year) and 2013 names no 3 October (a Thursday), so the exchange traded those German Unity Days, and from 2022 the sentences stop naming Whit Monday and German Unity Day altogether, so those days answer as ordinary trading days from 2022 on. Third, a weekend-falling exception date is deleted by the sentence's own "Mondays to Fridays" premise and keys no weekday row.
 
 Two further readings govern 2025-2027. First, Christmas Eve and New Year's Eve are **closures**: the `**` footnote reads "No trading but settlement is open", which states that the market does not trade. Second, the live page names 2026's trading holidays — `Ascension Day (14 May 2026)`, `Whit Monday (25 May 2026)`, `Corpus Christi (4 June 2026)` — and states `Trading of shares and Exchange traded products on Frankfurt and Xetra ends on public holidays (Germany and State of Hesse) where trading takes place according to the FWB trading calendar at 20:00 CET`, so those three dates carry an early close at 20:00 with the printed instant. The 2025 capture words the same note over `Börse Frankfurt` only, so no 2025 Xetra early close is sourced and none ships; the 2025 trading holidays (Ascension 29 May, Whit Monday 9 June, Corpus Christi 19 June, German Unity Day 3 October) ship closures-free as ordinary days for this identity. The live page's conditional note `On December 30, 2026, deviating trading hours may apply` — echoed by the 2026 PDF's `*)` footnote `Trading hours may differ from normal trading days` — originally keyed no row. On 2026-10-31 UTC the page linked the unconditional `Final trading session on 30 December 2026` notice (`DB-FINAL-SESSION-2026`); its XETR section now supplies a replacement session for that date, as detailed below.
+
+Three readings extend the same discipline to 2028-2032. First, the table's weekend-falling entries (Saturday 01 Jan 2028, Sunday 24 Dec 2028, Sunday 31 Dec 2028; Saturday 01 May 2032, Saturday 25 Dec 2032, Sunday 26 Dec 2032) key no weekday row — the same sentence-shape deletion the 2010-2024 sentences make and the 2026/2027 columns already record, restated by the footnote's own qualifier. Second, the `**` footnote now reads, verbatim, `** No trading but settlement is open if the holiday is not on a Saturday or Sunday.`: every starred date that falls on a weekday is a full closure and ships `Closed` (2029, 2030, 2031 and 2032 carry two starred rows each — the Christmas Eve and New Year's Eve of a weekday year — while 2028 carries none, both its starred dates falling on a Sunday), and the qualifier leaves every shipped 2025-2027 starred row unchanged because none of those dates falls on a weekend. Third, the named trading-holiday note remains scoped to `in the year 2026`, so **no early close is sourced for any 2028-2032 trading holiday** (Ascension, Whit Monday, Corpus Christi) and none is encoded; those dates answer as ordinary days, exactly as 2027's do, and the #200 watch for named holiday hours stands.
 
 Each year section below quotes the year's sentence in full; the operator prints no named holiday beside the dates, so a row's instant column names the exception date and the sentence is the whole statement.
 
@@ -282,6 +284,77 @@ The 2024 calendar sentence: at FWB® Frankfurter Wertpapierbörse “there will 
 
 **The 2027 half (watch, not a gap):** the live page read on 2026-10-31 UTC now links `Trading Calendar 2027` (`DB-TC-PDF-2027`), whose closure sentence confirms the five existing 2027 closure rows. The edition marks 2027-05-06, 2027-05-17, 2027-05-27 and 2027-12-30 with an asterisk, defined only as `Trading hours may differ from normal trading days`; it supplies no unconditional intraday instant. The live page's named trading-holiday list remains scoped to 2026, so no 2027 early close is inferred. The remaining closing condition is a dated operator notice or updated hours statement specifying those sessions, tracked as #200. Nothing in 2010-2024 is unresolved: every weekday exception date each year's sentence names ships a `Closed` row (104 rows across the fifteen years), weekend-falling exception dates key no weekday row, and no historical sentence states an intraday instant. Nothing else in 2025-2027 is unresolved: every closure the operator prints ships, and every other trade date in the window is audited normal.
 
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-04-14 | closed | `Good Friday — Friday Apr 14, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
+| 2028-04-17 | closed | `Easter Monday — Monday Apr 17, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
+| 2028-05-01 | closed | `Labor Day — Monday May 01, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
+| 2028-12-25 | closed | `Christmas Day — Monday Dec 25, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
+| 2028-12-26 | closed | `Boxing Day — Tuesday Dec 26, 2028` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2028 column |
+
+**Gaps, 2028:** none in the closure set. The table's weekend entries — `Saturday Jan 01, 2028` (New Year's Day), `Sunday Dec 24, 2028` (Christmas Eve\*\*) and `Sunday Dec 31, 2028` (New Year's Eve\*\*) — key no weekday row. Ascension (4 May), Whit Monday (15 May) and Corpus Christi (1 June) are named by no 2028 artifact — the trading-holiday note is scoped to 2026 — so they ship as ordinary days (see the readings above and #200).
+
+### 2029
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2029-01-01 | closed | `New Year's Day — Monday Jan 01, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-03-30 | closed | `Good Friday — Friday Mar 30, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-04-02 | closed | `Easter Monday — Monday Apr 02, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-05-01 | closed | `Labor Day — Tuesday May 01, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-12-24 | closed | `Christmas Eve** — Monday Dec 24, 2029` — `**` = "No trading but settlement is open" (a weekday, so the footnote's closure stands) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-12-25 | closed | `Christmas Day — Tuesday Dec 25, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-12-26 | closed | `Boxing Day — Wednesday Dec 26, 2029` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+| 2029-12-31 | closed | `New Year's Eve** — Monday Dec 31, 2029` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2029 column |
+
+**Gaps, 2029:** none. Every one of the table's eight 2029 dates falls on a weekday and ships; no 2029 trading holiday is named by any artifact, so Ascension (24 May), Whit Monday (4 June) and Corpus Christi (13 June) ship as ordinary days.
+
+### 2030
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2030-01-01 | closed | `New Year's Day — Tuesday Jan 01, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-04-19 | closed | `Good Friday — Friday Apr 19, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-04-22 | closed | `Easter Monday — Monday Apr 22, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-05-01 | closed | `Labor Day — Wednesday May 01, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-12-24 | closed | `Christmas Eve** — Tuesday Dec 24, 2030` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-12-25 | closed | `Christmas Day — Wednesday Dec 25, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-12-26 | closed | `Boxing Day — Thursday Dec 26, 2030` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+| 2030-12-31 | closed | `New Year's Eve** — Tuesday Dec 31, 2030` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2030 column |
+
+**Gaps, 2030:** none. Every one of the table's eight 2030 dates falls on a weekday and ships; the 2030 trading holidays (Ascension 17 May, Whit Monday 27 May, Corpus Christi 6 June) are named by no artifact and ship as ordinary days.
+
+### 2031
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2031-01-01 | closed | `New Year's Day — Wednesday Jan 01, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-04-11 | closed | `Good Friday — Friday Apr 11, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-04-14 | closed | `Easter Monday — Monday Apr 14, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-05-01 | closed | `Labor Day — Thursday May 01, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-12-24 | closed | `Christmas Eve** — Wednesday Dec 24, 2031` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-12-25 | closed | `Christmas Day — Thursday Dec 25, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-12-26 | closed | `Boxing Day — Friday Dec 26, 2031` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+| 2031-12-31 | closed | `New Year's Eve** — Wednesday Dec 31, 2031` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2031 column |
+
+**Gaps, 2031:** none. Every one of the table's eight 2031 dates falls on a weekday and ships; the 2031 trading holidays (Ascension 29 May, Whit Monday 9 June, Corpus Christi 19 June) are named by no artifact and ship as ordinary days.
+
+### 2032
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2032-01-01 | closed | `New Year's Day — Thursday Jan 01, 2032` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
+| 2032-03-26 | closed | `Good Friday — Friday Mar 26, 2032` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
+| 2032-03-29 | closed | `Easter Monday — Monday Mar 29, 2032` | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
+| 2032-12-24 | closed | `Christmas Eve** — Friday Dec 24, 2032` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
+| 2032-12-31 | closed | `New Year's Eve** — Friday Dec 31, 2032` — `**` = "No trading but settlement is open" (a weekday) | `DB-TC-PAGE-2028-2032` | T1 | the page table's 2032 column |
+
+**Gaps, 2032:** none in the closure set. The table's weekend entries — `Saturday May 01, 2032` (Labor Day), `Saturday Dec 25, 2032` (Christmas Day) and `Sunday Dec 26, 2032` (Boxing Day) — key no weekday row. The 2032 trading holidays (Ascension 13 May, Whit Monday 24 May, Corpus Christi 2 June) are named by no artifact and ship as ordinary days.
+
+**The 2028-2032 caveat.** The table the rows above key carries the operator's own asterisk footnote, verbatim: `* The overview is for information purposes only. Changes for future years are not excluded.` — recorded here as the residual risk it is: the operator expressly reserves the right to change these years, so a later column revision (an added or withdrawn date, a moved holiday) lands as a schedule fix on the monthly LAW-WATCH review, and the current columns are the unconditional day-level statement in force at retrieval, not a guarantee of the years' eventual calendars. The 2027 cross-check that gated the encoding: the table's 2027 column — `Friday Jan 01, 2027`, `Friday Mar 26, 2027`, `Monday Mar 29, 2027`, `Saturday May 01, 2027`, `Friday Dec 24, 2027`, `Saturday Dec 25, 2027`, `Sunday Dec 26, 2027`, `Friday Dec 31, 2027` — agrees with the five shipped 2027 weekday rows exactly, the three weekend dates keying no row as the shipped table already records.
+
 ### Final trading session, 2026-12-30
 
 The operator's one-page notice names the final session date without a condition
@@ -335,7 +408,7 @@ in the Documents table is unchanged.
 
 ### Documents
 
-The 2010-2024 artifacts were retrieved on 2026-09-29 UTC and saved under `holidays/raw/equities/xetra/2010-2024/` in the research store; the 2025-2027 artifacts below them were retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/xetra/2025-2027/`. The store's `INDEX.md` carries the same digests. The `DB_HK_<year>` editions of 2010-2014 are one-page `Trading Calendar <year>` grids whose closure sentence sits under the year grids; the 2014 keyed edition is the German printing, the English capture of the same document not replaying (capture `20141031072236`), and the same year's English dispatch page edition (`DB-TC-PAGE-2014`) corroborates it.
+The 2010-2024 artifacts were retrieved on 2026-09-29 UTC and saved under `holidays/raw/equities/xetra/2010-2024/` in the research store; the 2025-2027 artifacts below them were retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/xetra/2025-2027/`; the 2028-2032 keying artifact and the byte-identical 2027 PDF re-fetch were retrieved on 2026-11-18 UTC and saved under `holidays/raw/equities/xetra/2028-2032/`, whose `INDEX.md` records the 2027 cross-check, the table-stability comparison against the stored 2026-09-28 edition and the per-year encoded-versus-weekend row lists. The store's `INDEX.md` carries the same digests. The `DB_HK_<year>` editions of 2010-2014 are one-page `Trading Calendar <year>` grids whose closure sentence sits under the year grids; the 2014 keyed edition is the German printing, the English capture of the same document not replaying (capture `20141031072236`), and the same year's English dispatch page edition (`DB-TC-PAGE-2014`) corroborates it.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
@@ -363,6 +436,7 @@ The 2010-2024 artifacts were retrieved on 2026-09-29 UTC and saved under `holida
 | `DB-TC-PAGE` | 2025-01-01 .. 2027-12-31 | <https://www.cashmarket.deutsche-boerse.com/cash-en/trading/trading-calendar-and-trading-hours> | retrieved 2026-09-28 01:28 UTC | T1 | `d70a8f5d54cb529103bf674ea8382702a3510800dac8b48965a43aa08ae4bca4` |
 | `DB-FINAL-SESSION-2026` | 2026-12-30 | <https://www.cashmarket.deutsche-boerse.com/resource/blob/5673886/22764993c4b1617c5f465186066344e6/data/Final%20trading%20session%202026.pdf> | retrieved 2026-10-31 22:06:59 UTC | T1 | `d3618ef9738a3cae92909d11d4eaf820ab7b71d1e723c1fa04a21062e9738115` |
 | `DB-TC-PDF-2027` | 2027-01-01 .. 2027-12-31 | <https://www.cashmarket.deutsche-boerse.com/resource/blob/5674438/fb6e22c77930acea97641cf7d65ef78a/data/deutsche-boerse-trading-calendar-2027.pdf> | retrieved 2026-10-31 22:05:35 UTC | T1 | `5c62bf0a78afb8f6123638d6e7b9a30c864799e2c2210b73b13bcdb6e9a64cf2` |
+| `DB-TC-PAGE-2028-2032` | 2028-01-01 .. 2032-12-31 | <https://www.cashmarket.deutsche-boerse.com/cash-en/trading/trading-calendar-and-trading-hours> (the `Non-trading days at Frankfurter Wertpapierbörse (FWB®)` table, 2028-2032 columns) | retrieved 2026-11-18 08:47:32 UTC | T1 | `4e798de0c07cea88328e4a267767441732eb3e8b8e7da28664d8170fbf0ae400` |
 
 ## Sources
 

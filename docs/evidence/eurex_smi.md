@@ -19,11 +19,13 @@ The change is a **dated cutover, not an undated changeover.** The 2010 edition p
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates in `Europe/Zurich`; tier T1 throughout).
+**Coverage:** 2010-01-01..2030-12-31 (inclusive trade dates in `Europe/Zurich`; tier T1 throughout).
 
 The table is the **all-derivatives rows plus the Swiss-scope rows**. The editions' `in all derivatives` lists close every product and key their rows exactly as they key the sibling `eurex` tables. The recurring Swiss clause — `Eurex is closed for trading and clearing (exercise and settlement) in Swiss fixed income as well as equity and equity index derivatives; no cash payment in CHF: …` — names Swiss equity index derivatives, which FSMI is, so each date its list prints keys a row here. The clause's `no cash payment in CHF` tail is a clearing-cash annotation; the 2015 edition's separate `No cash payment in CHF, GBP and KRW: 25 May` line is the same annotation on that year's all-derivatives Whit Monday closure (the trading-only closure `Eurex is closed for trading in all derivatives: 25 May, …` keys the row) and keys nothing of its own.
 
 The German-scope notes — `Eurex is closed for trading and exercise in German equity and equity index derivatives as well as ETF and ETC derivatives, which are based on Xetra® listings: …` — never name this family, so the five German-only rows the sibling `TABLE` carries (2014-10-03, 2016-10-03, 2017-10-03, 2017-10-31 and 2018-10-03) do **not** appear here and FSMI keeps trading through them; the three Whit Mondays the German note also closes (2016-05-16, 2017-06-05 and 2018-05-21) are Swiss clause dates as well, so they close here on the Swiss line regardless. The family's own test fences the split. The 2019–2021 editions' parenthetical (`trading in German equity index futures takes place!`) and the 2025–2026 `tba` lines verified to no closures (2026-10-05 UTC, #157) leave nothing further to encode; see [eurex](eurex.md) for the verification chain, which this family inherits.
+
+**The 2027-2030 rows are the Eurex-wide set alone.** They key the Holiday regulations page's own `Non-trading days at Eurex 2026 - 2030` table (`EUREX-HOLREG-2027-2030`, live retrieval 2026-11-18 UTC) — the same unconditional operator statement whose § 2025 and § 2026 day-by-day sections key those years, with no caveat on the page; the earlier conflict with the Indicative Trading Calendars page's "preliminary and indicative" label was resolved by lineage on 2026-11-18 UTC and the resolution, the 2026 cross-check and the stability comparison are recorded in [eurex](eurex.md). **Exactly which channel speaks to Swiss scope, and which does not:** the Swiss clause dates reach this table through two channels — the editions' `Overview of holidays by countries` panels (2010-2024) and the page's day-by-day `<h2>` sections (2025: § 2025 rows of 02 January, 29 May, 09 June, 01 August; 2026: § 2026 rows of 02 January, 14 May, 25 May). The page publishes a day-by-day section for **2026 only** — no 2027, 2028, 2029 or 2030 section exists, the word `Switzerland` appears nowhere on the page, and the multi-year table names no scope at all (it is the Eurex-wide set) — so **no channel states a Swiss-scope addition for 2027-2030 yet**, and none is encoded: the 2027-2030 rows below are the Eurex-wide set, which the operator states for every product including FSMI. A later day-by-day section or edition panel that prints Swiss clause dates lands as a normal schedule fix; the closing condition is that section's publication, checked on the monthly LAW-WATCH review beside the sibling identities.
 
 ### Documents
 
@@ -50,9 +52,10 @@ The German-scope notes — `Eurex is closed for trading and exercise in German e
 | `EUREX-HOLREG-2025` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250913041407id_/https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations> | archive capture 2025-09-13T04:14:07Z (retrieved 2026-09-26T07:15:50Z) | T1 | `878e46c01a166f107607c19da8842e270f97915cfc1675b8928d2167ca804ea8` |
 | `EUREX-TC-2025` | 2025-01-01 .. 2025-12-31 | <https://www.eurex.com/resource/blob/4242284/1c8da6dc2702d508ee2a4740654ea77d/data/tradingcalendar_2025_en.pdf> | live retrieval 2026-09-26T07:14:29Z | T1 | `d51053a39e786022db3fa2f12e00d9646145db10aa308ea1bd4446ed0cd16614` |
 | `EUREX-HOLREG-2026` | 2026-01-01 .. 2026-12-31 | <https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations> | live retrieval 2026-09-12T04:19Z | T1 | `7b28acd2d2fb126c01461ef5a4ae11fe93e8b6f318001c6304bbce0fc78f3821` |
+| `EUREX-HOLREG-2027-2030` | 2027-01-01 .. 2030-12-31 | <https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations> (the page's `Non-trading days at Eurex 2026 - 2030` table, 2027-2030 columns) | live retrieval 2026-11-18T08:47:32Z | T1 | `47e905aed14cabcb657e363bade142fb8d2861523c052ecfe3b4e3b6a873f8ae` |
 | `EUREX-TC-2026` | 2026-01-01 .. 2026-12-31 | <https://www.eurex.com/resource/blob/4873184/0ca7669a8cb9a2f917d99a801fb3f2de/data/tradingcalendar_2026_en.pdf> | live retrieval 2026-09-12T04:18Z | T1 | `b0796b42819b38c0757d727d9b789360ba84cd0d45cea215544f86342158ac65` |
 
-The Trading Calendar editions and Holiday regulations rows are copied byte for byte from [eurex](eurex.md) § Documents; the store holds their bytes under `holidays/raw/eurex-2010-2024/` (with `INDEX.md` and `sha256s.txt`), `holidays/raw/eurex-2025-2027/` and `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/`, and the two CS amendments plus the trading-hours page under `normal-weeks/wave-c1/eurex/` and `normal-weeks/eurex-smi-2026-10-11/`.
+The Trading Calendar editions and Holiday regulations rows are copied byte for byte from [eurex](eurex.md) § Documents; the store holds their bytes under `holidays/raw/eurex-2010-2024/` (with `INDEX.md` and `sha256s.txt`), `holidays/raw/eurex-2025-2027/`, `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/` and `holidays/raw/eurex-2027-2030/` (the 2027-2030 keying artifact, with the 2026 cross-check, the stability comparison and the caveat-language scan in its `INDEX.md`), and the two CS amendments plus the trading-hours page under `normal-weeks/wave-c1/eurex/` and `normal-weeks/eurex-smi-2026-10-11/`.
 
 The Swiss clause sits inside the editions' `Overview of holidays by countries` panel, whose calendar grid interleaves the prose in text extraction; the clause's wording is quoted as the panel prints it (`Eurex is closed for trading and clearing (exercise and settlement) in … Swiss fixed income as well as equity and equity index derivatives; no cash payment in CHF: <dates>`), and each year's date list below was re-extracted from the edition's bytes on 2026-10-13 UTC. The Holiday-regulations rows quote the page's own day-by-day sentences, which are byte-contiguous.
 
@@ -340,9 +343,63 @@ The edition's all-derivatives list: the Holiday regulations § 2025 day-by-day a
 
 The edition's all-derivatives list: the Holiday regulations § 2026 day-by-day all-derivatives rows, corroborated by the Trading Calendar 2026 PDF. The Swiss clause: the same § 2026 rows of 02 January, 14 May and 25 May.
 
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `New Year's Day — Friday 01 Jan 2027` — the page table's Eurex-wide 2027 entry | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-01-01 (New Year's Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2027-03-26 | closed | `Good Friday — Friday 26 Mar 2027` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-03-26 (Good Friday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2027-03-29 | closed | `Easter Monday — Monday 29 Mar 2027` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-03-29 (Easter Monday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2027-12-24 | closed | `Christmas Eve* — Friday 24 Dec 2027` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-12-24 (Christmas Eve); one Zurich civil day per trade date, so the conversion is the identity |
+| 2027-12-31 | closed | `New Year's Eve* — Friday 31 Dec 2027` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2027-12-31 (New Year's Eve); one Zurich civil day per trade date, so the conversion is the identity |
+
+The page table's 2027 column also prints `Saturday 01 May 2027` (Labour Day), `Saturday 25 Dec 2027` (Christmas Day) and `Sunday 26 Dec 2027` (Boxing Day); the weekend entries key no row, as Saturday 26 December 2026 keys none above. No Swiss clause dates exist for 2027 (the page publishes no 2027 day-by-day section), so the Eurex-wide set is all that ships.
+
+### 2028
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2028-04-14 | closed | `Good Friday — Friday 14 Apr 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-04-14 (Good Friday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2028-04-17 | closed | `Easter Monday — Monday 17 Apr 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-04-17 (Easter Monday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2028-05-01 | closed | `Labour Day — Monday 01 May 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-05-01 (Labour Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2028-12-25 | closed | `Christmas Day — Monday 25 Dec 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-12-25 (Christmas Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2028-12-26 | closed | `Boxing Day — Tuesday 26 Dec 2028` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2028-12-26 (Boxing Day); one Zurich civil day per trade date, so the conversion is the identity |
+
+The page table's 2028 column also prints `Saturday 01 Jan 2028` (New Year's Day), `Sunday 24 Dec 2028` (Christmas Eve\*) and `Sunday 31 Dec 2028` (New Year's Eve\*); the weekend entries key no row. No Swiss clause dates exist for 2028.
+
+### 2029
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2029-01-01 | closed | `New Year's Day — Monday 01 Jan 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-01-01 (New Year's Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-03-30 | closed | `Good Friday — Friday 30 Mar 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-03-30 (Good Friday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-04-02 | closed | `Easter Monday — Monday 02 Apr 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-04-02 (Easter Monday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-05-01 | closed | `Labour Day — Tuesday 01 May 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-05-01 (Labour Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-12-24 | closed | `Christmas Eve* — Monday 24 Dec 2029` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-24 (Christmas Eve); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-12-25 | closed | `Christmas Day — Tuesday 25 Dec 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-25 (Christmas Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-12-26 | closed | `Boxing Day — Wednesday 26 Dec 2029` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-26 (Boxing Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2029-12-31 | closed | `New Year's Eve* — Monday 31 Dec 2029` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2029-12-31 (New Year's Eve); one Zurich civil day per trade date, so the conversion is the identity |
+
+All eight of the page table's 2029 dates fall on weekdays and ship; no Swiss clause dates exist for 2029.
+
+### 2030
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2030-01-01 | closed | `New Year's Day — Tuesday 01 Jan 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-01-01 (New Year's Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-04-19 | closed | `Good Friday — Friday 19 Apr 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-04-19 (Good Friday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-04-22 | closed | `Easter Monday — Monday 22 Apr 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-04-22 (Easter Monday); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-05-01 | closed | `Labour Day — Wednesday 01 May 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-05-01 (Labour Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-12-24 | closed | `Christmas Eve* — Tuesday 24 Dec 2030` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-24 (Christmas Eve); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-12-25 | closed | `Christmas Day — Wednesday 25 Dec 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-25 (Christmas Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-12-26 | closed | `Boxing Day — Thursday 26 Dec 2030` | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-26 (Boxing Day); one Zurich civil day per trade date, so the conversion is the identity |
+| 2030-12-31 | closed | `New Year's Eve* — Tuesday 31 Dec 2030` — a full trading closure | `EUREX-HOLREG-2027-2030` | T1 | Eurex event date 2030-12-31 (New Year's Eve); one Zurich civil day per trade date, so the conversion is the identity |
+
+All eight of the page table's 2030 dates fall on weekdays and ship; no Swiss clause dates exist for 2030.
+
 ## Sources
 
-- The operator's annual Trading Calendar editions 2010–2024 (`EUREX-CAL-*`) and Holiday regulations page for 2025–2026 (`EUREX-HOLREG-*`), shared with the sibling Eurex identities; the monitoring entry points are the [trading calendar hub](https://www.eurex.com/ex-en/trade/trading-calendar) and the [Holiday regulations page](https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations) — T1.
+- The operator's annual Trading Calendar editions 2010–2024 (`EUREX-CAL-*`) and Holiday regulations page for 2025–2030 (`EUREX-HOLREG-*` — the § 2025/§ 2026 day-by-day sections and the `Non-trading days at Eurex 2026 - 2030` table), shared with the sibling Eurex identities; the monitoring entry points are the [trading calendar hub](https://www.eurex.com/ex-en/trade/trading-calendar) and the [Holiday regulations page](https://www.eurex.com/ex-en/trade/trading-calendar/holiday-regulations) — T1.
 - The archived Contract Specifications amendments `cs_history_26102009` and `cs_history_05072010` (`EUREX-CS-2009-10-26`, `EUREX-CS-2010-07-05`), reached through the [Contract Specifications index](https://www.eurex.com/ex-en/rules-regs/eurex-rules-regulations/03.-Contract-Specifications-4347288) — T1.
 - The [trading-hours page](https://www.eurex.com/ex-en/trade/trading-hours) (`EUREX-TH-2026-10-11`) — T1, the normal-week monitoring entry point; its body states the venue-wide regular day and points per-product schedules at the contract specifications.
 
@@ -351,4 +408,4 @@ The edition's all-derivatives list: the Holiday regulations § 2026 day-by-day a
 - **The current order-entry windows are keyed by the 2010 amendment and carried.** Pre-Trading 07:30–07:50 and Post-Trading 22:00–22:30 CET are stated by `EUREX-CS-2010-07-05` and untouched by every later banked artifact; no current Annex C page for FSMI is banked in the research store, so the family's ledger basis is **Partial / order-entry**: the regular phase is re-witnessed yearly (the editions' `07:50 – 22:00` row through 2026), while the two order-entry windows rest on the last operator statement in hand. Named closer: a capture of the current Contract Specifications Annex C (the trading-hours page links it), which would re-key or correct the two windows; the banked page's own clearing note — "the clearing hours of all products which are continuously traded until 22:00 end at 22:30" (`EUREX-TH-2026-10-11`) — corroborates the 22:00–22:30 shape without stating a phase.
 - **Seasonality is a reading, recorded here.** The editions print the FSMI row `07:50 – 22:00` with no seasonal footnote (the DAX rows carry the `02:10–22:00 CEST` footnote for their UTC-pinned Asian-hours opens), and the CS amendments print `All times in CET` over a table whose values the operator reprints unchanged across editions, so the endpoints are read as local-stable Zurich wall-clock times and one timeline serves the whole history. A per-product Annex C capture stating a CEST variant would move the grid to a two-timeline selector as a normal schedule fix.
 - **The Last Trading Day column is expiry, not session.** The editions' `09:00` for FSMI is a per-contract last-trading-day trading-until instant (LAW-SESSION-NOT-EXPIRY); nothing of it is encoded.
-- **Holiday horizon.** The audited window stops at 2026-12-31 because the operator publishes 2027–2036 only "on a preliminary and indicative basis … subject to change"; the sibling [eurex](eurex.md) row carries the same stop. Closing condition: the operator's unconditional 2027 calendar; the row is re-checked monthly per LAW-WATCH beside the sibling identities' review.
+- **Holiday horizon.** The audited window reached 2026-12-31 until 2026-11-18 UTC, when the Holiday regulations page's own `Non-trading days at Eurex 2026 - 2030` table keyed 2027-2030 (the resolution of the former indicative-page conflict is recorded in [eurex](eurex.md)); the window now runs to 2030-12-31. **Swiss scope is the open residual**: the clause's date lists exist only in the editions' country panels (2010-2024) and the page's day-by-day sections (2025, 2026 — the page publishes a 2026 section only), so no 2027-2030 Swiss-scope addition is sourced and none ships; the Eurex-wide set covers FSMI for those years. Closing condition: a published 2027+ day-by-day section or edition panel printing Swiss clause dates, which lands as a schedule fix; the row is re-checked monthly per LAW-WATCH beside the sibling identities' review.

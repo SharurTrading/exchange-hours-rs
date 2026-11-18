@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Built-in holiday rows for Eurex (`eurex` venue, `eurex` and
-//! `eurex_fixed_income` keys), 2010 through 2026.
+//! `eurex_fixed_income` keys), 2010 through 2030.
 //!
 //! Eurex publishes closures only — no early close and no late open — so §4.1
 //! cases 2, 3 and 4 have nothing to exercise here and the block says so rather
@@ -14,10 +14,14 @@
 //! the 2010-01-01 support floor — the operator's own "all derivatives" rows,
 //! keyed to its annual Trading Calendar editions 2010-2024 and to the Holiday
 //! regulations page for 2025-2026, with the Christmas block ends trading-only
-//! and Whit Monday 2015 the one extra trading-only closure — and stops at
-//! 2026-12-31 because Eurex's 2027 calendar is published "on a preliminary and
-//! indicative basis", which LAW-NO-FABRICATED-DATES keeps out of a runtime
-//! table; the last test is the fence on that.
+//! and Whit Monday 2015 the one extra trading-only closure — and runs to
+//! 2030-12-31: the regulations page's own `Non-trading days at Eurex 2026 -
+//! 2030` table states the 2027-2030 columns unconditionally (the same channel
+//! that keyed 2025 and 2026; the separate Indicative Trading Calendars page's
+//! "preliminary and indicative" label governs its own calendars and keys
+//! nothing), and the table's weekend-falling entries key no row. 2031 and
+//! beyond is the operator's publication horizon and refuses; the tests fence
+//! both ends of that.
 //!
 //! The benchmark-index identities alone carry the editions' **dated
 //! German-scope closures** (2014, 2016, 2017 and 2018: Unity Day, Whit Monday
@@ -31,7 +35,9 @@
 //! verified to **no closures** (2026-10-05 UTC, #157): the operator's
 //! day-by-day Holiday regulations tables name no German scope on any date of
 //! either year, in the grammar that printed the German clause (carve-out and
-//! all) in 2020, so the whole 2010-2026 span answers from the shipped rows.
+//! all) in 2020, so the whole span answers from the shipped rows — and the
+//! page publishes no country-scope section at all for 2027-2030, so the
+//! extension years carry the Eurex-wide set alone.
 
 use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::Europe;
@@ -88,6 +94,12 @@ fn day(year: i32, month: u32, date: u32) -> NaiveDate {
 /// document order. Every date is one the edition prints under `in all
 /// derivatives`, weekday or not: 2015-12-26 fell on a Saturday and ships
 /// because the operator stated it.
+///
+/// (The editions print weekday closure dates only; the one weekend date the
+/// operator printed in that era, 2015-12-26, is a Friday. The era's weekend
+/// distinction only becomes load-bearing with the 2027-2030 page table, whose
+/// weekend-falling entries key no row — fenced in
+/// `the_regulations_table_keys_2027_through_2030` below.)
 const CALENDAR_EDITION_CLOSURES: [(i32, u32, u32); 93] = [
     (2010, 1, 1),
     (2010, 4, 2),
@@ -253,7 +265,7 @@ const GERMAN_SCOPE_CLOSURES: [GermanClosure; 8] = [
 ];
 
 #[test]
-fn every_eurex_identity_ships_the_same_hundred_and_eight_closures() {
+fn every_eurex_identity_ships_the_same_hundred_and_thirty_four_closures() {
     let mut closures = Vec::new();
     for (year, month, date) in CALENDAR_EDITION_CLOSURES {
         closures.push(day(year, month, date));
@@ -274,6 +286,34 @@ fn every_eurex_identity_ships_the_same_hundred_and_eight_closures() {
         day(2026, 12, 24),
         day(2026, 12, 25),
         day(2026, 12, 31),
+        // The regulations page's 2027-2030 columns: the weekday entries only,
+        // the weekend entries fenced separately below.
+        day(2027, 1, 1),
+        day(2027, 3, 26),
+        day(2027, 3, 29),
+        day(2027, 12, 24),
+        day(2027, 12, 31),
+        day(2028, 4, 14),
+        day(2028, 4, 17),
+        day(2028, 5, 1),
+        day(2028, 12, 25),
+        day(2028, 12, 26),
+        day(2029, 1, 1),
+        day(2029, 3, 30),
+        day(2029, 4, 2),
+        day(2029, 5, 1),
+        day(2029, 12, 24),
+        day(2029, 12, 25),
+        day(2029, 12, 26),
+        day(2029, 12, 31),
+        day(2030, 1, 1),
+        day(2030, 4, 19),
+        day(2030, 4, 22),
+        day(2030, 5, 1),
+        day(2030, 12, 24),
+        day(2030, 12, 25),
+        day(2030, 12, 26),
+        day(2030, 12, 31),
     ]);
     for (name, calendar) in identities() {
         for date in &closures {
@@ -380,14 +420,19 @@ fn new_years_day_is_closed_and_the_second_of_january_is_not() {
     }
 }
 
+/// The window opens at the floor and stops at the operator's publication
+/// horizon: the regulations page's `2026 - 2030` heading governs through
+/// 2030-12-31, and everything past it — the indicative-CSV years the
+/// Indicative Trading Calendars page labels preliminary — refuses with the
+/// table attached and answers the pure normal week only once it is detached.
 #[test]
-fn the_indicative_2027_calendar_does_not_ship() {
+fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
     for (name, calendar) in identities() {
         let coverage = calendar
             .holiday_coverage()
             .unwrap_or_else(|| panic!("{name} ships a built-in table"));
         assert_eq!(coverage.first(), day(2010, 1, 1), "{name}");
-        assert_eq!(coverage.last(), day(2026, 12, 31), "{name}");
+        assert_eq!(coverage.last(), day(2030, 12, 31), "{name}");
         assert_eq!(
             calendar.holiday_on(
                 coverage
@@ -398,8 +443,9 @@ fn the_indicative_2027_calendar_does_not_ship() {
             None,
             "{name}"
         );
-        // 2027-01-01 appears on Eurex's indicative calendar and is a Friday, so
-        // an accidental row would be visible; the table must not reach it.
+        // 2031-01-01 appears on Eurex's indicative calendar and is a
+        // Wednesday, so an accidental row would be visible; the table must not
+        // reach past the page's own 2030 heading.
         assert_eq!(
             calendar.holiday_on(
                 coverage
@@ -411,20 +457,20 @@ fn the_indicative_2027_calendar_does_not_ship() {
             "{name}"
         );
         // Nor does the identity answer the date: with the table attached, the
-        // holiday layer has no audited window over 2027, so Stage 2B refuses
+        // holiday layer has no audited window over 2031, so Stage 2B refuses
         // it. The old claim — that the identity answers the pure normal week
         // outside its coverage window — is no longer claimable; the detached
         // snapshot, which claims no coverage, is where the normal week shows.
-        let outside = cet((2027, 1, 1), (12, 0, 0));
+        let outside = cet((2031, 1, 1), (12, 0, 0));
         assert!(
             matches!(
                 calendar.is_open(outside),
                 Err(CalendarQueryError::OutsideCoveredRange {
                     date,
                     ..
-                }) if date == day(2027, 1, 1)
+                }) if date == day(2031, 1, 1)
             ),
-            "{name}: 2027-01-01 is outside the audited 2025-2026 window"
+            "{name}: 2031-01-01 is outside the audited window"
         );
         assert!(
             calendar
@@ -432,6 +478,128 @@ fn the_indicative_2027_calendar_does_not_ship() {
                 .is_open(outside)
                 .expect("a detached snapshot claims no coverage"),
             "{name} answers the pure normal week only once the table is detached"
+        );
+    }
+}
+
+/// One extension year's page dates: the weekday entries that ship, the
+/// weekend-falling entries that key no row, and the document id every row of
+/// the year cites (the one multi-year id, `EUREX-HOLREG-2027-2030`).
+type ExtensionYear = (
+    i32,
+    &'static [(u32, u32)],
+    &'static [(u32, u32)],
+    &'static str,
+);
+
+/// The regulations page's `Non-trading days at Eurex 2026 - 2030` table keys
+/// 2027-2030: every weekday entry ships, every weekend-falling entry keys no
+/// row (mirroring Saturday 26 December 2026), every row cites the one
+/// multi-year document id, and the starred trading-only eves close like every
+/// other closure. Flipping any shipped row or promoting a weekend entry fails
+/// here.
+#[test]
+fn the_regulations_table_keys_2027_through_2030() {
+    let per_year: [ExtensionYear; 4] = [
+        (
+            2027,
+            &[(1, 1), (3, 26), (3, 29), (12, 24), (12, 31)],
+            &[(5, 1), (12, 25), (12, 26)],
+            "EUREX-HOLREG-2027-2030",
+        ),
+        (
+            2028,
+            &[(4, 14), (4, 17), (5, 1), (12, 25), (12, 26)],
+            &[(1, 1), (12, 24), (12, 31)],
+            "EUREX-HOLREG-2027-2030",
+        ),
+        (
+            2029,
+            &[
+                (1, 1),
+                (3, 30),
+                (4, 2),
+                (5, 1),
+                (12, 24),
+                (12, 25),
+                (12, 26),
+                (12, 31),
+            ],
+            &[],
+            "EUREX-HOLREG-2027-2030",
+        ),
+        (
+            2030,
+            &[
+                (1, 1),
+                (4, 19),
+                (4, 22),
+                (5, 1),
+                (12, 24),
+                (12, 25),
+                (12, 26),
+                (12, 31),
+            ],
+            &[],
+            "EUREX-HOLREG-2027-2030",
+        ),
+    ];
+    for (name, calendar) in identities() {
+        for (year, closed, weekend, document) in per_year {
+            for &(month, date) in closed {
+                let d = day(year, month, date);
+                let holiday = calendar
+                    .holiday_on(d)
+                    .unwrap_or_else(|| panic!("{name} ships a {d} row"));
+                assert_eq!(holiday.kind(), HolidayKind::Closed, "{name} on {d}");
+                assert_eq!(holiday.document_id(), document, "{name} on {d}");
+                assert!(
+                    !calendar
+                        .is_open(cet((year, month, date), (12, 0, 0)))
+                        .expect("the coverage contract must answer a covered date"),
+                    "{name} is shut at noon on {d}"
+                );
+            }
+            for &(month, date) in weekend {
+                let d = day(year, month, date);
+                assert_eq!(
+                    calendar.holiday_on(d),
+                    None,
+                    "{name}: the page's weekend entry {d} keys no row"
+                );
+            }
+        }
+        // The starred 2027 eves are full trading closures, not half days, and
+        // the ordinary weekdays around them are audited normal.
+        for probe in [(9, 0, 0), (12, 0, 0), (17, 0, 0)] {
+            assert!(
+                !calendar
+                    .is_open(cet((2027, 12, 24), probe))
+                    .expect("the coverage contract must answer a covered date"),
+                "{name}: 24 December 2027 is a full closure at {probe:?}"
+            );
+        }
+        for ordinary in [(2027, 3, 30), (2028, 5, 2), (2029, 11, 5), (2030, 6, 4)] {
+            let d = day(ordinary.0, ordinary.1, ordinary.2);
+            assert_eq!(calendar.holiday_on(d), None, "{name}: {d} audited normal");
+            assert!(
+                calendar
+                    .is_open(cet(ordinary, (12, 0, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                "{name}: {d} trades"
+            );
+        }
+        // Trading resumes after the New Year boundary: 2029-12-31 is a Monday
+        // closure, 2030-01-01 a Tuesday closure, and the next session is
+        // Wednesday 2030-01-02.
+        let next = calendar
+            .next_session_after(cet((2029, 12, 31), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+            .expect("a reopening must exist inside the bounded search");
+        assert_eq!(
+            next.0.with_timezone(&Europe::Berlin).date_naive(),
+            day(2030, 1, 2),
+            "{name} must reopen on 2 January 2030"
         );
     }
 }
@@ -469,17 +637,24 @@ fn the_2025_closures_and_the_ordinary_week_around_them() {
             .holiday_coverage()
             .unwrap_or_else(|| panic!("{name} ships a built-in table"));
         assert_eq!(coverage.first(), day(2010, 1, 1), "{name}");
-        assert_eq!(coverage.last(), day(2026, 12, 31), "{name}");
+        assert_eq!(coverage.last(), day(2030, 12, 31), "{name}");
         // Below the window and past it the table has no answer at all: the
         // endpoints are bounds, not rows. 2024-12-31 used to sit below the
-        // window and is now inside it as the edition's own Christmas Eve row.
+        // window and is now inside it as the edition's own Christmas Eve row;
+        // 2027-01-01 used to sit past it and is now inside it as the
+        // regulations table's own New Year's Day row.
         assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None, "{name}");
         assert_eq!(
             calendar.holiday_on(day(2024, 12, 31)).map(Holiday::kind),
             Some(HolidayKind::Closed),
             "{name}"
         );
-        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None, "{name}");
+        assert_eq!(
+            calendar.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{name}"
+        );
+        assert_eq!(calendar.holiday_on(day(2031, 1, 1)), None, "{name}");
 
         for date in closed {
             assert_eq!(
@@ -645,6 +820,11 @@ fn each_trading_calendar_edition_keys_its_own_year() {
         (day(2022, 4, 15), day(2022, 4, 18), day(2022, 4, 19)),
         (day(2023, 4, 7), day(2023, 4, 10), day(2023, 4, 11)),
         (day(2024, 3, 29), day(2024, 4, 1), day(2024, 4, 2)),
+        // The regulations page table's Easter pairs, one per extension year.
+        (day(2027, 3, 26), day(2027, 3, 29), day(2027, 3, 30)),
+        (day(2028, 4, 14), day(2028, 4, 17), day(2028, 4, 18)),
+        (day(2029, 3, 30), day(2029, 4, 2), day(2029, 4, 3)),
+        (day(2030, 4, 19), day(2030, 4, 22), day(2030, 4, 23)),
     ];
     for (name, calendar) in identities() {
         for (good_friday, easter_monday, ordinary) in spot_checks {

@@ -208,8 +208,8 @@ fn the_smi_table_closes_the_swiss_and_all_derivatives_dates_and_keeps_the_german
     );
     assert_eq!(
         coverage.last(),
-        day(2026, 12, 31),
-        "the window stops at the operator's horizon"
+        day(2030, 12, 31),
+        "the window stops at the operator's publication horizon"
     );
 
     // Swiss-scope rows, one per era shape: the 2010 pair, the 2012 four-date
@@ -244,8 +244,22 @@ fn the_smi_table_closes_the_swiss_and_all_derivatives_dates_and_keeps_the_german
     }
 
     // All-derivatives rows close this family like every Eurex identity,
-    // including the 2015 Whit Monday the edition's CHF annotation rides.
-    for date in [(2013, 4, 1), (2015, 5, 25), (2021, 12, 31), (2026, 12, 24)] {
+    // including the 2015 Whit Monday the edition's CHF annotation rides and
+    // the 2027-2030 rows the regulations page's own table states Eurex-wide.
+    for date in [
+        (2013, 4, 1),
+        (2015, 5, 25),
+        (2021, 12, 31),
+        (2026, 12, 24),
+        (2027, 3, 26),
+        (2027, 12, 24),
+        (2028, 4, 14),
+        (2028, 12, 26),
+        (2029, 4, 2),
+        (2029, 12, 25),
+        (2030, 4, 19),
+        (2030, 12, 31),
+    ] {
         assert_eq!(
             calendar
                 .holiday_on(day(date.0, date.1, date.2))
@@ -293,18 +307,38 @@ fn the_smi_table_closes_the_swiss_and_all_derivatives_dates_and_keeps_the_german
             .expect("the coverage contract must answer a covered date")
     );
 
-    // The window's edges: 2027 is the operator's indicative-calendar era and
+    // The Swiss clause has no 2027-2030 dates: the page publishes a day-by-day
+    // section for 2026 only, so the extension years carry the Eurex-wide set
+    // alone and the recurring Swiss candidates answer ordinary — 1 August 2028
+    // (a Tuesday), Ascension 2029-05-10 and Whit Monday 2030-06-10, the shapes
+    // whose 2011-2026 predecessors keyed rows whenever a section printed them.
+    for swiss_candidate in [(2028, 8, 1), (2029, 5, 10), (2030, 6, 10)] {
+        let d = day(swiss_candidate.0, swiss_candidate.1, swiss_candidate.2);
+        assert_eq!(
+            calendar.holiday_on(d),
+            None,
+            "no channel states a Swiss-scope 2027-2030 date: {d} is audited normal"
+        );
+        assert!(
+            calendar
+                .is_open(zurich(swiss_candidate, (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{swiss_candidate:?} trades"
+        );
+    }
+
+    // The window's edges: 2031 is past the page's `2026 - 2030` heading and
     // refuses with the table attached; below the support floor is the floor
     // error.
-    let outside = zurich((2027, 1, 4), (12, 0, 0));
+    let outside = zurich((2031, 1, 5), (12, 0, 0));
     assert!(matches!(
         calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2031, 1, 5)
     ));
     assert_eq!(
-        calendar.holiday_on(day(2027, 1, 4)),
+        calendar.holiday_on(day(2031, 1, 5)),
         None,
-        "the indicative 2027 calendar ships no row"
+        "the publication horizon past 2030 ships no row"
     );
     let below = zurich((2009, 12, 31), (12, 0, 0));
     assert!(matches!(

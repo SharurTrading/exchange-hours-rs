@@ -757,6 +757,24 @@ Sat none.
 
 Coverage adds the three captured 2028 split windows above; spans between them are unaudited and refuse as covered gaps, and dates after 2028-04-14 are not yet encoded (the service publishes ordinary sessions through 2028-05-05 in the May control window).
 
+- **2026-11-18 — New Year 2028 verified a non-event from the trading-hours
+  service.** The archived captures of the New Year window (eventDates
+  2027-12-31 .. 2028-01-02; captures 2026-09-13, 2026-10-06, 2026-11-11 and
+  2026-11-14 UTC — the first two byte-identical, all four identical per
+  product) print this family's ordinary arc for 6E 58: `16:00 closed` for CME
+  trade date 2027-12-31 on the Friday, an empty 2028-01-01 Saturday, and
+  `16:00 preopen; 17:00 open` carrying CME trade date 2028-01-03 on the
+  Sunday, which is the normal Sunday reopen. The stored live retrieval of the
+  overlapping 2027-12-30 .. 2028-01-02 window agrees event for event, and the
+  trading-hours page capture of 2026-11-16 states no session change either:
+  its only 2028 mentions are the 2027 settlement-notices row (`New Year's
+  Eve | 31 December 2027 - 3 January 2028`, a pointer at the settlement-times
+  PDF) and the routine `2028 New Year's Day Notes` order-cycle clarification.
+  No row ships: the holiday falls on Saturday 2028-01-01 and carries no
+  session exactly as the normal week does, and 2028-01-03 stays in the
+  unaudited span before the first 2028 window. Artifacts: research store
+  `holidays/raw/cme-ny2028-resweep-2026-11-18/`.
+
 ### All years
 
 **Gaps, all years.**

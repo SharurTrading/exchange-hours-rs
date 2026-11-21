@@ -19,11 +19,6 @@
 //! pair sits zero minutes away — the silent-default trap that motivated the
 //! `Option` surface.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{TimeZone, Utc};
 use exchange_hours::{
     CalendarResolution, Exchange, SessionKind, candle_end, candle_start, hours_for_exchange,

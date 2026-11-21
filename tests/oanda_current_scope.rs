@@ -2,11 +2,6 @@
 
 //! Current TRY sessions within OANDA's published Forex holiday scope.
 
-#![expect(
-    clippy::expect_used,
-    reason = "invalid fixture literals must fail loudly"
-)]
-
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{ExchangeCalendar, MarketHoursKey, SessionKind, SessionState};
 

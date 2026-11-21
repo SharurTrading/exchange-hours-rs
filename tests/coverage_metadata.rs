@@ -10,11 +10,6 @@
 //! `Unsourced`, an identity with no holiday table, and the scopes whose own
 //! definition has no holidays at all.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{DateTime, Datelike as _, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::{Asia, Australia, Europe, Pacific, US};
 use exchange_hours::{

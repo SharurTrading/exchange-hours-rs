@@ -15,11 +15,6 @@
 //! 2026-10-04), so those queries answer rather than refuse. A caller's `DayPolicy` can only tighten
 //! a day — it never licenses a date the identity does not answer.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::{America, Asia, US};
 use exchange_hours::{

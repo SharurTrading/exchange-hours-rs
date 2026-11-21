@@ -38,10 +38,5 @@
 //! Failures print the seed, iteration/step index, the enabled venue/resolution
 //! operation space, the venue, and the offending UTC instant.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 #[path = "session_invariants/mod.rs"]
 mod suite;

@@ -58,12 +58,6 @@ fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &
 }
 
 /// The same fence at an explicit tier (the NSE 2023-2024 rows are T2).
-#[expect(
-    clippy::panic,
-    reason = "a shared test helper is not itself a #[test], so the \
-              allow-panic-in-tests switch does not see it; aborting on a \
-              broken fixture is the test's job"
-)]
 fn assert_closure_at(
     calendar: ExchangeCalendar,
     date: (i32, u32, u32),
@@ -151,12 +145,6 @@ fn assert_unsourced(
 }
 
 /// The same withholding fence at an explicit tier (the NSE 2023-2024 rows are T2).
-#[expect(
-    clippy::panic,
-    reason = "a shared test helper is not itself a #[test], so the \
-              allow-panic-in-tests switch does not see it; aborting on a \
-              broken fixture is the test's job"
-)]
 fn assert_unsourced_at(
     calendar: ExchangeCalendar,
     date: (i32, u32, u32),

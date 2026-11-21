@@ -1967,12 +1967,6 @@ fn declaring_text(name: &str, module: &str, text: &str, depth: u32) -> Option<St
 /// `module` is the naming module's repository-relative path: a replacement row
 /// may name a slice its module only imports, and the declaration is then read
 /// from the module that ships it (`declaring_text`).
-#[expect(
-    clippy::panic,
-    reason = "a module whose instant is not the integer expression the macro grammar \
-              takes has already failed the build; this fence reads every shipped \
-              module and must fail loudly rather than mis-read one"
-)]
 fn stated_instants(kind: &str, module: &str, module_text: &str) -> Vec<String> {
     /// Reads one `h * 3_600 + m * 60` (or `h * 3_600 + m * 60 + s`)
     /// expression as seconds since midnight. Some operators print half-day

@@ -2,11 +2,6 @@
 
 //! Source boundary regressions from OANDA's UK hours and holiday pages.
 
-#![expect(
-    clippy::expect_used,
-    reason = "validated fixture literals must fail loudly"
-)]
-
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,

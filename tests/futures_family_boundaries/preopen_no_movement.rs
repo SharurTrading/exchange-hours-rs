@@ -45,11 +45,6 @@
 //! `tests/order_entry_phase.rs` fence — so a future row or phase change on
 //! any identity cannot silently widen the two answers.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture literals must fail the test if malformed"
-)]
-
 use chrono::{DateTime, Datelike as _, TimeZone as _, Utc};
 use exchange_hours::{
     Exchange, MarketHoursKey, SessionState, calendar_for_exchange, calendar_for_market_hours_key,

@@ -2,11 +2,6 @@
 
 //! Public contracts for caller-owned, static trade-date overrides.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture literals and validated static records must fail the test if malformed"
-)]
-
 use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{

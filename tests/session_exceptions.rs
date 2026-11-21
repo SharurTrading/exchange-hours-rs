@@ -27,11 +27,6 @@
 //! engine's runtime semantics remain exercised on covered dates by the 2026
 //! fixtures in this file and by `tests/coverage_query_errors.rs`.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture literals and validated static records must fail the test if malformed"
-)]
-
 use chrono::{DateTime, Datelike, NaiveDate, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{

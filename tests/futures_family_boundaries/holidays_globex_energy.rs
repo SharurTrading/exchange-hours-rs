@@ -92,9 +92,9 @@ fn assert_refused<T: std::fmt::Debug>(
     expected: DateCoverage,
 ) {
     // `expect_err` *is* the assertion: it aborts the test, naming the value,
-    // when the contract answered a date it should have refused. The root
-    // harness's `#![expect(clippy::expect_used)]` is what admits it here, as it
-    // does every fixture constructor in this suite.
+    // when the contract answered a date it should have refused. The
+    // `allow-expect-in-tests` switch in clippy.toml admits it here, as it does
+    // every fixture constructor in this suite.
     let error = query.expect_err("the contract must refuse this date, but it answered");
     assert!(
         matches!(

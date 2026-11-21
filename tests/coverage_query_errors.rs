@@ -13,11 +13,6 @@
 //! whose coverage `coverage_metadata.rs` already derives, so a query verdict
 //! and a metadata verdict are read from the same source of truth.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::{Asia, US};
 use exchange_hours::{

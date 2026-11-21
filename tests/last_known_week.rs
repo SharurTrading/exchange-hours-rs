@@ -5,11 +5,6 @@
 //! the default calendar would refuse, while every audited row keeps its
 //! arrangement and only the support floor still refuses (LAW-COVERAGE).
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,

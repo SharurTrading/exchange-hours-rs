@@ -66,10 +66,6 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
 type OpenAndBounds = (bool, Option<(DateTime<Utc>, DateTime<Utc>)>);
 
 /// Runs one query under a label, so a panic names the entry point that failed.
-#[expect(
-    clippy::panic,
-    reason = "re-raising a caught panic with the failing query's name is this fence's whole purpose"
-)]
 fn total<T>(
     key: MarketHoursKey,
     instant: DateTime<Utc>,
@@ -89,10 +85,6 @@ fn total<T>(
 /// identity whose profile genuinely holds there may answer; both are total, and
 /// only a panic or a non-coverage error fails. Confirmed by a `catch_unwind`
 /// probe so a panic is reported with this query's name.
-#[expect(
-    clippy::panic,
-    reason = "a caught panic is this fence's finding, and the probe's own unwrap is the point"
-)]
 fn assert_refuses_totally<T: core::fmt::Debug>(
     key: MarketHoursKey,
     instant: DateTime<Utc>,

@@ -11,10 +11,5 @@
 //!   - DST-transition edge cases (covered separately by the bias-aware helpers)
 //!   - Binance quarterly-expiry pauses
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 #[path = "venue_sessions/mod.rs"]
 mod suite;

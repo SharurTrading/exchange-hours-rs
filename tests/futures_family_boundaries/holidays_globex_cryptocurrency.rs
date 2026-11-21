@@ -419,11 +419,6 @@ const MERGED_TRADE_DATES: [MergedDates; 9] = [
 
 /// The replacement-block set the row keyed to `trade_date` declares, as
 /// `(kind, opening day offset, open, close)` tuples.
-#[expect(
-    clippy::panic,
-    reason = "a fixture row that is missing or of the wrong kind must fail loudly, \
-              naming the value it found"
-)]
 fn declared_blocks(trade_date: (i32, u32, u32)) -> Vec<(ExceptionBlockKind, i8, u32, u32)> {
     let date = day(trade_date.0, trade_date.1, trade_date.2);
     let blocks = match crypto().holiday_on(date).map(Holiday::kind) {

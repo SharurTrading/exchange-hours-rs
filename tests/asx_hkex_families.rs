@@ -10,12 +10,6 @@
 //! serde form — and, because the ASX selector is seasonal, both sides of each
 //! US daylight-saving transition.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture instants are constructed from literal civil times and must \
-              fail the test if unrepresentable"
-)]
-
 use chrono::{DateTime, TimeZone, Utc};
 use chrono_tz::{Asia::Hong_Kong, Australia};
 use exchange_hours::{

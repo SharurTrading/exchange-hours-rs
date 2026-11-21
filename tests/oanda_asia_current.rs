@@ -7,10 +7,6 @@ use exchange_hours::{
     SessionKind, SessionState, session_profile,
 };
 
-#[expect(
-    clippy::expect_used,
-    reason = "validated UTC fixtures must fail loudly"
-)]
 fn utc(s: &str) -> DateTime<Utc> {
     s.parse().expect("valid UTC fixture")
 }

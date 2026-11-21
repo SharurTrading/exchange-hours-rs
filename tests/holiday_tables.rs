@@ -32,11 +32,6 @@
 //! consequence and both sides of the coverage window) arrive with the families
 //! whose rows they test.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture literals and validated static records must fail the test if malformed"
-)]
-
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{

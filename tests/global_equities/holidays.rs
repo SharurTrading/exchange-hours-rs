@@ -40,13 +40,6 @@
 //! fence: flipping any one shipped row (its date, its kind or its instant)
 //! fails that walk.
 
-#![expect(
-    clippy::panic,
-    reason = "the shared walk helpers below are plain functions rather than #[test] \
-              functions, so the test switches in clippy.toml do not reach them; a \
-              kind an operator does not print must fail the walk loudly"
-)]
-
 use super::prelude::*;
 
 use chrono::{Datelike as _, TimeDelta, TimeZone as _, Utc};

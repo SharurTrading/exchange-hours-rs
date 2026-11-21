@@ -31,11 +31,6 @@
 //! timeline, so a flipped window edge, a moved baseline row or a changed
 //! bridge input fails here rather than passing by agreement.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{NaiveDate, TimeZone as _, Utc};
 use chrono_tz::{Asia, Europe, US};
 use exchange_hours::{

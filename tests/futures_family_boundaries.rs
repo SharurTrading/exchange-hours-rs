@@ -9,10 +9,5 @@
 //! This root is a harness; the fixtures live in `futures_family_boundaries/`,
 //! split by venue family.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 #[path = "futures_family_boundaries/mod.rs"]
 mod suite;

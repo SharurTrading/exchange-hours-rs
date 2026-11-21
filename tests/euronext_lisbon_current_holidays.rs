@@ -2,11 +2,6 @@
 
 //! Lisbon cash-calendar arrangements published for 2026.
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture literals must fail if malformed"
-)]
-
 use chrono::{DateTime, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, HolidayKind, SessionKind,

@@ -5,11 +5,6 @@
 //! reads a date before an identity's coverage from the next week it knows, while
 //! every answer the default calendar gives inside coverage stands (LAW-COVERAGE).
 
-#![expect(
-    clippy::expect_used,
-    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
-)]
-
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar,

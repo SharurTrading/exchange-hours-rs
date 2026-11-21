@@ -83,9 +83,9 @@ fn assert_refused<T: std::fmt::Debug>(
     expected: DateCoverage,
 ) {
     // `expect_err` *is* the assertion: it aborts the test, naming the value,
-    // when the contract answered a date it should have refused. The root
-    // harness's `#![expect(clippy::expect_used)]` is what admits it here, as it
-    // does every fixture constructor in this suite.
+    // when the contract answered a date it should have refused. The
+    // `allow-expect-in-tests` switch in clippy.toml admits it here, as it does
+    // every fixture constructor in this suite.
     let error = query.expect_err("the contract must refuse this date, but it answered");
     assert!(
         matches!(
@@ -2949,11 +2949,6 @@ fn a_saturday_session_row_states_the_whole_trade_date() {
 /// the normal grid, and the quarter-hour before it is the disclosed #79
 /// residual (2026-10-04). `holiday_on` is not date-aware, so it states the row
 /// the module ships on every one of the three dates.
-#[expect(
-    clippy::panic,
-    reason = "a fixture row that is missing or of the wrong kind must fail loudly, \
-              naming the value it found"
-)]
 fn declared_blocks(trade_date: Ymd) -> Vec<(ExceptionBlockKind, i8, u32, u32)> {
     let day = day(trade_date.0, trade_date.1, trade_date.2);
     let blocks = match fx().holiday_on(day).map(Holiday::kind) {

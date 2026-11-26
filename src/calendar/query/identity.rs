@@ -7,7 +7,7 @@
 //! a detached fixed snapshot has no identity with which to apply either
 //! convention.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc, Weekday};
+use jiff::{Timestamp, civil::Date, civil::Weekday};
 
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, rules};
@@ -97,11 +97,11 @@ const DERIVED_AFTER: i64 = 19;
 /// answer is the same either way, only the cost differs.
 pub(super) fn trade_date_window<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
+    open_day: Date,
     set: RuleSet,
     wraps: bool,
-    raw_open: DateTime<Utc>,
-) -> Option<(NaiveDate, NaiveDate)> {
+    raw_open: Timestamp,
+) -> Option<(Date, Date)> {
     if assigns_by_close_date(context) && is_self_dated(context, open_day, set, raw_open) {
         // A non-wrapped tradeable occurrence is dated by its own open day; the
         // extra day exists only for the rule whose close lands on the following
@@ -115,7 +115,9 @@ pub(super) fn trade_date_window<G: SourceGate>(
         };
         return Some((
             open_day,
-            open_day.checked_add_signed(Duration::days(after))?,
+            open_day
+                .checked_add(jiff::SignedDuration::from_hours(24 * (after)))
+                .ok()?,
         ));
     }
     let (before, after) = match context.identity() {
@@ -129,8 +131,12 @@ pub(super) fn trade_date_window<G: SourceGate>(
         )) => (DERIVED_BEFORE, DERIVED_AFTER + ROLLING_WINDOW_DAYS),
         _ => (DERIVED_BEFORE, DERIVED_AFTER),
     };
-    let first = open_day.checked_sub_signed(Duration::days(before))?;
-    let last = open_day.checked_add_signed(Duration::days(after))?;
+    let first = open_day
+        .checked_sub(jiff::SignedDuration::from_hours(24 * (before)))
+        .ok()?;
+    let last = open_day
+        .checked_add(jiff::SignedDuration::from_hours(24 * (after)))
+        .ok()?;
     Some((first, last))
 }
 
@@ -172,9 +178,9 @@ fn assigns_by_close_date<G: SourceGate>(context: &QueryContext<'_, G>) -> bool {
 /// sessions belong to, and those have to be asked directly.
 fn is_self_dated<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
+    open_day: Date,
     set: RuleSet,
-    raw_open: DateTime<Utc>,
+    raw_open: Timestamp,
 ) -> bool {
     matches!(set, RuleSet::Sessions(_)) || a_session_reaches(context, open_day, raw_open)
 }
@@ -196,25 +202,25 @@ fn is_self_dated<G: SourceGate>(
 #[inline(never)]
 fn a_session_reaches<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
-    raw_open: DateTime<Utc>,
+    open_day: Date,
+    raw_open: Timestamp,
 ) -> bool {
     let tz = context.tz();
-    let weekday = open_day.weekday().num_days_from_monday() as usize;
+    let weekday = usize::from(open_day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(open_day);
     for rule in rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)) {
         if !rule.days[weekday] {
             continue;
         }
         let close_day = if rule.wraps_to_next_day() {
-            let Some(next) = open_day.succ_opt() else {
+            let Some(next) = open_day.tomorrow().ok() else {
                 continue;
             };
             next
         } else {
             open_day
         };
-        if mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc) > raw_open {
+        if mk_local_close(tz, close_day, rule.close_ssm).is_some_and(|close| close > raw_open) {
             return true;
         }
     }
@@ -259,20 +265,25 @@ pub(super) fn joins_adjacent_same_kind<G: SourceGate>(context: &QueryContext<'_,
 /// following open business date.
 pub(super) fn assign_normal<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open: DateTime<Utc>,
-    close: DateTime<Utc>,
-) -> NaiveDate {
+    open: Timestamp,
+    close: Timestamp,
+) -> Date {
     let tz = context.tz();
-    let default = close.with_timezone(&tz).date_naive();
+    let default = tz.to_datetime(close).date();
     let Some(source) = context.identity() else {
         return default;
     };
-    let local_open = open.with_timezone(&tz);
+    let local_open = tz.to_datetime(open);
     if matches!(source, CalendarSource::Exchange(Exchange::SetThailand)) {
-        return if local_open.time().num_seconds_from_midnight() < 3 * 3_600 {
-            local_open.date_naive().pred_opt().unwrap_or(default)
+        return if local_open
+            .time()
+            .duration_since(jiff::civil::Time::midnight())
+            .as_secs()
+            < 3 * 3_600
+        {
+            local_open.date().yesterday().ok().unwrap_or(default)
         } else {
-            local_open.date_naive()
+            local_open.date()
         };
     }
     // CBOT Rough Rice stopped wrapping past local midnight on 2018-01-21, so
@@ -287,8 +298,13 @@ pub(super) fn assign_normal<G: SourceGate>(
         source,
         CalendarSource::MarketHoursKey(MarketHoursKey::GlobexRoughRice)
     ) {
-        return if local_open.time().num_seconds_from_midnight() >= 19 * 3_600 {
-            local_open.date_naive().succ_opt().unwrap_or(default)
+        return if local_open
+            .time()
+            .duration_since(jiff::civil::Time::midnight())
+            .as_secs()
+            >= 19 * 3_600
+        {
+            local_open.date().tomorrow().ok().unwrap_or(default)
         } else {
             default
         };
@@ -305,17 +321,26 @@ pub(super) fn assign_normal<G: SourceGate>(
     }
 
     let days_to_monday = match local_open.weekday() {
-        Weekday::Fri if local_open.time().num_seconds_from_midnight() >= 16 * 3_600 => 3,
-        Weekday::Sat => 2,
-        Weekday::Sun => 1,
+        Weekday::Friday
+            if local_open
+                .time()
+                .duration_since(jiff::civil::Time::midnight())
+                .as_secs()
+                >= 16 * 3_600 =>
+        {
+            3
+        }
+        Weekday::Saturday => 2,
+        Weekday::Sunday => 1,
         _ => 0,
     };
     let nominal = if days_to_monday == 0 {
         default
     } else {
         local_open
-            .date_naive()
-            .checked_add_signed(Duration::days(days_to_monday))
+            .date()
+            .checked_add(jiff::SignedDuration::from_hours(24 * (days_to_monday)))
+            .ok()
             .unwrap_or(default)
     };
 
@@ -329,12 +354,12 @@ pub(super) fn assign_normal<G: SourceGate>(
     }
     let mut candidate = nominal;
     for _ in 0..=TRADE_DATE_LOOKAHEAD_DAYS {
-        if !matches!(candidate.weekday(), Weekday::Sat | Weekday::Sun)
+        if !matches!(candidate.weekday(), Weekday::Saturday | Weekday::Sunday)
             && !context.trade_date_is_closed(candidate)
         {
             return candidate;
         }
-        let Some(next) = candidate.succ_opt() else {
+        let Some(next) = candidate.tomorrow().ok() else {
             return nominal;
         };
         candidate = next;

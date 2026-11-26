@@ -2,15 +2,16 @@
 
 //! Lisbon cash-calendar arrangements published for 2026.
 
-use chrono::{DateTime, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
-fn date(text: &str) -> NaiveDate {
+fn date(text: &str) -> Date {
     text.parse().expect("valid date")
 }
-fn utc(text: &str) -> DateTime<Utc> {
+fn utc(text: &str) -> Timestamp {
     text.parse().expect("valid UTC instant")
 }
 

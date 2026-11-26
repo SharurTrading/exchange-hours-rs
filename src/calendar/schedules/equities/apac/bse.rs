@@ -2,7 +2,9 @@
 
 //! BSE India cash equities.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -125,7 +127,7 @@ static REVISIONS: &[Revision] = revisions![
     (2026, 8, 3, &BSE_PROFILE_CURRENT, "SEBI circular 99122"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &BSE_PROFILE_PRE_2010_01_04,

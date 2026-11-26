@@ -2,12 +2,14 @@
 
 //! Shared imports and fixture helpers for this suite.
 
-pub(super) use chrono::{DateTime, Datelike as _, NaiveDate, Utc};
-pub(super) use chrono_tz::{Asia, Europe, Tz};
+use crate::support::date_opt;
 pub(super) use exchange_hours::{
     CalendarQueryError, EvidenceTier, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
     calendar_for_exchange,
 };
+pub(super) use jiff::Timestamp;
+pub(super) use jiff::civil::Date;
+pub(super) use jiff::tz::TimeZone;
 
 pub(super) use crate::support::local;
 
@@ -23,8 +25,8 @@ pub(super) use crate::support::local;
 pub(super) fn assert_closed(
     label: &str,
     calendar: ExchangeCalendar,
-    tz: Tz,
-    closures: &[NaiveDate],
+    tz: &TimeZone,
+    closures: &[Date],
 ) {
     for date in closures {
         let holiday = calendar
@@ -80,13 +82,13 @@ pub(super) fn assert_closed(
 pub(super) fn assert_early_close(
     label: &str,
     calendar: ExchangeCalendar,
-    tz: Tz,
-    date: (i32, u32, u32),
+    tz: &TimeZone,
+    date: (i16, i8, i8),
     close_ssm: u32,
     document: &str,
 ) {
     let holiday = calendar
-        .holiday_on(NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("valid date"))
+        .holiday_on(date_opt(date.0, date.1, date.2).expect("valid date"))
         .unwrap_or_else(|| panic!("{label}: {date:?} ships an early-close row"));
     assert_eq!(
         holiday.kind(),
@@ -117,12 +119,12 @@ pub(super) fn assert_early_close(
 pub(super) fn assert_early_close_row(
     label: &str,
     calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
+    date: (i16, i8, i8),
     close_ssm: u32,
     document: &str,
 ) {
     let holiday = calendar
-        .holiday_on(NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("valid date"))
+        .holiday_on(date_opt(date.0, date.1, date.2).expect("valid date"))
         .unwrap_or_else(|| panic!("{label}: {date:?} ships an early-close row"));
     assert_eq!(
         holiday.kind(),
@@ -133,7 +135,7 @@ pub(super) fn assert_early_close_row(
 }
 
 /// A venue-local instant from seconds since midnight.
-fn ssm_instant(tz: Tz, date: (i32, u32, u32), ssm: u32) -> DateTime<Utc> {
+fn ssm_instant(tz: &TimeZone, date: (i16, i8, i8), ssm: u32) -> Timestamp {
     local(tz, date, (ssm / 3_600, (ssm % 3_600) / 60, ssm % 60))
 }
 

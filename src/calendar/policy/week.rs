@@ -2,7 +2,7 @@
 
 //! Policy-aware normal-week duration.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::PolicyCalendar;
 use crate::calendar::CalendarQueryError;
@@ -28,7 +28,7 @@ impl PolicyCalendar<'_> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn normal_week_open_seconds_containing(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<u64, CalendarQueryError> {
         let context = self.context();
         context.require_floor_at(instant)?;

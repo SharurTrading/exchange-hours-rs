@@ -2,10 +2,13 @@
 
 //! Current TRY sessions within OANDA's published Forex holiday scope.
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
-use exchange_hours::{ExchangeCalendar, MarketHoursKey, SessionKind, SessionState};
+mod support;
 
-fn utc(value: &str) -> DateTime<Utc> {
+use crate::support::date_opt;
+use exchange_hours::{ExchangeCalendar, MarketHoursKey, SessionKind, SessionState};
+use jiff::{SignedDuration, Timestamp};
+
+fn utc(value: &str) -> Timestamp {
     value.parse().expect("valid UTC fixture")
 }
 
@@ -18,7 +21,7 @@ fn current_try_queries_answer_the_daily_grid_across_the_european_clock_change() 
         (26, "2026-10-26T07:00:00Z", "2026-10-26T16:00:00Z"),
         (30, "2026-10-30T07:00:00Z", "2026-10-30T16:00:00Z"),
     ] {
-        let date = NaiveDate::from_ymd_opt(2026, 10, day).expect("valid date");
+        let date = date_opt(2026, 10, day).expect("valid date");
         assert_eq!(calendar.is_open(utc(open)), Ok(true));
         assert_eq!(
             calendar.session_bounds(utc(open)),
@@ -30,7 +33,7 @@ fn current_try_queries_answer_the_daily_grid_across_the_european_clock_change() 
             Ok(false)
         );
         assert_eq!(
-            calendar.is_open(utc(close) - Duration::seconds(1)),
+            calendar.is_open(utc(close) - SignedDuration::from_secs(1)),
             Ok(true)
         );
         if day == 30 {

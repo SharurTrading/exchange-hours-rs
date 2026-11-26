@@ -15,12 +15,14 @@
 //! its trade date, so the set of trade dates that can open on a given local day
 //! is a fixed, small window.
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+use jiff::{Timestamp, civil::Date};
 
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet};
 use crate::calendar::exceptions::{DateException, ExceptionBlock, ExceptionBlockKind};
-use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
+use crate::calendar::local_time::{
+    clip_local_close, clip_local_open, mk_local_close, mk_local_open,
+};
 use crate::calendar::rule::SessionKind;
 
 const SECONDS_PER_DAY: u32 = 86_400;
@@ -32,7 +34,7 @@ pub(super) enum ExceptionDailyClose {
     /// The trade date carries no session of the requested kind.
     NoSession,
     /// The trade date's final close of the requested kind.
-    Close(DateTime<Utc>),
+    Close(Timestamp),
 }
 
 /// Returns whether a trade can print in this block.
@@ -56,8 +58,12 @@ fn selects(block: ExceptionBlock, set: RuleSet) -> bool {
     }
 }
 
-fn opening_day(trade_date: NaiveDate, block: ExceptionBlock) -> Option<NaiveDate> {
-    trade_date.checked_add_signed(Duration::days(i64::from(block.open_day_offset())))
+fn opening_day(trade_date: Date, block: ExceptionBlock) -> Option<Date> {
+    trade_date
+        .checked_add(jiff::SignedDuration::from_hours(
+            24 * (i64::from(block.open_day_offset())),
+        ))
+        .ok()
 }
 
 /// Returns the local date a late-open override's wall clock belongs to.
@@ -65,7 +71,7 @@ fn opening_day(trade_date: NaiveDate, block: ExceptionBlock) -> Option<NaiveDate
 /// This mirrors the normal path: for a wrapped trading day, a value at or after
 /// the day's own first open is interpreted on the preceding opening date, and a
 /// smaller value on the trade date itself.
-fn late_open_day(trade_date: NaiveDate, blocks: &[ExceptionBlock], ssm: u32) -> NaiveDate {
+fn late_open_day(trade_date: Date, blocks: &[ExceptionBlock], ssm: u32) -> Date {
     let Some(first) = blocks.iter().copied().find(|block| is_tradeable(*block)) else {
         return trade_date;
     };
@@ -87,19 +93,19 @@ fn late_open_day(trade_date: NaiveDate, blocks: &[ExceptionBlock], ssm: u32) -> 
 /// anchor a late-open override to the replaced day's own first open.
 pub(super) fn resolve_block_bounds<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    trade_date: NaiveDate,
+    trade_date: Date,
     blocks: &[ExceptionBlock],
     block: ExceptionBlock,
-) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+) -> Option<(Timestamp, Timestamp)> {
     let open_day = opening_day(trade_date, block)?;
     let close_day = if block.wraps_to_next_day() {
-        open_day.succ_opt()?
+        open_day.tomorrow().ok()?
     } else {
         open_day
     };
     let tz = context.tz();
-    let raw_open = mk_local_open(tz, open_day, block.open_ssm()).with_timezone(&Utc);
-    let raw_close = mk_local_close(tz, close_day, block.close_ssm()).with_timezone(&Utc);
+    let raw_open = mk_local_open(tz, open_day, block.open_ssm())?;
+    let raw_close = mk_local_close(tz, close_day, block.close_ssm())?;
     if raw_open >= raw_close {
         return None;
     }
@@ -121,14 +127,14 @@ pub(super) fn resolve_block_bounds<G: SourceGate>(
         if ssm > SECONDS_PER_DAY {
             return None;
         }
-        close = close.min(mk_local_close(tz, trade_date, ssm).with_timezone(&Utc));
+        close = clip_local_close(tz, trade_date, ssm, close)?;
     }
     if let Some(ssm) = policy.late_open_ssm(trade_date) {
         if ssm >= SECONDS_PER_DAY {
             return None;
         }
         let cutoff_day = late_open_day(trade_date, blocks, ssm);
-        open = open.max(mk_local_open(tz, cutoff_day, ssm).with_timezone(&Utc));
+        open = clip_local_open(tz, cutoff_day, ssm, open)?;
     }
     (open < close).then_some((open, close))
 }
@@ -150,10 +156,10 @@ pub(super) fn resolve_block_bounds<G: SourceGate>(
 /// applies its own coverage verdict to the day before asking.
 pub(super) fn find_occurrence<G: SourceGate, T>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
+    open_day: Date,
     set: RuleSet,
     wrapped_only: bool,
-    mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
+    mut probe: impl FnMut(Timestamp, Timestamp) -> Option<T>,
 ) -> Option<T> {
     if !context.has_replacement_layer() {
         return None;
@@ -165,14 +171,18 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
     // keyed near skips the offset loop entirely. The pre-filter is exact in
     // its `false` direction: no block can exist, so answering `None` here is
     // the scan's own answer (issue #125).
-    let reach_last =
-        open_day.checked_add_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))?;
+    // At the date limit, the representable part of this window still counts.
+    let reach_last = open_day.saturating_add(jiff::SignedDuration::from_hours(
+        24 * i64::from(-ExceptionBlock::MIN_DAY_OFFSET),
+    ));
     if !context.replacement_blocks_may_reach(open_day, reach_last) {
         return None;
     }
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
     while offset <= ExceptionBlock::MAX_DAY_OFFSET {
-        if let Some(trade_date) = open_day.checked_sub_signed(Duration::days(i64::from(offset)))
+        if let Some(trade_date) = open_day
+            .checked_sub(jiff::SignedDuration::from_hours(24 * (i64::from(offset))))
+            .ok()
             && let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date)
         {
             for block in blocks.iter().copied().filter(|block| {
@@ -236,9 +246,9 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
 /// not an estimate.
 pub(super) fn governs_instant<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    window: (DateTime<Utc>, DateTime<Utc>),
+    window: (Timestamp, Timestamp),
     set: RuleSet,
-    open_day: chrono::NaiveDate,
+    open_day: jiff::civil::Date,
     wraps: bool,
 ) -> bool {
     if !context.has_replacement_layer() {
@@ -251,32 +261,26 @@ pub(super) fn governs_instant<G: SourceGate>(
     // and `last_day <= close_day = open_day + (wraps ? 1 : 0)` — which makes
     // `[open_day - 7, open_day + 7 (+ 1)]` a superset of that key span, and
     // the pre-filter below sees every key date the exact walk could ask for.
-    let Some(reach_first) =
-        open_day.checked_sub_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))
-    else {
-        return false;
-    };
-    let Some(reach_last) = open_day.checked_add_signed(Duration::days(7 + i64::from(wraps))) else {
-        return false;
-    };
+    let reach_first = open_day.saturating_sub(jiff::SignedDuration::from_hours(
+        24 * (i64::from(-ExceptionBlock::MIN_DAY_OFFSET)),
+    ));
+    let reach_last = open_day.saturating_add(jiff::SignedDuration::from_hours(
+        24 * (7 + i64::from(wraps)),
+    ));
     if !context.replacement_blocks_may_reach(reach_first, reach_last) {
         return false;
     }
     let (window_open, window_close) = window;
     let tz = context.tz();
-    let first_day = bounded_utc(window_open, tz).with_timezone(&tz).date_naive();
-    let last_day = bounded_utc(window_close, tz)
-        .with_timezone(&tz)
-        .date_naive();
+    let first_day = tz.to_datetime(window_open).date();
+    let last_day = tz.to_datetime(window_close).date();
     // A block meeting this occurrence opens in `[first_day + MIN, last_day +
     // MAX]`. Walking the trade dates that reach those opening days visits each
     // record once and asks it directly, rather than probing the record table
     // once per offset.
-    let Some(first_trade_date) =
-        first_day.checked_add_signed(Duration::days(i64::from(ExceptionBlock::MIN_DAY_OFFSET)))
-    else {
-        return false;
-    };
+    let first_trade_date = first_day.saturating_add(jiff::SignedDuration::from_hours(
+        24 * (i64::from(ExceptionBlock::MIN_DAY_OFFSET)),
+    ));
     // The upper bound is `last_day - MIN_DAY_OFFSET`, not `last_day +
     // MAX_DAY_OFFSET`: a block opening on day `D` belongs to a trade date in
     // `[D, D - MIN_DAY_OFFSET]`, so a record keyed up to seven days after the
@@ -284,21 +288,17 @@ pub(super) fn governs_instant<G: SourceGate>(
     // `last_day` alone misses every block that opens two or more local days
     // before its trade date, which left #130's collision reachable for exactly
     // the shapes a merged or multi-day trade date states.
-    let Some(last_trade_date) =
-        last_day.checked_sub_signed(Duration::days(i64::from(ExceptionBlock::MIN_DAY_OFFSET)))
-    else {
-        return false;
-    };
+    let last_trade_date = last_day.saturating_sub(jiff::SignedDuration::from_hours(
+        24 * (i64::from(ExceptionBlock::MIN_DAY_OFFSET)),
+    ));
     let mut trade_date = first_trade_date;
     loop {
         if let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date) {
             // A block meeting this occurrence opens on one of its own local
             // days or on the day before it; the resolved comparison below
             // rejects the rest whatever they hold.
-            let span = trade_date
-                .signed_duration_since(first_day)
-                .num_days()
-                .clamp(0, i64::from(-ExceptionBlock::MIN_DAY_OFFSET));
+            let days = trade_date.duration_since(first_day).as_secs() / 86_400;
+            let span = days.clamp(0, i64::from(-ExceptionBlock::MIN_DAY_OFFSET));
             let mut offset = -i8::try_from(span).unwrap_or(ExceptionBlock::MIN_DAY_OFFSET);
             while offset <= ExceptionBlock::MAX_DAY_OFFSET {
                 for block in blocks
@@ -320,7 +320,7 @@ pub(super) fn governs_instant<G: SourceGate>(
         if trade_date >= last_trade_date {
             return false;
         }
-        let Some(next) = trade_date.succ_opt() else {
+        let Some(next) = trade_date.tomorrow().ok() else {
             return false;
         };
         trade_date = next;
@@ -346,16 +346,18 @@ pub(super) fn governs_instant<G: SourceGate>(
 /// different sessions.
 pub(super) fn replacement_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open: DateTime<Utc>,
-) -> Option<NaiveDate> {
+    open: Timestamp,
+) -> Option<Date> {
     if !context.has_replacement_layer() {
         return None;
     }
     let tz = context.tz();
-    let local_day = bounded_utc(open, tz).with_timezone(&tz).date_naive();
+    let local_day = tz.to_datetime(open).date();
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
     while offset <= ExceptionBlock::MAX_DAY_OFFSET {
-        if let Some(trade_date) = local_day.checked_sub_signed(Duration::days(i64::from(offset)))
+        if let Some(trade_date) = local_day
+            .checked_sub(jiff::SignedDuration::from_hours(24 * (i64::from(offset))))
+            .ok()
             && let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date)
         {
             for block in blocks
@@ -382,7 +384,7 @@ pub(super) fn replacement_trade_date<G: SourceGate>(
 /// local days earlier than that scan reaches.
 pub(super) fn daily_close<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    trade_date: NaiveDate,
+    trade_date: Date,
     kind: SessionKind,
 ) -> ExceptionDailyClose {
     // A profile with no final daily close has no trade-date identity, so a
@@ -397,14 +399,25 @@ pub(super) fn daily_close<G: SourceGate>(
     // daily close either, so both answers agree. The guard exists because that
     // agreement is a coincidence of the current tables, not a property of the
     // engine -- the first continuous-weekday profile would break it silently.
-    let opening_midnight = mk_local_open(context.tz(), trade_date, 0).with_timezone(&Utc);
-    if !context.has_daily_close_at(opening_midnight) {
+    let has_daily_close = mk_local_open(context.tz(), trade_date, 0).map_or_else(
+        // A record can open on an earlier date even when the trade date's
+        // midnight is outside the timestamp domain. The date's selected
+        // profile still determines whether it can have a daily close.
+        || {
+            context
+                .profile_for_open_day(trade_date)
+                .as_ref()
+                .has_daily_close
+        },
+        |midnight| context.has_daily_close_at(midnight),
+    );
+    if !has_daily_close {
         return ExceptionDailyClose::NotGoverned;
     }
     match context.exception_on(trade_date) {
         DateException::Closed => ExceptionDailyClose::NoSession,
         DateException::ReplaceSessions(blocks) => {
-            let mut latest: Option<DateTime<Utc>> = None;
+            let mut latest: Option<Timestamp> = None;
             for block in blocks
                 .iter()
                 .copied()

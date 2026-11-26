@@ -2,7 +2,9 @@
 
 //! CME/CBOT Spot-Quoted Futures ("SQF") schedules.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -77,6 +79,6 @@ static FROM_2025_06_29: StaticHoursProfile = StaticHoursProfile {
 // Evidence: docs/evidence/globex_spot_quoted.md
 static REVISIONS: &[Revision] = revisions![(2025, 6, 29, &FROM_2025_06_29, "CME SER-9506R")];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, REVISIONS)
 }

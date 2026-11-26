@@ -121,8 +121,10 @@ required. Historical completion remains the target tracked in #332.
 
 - **LAW-DETERMINISM** — library code never reads a clock, performs I/O, or uses
   randomness. Same inputs, same answer, forever. Enforced structurally where
-  possible: `chrono` is built with `default-features = false` so `Utc::now()`
-  does not compile here. Do not add a dependency or code path that breaks this.
+  possible. Jiff is built with `default-features = false`. Built-in venue
+  time zones are embedded at compile time. Use those static zones throughout
+  built-in queries. The lint configuration also disallows time reads and zone
+  database lookups when dependency feature unification makes them available.
 - **LAW-PANIC** — production queries are total: they do not panic, hang, or use
   unreachable fallbacks. Invalid raw `SessionRule` values may return
   unspecified answers, but still return normally; absence and bounded-search
@@ -440,14 +442,15 @@ state actual supported ranges; an unknown date is not a market closure.
 ## Modeling conventions
 
 - **UTC in, UTC out.** Every *timestamp* crossing the public boundary is a
-  `DateTime<Utc>`: a local time is never a parameter or a return value, and the
-  venue's zone stays an internal detail. Session rules are seconds-since-local-
-  midnight in the venue's own IANA zone.
+  `jiff::Timestamp`. Use `jiff::civil::Date` for date-only trade dates and
+  civil-day queries. The schedule's IANA zone interprets session rules in
+  seconds since local midnight.
 - **Closes are end-exclusive.** An instant equal to a close is closed.
 - **`open_ssm >= close_ssm` wraps** into the next local day. Equal endpoints
   encode one complete local-day span; omit a rule to express no session.
-- **DST bias is asymmetric on purpose**: opens resolve earliest, closes latest.
-  Never "simplify" this to a single bias.
+- **DST bias is asymmetric on purpose.** In a repeated local interval,
+  opens resolve to the earlier instant and closes to the later instant. A
+  wall time inside a gap resolves to the first instant after the gap.
 - **Boundaries, trade date and `order_entry` are required; `regular` is
   declared.** The session boundaries (the union of every executable phase) and
   the trade date are what every consumer purpose depends on. `order_entry` is

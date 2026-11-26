@@ -2,7 +2,9 @@
 
 //! Borsa Istanbul Equity Market.
 
-use chrono_tz::Europe;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Europe;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -198,7 +200,7 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &BIST_PROFILE_PRE_2012_03_02,

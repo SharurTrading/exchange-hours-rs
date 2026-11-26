@@ -127,13 +127,20 @@ sources plus an optional borrowed day policy. Do not add a second algorithm
 implementation for a public facade. Extend the context only when a genuinely
 different schedule source or overlay is needed.
 
+Built-in venue time zones are embedded from IANA 2026f at compile time. Static
+profiles borrow these zones and their rule slices. A `MarketHours` snapshot
+owns its Jiff `TimeZone`, and the engine borrows that zone for conversions.
+The date-aware calendar remains a copyable identity and query configuration.
+
 The shared engine must preserve:
 
-- UTC timestamps at every public boundary;
+- UTC `jiff::Timestamp` values at every timestamp boundary and
+  `jiff::civil::Date` values for venue-local dates;
 - end-exclusive closes;
 - equal rule endpoints as one complete local-day session, never an empty rule;
 - opening-day selection for wrap and future-session scans;
-- earliest resolution for opens and latest resolution for closes;
+- earliest open and latest close in a repeated local interval, and the first
+  valid instant after a gap for both endpoints;
 - trade-date policy applied to the complete effective trading day, including
   its prior-evening wrapped portion, except for an explicitly sourced
   following-business-day assignment such as CME cryptocurrency's weekend
@@ -141,7 +148,8 @@ The shared engine must preserve:
 - one mutually exclusive state, with same-trade-date gaps as halts except for
   sourced short maintenance on a continuously traded-week profile, and only
   four-hour-bounded same-week inter-trade-date gaps as ordinary maintenance;
-- bounded, total behavior at Chrono's minimum and maximum instants;
+- bounded, total behavior at Jiff's minimum and maximum instants, with
+  both endpoints required for a session occurrence to contribute bounds;
 - `None` for unavailable boundaries rather than fabricated intervals.
 
 ## Tests

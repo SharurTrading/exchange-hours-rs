@@ -45,15 +45,15 @@
 //! `tests/order_entry_phase.rs` fence — so a future row or phase change on
 //! any identity cannot silently widen the two answers.
 
-use chrono::{DateTime, Datelike as _, TimeZone as _, Utc};
+use crate::support::zones::UTC;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     Exchange, MarketHoursKey, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::Timestamp;
 
-fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
-    Utc.with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
-        .expect("fixture instants fall once")
+fn utc(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> Timestamp {
+    local_opt(&UTC, (year, month, day), (hour, minute, 0)).expect("fixture instants fall once")
 }
 
 /// The invariant, asserted for one calendar at one instant.
@@ -69,7 +69,7 @@ fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc>
 /// has stopped fencing the invariant and started passing vacuously.
 fn assert_queue_never_widens(
     calendar: exchange_hours::ExchangeCalendar,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     label: &str,
 ) -> bool {
     let accepted = |error: &exchange_hours::CalendarQueryError| {
@@ -144,23 +144,18 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() 
     ] {
         let calendar = calendar_for_market_hours_key(key);
         let mut queues_observed = 0usize;
-        let mut day = utc(2025, 1, 1, 0, 0).date_naive();
-        let last = utc(2028, 1, 1, 0, 0).date_naive();
+        let mut day = date_opt(2025, 1, 1).expect("valid fixture date");
+        let last = date_opt(2028, 1, 1).expect("valid fixture date");
         while day < last {
             // Five-minute steps, in UTC; a step that DST makes ambiguous or
             // skipped simply probes a neighbouring instant, which is fine for
             // a property sweep.
             for slot in 0..(24 * 12) {
-                let instant = Utc
-                    .with_ymd_and_hms(
-                        day.year(),
-                        day.month(),
-                        day.day(),
-                        slot / 12,
-                        (slot % 12) * 5,
-                        0,
-                    )
-                    .single();
+                let instant = local_opt(
+                    &UTC,
+                    (day.year(), day.month(), day.day()),
+                    (slot / 12, (slot % 12) * 5, 0),
+                );
                 let Some(instant) = instant else { continue };
                 queues_observed += usize::from(assert_queue_never_widens(
                     calendar,
@@ -169,7 +164,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() 
                 ));
             }
             day = day
-                .succ_opt()
+                .tomorrow()
                 .expect("the walk stays inside the year range");
         }
         // The classification pin (#244 review, A2): this key ships order-entry
@@ -191,7 +186,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sample
     let mut queues_observed = 0usize;
     for &exchange in Exchange::ALL {
         let calendar = calendar_for_exchange(exchange);
-        for day in 17..=23u32 {
+        for day in 17..=23i8 {
             for hour in 0..24u32 {
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);
@@ -206,7 +201,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sample
     }
     for &key in MarketHoursKey::ALL {
         let calendar = calendar_for_market_hours_key(key);
-        for day in 17..=23u32 {
+        for day in 17..=23i8 {
             for hour in 0..24u32 {
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);

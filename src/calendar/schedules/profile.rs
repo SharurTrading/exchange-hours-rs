@@ -4,7 +4,9 @@
 
 use std::borrow::Cow;
 
-use chrono_tz::{America, Tz, UTC};
+use jiff::tz::TimeZone;
+
+use crate::calendar::time_zones::{America, UTC};
 
 use crate::calendar::exchange_calendar::CalendarSource;
 use crate::calendar::rule::ALL_DAYS;
@@ -16,7 +18,7 @@ use crate::calendar::{MarketHours, SessionRule};
 /// current or historical venue schedule never allocates.
 #[derive(Clone, Copy)]
 pub(crate) struct StaticHoursProfile {
-    pub(crate) tz: Tz,
+    pub(crate) tz: &'static TimeZone,
     pub(crate) regular: &'static [SessionRule],
     pub(crate) extended: &'static [SessionRule],
     /// Order-entry-only phases in which no trade can match.
@@ -63,7 +65,7 @@ pub(crate) fn from_profile(
 ) -> MarketHours {
     MarketHours {
         source: source.into(),
-        tz: profile.tz,
+        tz: profile.tz.clone(),
         regular: Cow::Borrowed(profile.regular),
         extended: Cow::Borrowed(profile.extended),
         order_entry: Cow::Borrowed(profile.order_entry),

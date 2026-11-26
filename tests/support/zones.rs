@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT-0
+
+//! Statically embedded IANA aliases used to construct test fixtures.
+pub(crate) const AMSTERDAM: jiff::tz::TimeZone = jiff::tz::get!("Europe/Amsterdam");
+pub(crate) const APIA: jiff::tz::TimeZone = jiff::tz::get!("Pacific/Apia");
+pub(crate) const AUCKLAND: jiff::tz::TimeZone = jiff::tz::get!("Pacific/Auckland");
+pub(crate) const BANGKOK: jiff::tz::TimeZone = jiff::tz::get!("Asia/Bangkok");
+pub(crate) const BERLIN: jiff::tz::TimeZone = jiff::tz::get!("Europe/Berlin");
+pub(crate) const BRUSSELS: jiff::tz::TimeZone = jiff::tz::get!("Europe/Brussels");
+pub(crate) const CHICAGO: jiff::tz::TimeZone = jiff::tz::get!("America/Chicago");
+pub(crate) const COPENHAGEN: jiff::tz::TimeZone = jiff::tz::get!("Europe/Copenhagen");
+pub(crate) const DUBAI: jiff::tz::TimeZone = jiff::tz::get!("Asia/Dubai");
+pub(crate) const DUBLIN: jiff::tz::TimeZone = jiff::tz::get!("Europe/Dublin");
+pub(crate) const HELSINKI: jiff::tz::TimeZone = jiff::tz::get!("Europe/Helsinki");
+pub(crate) const HONG_KONG: jiff::tz::TimeZone = jiff::tz::get!("Asia/Hong_Kong");
+pub(crate) const HO_CHI_MINH: jiff::tz::TimeZone = jiff::tz::get!("Asia/Ho_Chi_Minh");
+pub(crate) const ISTANBUL: jiff::tz::TimeZone = jiff::tz::get!("Europe/Istanbul");
+pub(crate) const JAKARTA: jiff::tz::TimeZone = jiff::tz::get!("Asia/Jakarta");
+pub(crate) const JOHANNESBURG: jiff::tz::TimeZone = jiff::tz::get!("Africa/Johannesburg");
+pub(crate) const KOLKATA: jiff::tz::TimeZone = jiff::tz::get!("Asia/Kolkata");
+pub(crate) const KUALA_LUMPUR: jiff::tz::TimeZone = jiff::tz::get!("Asia/Kuala_Lumpur");
+pub(crate) const LISBON: jiff::tz::TimeZone = jiff::tz::get!("Europe/Lisbon");
+pub(crate) const LONDON: jiff::tz::TimeZone = jiff::tz::get!("Europe/London");
+pub(crate) const MADRID: jiff::tz::TimeZone = jiff::tz::get!("Europe/Madrid");
+pub(crate) const MANILA: jiff::tz::TimeZone = jiff::tz::get!("Asia/Manila");
+pub(crate) const MEXICO_CITY: jiff::tz::TimeZone = jiff::tz::get!("America/Mexico_City");
+pub(crate) const NEW_YORK: jiff::tz::TimeZone = jiff::tz::get!("America/New_York");
+pub(crate) const PARIS: jiff::tz::TimeZone = jiff::tz::get!("Europe/Paris");
+pub(crate) const RIYADH: jiff::tz::TimeZone = jiff::tz::get!("Asia/Riyadh");
+pub(crate) const ROME: jiff::tz::TimeZone = jiff::tz::get!("Europe/Rome");
+pub(crate) const SAO_PAULO: jiff::tz::TimeZone = jiff::tz::get!("America/Sao_Paulo");
+pub(crate) const SEOUL: jiff::tz::TimeZone = jiff::tz::get!("Asia/Seoul");
+pub(crate) const SHANGHAI: jiff::tz::TimeZone = jiff::tz::get!("Asia/Shanghai");
+pub(crate) const SINGAPORE: jiff::tz::TimeZone = jiff::tz::get!("Asia/Singapore");
+pub(crate) const STOCKHOLM: jiff::tz::TimeZone = jiff::tz::get!("Europe/Stockholm");
+pub(crate) const SYDNEY: jiff::tz::TimeZone = jiff::tz::get!("Australia/Sydney");
+pub(crate) const TAIPEI: jiff::tz::TimeZone = jiff::tz::get!("Asia/Taipei");
+pub(crate) const TOKYO: jiff::tz::TimeZone = jiff::tz::get!("Asia/Tokyo");
+pub(crate) const TORONTO: jiff::tz::TimeZone = jiff::tz::get!("America/Toronto");
+pub(crate) const US_CENTRAL: jiff::tz::TimeZone = jiff::tz::get!("US/Central");
+pub(crate) const US_EASTERN: jiff::tz::TimeZone = jiff::tz::get!("US/Eastern");
+pub(crate) const UTC: jiff::tz::TimeZone = jiff::tz::TimeZone::UTC;
+pub(crate) const VIENNA: jiff::tz::TimeZone = jiff::tz::get!("Europe/Vienna");
+pub(crate) const WINNIPEG: jiff::tz::TimeZone = jiff::tz::get!("America/Winnipeg");
+pub(crate) const ZURICH: jiff::tz::TimeZone = jiff::tz::get!("Europe/Zurich");

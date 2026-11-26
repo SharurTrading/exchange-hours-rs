@@ -2,7 +2,7 @@
 
 //! Date-aware normal-week duration over the shared query engine.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::ExchangeCalendar;
 use crate::calendar::CalendarQueryError;
@@ -26,7 +26,7 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn normal_week_open_seconds_containing(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<u64, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;

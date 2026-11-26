@@ -2,7 +2,9 @@
 
 //! CME FX futures on the standard 17:00-16:00 CT Globex grid.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
@@ -116,6 +118,6 @@ static REVISIONS: &[Revision] = revisions![
     (2016, 1, 3, &FX_CURRENT, "MARKET-DATA"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &AT_2010_FLOOR, REVISIONS)
 }

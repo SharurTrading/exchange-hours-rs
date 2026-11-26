@@ -2,7 +2,9 @@
 
 //! Bursa Malaysia cash equities.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -56,6 +58,6 @@ pub(crate) const CURRENT: &StaticHoursProfile = &BURSA_MALAYSIA_PROFILE;
 /// No dated revision is recorded: the reviewed grid holds for the whole audit
 /// window, so every instant resolves to the one profile. A sourced revision
 /// later replaces this with a real timeline row and needs no routing change.
-pub(crate) fn profile_at(_as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
     CURRENT
 }

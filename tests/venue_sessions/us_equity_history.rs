@@ -3,12 +3,14 @@
 //! Independent public-surface contracts for US equity/ATS history.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use jiff::SignedDuration;
 
-fn profile_before(exch: Exchange, date: (i32, u32, u32)) -> MarketHours {
-    hours_for_exchange(exch, et(date, (0, 0, 0)) - chrono::Duration::seconds(1))
+fn profile_before(exch: Exchange, date: (i16, i8, i8)) -> MarketHours {
+    hours_for_exchange(exch, et(date, (0, 0, 0)) - SignedDuration::from_secs(1))
 }
 
-fn profile_from(exch: Exchange, date: (i32, u32, u32)) -> MarketHours {
+fn profile_from(exch: Exchange, date: (i16, i8, i8)) -> MarketHours {
     hours_for_exchange(exch, et(date, (0, 0, 0)))
 }
 
@@ -365,10 +367,7 @@ fn blue_ocean_new_order_window_is_stable_from_launch() {
     // https://www.sec.gov/Archives/edgar/data/1795131/000153949721000764/primary_doc.xml
     // https://www.sec.gov/Archives/edgar/data/1795131/000153949723000091/primary_doc.xml
     let historical = hours_for_exchange(Exchange::BlueOceanAts, et((2021, 10, 6), (2, 0, 0)));
-    let current = hours_for_exchange(
-        Exchange::BlueOceanAts,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let current = hours_for_exchange(Exchange::BlueOceanAts, PROFILE_INSTANT);
 
     assert_eq!(historical.regular, current.regular);
     assert_eq!(historical.extended, current.extended);

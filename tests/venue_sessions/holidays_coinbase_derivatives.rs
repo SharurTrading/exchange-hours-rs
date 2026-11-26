@@ -19,12 +19,13 @@
 //! against. The count sweep alone cannot see a row moved to another audited
 //! date with the same kind, which is why the ordered table exists.
 
-use chrono::{Days, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
     SessionKind, calendar_for_exchange,
 };
+use jiff::civil::Date;
 
 use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
 
@@ -32,16 +33,12 @@ fn cde() -> ExchangeCalendar {
     calendar_for_exchange(Exchange::CoinbaseDerivatives)
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Chicago instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Chicago instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 /// The early close instants the notices print, in venue-local seconds.
@@ -55,7 +52,7 @@ const P_13_45: u32 = 13 * 3_600 + 45 * 60;
 /// Read row by row off the operator's own Market Notices; the research store
 /// keeps the bytes and `docs/evidence/coinbase_derivatives.md` quotes them.
 #[rustfmt::skip]
-const ERA_ROWS: [(i32, u32, u32, HolidayKind); 60] = [
+const ERA_ROWS: [(i16, i8, i8, HolidayKind); 60] = [
     (2021,  7,  5, HolidayKind::Closed),
     (2021,  9,  6, HolidayKind::Closed),
     (2021, 11, 25, HolidayKind::Closed),
@@ -119,7 +116,7 @@ const ERA_ROWS: [(i32, u32, u32, HolidayKind); 60] = [
 ];
 
 /// Every date in the audited window that carries a row, in ascending order.
-fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
+fn shipped_rows() -> Vec<(Date, HolidayKind)> {
     let calendar = cde();
     let coverage = calendar
         .holiday_coverage()
@@ -131,7 +128,7 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
             rows.push((date, holiday.kind()));
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the coverage window stays inside the representable calendar");
     }
     rows

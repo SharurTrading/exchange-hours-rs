@@ -13,12 +13,14 @@
 //! calendar does not list, and the eve and holiday instants the Independence
 //! Day and Christmas notices state.
 
-use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
-use chrono_tz::America;
+use crate::support::zones::NEW_YORK;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
     HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 fn key(key: MarketHoursKey) -> ExchangeCalendar {
     calendar_for_market_hours_key(key)
@@ -68,16 +70,12 @@ fn assert_declared_refusal<T: core::fmt::Debug>(
     );
 }
 
-fn ny(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    America::New_York
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous New York instant")
-        .with_timezone(&Utc)
+fn ny(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&NEW_YORK, date, time).expect("fixture must be an unambiguous New York instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 /// Every ICE identity that ships a table, for the coverage fence.
@@ -155,7 +153,7 @@ fn easter_monday_moves_the_sugar_coffee_and_cocoa_open_to_0730_new_york() {
         );
         assert!(
             !calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -382,7 +380,7 @@ fn the_2026_dst_end_week_opens_the_softs_late_at_three_instants() {
             );
             assert!(
                 !calendar
-                    .is_open(cutoff - TimeDelta::nanoseconds(1))
+                    .is_open(cutoff - SignedDuration::from_nanos(1))
                     .expect("the coverage contract must answer a covered date"),
                 "{which:?} stays shut the minute before its delayed open on 2026-10-{date}"
             );
@@ -502,7 +500,7 @@ fn cotton_carries_its_own_monday_late_open_row() {
                 .expect("the coverage contract must answer a covered date"),
             "{probe}"
         );
-        probe += TimeDelta::minutes(30);
+        probe += SignedDuration::from_mins(30);
     }
 }
 
@@ -538,7 +536,7 @@ fn good_friday_gives_the_index_families_a_late_open_and_an_early_close() {
         );
         assert!(
             !calendar
-                .is_open(open_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(open_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -550,7 +548,7 @@ fn good_friday_gives_the_index_families_a_late_open_and_an_early_close() {
         );
         assert!(
             calendar
-                .is_open(close_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(close_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -586,7 +584,7 @@ fn the_index_families_take_their_own_early_close_instants() {
         let fang_cutoff = ny(date, (13, 0, 0));
         let usdx_cutoff = ny(date, (14, 30, 0));
         assert!(
-            fang.is_open(fang_cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(fang_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -597,7 +595,7 @@ fn the_index_families_take_their_own_early_close_instants() {
             "{date:?}"
         );
         assert!(
-            usdx.is_open(usdx_cutoff - TimeDelta::nanoseconds(1))
+            usdx.is_open(usdx_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -854,7 +852,7 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
             calendar.holiday_on(
                 coverage
                     .first()
-                    .checked_sub_days(Days::new(1))
+                    .checked_sub(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -864,7 +862,7 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
             calendar.holiday_on(
                 coverage
                     .last()
-                    .checked_add_days(Days::new(1))
+                    .checked_add(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -1040,7 +1038,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
             "{date:?}"
         );
         assert!(
-            fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -1063,7 +1061,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1084,7 +1082,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
         })
     );
     assert!(
-        usdx.is_open(cutoff - TimeDelta::nanoseconds(1))
+        usdx.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1147,7 +1145,7 @@ fn the_2025_mourning_notice_closes_fang_at_0930_and_the_venue_withholds_the_date
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date"),
         "09:29:59 NY is inside the shortened session"
     );
@@ -1234,7 +1232,7 @@ fn the_2025_london_bank_holidays_delay_the_three_softs_opens() {
             );
             assert!(
                 !calendar
-                    .is_open(open - TimeDelta::nanoseconds(1))
+                    .is_open(open - SignedDuration::from_nanos(1))
                     .expect("the coverage contract must answer a covered date"),
                 "{name} {date:?}"
             );
@@ -1374,7 +1372,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         Some("IFUS-NOTICE-2025-INDEPENDENCE")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1398,7 +1396,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1425,7 +1423,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         Some("IFUS-NOTICE-2025-CHRISTMAS")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1441,7 +1439,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         })
     );
     assert!(
-        usdx.is_open(cutoff - TimeDelta::nanoseconds(1))
+        usdx.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1491,7 +1489,7 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
             "{date:?}"
         );
         assert!(
-            fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -1533,7 +1531,7 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1566,7 +1564,7 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         );
         assert!(
             !calendar
-                .is_open(open - TimeDelta::nanoseconds(1))
+                .is_open(open - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1657,7 +1655,7 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
         );
         assert!(
             calendar
-                .is_open(index_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(index_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1697,7 +1695,7 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
         if which != MarketHoursKey::IceUsCotton {
             assert!(
                 !calendar
-                    .is_open(open - TimeDelta::nanoseconds(1))
+                    .is_open(open - SignedDuration::from_nanos(1))
                     .expect("the coverage contract must answer a covered date"),
                 "{name}"
             );
@@ -1860,7 +1858,7 @@ fn the_venue_table_is_the_intersection_of_the_five_tables_its_keys_select() {
             "{date}: every family that answers must agree, or the venue withholds the date"
         );
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the scan stays inside the representable calendar");
     }
 }
@@ -1911,14 +1909,16 @@ fn the_2026_christmas_notice_shortens_queues_and_states_the_monday_reopen() {
         let calendar = key(which);
         let close = ny((2026, 12, 24), eve_close);
         assert!(
-            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            calendar
+                .is_open(close - SignedDuration::from_secs(1))
+                .unwrap(),
             "{which:?}"
         );
         assert!(!calendar.is_open(close).unwrap(), "{which:?}");
         let queue = ny((2026, 12, 24), queue_open);
         assert!(
             !calendar
-                .is_accepting_orders(queue - TimeDelta::seconds(1))
+                .is_accepting_orders(queue - SignedDuration::from_secs(1))
                 .unwrap(),
             "{which:?}"
         );
@@ -1957,7 +1957,9 @@ fn the_2026_christmas_notice_shortens_queues_and_states_the_monday_reopen() {
         );
         let close = ny((2026, 12, 28), monday_close);
         assert!(
-            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            calendar
+                .is_open(close - SignedDuration::from_secs(1))
+                .unwrap(),
             "{which:?}"
         );
         assert!(!calendar.is_open(close).unwrap(), "{which:?}");

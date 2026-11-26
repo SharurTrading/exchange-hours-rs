@@ -8,7 +8,7 @@
 //! instants inside the `DayPolicy` ranges — is asserted during constant
 //! evaluation, so a violation is a build failure rather than a wrong answer.
 //! This copies the idiom `revisions!` established for schedule timelines.
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::{EvidenceTier, HolidayKind, HolidayRow, HolidayWindow};
 use crate::calendar::exceptions::{BlockViolation, ExceptionBlock, first_block_violation};
@@ -21,15 +21,8 @@ use crate::calendar::exceptions::{BlockViolation, ExceptionBlock, first_block_vi
 const SECONDS_PER_DAY: u32 = 86_400;
 
 /// Builds a hard-coded holiday trade date during constant evaluation.
-#[expect(
-    clippy::panic,
-    reason = "const-eval only: an invalid sourced date must fail the build"
-)]
-pub(crate) const fn holiday_date(year: i32, month: u32, day: u32) -> NaiveDate {
-    match NaiveDate::from_ymd_opt(year, month, day) {
-        Some(date) => date,
-        None => panic!("invalid hard-coded holiday trade date"),
-    }
+pub(crate) const fn holiday_date(year: i16, month: i8, day: i8) -> Date {
+    Date::constant(year, month, day)
 }
 
 /// Orders `(year, month, day)` as one comparable scalar for constant
@@ -39,15 +32,15 @@ pub(crate) const fn holiday_date(year: i32, month: u32, day: u32) -> NaiveDate {
 /// date does, which is why
 /// [`HolidayWindow::new`](super::table::HolidayWindow::new)
 /// stores one beside each validated endpoint: the fences below order windows
-/// by these keys instead of comparing `NaiveDate` values they cannot.
-pub(crate) const fn day_key(date: (i32, u32, u32)) -> i64 {
+/// by these keys instead of comparing `Date` values they cannot.
+pub(crate) const fn day_key(date: (i16, i8, i8)) -> i64 {
     date.0 as i64 * 10_000 + date.1 as i64 * 100 + date.2 as i64
 }
 
 /// Fails the build unless every `holidays!` invariant holds.
 ///
 /// `dates` carries the same trade dates as `rows`, in the same order, as raw
-/// `(year, month, day)` triples: `NaiveDate`'s comparison operators are not
+/// `(year, month, day)` triples: `Date`'s comparison operators are not
 /// const-callable, so ordering is decided on [`day_key`] scalars instead.
 ///
 /// `windows` is the table's coverage, one inclusive span per audited era. Each
@@ -59,7 +52,7 @@ pub(crate) const fn day_key(date: (i32, u32, u32)) -> i64 {
 /// not to have audited it.
 pub(crate) const fn assert_table(
     windows: &[HolidayWindow],
-    dates: &[(i32, u32, u32)],
+    dates: &[(i16, i8, i8)],
     rows: &[HolidayRow],
 ) {
     assert!(
@@ -100,7 +93,7 @@ pub(crate) const fn assert_table(
 }
 
 /// The earliest `first` among a table's coverage windows.
-pub(crate) const fn window_first(windows: &[HolidayWindow]) -> NaiveDate {
+pub(crate) const fn window_first(windows: &[HolidayWindow]) -> Date {
     assert!(
         !windows.is_empty(),
         "a holiday table must declare at least one coverage window"
@@ -118,7 +111,7 @@ pub(crate) const fn window_first(windows: &[HolidayWindow]) -> NaiveDate {
 }
 
 /// The latest `last` among a table's coverage windows.
-pub(crate) const fn window_last(windows: &[HolidayWindow]) -> NaiveDate {
+pub(crate) const fn window_last(windows: &[HolidayWindow]) -> Date {
     assert!(
         !windows.is_empty(),
         "a holiday table must declare at least one coverage window"
@@ -165,7 +158,7 @@ const fn assert_ordered_windows(windows: &[HolidayWindow]) {
 ///
 /// The endpoints were validated when each window was constructed, so the
 /// comparisons here are between the stored keys of real dates.
-const fn in_windows(windows: &[HolidayWindow], date: (i32, u32, u32)) -> bool {
+const fn in_windows(windows: &[HolidayWindow], date: (i16, i8, i8)) -> bool {
     let key = day_key(date);
     let mut index = 0;
     while index < windows.len() {

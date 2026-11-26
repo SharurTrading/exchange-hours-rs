@@ -3,7 +3,7 @@
 //! The explicit coverage-error vocabulary for identity-backed queries
 //! (LAW-COVERAGE).
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::SUPPORT_FLOOR;
 use crate::calendar::exchange_calendar::CalendarSource;
@@ -56,7 +56,7 @@ pub enum CalendarQueryError {
         /// The identity that cannot answer.
         source: CalendarSource,
         /// The offending venue-local date.
-        date: NaiveDate,
+        date: Date,
     },
     /// The date is at or after the floor but outside the ranges this identity
     /// has a sourced answer for.
@@ -71,7 +71,7 @@ pub enum CalendarQueryError {
         /// The identity that cannot answer.
         source: CalendarSource,
         /// The offending venue-local date.
-        date: NaiveDate,
+        date: Date,
     },
     /// The date is inside an audited window on a date the identity explicitly
     /// withholds as `Unsourced`, or the date sits on a one-flank bridged span
@@ -92,7 +92,7 @@ pub enum CalendarQueryError {
         /// The identity that cannot answer.
         source: CalendarSource,
         /// The withheld venue-local date.
-        date: NaiveDate,
+        date: Date,
     },
     /// A bounded search ran out of room on a date it could not establish.
     ///
@@ -104,9 +104,9 @@ pub enum CalendarQueryError {
         /// The identity whose search was bounded.
         source: CalendarSource,
         /// The venue-local date the search needed to establish.
-        date: NaiveDate,
+        date: Date,
         /// The last venue-local date the bounded search examined.
-        bound: NaiveDate,
+        bound: Date,
     },
 }
 
@@ -124,7 +124,7 @@ impl CalendarQueryError {
 
     /// Returns the venue-local date the query could not establish.
     #[must_use]
-    pub const fn date(self) -> NaiveDate {
+    pub const fn date(self) -> Date {
         match self {
             Self::BeforeSupportFloor { date, .. }
             | Self::OutsideCoveredRange { date, .. }

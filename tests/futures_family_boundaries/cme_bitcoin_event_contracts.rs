@@ -10,31 +10,29 @@
 //! Every probe is stated in America/Chicago wall-clock and converted, so a DST
 //! slip in either direction fails rather than passing on a coincidence.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
     hours_for_market_hours_key, session_bounds_with, session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const BTC_EVENTS: MarketHoursKey = MarketHoursKey::GlobexEventContractsBtc;
 const EVENT_CONTRACTS: MarketHoursKey = MarketHoursKey::GlobexEventContracts;
 const CRYPTOCURRENCY: MarketHoursKey = MarketHoursKey::GlobexCryptocurrency;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
+fn open_at(key: MarketHoursKey, instant: Timestamp) -> bool {
     hours_for_market_hours_key(key, instant).is_open(instant)
 }
 
@@ -48,18 +46,18 @@ fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
 /// `hours_for_market_hours_key` states it, so the boundary and classification
 /// assertions below keep their force through that surface; `assert_refused` is
 /// how the calendar-backed surface is asserted to refuse the same dates.
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(BTC_EVENTS, instant).session_state(instant)
 }
 
 /// Returns the venue-local date of the close of the extended session enclosing
 /// `instant`, which is the trade date the close-date convention names.
-fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>) -> NaiveDate {
+fn close_trade_date(hours: &exchange_hours::MarketHours, instant: Timestamp) -> Date {
     session_bounds_with(hours, instant, SessionKind::Extended)
         .expect("the fixed snapshot states the enclosing session")
         .1
-        .with_timezone(&US::Central)
-        .date_naive()
+        .to_zoned_datetime(US_CENTRAL)
+        .date()
 }
 
 /// Asserts the answer a **dormant** identity's date-aware surface gives.
@@ -106,10 +104,8 @@ fn the_five_day_era_keeps_the_roots_own_fifteen_hundred_close() {
             shared.session_state(instant),
             &format!("{instant} event contracts"),
         );
-        let local = instant.with_timezone(&US::Central);
-        if chrono::Datelike::weekday(&local).num_days_from_monday() < 5
-            && chrono::Timelike::hour(&local) == 15
-        {
+        let local = instant.to_zoned_datetime(US_CENTRAL);
+        if local.weekday().to_monday_zero_offset() < 5 && local.hour() == 15 {
             assert!(!open_at(BTC_EVENTS, instant), "{instant}: ECBTC has closed");
             assert!(
                 open_at(EVENT_CONTRACTS, instant),
@@ -122,7 +118,7 @@ fn the_five_day_era_keeps_the_roots_own_fifteen_hundred_close() {
                 "{instant}: outside the distinct closing hour the grids agree"
             );
         }
-        instant += chrono::Duration::minutes(30);
+        instant += SignedDuration::from_mins(30);
     }
     let probe = ct((2024, 6, 14), (14, 30, 0));
     let hours = hours_for_market_hours_key(BTC_EVENTS, probe);
@@ -289,18 +285,18 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
         let open = ct(saturday, (reopen_hour, 0, 0));
         let close = ct(monday, (15, 0, 0));
         assert_eq!(
-            (close - open).num_hours(),
+            (close - open).as_hours(),
             hours,
             "{saturday:?}: block length"
         );
-        let sunday_noon = open + chrono::Duration::hours(32);
+        let sunday_noon = open + SignedDuration::from_hours(32);
         let snapshot = hours_for_market_hours_key(BTC_EVENTS, open);
         // The joined bounds and the trade date are date-aware conventions this
         // dormant key no longer states, so each probe asserts that refusal.
         // What the fixed snapshot still states is that the block is executable
         // at the same instants, which is the DST claim: neither the fall-back's
         // extra hour nor the spring-forward's missing one drops it.
-        for instant in [open, sunday_noon, close - chrono::Duration::seconds(1)] {
+        for instant in [open, sunday_noon, close - SignedDuration::from_secs(1)] {
             assert_refused(
                 calendar.session_bounds_with(instant, SessionKind::Extended),
                 &format!("{saturday:?} joined bounds"),
@@ -316,7 +312,7 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
         }
         // The block's final piece closes on the Monday it carries.
         assert_eq!(
-            close_trade_date(&snapshot, close - chrono::Duration::seconds(1)),
+            close_trade_date(&snapshot, close - SignedDuration::from_secs(1)),
             day(monday)
         );
         assert_refused(calendar.is_open(close), &format!("{monday:?} close"));
@@ -377,7 +373,7 @@ fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
         assert!(open_at(BTC_EVENTS, ct(saturday, (1, 59, 59))));
         assert!(!open_at(BTC_EVENTS, ct(saturday, (2, 0, 0))));
         assert!(!open_at(BTC_EVENTS, ct(saturday, (4, 0, 0))));
-        assert!(!open_at(BTC_EVENTS, opening - chrono::Duration::seconds(1)));
+        assert!(!open_at(BTC_EVENTS, opening - SignedDuration::from_secs(1)));
         assert!(open_at(BTC_EVENTS, opening), "{saturday:?}: sourced reopen");
     }
     // The Saturdays either side keep the standard 04:00 reopen.

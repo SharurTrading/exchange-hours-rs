@@ -2,7 +2,9 @@
 
 //! Australian Securities Exchange cash equities.
 
-use chrono_tz::Australia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Australia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -113,7 +115,7 @@ static REVISIONS: &[Revision] = revisions![(
     "ASX SR15 notice 0473.25.05"
 ),];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &ASX_PROFILE_PRE_2025_06_23,

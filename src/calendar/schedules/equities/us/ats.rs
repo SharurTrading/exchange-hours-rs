@@ -2,7 +2,9 @@
 
 //! US alternative-trading-system profiles and the IEX exchange identity.
 
-use chrono_tz::America;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::America;
 
 use super::StaticHoursProfile;
 use super::equities::{equity_profile, profile};
@@ -35,7 +37,7 @@ pub(crate) static IEX_PROFILE: StaticHoursProfile = equity_profile(IEX_EXTENDED)
 static IEX_REVISIONS: &[Revision] =
     revisions![(2016, 8, 19, &IEX_PROFILE, "IEX Trading Alert 2016-042"),];
 
-pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn iex_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -70,9 +72,7 @@ static BLUE_OCEAN_REVISIONS: &[Revision] = revisions![(
     "Blue Ocean launch announcement 2021-10-05"
 ),];
 
-pub(crate) fn blue_ocean_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn blue_ocean_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,

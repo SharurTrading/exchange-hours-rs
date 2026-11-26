@@ -2,7 +2,7 @@
 
 //! Fixed-current profile values behind [`super::session_profile`].
 
-use chrono_tz::{America, Asia, Australia, Europe, US, UTC};
+use crate::calendar::time_zones::{America, Asia, Australia, Europe, US, UTC};
 
 use super::{FuturesSessionProfile, MarketHoursKey};
 use crate::calendar::schedules::ALWAYS_OPEN_RULE;

@@ -2,7 +2,9 @@
 
 //! CME Live Cattle, Feeder Cattle, and Lean Hog futures schedules.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
@@ -176,7 +178,7 @@ static REVISIONS: &[Revision] = revisions![
     (2020, 5, 31, &PROFILE_CURRENT, "CME SER-8599R"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, US::Central),
         &PROFILE_AT_2010_FLOOR,

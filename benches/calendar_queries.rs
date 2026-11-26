@@ -41,24 +41,23 @@
 
 use std::hint::black_box;
 
-use chrono::{DateTime, NaiveDate, TimeDelta, TimeZone, Utc};
-use chrono_tz::US;
 use criterion::{Criterion, criterion_group, criterion_main};
 use exchange_hours::{
     CalendarResolution, CalendarSource, DayOverride, ExchangeCalendar, MarketHoursKey, SessionKind,
     StaticDayPolicy, StaticSessionExceptions, calendar_for_market_hours_key,
 };
+use jiff::civil::{Date, DateTime};
+use jiff::{SignedDuration, Timestamp};
 
 /// A 5,000-point chart frame, the shape the consumer's time axis builds.
 const FRAME_POINTS: i64 = 5_000;
 
-fn ct(date: (i32, u32, u32), time: (u32, u32)) -> Option<DateTime<Utc>> {
-    Some(
-        US::Central
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, 0)
-            .single()?
-            .with_timezone(&Utc),
-    )
+fn ct(date: (i16, i8, i8), time: (i8, i8)) -> Option<Timestamp> {
+    let local = DateTime::new(date.0, date.1, date.2, time.0, time.1, 0, 0).ok()?;
+    jiff::tz::get!("US/Central")
+        .to_ambiguous_timestamp(local)
+        .unambiguous()
+        .ok()
 }
 
 /// The six instant classes, so the numbers line up with the recorded baseline.
@@ -68,12 +67,12 @@ fn ct(date: (i32, u32, u32), time: (u32, u32)) -> Option<DateTime<Utc>> {
 /// asks for. A holiday minute after the day's clipped close would instead
 /// measure the closed-instant scan, which is a different question.
 struct Instants {
-    regular: DateTime<Utc>,
-    overnight: DateTime<Utc>,
-    maintenance: DateTime<Utc>,
-    closed: DateTime<Utc>,
-    adjacent: DateTime<Utc>,
-    holiday: DateTime<Utc>,
+    regular: Timestamp,
+    overnight: Timestamp,
+    maintenance: Timestamp,
+    closed: Timestamp,
+    adjacent: Timestamp,
+    holiday: Timestamp,
 }
 
 fn instants() -> Option<Instants> {
@@ -103,7 +102,7 @@ fn instants() -> Option<Instants> {
 fn bench_queries(
     group: &mut criterion::BenchmarkGroup<'_, criterion::measurement::WallTime>,
     label: &str,
-    run: impl Fn(DateTime<Utc>) -> bool + Copy,
+    run: impl Fn(Timestamp) -> bool + Copy,
     probes: &Instants,
 ) {
     for (class, instant) in [
@@ -182,10 +181,10 @@ fn overlay_layers(criterion: &mut Criterion) {
     let Some(probes) = instants() else {
         return;
     };
-    let (Some(covered), Some(remote_first), Some(remote_last)) = (
-        NaiveDate::from_ymd_opt(2026, 4, 20),
-        NaiveDate::from_ymd_opt(2019, 1, 1),
-        NaiveDate::from_ymd_opt(2019, 12, 31),
+    let (Ok(covered), Ok(remote_first), Ok(remote_last)) = (
+        Date::new(2026, 4, 20),
+        Date::new(2019, 1, 1),
+        Date::new(2019, 12, 31),
     ) else {
         return;
     };
@@ -328,7 +327,7 @@ fn overlay_layers(criterion: &mut Criterion) {
 }
 
 /// Both ends of one daily trading-day window on a bare calendar.
-fn daily_window(calendar: ExchangeCalendar, instant: DateTime<Utc>) -> bool {
+fn daily_window(calendar: ExchangeCalendar, instant: Timestamp) -> bool {
     calendar
         .candle_start(instant, CalendarResolution::Daily)
         .expect("a covered benchmark probe must answer")
@@ -340,10 +339,10 @@ fn daily_window(calendar: ExchangeCalendar, instant: DateTime<Utc>) -> bool {
 }
 
 /// One cold chart frame: `FRAME_POINTS - 1` open probes plus one daily close.
-fn frame(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
+fn frame(calendar: ExchangeCalendar, start: Timestamp) -> usize {
     let mut open = 0_usize;
     for step in 0..FRAME_POINTS.saturating_sub(1) {
-        let Some(instant) = start.checked_add_signed(TimeDelta::minutes(step)) else {
+        let Ok(instant) = start.checked_add(SignedDuration::from_mins(step)) else {
             break;
         };
         if calendar
@@ -420,8 +419,8 @@ fn hot_path_year(criterion: &mut Criterion) {
 }
 
 /// Counts the open instants of one year at 15-minute steps.
-fn year_scan(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
-    let Some(end) = start.checked_add_signed(TimeDelta::days(365)) else {
+fn year_scan(calendar: ExchangeCalendar, start: Timestamp) -> usize {
+    let Ok(end) = start.checked_add(SignedDuration::from_hours(24 * 365)) else {
         return 0;
     };
     let mut open = 0_usize;
@@ -433,7 +432,7 @@ fn year_scan(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
         {
             open = open.saturating_add(1);
         }
-        let Some(next) = instant.checked_add_signed(TimeDelta::minutes(15)) else {
+        let Ok(next) = instant.checked_add(SignedDuration::from_mins(15)) else {
             break;
         };
         instant = next;
@@ -460,7 +459,7 @@ fn query_surface(criterion: &mut Criterion) {
         bencher.iter(|| calendar.trade_date(black_box(probes.overnight)));
     });
     group.bench_function("is_closed_trade_date", |bencher| {
-        let Some(day) = NaiveDate::from_ymd_opt(2026, 4, 20) else {
+        let Ok(day) = Date::new(2026, 4, 20) else {
             return;
         };
         bencher.iter(|| calendar.is_closed_trade_date(black_box(day), SessionKind::Both));
@@ -468,13 +467,13 @@ fn query_surface(criterion: &mut Criterion) {
     // An in-coverage date with no row (the binary search misses) and a date
     // that carries a row (it hits), so a regression in either outcome shows.
     group.bench_function("holiday_on/miss", |bencher| {
-        let Some(day) = NaiveDate::from_ymd_opt(2026, 4, 20) else {
+        let Ok(day) = Date::new(2026, 4, 20) else {
             return;
         };
         bencher.iter(|| calendar.holiday_on(black_box(day)));
     });
     group.bench_function("holiday_on/hit", |bencher| {
-        let Some(day) = NaiveDate::from_ymd_opt(2026, 11, 27) else {
+        let Ok(day) = Date::new(2026, 11, 27) else {
             return;
         };
         bencher.iter(|| calendar.holiday_on(black_box(day)));

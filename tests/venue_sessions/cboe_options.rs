@@ -3,6 +3,9 @@
 //! US listed-equity-options product-family boundaries and launch history.
 
 use super::prelude::*;
+use crate::support::zones::UTC;
+use crate::support::{PROFILE_INSTANT, local_opt};
+use jiff::SignedDuration;
 
 const ALL_LISTED_EQUITY_OPTIONS: &[Exchange] = &[
     Exchange::CboeOptionsC1,
@@ -60,15 +63,11 @@ fn listed_equity_options_include_each_current_order_acceptance_edge() {
         (OPEN_0730, (7, 30, 0)),
     ] {
         for &exchange in exchanges {
-            let hours = hours_for_exchange(
-                exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            );
+            let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
             let instant = et((2026, 4, 20), open);
 
             assert!(
-                !hours.is_open(instant - chrono::Duration::seconds(1)),
+                !hours.is_open(instant - SignedDuration::from_secs(1)),
                 "{exchange:?}"
             );
             // Each venue's order-acceptance edge: orders only, no matching.
@@ -92,10 +91,7 @@ fn listed_equity_options_include_each_current_order_acceptance_edge() {
         }
     }
 
-    let memx = hours_for_exchange(
-        Exchange::MemxOptions,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let memx = hours_for_exchange(Exchange::MemxOptions, PROFILE_INSTANT);
     assert!(!memx.is_open(et((2026, 4, 20), (9, 29, 59))));
     assert!(memx.is_open_regular(et((2026, 4, 20), (9, 30, 0))));
     assert!(memx.extended.is_empty());
@@ -104,10 +100,7 @@ fn listed_equity_options_include_each_current_order_acceptance_edge() {
 #[test]
 fn every_listed_options_identity_is_covered_by_a_current_group() {
     for &exchange in ALL_LISTED_EQUITY_OPTIONS {
-        let hours = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
 
         assert!(
             hours.is_open_regular(et((2026, 4, 20), (15, 59, 59))),
@@ -121,10 +114,7 @@ fn partial_options_history_does_not_invent_a_queue_onset() {
     // C1's current 07:30 queue is primary-supported, but its exact onset day is
     // not. The fixed current snapshot includes it; the as-of selector keeps the
     // sourced execution-only history instead of assigning an inferred date.
-    let current = hours_for_exchange(
-        Exchange::CboeOptionsC1,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let current = hours_for_exchange(Exchange::CboeOptionsC1, PROFILE_INSTANT);
     let historical = hours_for_exchange(Exchange::CboeOptionsC1, et((2026, 4, 20), (12, 0, 0)));
 
     assert!(current.is_order_entry_only(et((2026, 4, 20), (7, 30, 0))));
@@ -186,7 +176,7 @@ fn post_floor_options_venues_are_closed_before_their_launches() {
         (Exchange::MemxOptions, (2023, 9, 27)),
     ] {
         let boundary = et(date, (0, 0, 0));
-        let before = hours_for_exchange(exchange, boundary - chrono::Duration::seconds(1));
+        let before = hours_for_exchange(exchange, boundary - SignedDuration::from_secs(1));
         let launched = hours_for_exchange(exchange, boundary);
 
         assert!(before.regular.is_empty(), "{exchange:?}");
@@ -212,15 +202,12 @@ fn post_floor_options_venues_are_closed_before_their_launches() {
 /// 09:30 open, and outside a 06:00 venue's queue only if that queue is absent.
 #[test]
 fn queue_carry_back_matches_each_venue_s_evidence_class() {
-    use chrono::{TimeZone as _, Utc};
     use exchange_hours::{Exchange, SessionState, hours_for_exchange};
 
     let at = |y: i32, m: u32, d: u32, h: u32, mi: u32| {
-        Utc.with_ymd_and_hms(y, m, d, h, mi, 0)
-            .single()
-            .expect("UTC is unambiguous")
+        local_opt(&UTC, (y, m, d), (h, mi, 0)).expect("UTC is unambiguous")
     };
-    let state = |ex: Exchange, t: chrono::DateTime<Utc>| hours_for_exchange(ex, t).session_state(t);
+    let state = |ex: Exchange, t: jiff::Timestamp| hours_for_exchange(ex, t).session_state(t);
 
     // Class 1 — no launch inside the window: queue carried from the audit floor.
     for ex in [

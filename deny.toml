@@ -25,15 +25,6 @@ multiple-versions = "warn"
 [advisories]
 unmaintained = "workspace"
 yanked = "deny"
-ignore = [
-    # Both advisories are "unmaintained upstream, no safe upgrade available"
-    # findings recorded in #403 (PROC-DEP-DECIDE): chrono and chrono-tz are
-    # this crate's clock and IANA-zone machinery, so an upgrade lands only as
-    # the operator's decision on that issue. These entries expire and must be
-    # re-reviewed against #403 on 2027-01-18.
-    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained; no safe upgrade; tracked as #403" },
-    { id = "RUSTSEC-2026-0555", reason = "chrono-tz unmaintained; no safe upgrade; tracked as #403" },
-]
 
 [sources]
 unknown-registry = "deny"

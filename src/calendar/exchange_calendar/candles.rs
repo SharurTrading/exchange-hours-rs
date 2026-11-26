@@ -2,7 +2,7 @@
 
 //! Date-aware candle adapters over the shared query engine.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::ExchangeCalendar;
 use crate::calendar::query::{QueryContext, candles};
@@ -30,9 +30,9 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_end(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_end_with(instant, resolution, SessionKind::Both)
     }
 
@@ -55,10 +55,10 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_end_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
         kind: SessionKind,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;
         candles::candle_end_with(&context, instant, resolution, kind)
@@ -80,9 +80,9 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_start(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_start_with(instant, resolution, SessionKind::Both)
     }
 
@@ -103,10 +103,10 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_start_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
         kind: SessionKind,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;
         candles::candle_start_with(&context, instant, resolution, kind)
@@ -128,8 +128,8 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn time_end_of_day(
         self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+        instant: Timestamp,
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_end(instant, CalendarResolution::Daily)
     }
 }

@@ -5,6 +5,7 @@
 use super::identity_expectations::*;
 use super::prelude::*;
 use super::probe_support::*;
+use crate::support::PROFILE_INSTANT;
 
 // ---------------------------------------------------------------------------
 // Cross-query consistency fence
@@ -35,10 +36,7 @@ fn is_open_agrees_with_session_bounds_for_every_venue_and_instant() {
     let mut checked = 0_u32;
 
     for &exchange in ALL_EXCHANGES {
-        let hours = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
         for instant in probe_instants(&hours) {
             for kind in kinds {
                 let bounds = session_bounds_with(&hours, instant, kind);
@@ -50,7 +48,7 @@ fn is_open_agrees_with_session_bounds_for_every_venue_and_instant() {
                     "{exchange:?} / {kind:?}: is_open_with disagrees with \
                      session_bounds_with at {instant} (bounds {bounds:?}, \
                      venue-local {})",
-                    instant.with_timezone(&hours.tz),
+                    instant.to_zoned_datetime(hours.tz.clone()),
                 );
                 checked += 1;
             }
@@ -69,10 +67,7 @@ fn closed_instants_agree_with_the_next_session_for_every_venue() {
     // reports are the *next* session, which must be exactly what
     // `next_session_after_with` reports and must not start in the past.
     for &exchange in ALL_EXCHANGES {
-        let hours = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
         for instant in probe_instants(&hours) {
             for kind in [
                 SessionKind::Regular,

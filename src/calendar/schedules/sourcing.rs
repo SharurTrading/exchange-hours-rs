@@ -23,81 +23,16 @@
 //! scopes whose own definition has no holiday closures, an affirmative
 //! assertion (LAW-HOLIDAY-SCOPE) and never an inference from a missing table.
 //!
-//! `DeclaredSourcing::phase_gaps` is the sibling assertion for the **declared**
-//! gaps: the shapes `docs/schedules/coverage-2025.md`'s
-//! `Missing / disputed` column records but no date walk can find, because the
-//! arrangement the operator publishes is missing from the whole span the
-//! declaration names rather than from the dates a boundary falls between — the
-//! whole claimed interval when the declaration carries no bound, and the era
-//! before `PhaseGap::until` when the identity's own knowledge-bound row begins
-//! serving it. `CoverageGapReason::NormalWeekPhaseWithheld`
-//! was the required-phase shape (#79, #123, #259) and
-//! `CoverageGapReason::UnpublishedClosureDates` the undated
-//! holiday-scope shape (#157), which withholds no phase at all. Each declaration
-//! carries the issue whose closure discharges it, so the
-//! metadata reports a gap with a closing condition rather than a bare verdict —
-//! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
-//! crate rather than inferred from its data. One identity can carry several,
-//! because the shape recurs per phase rather than per scope, and the list stays a
-//! slice so the next phase that needs its own declaration does not need the
-//! type to change. A declaration is removed when the rows that discharge it
-//! ship, and
-//! `CoverageGapReason::SpecialSessionUnrepresentable` — the shape #93 named — is
-//! what that looks like when it has happened for every scope that declared it:
-//! `globex_fx` declared the quarter-hour and the #93 special sessions until its
-//! merged trade dates landed, and `globex_cryptocurrency` declared the #93 shape
-//! until its own merged trade dates landed on 2026-09-26 UTC. No arm below cites
-//! it now, and the reason stays on the enum because it is still the vocabulary a
-//! future special-session gap would use. The same retirement befell
-//! `CoverageGapReason::PostCloseQueueTradeDateLabel` (#152) on 2026-10-03 UTC:
-//! the charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and
-//! state") resolved the label divergence the declaration recorded, so neither
-//! `globex_grains` nor `globex_livestock` declares it any more and the reason
-//! stays on the enum as the vocabulary a future labelling divergence would use.
-//! And the three `NormalWeekPhaseWithheld` declarations retired on 2026-10-04
-//! UTC under the charter's sourced-intersection residual convention (AGENTS.md,
-//! "Modeling conventions", the 2026-10-04 decision): the seven #79 quarter-hour
-//! scopes, `globex_cryptocurrency`'s #123 five-day era and `globex_grains`'
-//! #259 regime each had a phase sourced at two values with only the changeover
-//! day undated, and every dated-artifact hunt had closed negative, so their
-//! dates answer from the served intersection — from the regime's own dated
-//! start for #259, whose queue rows ship in `grains.rs` — while the disputed
-//! remainders are disclosed as residuals in the owners' evidence files. The
-//! reason stays on the enum as the vocabulary a future required-phase gap would
-//! declare: one whose hunts have not closed negative, or whose served answer
-//! would be wrong under a sourced state. Nothing declares it today.
-//!
-//! The `UnpublishedClosureDates` declaration `eurex` carried for its `tba` era
-//! (2025-01-01 through the last edition in hand, #157) retired on 2026-10-05 UTC
-//! under the no-changes verification the maintainer set that day: the operator's
-//! day-by-day Holiday regulations tables — whose grammar printed the German-scope
-//! clause, futures carve-out and all, in 2020 — state no German-scope closure on
-//! any date of 2025 or 2026, every candidate date of both years has passed
-//! answering ordinary, and the Management-Board regulation channel such a closure
-//! would travel (Conditions for Trading 1.2) is enumerated complete and empty of
-//! it. `docs/evidence/eurex.md` holds the chain, and the reason stays on the enum
-//! as the vocabulary a future undated holiday scope would declare.
-//!
-//! Every declaration also states the dates it applies to, so the metadata
-//! withholds exactly what the evidence withholds (#172): `PhaseGap::since` and
-//! `PhaseGap::until` bound the era on either side — each bound restating a dated
-//! row the module already ships — and a `PhaseGapShape` narrows the era to the
-//! dates a served occurrence decides. Both bounds are
-//! dated rows, never inferences.
-//!
-//! Only an identity whose gap survives the permanent 2010 floor is declared
-//! here, because that is the interval the completeness claim covers: a scope
-//! whose withheld phase or unstateable session lies entirely before 2010 is not
-//! incomplete in the claimed interval and must not be declared. No identity
-//! declares today, and the fences in
-//! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
-//! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
-//! declaration to the shipped profile's behaviour.
+//! `DeclaredSourcing::phase_gaps` declares unresolved spans that a date walk
+//! cannot find. Each declaration names its applicable dates, phase or scope,
+//! and closing condition. The served scope inventory records their effects.
+//! Resolved declarations and their evidence remain in the affected scope's
+//! file under `docs/evidence/`.
 //!
 //! `tests/schedule_documentation/horizons.rs` re-reads the ledger and fails if
 //! any arm here drifts from the cell it restates.
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::timeline::{effective_date, horizon};
 use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
@@ -108,7 +43,7 @@ use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 pub(crate) struct DeclaredSourcing {
     /// The venue-local date below which this identity's normal-week rows are
     /// carried rather than sourced, or `None` when nothing is carried.
-    pub(crate) carried_below: Option<NaiveDate>,
+    pub(crate) carried_below: Option<Date>,
     /// Whether the identity's own definition has no holiday closures.
     ///
     /// An affirmative assertion recorded beside the identity, never inferred
@@ -134,7 +69,7 @@ impl DeclaredSourcing {
     /// The argument is `horizon!(year, month, day)` or `horizon!(none)`, so the
     /// macro and this constructor cannot disagree about which ledger cell is
     /// being restated.
-    const fn carried_below(horizon: Option<NaiveDate>) -> Self {
+    const fn carried_below(horizon: Option<Date>) -> Self {
         Self {
             carried_below: horizon,
             observes_no_holidays: false,

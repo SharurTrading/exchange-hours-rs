@@ -2,7 +2,9 @@
 
 //! Shenzhen Stock Exchange cash equities.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -87,7 +89,7 @@ static REVISIONS: &[Revision] = revisions![(
     "SZSE notice t20160930_518722"
 ),];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &SZSE_PROFILE_PRE_2016_05_09,

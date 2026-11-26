@@ -8,8 +8,8 @@ use super::{
     basis_of, exchange_rows, is_partial, market_hours_key_rows, number_words, owner_targets,
     repository_cutoff, row_cells, today_utc, validated_source_link_count, wire_name,
 };
-use chrono::NaiveDate;
 use exchange_hours::Exchange;
+use jiff::civil::Date;
 use std::path::Path;
 
 #[test]
@@ -70,7 +70,7 @@ fn market_hours_key_selection_contract_is_explicit() {
 
 #[test]
 fn exchange_rows_have_complete_review_metadata() {
-    let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
+    let cutoff = Date::strptime("%Y-%m-%d", repository_cutoff())
         .expect("repository cutoff must be an ISO calendar date");
     let today = today_utc();
 
@@ -81,7 +81,7 @@ fn exchange_rows_have_complete_review_metadata() {
 
 #[test]
 fn market_hours_key_rows_have_complete_review_metadata() {
-    let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
+    let cutoff = Date::strptime("%Y-%m-%d", repository_cutoff())
         .expect("repository cutoff must be an ISO calendar date");
     let today = today_utc();
 
@@ -115,8 +115,8 @@ fn every_market_hours_key_owner_and_source_link_resolves() {
 #[test]
 fn readme_and_review_dates_match_the_repository_cutoff() {
     let cutoff = repository_cutoff();
-    let cutoff_date = NaiveDate::parse_from_str(cutoff, "%Y-%m-%d")
-        .expect("repository cutoff must be an ISO calendar date");
+    let cutoff_date =
+        Date::strptime("%Y-%m-%d", cutoff).expect("repository cutoff must be an ISO calendar date");
     let today = today_utc();
     assert!(
         cutoff_date <= today,
@@ -130,7 +130,7 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         "README freshness claim must match the verification ledger"
     );
 
-    let mut minimum_reviewed: Option<NaiveDate> = None;
+    let mut minimum_reviewed: Option<Date> = None;
     for row in exchange_rows()
         .into_iter()
         .filter(|row| wire_name(row) != "unknown")
@@ -141,7 +141,7 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
             LEDGER_CELLS,
             "unexpected verification row shape: {row}"
         );
-        let reviewed = NaiveDate::parse_from_str(cells[8], "%Y-%m-%d")
+        let reviewed = Date::strptime("%Y-%m-%d", cells[8])
             .expect("every non-synthetic Exchange identity must have an ISO review date");
         assert!(
             reviewed >= cutoff_date,

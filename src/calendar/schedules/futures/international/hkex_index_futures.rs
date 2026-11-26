@@ -2,35 +2,11 @@
 
 //! HKEX index futures (Hang Seng Index futures and the H-shares suite).
 //!
-//! The family is the HKFE index-futures clock: a Monday-to-Friday day session
-//! in two parts, order-entry pre-opening periods before each part, and (from
-//! 2013-04-08) the After-Hours Futures Trading T+1 session in `extended`.
-//! HKEX names the T+1 session for its own trade-date rule — "Trades executed
-//! during the T+1 Session (T+1 Trades) will be registered as the following
-//! day's trades" (the AHFT information paper) — which is the crate's own
-//! final-close convention: in the current era the session opens 17:00 and
-//! closes 03:00 on the following civil day, so its trade date is that
-//! following day, and a holiday's Closed row removes the prior evening's leg
-//! with the day itself.
-//!
-//! Dated history: the floor grid is 9:45am-12:30pm and 2:30-4:15pm; the
-//! operator-dated two-phase extension moves Phase 1 to 9:15am-12:00 noon and
-//! 1:30-4:15pm on 2011-03-07 (the contract page the operator stamped "Updated:
-//! 07/03/2011", which also prints Phase 2 "(Effective 5 March 2012)"), Phase 2
-//! to an afternoon 1:00-4:15pm with a 12:30-1:00pm pre-opening period on
-//! 2012-03-05 (DMD/004/12), and the T+1 session launches 17:00-23:00 on
-//! 2013-04-08 (DMD/022/13: "the launch date for AHFT will be on Monday, 8
-//! April 2013"). The later cutovers — the T+1 close to 11:45pm, the day close
-//! to 4:30pm with the T+1 start to 5:15pm, and the overnight 5:00pm-3:00am
-//! shape — are bracketed by dated contract-page snapshots whose changeover
-//! days no captured artifact states: the crate serves the sourced
-//! intersection across each undated span (the window that holds under both
-//! flanking states, so the middle era's T+1 opens 5:15pm before the 2016 page
-//! witnesses it), keys each row to the first session it governs, and
-//! discloses the disputed remainders as residuals in
-//! `docs/evidence/hkex_index_futures.md`.
+//! Evidence: `docs/evidence/hkex_index_futures.md`.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -257,9 +233,7 @@ pub(crate) static HKEX_INDEX_FUTURES_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the HKEX index-futures profile in force on `as_of`'s Hong Kong day.
-pub(crate) fn hkex_index_futures_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn hkex_index_futures_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Hong_Kong),
         &HKEX_INDEX_FLOOR,

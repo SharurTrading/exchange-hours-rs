@@ -3,6 +3,7 @@
 //! Deterministic generators and per-instant property assertions.
 
 use super::prelude::*;
+use jiff::{SignedDuration, Timestamp};
 
 // ---------------------------------------------------------------------------
 // Deterministic PRNG (splitmix64) — no external dependency, fully reproducible.
@@ -86,10 +87,10 @@ pub(super) const KINDS: [SessionKind; 3] = [
 ];
 
 /// Draws a UTC instant uniformly from the sampling window.
-pub(super) fn random_instant(state: &mut u64) -> DateTime<Utc> {
+pub(super) fn random_instant(state: &mut u64) -> Timestamp {
     let offset = i64::try_from(splitmix64(state) % SAMPLE_SPAN_SECS).unwrap_or(0);
-    DateTime::<Utc>::from_timestamp(SAMPLE_START_SECS + offset, 0)
-        .expect("sampled timestamp lies within chrono's representable range")
+    Timestamp::new(SAMPLE_START_SECS + offset, 0)
+        .expect("sampled timestamp lies within Jiff's representable range")
 }
 
 // ---------------------------------------------------------------------------
@@ -103,7 +104,7 @@ pub(super) fn random_instant(state: &mut u64) -> DateTime<Utc> {
 pub(super) fn assert_instant_invariants(
     exch: Exchange,
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     label: &str,
 ) {
     let ctx = format!("{label} venue={exch:?} instant={instant}");
@@ -174,7 +175,7 @@ pub(super) fn assert_instant_invariants(
         if let CalendarResolution::Seconds(secs) = res {
             assert_eq!(
                 end,
-                Some(instant + Duration::seconds(i64::from(secs))),
+                Some(instant + SignedDuration::from_secs(i64::from(secs))),
                 "Seconds({secs}) candle is not a pure offset ({ctx})"
             );
         }
@@ -205,7 +206,7 @@ pub(super) fn assert_instant_invariants(
 
     // is_closed_all_day_on is total for the venue-local day and coherent with
     // always-open venues checked in a dedicated fixture below.
-    let local_day = instant.with_timezone(&hours.tz).date_naive();
+    let local_day = instant.to_zoned_datetime(hours.tz.clone()).date();
     let closed_all_day = hours.is_closed_all_day_on(local_day, SessionKind::Both);
     assert!(
         !(closed_all_day && open_now),

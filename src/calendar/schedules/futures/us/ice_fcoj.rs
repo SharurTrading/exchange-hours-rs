@@ -3,7 +3,9 @@
 //! ICE Futures U.S. FCOJ-A (frozen concentrated orange juice) futures and
 //! options schedules.
 
-use chrono_tz::America;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::America;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
@@ -78,7 +80,7 @@ pub(crate) static FCOJ_REVISIONS: &[Revision] =
     revisions![(2018, 10, 8, &FCOJ_CURRENT, "ICE PCPO notice 20180920"),];
 
 /// Selects the FCOJ-A profile in force on `as_of`'s New York day.
-pub(crate) fn fcoj_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn fcoj_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &FCOJ_BASELINE,

@@ -5,9 +5,9 @@
 mod b3;
 mod bmv;
 mod candles_and_weekends;
-mod chrono_edges;
 mod contracts;
 mod international;
+mod timestamp_edges;
 mod transition_scans;
 
 mod prelude;

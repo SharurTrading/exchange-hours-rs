@@ -15,10 +15,10 @@
 //! copied out of the module, so a module that drifts fails here.
 
 use super::VERIFICATION;
-use chrono::NaiveDate;
 use exchange_hours::{
     Exchange, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
 
 /// One ledger table row: its wire-name, `Horizon` cell and service tier.
 struct LedgerRow {
@@ -63,13 +63,11 @@ fn ledger_rows(heading: &str) -> Vec<LedgerRow> {
 
 /// Reads a `Horizon` cell: an em dash is `None`, a date is itself, and a cell
 /// that is neither comes back as `Err` so the caller can name it.
-fn horizon(cell: &str) -> Result<Option<NaiveDate>, &str> {
+fn horizon(cell: &str) -> Result<Option<Date>, &str> {
     if cell.starts_with('\u{2014}') {
         return Ok(None);
     }
-    NaiveDate::parse_from_str(cell, "%Y-%m-%d")
-        .map(Some)
-        .map_err(|_| cell)
+    Date::strptime("%Y-%m-%d", cell).map(Some).map_err(|_| cell)
 }
 
 /// The wire names of one section, in document order.
@@ -134,7 +132,7 @@ fn the_coverage_inventory_repeats_the_ledger_horizons() {
     // the same horizon value. Its own fence compares membership, windows and
     // counts against the shipped tables; this one adds the horizon, so the two
     // documents cannot disagree about where a served scope's sourcing starts.
-    let mut served: Vec<(String, Option<NaiveDate>)> = Vec::new();
+    let mut served: Vec<(String, Option<Date>)> = Vec::new();
     for row in ledger_rows("## Exchanges")
         .into_iter()
         .chain(ledger_rows("## `MarketHoursKey` profiles"))

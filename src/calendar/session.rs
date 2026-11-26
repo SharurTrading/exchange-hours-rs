@@ -12,7 +12,7 @@
 //! These public fixed-profile adapters and the date-aware calendar use the
 //! same private engine, preventing their session semantics from drifting.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::query::gate::answered;
 use super::query::{QueryContext, sessions};
@@ -21,14 +21,14 @@ use super::{MarketHours, SessionKind};
 /// `instant`, or the next session when `instant` is closed.
 ///
 /// A previous-day wrap is considered before the forward scan. Opens use the
-/// earliest valid DST mapping and closes the latest. `None` means no matching
-/// session exists in the bounded horizon.
+/// earliest valid DST mapping and closes the latest. `None` means the bounded
+/// search found no matching session with representable endpoints.
 #[must_use]
 pub fn session_bounds_with(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+) -> Option<(Timestamp, Timestamp)> {
     // A detached fixed snapshot carries no identity, so no day can be refused:
     // `answered` consumes the engine's `Result<_, Infallible>`, whose error
     // side is not representable on this path (issue #245; LAW-COVERAGE governs
@@ -42,10 +42,7 @@ pub fn session_bounds_with(
 
 /// Returns [`session_bounds_with`] over regular and extended sessions.
 #[must_use]
-pub fn session_bounds(
-    hours: &MarketHours,
-    instant: DateTime<Utc>,
-) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+pub fn session_bounds(hours: &MarketHours, instant: Timestamp) -> Option<(Timestamp, Timestamp)> {
     session_bounds_with(hours, instant, SessionKind::Both)
 }
 
@@ -58,9 +55,9 @@ pub fn session_bounds(
 #[must_use]
 pub fn next_session_after_with(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+) -> Option<(Timestamp, Timestamp)> {
     // See `session_bounds_with` and `answered`: a fixed snapshot has no
     // coverage verdict to fail.
     answered(sessions::next_session_after_with(
@@ -74,8 +71,8 @@ pub fn next_session_after_with(
 #[must_use]
 pub fn next_session_after(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
-) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    instant: Timestamp,
+) -> Option<(Timestamp, Timestamp)> {
     next_session_after_with(hours, instant, SessionKind::Both)
 }
 
@@ -84,9 +81,6 @@ pub fn next_session_after(
 /// This is a projection of [`next_session_after`]; `None` has the same bounded
 /// no-session meaning.
 #[must_use]
-pub fn next_session_open_after(
-    hours: &MarketHours,
-    instant: DateTime<Utc>,
-) -> Option<DateTime<Utc>> {
+pub fn next_session_open_after(hours: &MarketHours, instant: Timestamp) -> Option<Timestamp> {
     next_session_after(hours, instant).map(|(open, _close)| open)
 }

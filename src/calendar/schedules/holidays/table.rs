@@ -3,7 +3,7 @@
 //! One family's static holiday table, its rows, and the caller-facing row and
 //! coverage reports the table answers with.
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::kind::HolidayKind;
 use super::tier::EvidenceTier;
@@ -60,14 +60,14 @@ impl Holiday {
 /// unrepresentable at the owning construction boundary instead of caught
 /// later).
 ///
-/// The day-key scalars sit beside the dates because `NaiveDate`'s comparison
+/// The day-key scalars sit beside the dates because `Date`'s comparison
 /// operators are not const-callable: the constant evaluation that orders and
 /// bounds a table's windows compares keys, which for validated dates order
 /// exactly as their dates do.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct HolidayWindow {
-    first: NaiveDate,
-    last: NaiveDate,
+    first: Date,
+    last: Date,
     first_key: i64,
     last_key: i64,
 }
@@ -82,7 +82,7 @@ impl HolidayWindow {
     /// constructor raises on a bad endpoint is that function's own — so a
     /// table cannot ship an endpoint its stored representation could later
     /// fail to convert.
-    pub(crate) const fn new(first: (i32, u32, u32), last: (i32, u32, u32)) -> Self {
+    pub(crate) const fn new(first: (i16, i8, i8), last: (i16, i8, i8)) -> Self {
         Self {
             first: holiday_date(first.0, first.1, first.2),
             last: holiday_date(last.0, last.1, last.2),
@@ -92,12 +92,12 @@ impl HolidayWindow {
     }
 
     /// Returns the window's earliest audited trade date.
-    pub(crate) const fn first(self) -> NaiveDate {
+    pub(crate) const fn first(self) -> Date {
         self.first
     }
 
     /// Returns the window's latest audited trade date.
-    pub(crate) const fn last(self) -> NaiveDate {
+    pub(crate) const fn last(self) -> Date {
         self.last
     }
 
@@ -117,7 +117,7 @@ impl HolidayWindow {
     ///
     /// Both endpoints are real dates by construction, so this is a plain
     /// inclusive range test with no endpoint conversion that could fail.
-    pub(crate) fn contains(self, trade_date: NaiveDate) -> bool {
+    pub(crate) fn contains(self, trade_date: Date) -> bool {
         self.first <= trade_date && trade_date <= self.last
     }
 }
@@ -139,21 +139,21 @@ impl HolidayWindow {
 /// authority on whether one date was audited.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HolidayCoverage {
-    first: NaiveDate,
-    last: NaiveDate,
+    first: Date,
+    last: Date,
     windows: &'static [HolidayWindow],
 }
 
 impl HolidayCoverage {
     /// Returns the earliest audited trade date.
     #[must_use]
-    pub const fn first(self) -> NaiveDate {
+    pub const fn first(self) -> Date {
         self.first
     }
 
     /// Returns the latest audited trade date.
     #[must_use]
-    pub const fn last(self) -> NaiveDate {
+    pub const fn last(self) -> Date {
         self.last
     }
 
@@ -166,7 +166,7 @@ impl HolidayCoverage {
     /// validated when it was constructed, so this reports real dates directly —
     /// there is no endpoint conversion left that could fail.
     #[must_use]
-    pub fn windows(self) -> Vec<(NaiveDate, NaiveDate)> {
+    pub fn windows(self) -> Vec<(Date, Date)> {
         self.windows
             .iter()
             .map(|window| (window.first(), window.last()))
@@ -179,7 +179,7 @@ impl HolidayCoverage {
     /// membership test compares real dates; no invalid endpoint can turn a
     /// window into a silent `false`.
     #[must_use]
-    pub fn contains(self, trade_date: NaiveDate) -> bool {
+    pub fn contains(self, trade_date: Date) -> bool {
         self.windows
             .iter()
             .any(|window| window.contains(trade_date))
@@ -192,7 +192,7 @@ impl HolidayCoverage {
 /// table's coverage window; the `holidays!` macro makes both build failures.
 #[derive(Clone, Copy)]
 pub(crate) struct HolidayRow {
-    pub(crate) trade_date: NaiveDate,
+    pub(crate) trade_date: Date,
     pub(crate) kind: HolidayKind,
     pub(crate) tier: EvidenceTier,
     pub(crate) document: SourceRef,
@@ -236,7 +236,7 @@ impl HolidayTable {
     /// then only the handful of rows the window itself holds, so a date
     /// nowhere near a merged or Saturday arrangement costs no more than a
     /// scalar-row lookup.
-    pub(crate) fn blocks_may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    pub(crate) fn blocks_may_affect(&self, first: Date, last: Date) -> bool {
         if !self.has_blocks {
             return false;
         }
@@ -264,7 +264,7 @@ impl HolidayTable {
     ///
     /// `None` means the date is outside the window *or* inside it and audited
     /// normal; [`Self::coverage`] separates the two.
-    pub(crate) fn holiday_on(&self, trade_date: NaiveDate) -> Option<Holiday> {
+    pub(crate) fn holiday_on(&self, trade_date: Date) -> Option<Holiday> {
         let index = self
             .rows
             .binary_search_by_key(&trade_date, |row| row.trade_date)
@@ -283,7 +283,7 @@ impl HolidayTable {
     /// the table says nothing about costs one binary search and nothing else.
     /// The coverage window is not consulted because every row lies inside it
     /// by construction.
-    pub(crate) fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    pub(crate) fn may_affect(&self, first: Date, last: Date) -> bool {
         let start = self.rows.partition_point(|row| row.trade_date < first);
         self.rows
             .get(start)

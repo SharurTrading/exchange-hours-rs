@@ -8,8 +8,8 @@
 //! `docs/evidence/<owner>.md`, declared by the `// Evidence:` line above each
 //! block.
 
-use chrono::{DateTime, Utc};
-use chrono_tz::America;
+use crate::calendar::time_zones::America;
+use jiff::Timestamp;
 
 use super::{
     BOX_OPTIONS_PROFILE, CBOE_BZX_OPTIONS_PROFILE, CBOE_C2_OPTIONS_PROFILE,
@@ -158,7 +158,7 @@ static BOX_REVISIONS: &[Revision] = &[];
 macro_rules! carried_selector {
     ($($name:ident, $baseline:ident, $revisions:ident),+ $(,)?) => {
         $(
-            pub(crate) fn $name(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+            pub(crate) fn $name(as_of: Timestamp) -> &'static StaticHoursProfile {
                 select_revision(
                     local_date(as_of, America::New_York),
                     &$baseline,
@@ -195,7 +195,7 @@ carried_selector!(
 
 macro_rules! launch_selector {
     ($name:ident, $revisions:ident) => {
-        pub(crate) fn $name(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+        pub(crate) fn $name(as_of: Timestamp) -> &'static StaticHoursProfile {
             select_revision(
                 local_date(as_of, America::New_York),
                 &CLOSED_NEW_YORK,

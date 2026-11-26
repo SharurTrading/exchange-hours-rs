@@ -24,31 +24,29 @@
 //! 2018-2024, tested per year band below; 2017-07-03 was the windows' one
 //! `Unsourced` date until 2026-10-10 UTC, when CFEIC17-022 keyed its 12:15 row.
 
-use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, ExceptionBlockKind, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 fn cfe() -> ExchangeCalendar {
     calendar_for_market_hours_key(MarketHoursKey::CfeVix)
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Chicago instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Chicago instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
-fn date_of(cell: (i32, u32, u32)) -> NaiveDate {
+fn date_of(cell: (i16, i8, i8)) -> Date {
     day(cell.0, cell.1, cell.2)
 }
 
@@ -61,7 +59,7 @@ fn early_close_at(minutes: u32) -> HolidayKind {
 /// Asserts a date's row kind, that it is closed at the cutoff and open the
 /// nanosecond before it, and that the bounded search still finds a session
 /// inside the date rather than reporting the day absent.
-fn assert_early_close(cell: (i32, u32, u32), minutes: u32, label: &str) {
+fn assert_early_close(cell: (i16, i8, i8), minutes: u32, label: &str) {
     let calendar = cfe();
     let (hour, minute) = (minutes / 60, minutes % 60);
     let cutoff = ct(cell, (hour, minute, 0));
@@ -73,7 +71,7 @@ fn assert_early_close(cell: (i32, u32, u32), minutes: u32, label: &str) {
     );
     assert!(
         calendar
-            .is_open(cutoff - TimeDelta::nanoseconds(1))
+            .is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date"),
         "{label}: {cell:?} is open one nanosecond before its close"
     );
@@ -115,7 +113,7 @@ fn assert_early_close(cell: (i32, u32, u32), minutes: u32, label: &str) {
 /// answers open, and the daily envelope at 09:00 is the overnight leg that
 /// opened the prior evening rather than a regular session. The assertions
 /// name that shape instead of borrowing the 2021-grid probes.
-fn assert_early_close_pre_migration(cell: (i32, u32, u32), minutes: u32, label: &str) {
+fn assert_early_close_pre_migration(cell: (i16, i8, i8), minutes: u32, label: &str) {
     let calendar = cfe();
     let (hour, minute) = (minutes / 60, minutes % 60);
     let cutoff = ct(cell, (hour, minute, 0));
@@ -127,7 +125,7 @@ fn assert_early_close_pre_migration(cell: (i32, u32, u32), minutes: u32, label: 
     );
     assert!(
         calendar
-            .is_open(cutoff - TimeDelta::nanoseconds(1))
+            .is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date"),
         "{label}: {cell:?} is open one nanosecond before its close"
     );
@@ -153,7 +151,7 @@ fn assert_early_close_pre_migration(cell: (i32, u32, u32), minutes: u32, label: 
 /// cannot make this probe: 2017-07-04's overnight leg opened on the withheld
 /// 2017-07-03, so every instant inside that leg refuses on the withheld day
 /// rather than answering.
-fn assert_pre_migration_morning(cell: (i32, u32, u32), label: &str) {
+fn assert_pre_migration_morning(cell: (i16, i8, i8), label: &str) {
     let calendar = cfe();
     assert!(
         calendar
@@ -171,7 +169,7 @@ fn assert_pre_migration_morning(cell: (i32, u32, u32), label: &str) {
 }
 
 /// Asserts a date's row is `Closed` and no session at all belongs to it.
-fn assert_closed(cell: (i32, u32, u32), label: &str) {
+fn assert_closed(cell: (i16, i8, i8), label: &str) {
     let calendar = cfe();
     let date = date_of(cell);
 
@@ -263,7 +261,7 @@ fn martin_luther_king_day_closes_the_overnight_leg_at_1030_central() {
     );
     assert!(
         calendar
-            .is_open(cutoff - TimeDelta::nanoseconds(1))
+            .is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -310,7 +308,7 @@ fn good_friday_ends_the_cfe_trading_day_at_the_regular_open() {
     );
     assert!(
         calendar
-            .is_open(cutoff - TimeDelta::nanoseconds(1))
+            .is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -629,7 +627,7 @@ fn good_friday_2021_and_2023_end_the_overnight_leg_at_the_regular_open() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{cell:?} is open one nanosecond before 08:30"
         );
@@ -1260,7 +1258,7 @@ fn the_mourning_day_is_extended_only_and_ends_at_0830_central() {
     // ... through the last open instant before the close ...
     assert!(
         calendar
-            .is_open(close - TimeDelta::nanoseconds(1))
+            .is_open(close - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date"),
         "08:30 CT minus one nanosecond is still open"
     );
@@ -1341,7 +1339,7 @@ fn coverage_runs_over_the_three_audited_windows() {
         calendar.holiday_on(
             coverage
                 .first()
-                .checked_sub_days(Days::new(1))
+                .checked_sub(elapsed_days(1))
                 .expect("a representable date")
         ),
         None
@@ -1350,7 +1348,7 @@ fn coverage_runs_over_the_three_audited_windows() {
         calendar.holiday_on(
             coverage
                 .last()
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("a representable date")
         ),
         None
@@ -1490,7 +1488,7 @@ fn detaching_the_table_restores_the_normal_week() {
     assert_eq!(calendar.without_holidays().holiday_coverage(), None);
 }
 
-fn refusal_shape(error: &CalendarQueryError) -> (chrono::NaiveDate, &'static str) {
+fn refusal_shape(error: &CalendarQueryError) -> (jiff::civil::Date, &'static str) {
     // `CalendarQueryError` is `#[non_exhaustive]`.
     let kind = match error {
         CalendarQueryError::BeforeSupportFloor { .. } => "before-floor",
@@ -1556,7 +1554,7 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
             "{date}"
         );
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the window stays inside the representable calendar");
     }
 }
@@ -1621,7 +1619,7 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             }
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the coverage window stays inside the representable calendar");
     }
     assert_eq!(

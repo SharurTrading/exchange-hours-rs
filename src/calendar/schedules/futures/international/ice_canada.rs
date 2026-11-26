@@ -2,7 +2,9 @@
 
 //! Closed legacy ICE Futures Canada Canola identity.
 
-use chrono_tz::America;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::America;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -138,10 +140,8 @@ static ICE_CANADA_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn ice_canada_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
-    if as_of.timestamp() < REVISED_HOURS_2011_UNIX_SECONDS {
+pub(crate) fn ice_canada_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+    if as_of.as_second() < REVISED_HOURS_2011_UNIX_SECONDS {
         &ICE_CANADA_2010
     } else {
         select_revision(

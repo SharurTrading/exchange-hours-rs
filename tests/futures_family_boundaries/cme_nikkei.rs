@@ -3,8 +3,9 @@
 //! CME Nikkei 225 Dollar (`NKD`): every sourced close, halt and removal revision.
 
 use super::prelude::*;
-use chrono::NaiveDate;
+use crate::support::date_opt;
 use exchange_hours::calendar_for_market_hours_key;
+use jiff::SignedDuration;
 
 /// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
@@ -236,7 +237,7 @@ fn presidents_day_2010_trades_the_nkd_instants_not_the_equity_pattern() {
         "16:30 CT closes the holiday Monday exactly as it closes an ordinary day"
     );
     assert_eq!(
-        nkd.holiday_on(NaiveDate::from_ymd_opt(2010, 2, 15).expect("valid date")),
+        nkd.holiday_on(date_opt(2010, 2, 15).expect("valid date")),
         None,
         "the table ships no row for 2010-02-15: the contract traded its regular grid"
     );
@@ -391,7 +392,7 @@ fn nkd_serves_the_published_normal_week_pre_open_as_order_entry() {
     ];
 
     for (open, close, session_close) in windows {
-        for instant in [open, close - Duration::seconds(1)] {
+        for instant in [open, close - SignedDuration::from_secs(1)] {
             assert_eq!(
                 calendar.session_state(instant),
                 Ok(SessionState::OrderEntry),
@@ -414,7 +415,7 @@ fn nkd_serves_the_published_normal_week_pre_open_as_order_entry() {
             );
         }
         assert_ne!(
-            calendar.session_state(open - Duration::seconds(1)),
+            calendar.session_state(open - SignedDuration::from_secs(1)),
             Ok(SessionState::OrderEntry),
             "no queue runs before its published onset"
         );

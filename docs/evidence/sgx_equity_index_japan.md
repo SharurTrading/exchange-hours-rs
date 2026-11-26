@@ -88,6 +88,13 @@ one document.
 
 ## Module narrative (moved from src/calendar/schedules/futures/international/sgx_equity_index.rs on 2026-09-12 UTC)
 
+The Japan, China, Singapore, Taiwan and NTR (USD) calendars each model a
+separate SGX family. Their current grids place the continuous daytime T and
+overnight T+1 sessions in `regular`. The Pre-Opening and Non-Cancel routines
+before each session are `order_entry` because the first match occurs at the
+session open. The closing routine matches at a single closing price and
+belongs to `extended`.
+
 Two executable phases per trade date. The T session trades continuously
 07:30-14:55; the T+1 (night) session reopens at 15:10 and runs to 05:15 the
 following calendar day, so it is encoded as a wrapping rule. The Friday T+1

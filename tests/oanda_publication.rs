@@ -2,14 +2,17 @@
 
 //! Source boundary regressions from OANDA's UK hours and holiday pages.
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+mod support;
+
+use crate::support::date_opt;
 use exchange_hours::{
     CalendarQueryError, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,
     MarketHoursKey as K, SessionExceptionRecord, SessionKind, SessionState,
     StaticSessionExceptions,
 };
+use jiff::{SignedDuration, Timestamp};
 
-fn utc(s: &str) -> DateTime<Utc> {
+fn utc(s: &str) -> Timestamp {
     s.parse().expect("valid UTC fixture")
 }
 
@@ -26,7 +29,10 @@ fn mlk_2025_closes_at_the_operators_printed_instant() {
         (K::OandaMetals, "2025-01-20T19:30:00Z"),
     ] {
         let close = utc(close);
-        assert_eq!(cal(key).is_open(close - Duration::seconds(1)), Ok(true));
+        assert_eq!(
+            cal(key).is_open(close - SignedDuration::from_secs(1)),
+            Ok(true)
+        );
         assert_eq!(cal(key).is_open(close), Ok(false));
     }
 }
@@ -40,12 +46,12 @@ fn new_year_2025_reopens_at_1804_on_the_following_trade_date() {
     ] {
         let calendar = cal(key);
         let open = utc("2025-01-01T23:04:00Z");
-        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
-        assert_eq!(calendar.is_open(open), Ok(true));
         assert_eq!(
-            calendar.trade_date(open),
-            Ok(NaiveDate::from_ymd_opt(2025, 1, 2))
+            calendar.is_open(open - SignedDuration::from_secs(1)),
+            Ok(false)
         );
+        assert_eq!(calendar.is_open(open), Ok(true));
+        assert_eq!(calendar.trade_date(open), Ok(date_opt(2025, 1, 2)));
     }
 }
 
@@ -58,7 +64,10 @@ fn holy_thursday_2025_replacement_extends_to_the_printed_1700_close() {
         K::OandaMetals,
     ] {
         let close = utc("2025-04-17T21:00:00Z");
-        assert_eq!(cal(key).is_open(close - Duration::seconds(1)), Ok(true));
+        assert_eq!(
+            cal(key).is_open(close - SignedDuration::from_secs(1)),
+            Ok(true)
+        );
         assert_eq!(cal(key).is_open(close), Ok(false));
     }
 }
@@ -85,7 +94,7 @@ fn us_2025_reopens_preserve_the_printed_1800_and_next_day_early_closes() {
         ] {
             let calendar = cal(key);
             assert_eq!(
-                calendar.is_open(open - Duration::seconds(1)),
+                calendar.is_open(open - SignedDuration::from_secs(1)),
                 Ok(false),
                 "{key:?} {day}"
             );
@@ -114,7 +123,10 @@ fn brent_2025_reopens_at_2000_et_including_friday_early_close() {
     ] {
         let calendar = cal(K::OandaBrent);
         let open = utc(open);
-        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(
+            calendar.is_open(open - SignedDuration::from_secs(1)),
+            Ok(false)
+        );
         assert_eq!(calendar.is_open(open), Ok(true));
         assert_eq!(calendar.session_bounds(open), Ok(Some((open, utc(close)))));
         assert_eq!(calendar.is_open(utc(close)), Ok(false));
@@ -145,7 +157,7 @@ fn brent_monday_bounds_include_the_sunday_open_in_both_dst_regimes() {
 #[test]
 fn split_session_search_selects_the_nearest_reopen_before_a_later_normal_open() {
     let base = cal(K::OandaFx);
-    let date = NaiveDate::from_ymd_opt(2026, 10, 12).unwrap();
+    let date = date_opt(2026, 10, 12).unwrap();
     let blocks = [
         ExceptionBlock::regular(-1, 17 * 3600 + 5 * 60, 13 * 3600 + 59 * 60),
         ExceptionBlock::regular(0, 14 * 3600 + 5 * 60, 16 * 3600 + 59 * 60),
@@ -167,12 +179,18 @@ fn bonds_have_their_own_good_friday_and_carter_day_closes() {
         (K::OandaUsBondCfd, "2025-01-09T18:15:00Z"),
     ] {
         let close = utc(close);
-        assert_eq!(cal(key).is_open(close - Duration::seconds(1)), Ok(true));
+        assert_eq!(
+            cal(key).is_open(close - SignedDuration::from_secs(1)),
+            Ok(true)
+        );
         assert_eq!(cal(key).is_open(close), Ok(false));
     }
     let calendar = cal(K::OandaUsBondCfd);
     let reopen = utc("2025-01-09T23:00:00Z");
-    assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+    assert_eq!(
+        calendar.is_open(reopen - SignedDuration::from_secs(1)),
+        Ok(false)
+    );
     assert_eq!(calendar.is_open(reopen), Ok(true));
     assert_eq!(
         calendar.session_bounds(reopen),
@@ -196,7 +214,10 @@ fn bonds_do_not_inherit_the_index_only_independence_eve_arrangement() {
         )))
     );
     let reopen = utc("2025-07-03T22:01:00Z");
-    assert_eq!(bonds.is_open(reopen - Duration::seconds(1)), Ok(false));
+    assert_eq!(
+        bonds.is_open(reopen - SignedDuration::from_secs(1)),
+        Ok(false)
+    );
     assert_eq!(bonds.is_open(reopen), Ok(true));
     assert_eq!(
         bonds.session_bounds(reopen),
@@ -208,10 +229,16 @@ fn bonds_do_not_inherit_the_index_only_independence_eve_arrangement() {
 fn carters_close_and_reopen_follow_the_dated_twenty_four_hour_context() {
     let calendar = cal(K::OandaUsIndexCfd);
     let close = utc("2025-01-09T14:30:00Z");
-    assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(
+        calendar.is_open(close - SignedDuration::from_secs(1)),
+        Ok(true)
+    );
     assert_eq!(calendar.is_open(close), Ok(false));
     let reopen = utc("2025-01-09T23:00:00Z");
-    assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+    assert_eq!(
+        calendar.is_open(reopen - SignedDuration::from_secs(1)),
+        Ok(false)
+    );
     assert_eq!(calendar.is_open(reopen), Ok(true));
     assert_eq!(
         calendar.session_bounds(utc("2025-01-10T12:00:00Z")),
@@ -221,14 +248,14 @@ fn carters_close_and_reopen_follow_the_dated_twenty_four_hour_context() {
 
 #[test]
 fn an_incomplete_memorial_reopen_refuses_the_following_trade_date() {
-    let date = NaiveDate::from_ymd_opt(2026, 5, 26).unwrap();
+    let date = date_opt(2026, 5, 26).unwrap();
     for key in [K::OandaUsIndexCfd, K::OandaUsBondCfd] {
         let calendar = cal(key);
         assert_eq!(
             calendar.coverage().coverage_on(date),
             DateCoverage::UnresolvedGap
         );
-        let memorial_day = NaiveDate::from_ymd_opt(2026, 5, 25).unwrap();
+        let memorial_day = date_opt(2026, 5, 25).unwrap();
         assert_eq!(
             calendar.holiday_on(memorial_day).unwrap().kind(),
             HolidayKind::EarlyClose {
@@ -254,7 +281,7 @@ fn an_incomplete_memorial_reopen_refuses_the_following_trade_date() {
 #[test]
 fn previous_session_search_uses_the_last_replacement_close_for_gap_state() {
     let base = cal(K::OandaFx);
-    let date = NaiveDate::from_ymd_opt(2026, 10, 12).unwrap();
+    let date = date_opt(2026, 10, 12).unwrap();
     let blocks = [
         ExceptionBlock::regular(0, 0, 3_600),
         ExceptionBlock::regular(0, 15 * 3_600, 16 * 3_600 + 59 * 60),
@@ -287,7 +314,7 @@ fn spot_metals_holiday_reopens_use_the_literal_group_and_gold_silver_exception()
     ] {
         let open = utc(open);
         assert_eq!(
-            calendar.is_open(open - Duration::seconds(1)),
+            calendar.is_open(open - SignedDuration::from_secs(1)),
             Ok(false),
             "{open}"
         );
@@ -302,7 +329,10 @@ fn spot_metals_holiday_reopens_use_the_literal_group_and_gold_silver_exception()
         );
     }
     let close = utc("2025-11-28T19:45:00Z");
-    assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(
+        calendar.is_open(close - SignedDuration::from_secs(1)),
+        Ok(true)
+    );
     assert_eq!(calendar.is_open(close), Ok(false));
 }
 
@@ -334,9 +364,15 @@ fn archived_2024_us_holidays_preserve_literal_reopens_and_friday_close() {
         ] {
             let close = utc(close);
             let reopen = utc(reopen);
-            assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+            assert_eq!(
+                calendar.is_open(close - SignedDuration::from_secs(1)),
+                Ok(true)
+            );
             assert_eq!(calendar.is_open(close), Ok(false));
-            assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+            assert_eq!(
+                calendar.is_open(reopen - SignedDuration::from_secs(1)),
+                Ok(false)
+            );
             assert_eq!(calendar.is_open(reopen), Ok(true));
             assert_eq!(
                 calendar.session_bounds(reopen),
@@ -345,13 +381,10 @@ fn archived_2024_us_holidays_preserve_literal_reopens_and_friday_close() {
             assert_eq!(calendar.is_open(utc(end)), Ok(false));
         }
         assert_eq!(
-            calendar.is_closed_trade_date(
-                NaiveDate::from_ymd_opt(2024, 3, 29).unwrap(),
-                SessionKind::Both
-            ),
+            calendar.is_closed_trade_date(date_opt(2024, 3, 29).unwrap(), SessionKind::Both),
             Ok(true)
         );
-        let december = NaiveDate::from_ymd_opt(2023, 12, 25).unwrap();
+        let december = date_opt(2023, 12, 25).unwrap();
         assert!(calendar.holiday_on(december).is_none());
     }
 }
@@ -361,7 +394,10 @@ fn archived_2024_independence_eve_names_indices_without_changing_bonds() {
     let index = cal(K::OandaUsIndexCfd);
     let bonds = cal(K::OandaUsBondCfd);
     let close = utc("2024-07-03T17:15:00Z");
-    assert_eq!(index.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(
+        index.is_open(close - SignedDuration::from_secs(1)),
+        Ok(true)
+    );
     assert_eq!(index.is_open(close), Ok(false));
     assert_eq!(bonds.is_open(close), Ok(true));
     for (calendar, open) in [
@@ -369,14 +405,20 @@ fn archived_2024_independence_eve_names_indices_without_changing_bonds() {
         (bonds, "2024-07-03T22:01:00Z"),
     ] {
         let open = utc(open);
-        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(
+            calendar.is_open(open - SignedDuration::from_secs(1)),
+            Ok(false)
+        );
         assert_eq!(calendar.is_open(open), Ok(true));
         assert_eq!(
             calendar.session_bounds(open),
             Ok(Some((open, utc("2024-07-04T17:00:00Z"))))
         );
         let reopen = utc("2024-07-04T22:00:00Z");
-        assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+        assert_eq!(
+            calendar.is_open(reopen - SignedDuration::from_secs(1)),
+            Ok(false)
+        );
         assert_eq!(calendar.is_open(reopen), Ok(true));
         assert_eq!(
             calendar.session_bounds(reopen),
@@ -389,17 +431,23 @@ fn archived_2024_independence_eve_names_indices_without_changing_bonds() {
 fn archived_2024_christmas_keeps_1804_reopens_and_the_missing_bond_close_explicit() {
     let index = cal(K::OandaUsIndexCfd);
     let close = utc("2024-12-24T18:14:00Z");
-    assert_eq!(index.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(
+        index.is_open(close - SignedDuration::from_secs(1)),
+        Ok(true)
+    );
     assert_eq!(index.is_open(close), Ok(false));
     let open = utc("2024-12-25T23:04:00Z");
-    assert_eq!(index.is_open(open - Duration::seconds(1)), Ok(false));
+    assert_eq!(
+        index.is_open(open - SignedDuration::from_secs(1)),
+        Ok(false)
+    );
     assert_eq!(index.is_open(open), Ok(true));
     assert_eq!(
         index.session_bounds(open),
         Ok(Some((open, utc("2024-12-26T21:59:00Z"))))
     );
     let bonds = cal(K::OandaUsBondCfd);
-    let date = NaiveDate::from_ymd_opt(2024, 12, 24).unwrap();
+    let date = date_opt(2024, 12, 24).unwrap();
     assert_eq!(
         bonds.holiday_on(date).unwrap().kind(),
         HolidayKind::Unsourced
@@ -407,7 +455,7 @@ fn archived_2024_christmas_keeps_1804_reopens_and_the_missing_bond_close_explici
     assert!(
         matches!(bonds.is_open(close), Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date)
     );
-    let date = NaiveDate::from_ymd_opt(2024, 12, 26).unwrap();
+    let date = date_opt(2024, 12, 26).unwrap();
     assert_eq!(
         bonds.holiday_on(date).unwrap().kind(),
         HolidayKind::LateOpen {
@@ -423,7 +471,7 @@ fn archived_2024_pre_witness_reopens_do_not_invent_final_closes() {
         // The UK holiday sections give 18:00 reopens, but no final close.
         // The first normal-grid witness is later, on 2024-02-21.
         for (month, day) in [(1, 2), (1, 16), (2, 20)] {
-            let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+            let date = date_opt(2024, month, day).unwrap();
             assert_eq!(
                 calendar.holiday_on(date).unwrap().kind(),
                 HolidayKind::Unsourced
@@ -436,7 +484,7 @@ fn archived_2024_pre_witness_reopens_do_not_invent_final_closes() {
         }
         // Printed holiday scalar closes remain known independently of that gap.
         for (month, day) in [(1, 15), (2, 19)] {
-            let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+            let date = date_opt(2024, month, day).unwrap();
             assert_eq!(
                 calendar.holiday_on(date).unwrap().kind(),
                 HolidayKind::EarlyClose {
@@ -460,17 +508,23 @@ fn archived_2024_us_commodities_keep_their_own_opening_and_literal_holidays() {
     ] {
         let open = utc(open);
         let close = utc(close);
-        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(
+            calendar.is_open(open - SignedDuration::from_secs(1)),
+            Ok(false)
+        );
         assert_eq!(calendar.is_open(open), Ok(true));
         assert_eq!(calendar.session_bounds(open), Ok(Some((open, close))));
         assert_eq!(calendar.is_open(close), Ok(false));
     }
     let close = utc("2024-12-24T18:44:00Z");
-    assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(
+        calendar.is_open(close - SignedDuration::from_secs(1)),
+        Ok(true)
+    );
     assert_eq!(calendar.is_open(close), Ok(false));
     let normal = utc("2024-07-03T22:01:00Z");
     assert_eq!(calendar.is_open(normal), Ok(true));
-    let date = NaiveDate::from_ymd_opt(2024, 12, 26).unwrap();
+    let date = date_opt(2024, 12, 26).unwrap();
     assert_eq!(
         calendar.holiday_on(date).unwrap().kind(),
         HolidayKind::LateOpen {
@@ -484,12 +538,15 @@ fn archived_2024_brent_preserves_explicit_thanksgiving_and_missing_reopens() {
     let calendar = cal(K::OandaBrent);
     let open = utc("2024-11-29T01:00:00Z");
     let close = utc("2024-11-29T20:00:00Z");
-    assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+    assert_eq!(
+        calendar.is_open(open - SignedDuration::from_secs(1)),
+        Ok(false)
+    );
     assert_eq!(calendar.is_open(open), Ok(true));
     assert_eq!(calendar.session_bounds(open), Ok(Some((open, close))));
     assert_eq!(calendar.is_open(close), Ok(false));
     for (month, day) in [(4, 1), (5, 28), (6, 20), (7, 3), (7, 5), (8, 26), (9, 3)] {
-        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        let date = date_opt(2024, month, day).unwrap();
         assert_eq!(
             calendar.holiday_on(date).unwrap().kind(),
             HolidayKind::Unsourced
@@ -501,7 +558,7 @@ fn archived_2024_brent_preserves_explicit_thanksgiving_and_missing_reopens() {
         );
     }
     for (month, day) in [(5, 27), (6, 19), (7, 4), (9, 2)] {
-        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        let date = date_opt(2024, month, day).unwrap();
         assert_eq!(
             calendar.holiday_on(date).unwrap().kind(),
             HolidayKind::EarlyClose {
@@ -510,7 +567,7 @@ fn archived_2024_brent_preserves_explicit_thanksgiving_and_missing_reopens() {
         );
     }
     for (month, day) in [(5, 1), (5, 6)] {
-        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        let date = date_opt(2024, month, day).unwrap();
         assert_eq!(calendar.holiday_on(date), None);
         assert_eq!(
             calendar.is_open(utc(if day == 1 {
@@ -534,7 +591,7 @@ fn brent_uk_holiday_silence_preserves_typed_refusals_in_each_year() {
         (2026, 5, 4),
         (2026, 8, 31),
     ] {
-        let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
+        let date = date_opt(year, month, day).unwrap();
         assert_eq!(
             calendar.holiday_on(date).unwrap().kind(),
             HolidayKind::Unsourced

@@ -2,7 +2,7 @@
 
 //! Exchange trading hours, session boundaries, and calendar-aware bar boundaries.
 //!
-//! `exchange-hours` answers three questions about a `chrono::DateTime<Utc>`
+//! `exchange-hours` answers three questions about a [`jiff::Timestamp`]
 //! instant: is this venue or product family open, what are the bounds of the
 //! containing (or next) trading session, and where does a bar of a given
 //! [`CalendarResolution`] start and end without spanning a closed period. It
@@ -16,24 +16,22 @@
 //! 16:45; RTH runs 08:30–15:15 CT:
 //!
 //! ```
-//! use chrono::{TimeZone, Utc};
-//! use chrono_tz::US;
+//! use jiff::{civil::date, tz::{self, TimeZone}};
 //! use exchange_hours::{
 //!     CalendarResolution, Exchange, candle_end, hours_for_exchange, next_session_after,
 //!     session_bounds,
 //! };
 //!
+//! static CHICAGO: TimeZone = tz::get!("US/Central");
 //! let ct = |y, m, d, hh, mm| {
-//!     US::Central
-//!         .with_ymd_and_hms(y, m, d, hh, mm, 0)
-//!         .single()
+//!     CHICAGO
+//!         .to_timestamp(date(y, m, d).at(hh, mm, 0, 0))
 //!         .expect("valid CT instant")
-//!         .with_timezone(&Utc)
 //! };
 //!
 //! // Every snapshot request carries the caller's instant: the crate never
 //! // reads a clock, so a backtest and a live query run identical code. A
-//! // live caller passes their own `Utc::now()` at the application edge.
+//! // live caller passes their own `jiff::Timestamp::now()` at the application edge.
 //! let hours = hours_for_exchange(Exchange::Cme, ct(2026, 8, 24, 10, 0));
 //!
 //! // Monday mid-morning sits inside the regular session. Boundary queries
@@ -95,6 +93,9 @@
 //! Ambiguous and skipped local times are resolved deterministically: opens take
 //! the earliest valid mapping, closes the latest, and a wall-clock inside a
 //! spring-forward gap snaps to the first representable instant after it.
+//! A session occurrence contributes bounds only when both of its unmodified
+//! endpoints fit in Jiff's timestamp range. A bounded search can still find
+//! later complete sessions.
 //!
 //! Built-in fixed status/boundary/candle queries and date-aware
 //! status/boundary/trade-date/candle queries allocate nothing and inspect

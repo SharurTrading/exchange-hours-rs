@@ -32,8 +32,10 @@
 //! consequence and both sides of the coverage window) arrive with the families
 //! whose rows they test.
 
-use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone, Utc};
-use chrono_tz::US;
+mod support;
+
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt, utc_datetime};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
     DayOverride, DayPolicy, ExceptionCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
@@ -41,17 +43,15 @@ use exchange_hours::{
     SessionKind, StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid CT instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be a valid CT instant")
 }
 
 /// Every identity the crate ships, as a date-aware calendar.
@@ -112,7 +112,7 @@ fn gate_window_classes() -> Vec<(&'static str, ExchangeCalendar)> {
 /// answering where the bare calendar refuses — is never permitted.
 fn agree<T: PartialEq + std::fmt::Debug>(
     label: &str,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     overlaid: Result<T, CalendarQueryError>,
     bare: Result<T, CalendarQueryError>,
     bare_calendar: ExchangeCalendar,
@@ -181,13 +181,13 @@ fn assert_agrees(
     label: &str,
     overlaid: PolicyCalendar<'_>,
     bare: ExchangeCalendar,
-    from: DateTime<Utc>,
-    to: DateTime<Utc>,
+    from: Timestamp,
+    to: Timestamp,
 ) {
     let tz = bare.tz();
     let mut instant = from;
     while instant < to {
-        let pre_floor = instant.with_timezone(&tz).date_naive() < SUPPORT_FLOOR;
+        let pre_floor = instant.to_zoned_datetime(tz.clone()).date() < SUPPORT_FLOOR;
         // Below the floor every entry point refuses from the same gate, so the
         // pre-floor part of a grid is a refusal-equality check and nothing more;
         // the remaining comparisons are made where the gate actually derives an
@@ -205,7 +205,7 @@ fn assert_agrees(
             // swept one probe per local day rather than at the intraday step:
             // every day below the floor refuses from the same comparison, and a
             // per-day sweep is the resolution the claim actually has.
-            instant += TimeDelta::days(1);
+            instant += elapsed_days(1);
             continue;
         }
         agree(
@@ -243,7 +243,7 @@ fn assert_agrees(
             bare.is_accepting_orders(instant),
             bare,
         );
-        instant += TimeDelta::hours(4);
+        instant += SignedDuration::from_hours(4);
     }
 }
 
@@ -343,7 +343,7 @@ fn an_identity_without_a_table_reports_no_row_anywhere() {
             );
         }
         date = date
-            .checked_add_days(Days::new(11))
+            .checked_add(elapsed_days(11))
             .expect("the scan stays inside the representable calendar");
     }
 }
@@ -373,7 +373,7 @@ fn every_shipped_table_answers_only_inside_its_own_window() {
                 );
             }
             date = date
-                .checked_add_days(Days::new(7))
+                .checked_add(elapsed_days(7))
                 .expect("the scan stays inside the representable calendar");
         }
         assert_eq!(calendar.without_holidays().holiday_coverage(), None);
@@ -425,7 +425,7 @@ fn without_holidays_is_the_identity_without_a_table_and_a_detachment_with_one() 
                  nothing, and an answer moved at {instant}"
             );
             diverged |= !agrees;
-            instant += TimeDelta::minutes(43);
+            instant += SignedDuration::from_mins(43);
         }
 
         assert_eq!(
@@ -616,7 +616,7 @@ fn the_coverage_gate_is_sound_for_every_shipped_row() {
             Some(self.coverage)
         }
 
-        fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_> {
+        fn exception_on(&self, trade_date: Date) -> DateException<'_> {
             if self.coverage.contains(trade_date) {
                 DateException::KnownNormal
             } else {
@@ -639,11 +639,11 @@ fn the_coverage_gate_is_sound_for_every_shipped_row() {
             coverage: ExceptionCoverage::new(
                 coverage
                     .first()
-                    .checked_sub_days(Days::new(30))
+                    .checked_sub(elapsed_days(30))
                     .expect("the reference window stays representable"),
                 coverage
                     .last()
-                    .checked_add_days(Days::new(30))
+                    .checked_add(elapsed_days(30))
                     .expect("the reference window stays representable"),
             )
             .expect("the reference window is ordered"),
@@ -670,19 +670,19 @@ fn the_coverage_gate_is_sound_for_every_shipped_row() {
 
 /// Every shipped row ±3 days, as half-open UTC-midnight spans with overlapping
 /// neighbours merged.
-fn merged_row_windows(calendar: ExchangeCalendar) -> Vec<(NaiveDate, NaiveDate)> {
+fn merged_row_windows(calendar: ExchangeCalendar) -> Vec<(Date, Date)> {
     let Some(coverage) = calendar.holiday_coverage() else {
         return Vec::new();
     };
-    let mut spans: Vec<(NaiveDate, NaiveDate)> = Vec::new();
+    let mut spans: Vec<(Date, Date)> = Vec::new();
     let mut date = coverage.first();
     while date <= coverage.last() {
         if calendar.holiday_on(date).is_some() {
             let first = date
-                .checked_sub_days(Days::new(3))
+                .checked_sub(elapsed_days(3))
                 .expect("the probe window stays representable");
             let last = date
-                .checked_add_days(Days::new(4))
+                .checked_add(elapsed_days(4))
                 .expect("the probe window stays representable");
             match spans.last_mut() {
                 Some(open) if open.1 >= first => open.1 = open.1.max(last),
@@ -690,7 +690,7 @@ fn merged_row_windows(calendar: ExchangeCalendar) -> Vec<(NaiveDate, NaiveDate)>
             }
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the scan stays inside the representable calendar");
     }
     spans
@@ -835,12 +835,8 @@ fn a_friday_order_entry_window_answers_the_same_with_and_without_an_empty_layer(
 }
 
 /// UTC midnight on `date`, the sweep's own grid anchor.
-fn utc_midnight(date: NaiveDate) -> DateTime<Utc> {
-    Utc.from_utc_datetime(
-        &date
-            .and_hms_opt(0, 0, 0)
-            .expect("midnight is a valid time of day"),
-    )
+fn utc_midnight(date: Date) -> Timestamp {
+    utc_datetime(date.at(0, 0, 0, 0))
 }
 
 /// A window that ends the day before the grid starts still has to be consulted
@@ -961,7 +957,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                 // Nothing in the next fortnight: step over the gap and ask
                 // again, so a launch-dated identity is still swept.
                 Ok(None) => {
-                    let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
+                    let Ok(next) = cursor.checked_add(elapsed_days(7)) else {
                         break;
                     };
                     cursor = next;
@@ -980,14 +976,14 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                         &format!("{label}: the cursor at {cursor}"),
                     );
                     refused_cursors += 1;
-                    let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
+                    let Ok(next) = cursor.checked_add(elapsed_days(7)) else {
                         break;
                     };
                     cursor = next;
                     continue;
                 }
             };
-            let opened = open.with_timezone(&tz).date_naive();
+            let opened = open.to_zoned_datetime(tz.clone()).date();
             match calendar.trade_date(open) {
                 Ok(Some(trade_date)) => {
                     // The forward half of the narrow window, restated here
@@ -997,7 +993,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                     // deliberate pair — widening one without the other is
                     // exactly what this assertion catches.
                     let next = opened
-                        .checked_add_days(Days::new(1))
+                        .checked_add(elapsed_days(1))
                         .expect("the sweep stays inside the representable calendar");
                     assert!(
                         trade_date == opened || trade_date == next,
@@ -1011,7 +1007,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                     // before a record outside the window is silently lost.
                     match calendar.session_bounds(open) {
                         Ok(Some((session_open, session_close))) if session_open == open => {
-                            let closes_on = session_close.with_timezone(&tz).date_naive();
+                            let closes_on = session_close.to_zoned_datetime(tz.clone()).date();
                             if closes_on == opened {
                                 assert!(
                                     trade_date == opened,
@@ -1044,7 +1040,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                 }
             }
             occurrences += 1;
-            cursor = open + TimeDelta::seconds(1);
+            cursor = open + SignedDuration::from_secs(1);
         }
         assert!(
             dated == 0 || undated == 0,
@@ -1532,14 +1528,14 @@ fn a_known_normal_record_suppresses_nothing_below_it() {
 /// on the same date does roll.
 #[test]
 fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
-    struct OutOfRange(NaiveDate);
+    struct OutOfRange(Date);
 
     impl DayPolicy for OutOfRange {
-        fn is_closed(&self, _trade_date: NaiveDate) -> bool {
+        fn is_closed(&self, _trade_date: Date) -> bool {
             false
         }
 
-        fn early_close_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
+        fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
             (trade_date == self.0).then_some(86_401)
         }
     }

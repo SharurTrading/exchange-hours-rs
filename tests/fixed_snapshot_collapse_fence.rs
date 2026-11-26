@@ -44,21 +44,21 @@
 //! `surface_agreement`) — mutation-verified as well, with the same two
 //! mutations. The two layers together cover the collapse.
 
-use chrono::{DateTime, Datelike, Duration, Utc};
-use chrono_tz::Tz;
+mod support;
+
+use crate::support::elapsed_days;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, Exchange, MarketHours, MarketHoursKey, SUPPORT_FLOOR,
     SessionKind, calendar_for_exchange, calendar_for_market_hours_key, candle_end,
     hours_for_exchange, hours_for_market_hours_key, session_bounds,
 };
+use jiff::tz::TimeZone;
+use jiff::{SignedDuration, Timestamp};
 
 /// The pre-floor anchor: a Monday UTC, at least a decade below the support
 /// floor in every IANA zone, so every identity's venue-local day is below the
 /// floor on both the anchor and the whole sample sweep. 2000-01-03 12:00 UTC.
-const PRE_ANCHOR: DateTime<Utc> = match DateTime::<Utc>::from_timestamp(946_900_800, 0) {
-    Some(instant) => instant,
-    None => panic!("the pre-floor anchor must be representable"),
-};
+const PRE_ANCHOR: Timestamp = Timestamp::constant(946_900_800, 0);
 
 /// A whole ISO-week multiple keeps the venue-local wall clock and weekday: 364
 /// days is 52 weeks, so each `k` step shifts the anchor without ever moving it
@@ -67,11 +67,11 @@ const WEEK_STEP_DAYS: i64 = 364;
 
 /// The smallest whole-ISO-week multiple that lands the anchor's twin at or
 /// after the support floor in `tz`.
-fn twin_weeks(tz: Tz) -> i64 {
+fn twin_weeks(tz: &TimeZone) -> i64 {
     let mut weeks = 1_i64;
     loop {
-        let candidate = PRE_ANCHOR + Duration::days(WEEK_STEP_DAYS * weeks);
-        if candidate.with_timezone(&tz).date_naive() >= SUPPORT_FLOOR {
+        let candidate = PRE_ANCHOR + elapsed_days(WEEK_STEP_DAYS * weeks);
+        if tz.to_datetime(candidate).date() >= SUPPORT_FLOOR {
             return weeks;
         }
         weeks += 1;
@@ -79,30 +79,30 @@ fn twin_weeks(tz: Tz) -> i64 {
 }
 
 /// Samples a full UTC day at half-hour steps starting at `anchor`.
-fn sample_instants(anchor: DateTime<Utc>) -> impl Iterator<Item = DateTime<Utc>> {
-    (0..48u32).map(move |step| anchor + Duration::minutes(i64::from(step) * 30))
+fn sample_instants(anchor: Timestamp) -> impl Iterator<Item = Timestamp> {
+    (0..48u32).map(move |step| anchor + SignedDuration::from_mins(i64::from(step) * 30))
 }
 
 /// Asserts the fixed snapshot answers its own grid identically below the floor
 /// and at the post-floor twin, for every predicate the fixed surface exposes.
 fn assert_collapse_parity(hours: &MarketHours, identity: &str) {
-    let tz = hours.tz;
+    let tz = &hours.tz;
     let weeks = twin_weeks(tz);
-    let twin_anchor = PRE_ANCHOR + Duration::days(WEEK_STEP_DAYS * weeks);
+    let twin_anchor = PRE_ANCHOR + elapsed_days(WEEK_STEP_DAYS * weeks);
     let shift = twin_anchor - PRE_ANCHOR;
 
     for sample in sample_instants(PRE_ANCHOR) {
         let twin = sample + shift;
-        let sample_local = sample.with_timezone(&tz);
-        let twin_local = twin.with_timezone(&tz);
+        let sample_local = tz.to_datetime(sample);
+        let twin_local = tz.to_datetime(twin);
         assert_eq!(
             sample_local.time(),
             twin_local.time(),
             "{identity}: the twin must carry the same venue-local wall clock"
         );
         assert_eq!(
-            sample_local.date_naive().weekday(),
-            twin_local.date_naive().weekday(),
+            sample_local.date().weekday(),
+            twin_local.date().weekday(),
             "{identity}: the twin must carry the same venue-local weekday"
         );
 
@@ -160,8 +160,8 @@ fn assert_collapse_parity(hours: &MarketHours, identity: &str) {
             );
         }
 
-        let pre_day = sample_local.date_naive();
-        let twin_day = twin_local.date_naive();
+        let pre_day = sample_local.date();
+        let twin_day = twin_local.date();
         assert_eq!(
             hours.is_closed_all_day_on(pre_day, SessionKind::Both),
             hours.is_closed_all_day_on(twin_day, SessionKind::Both),

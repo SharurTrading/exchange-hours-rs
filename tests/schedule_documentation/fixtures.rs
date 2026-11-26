@@ -3,10 +3,12 @@
 //! The ledger, README and guide texts every documentation fence reads, and
 //! the row-parsing helpers shared by the fence suites.
 
-use chrono::NaiveDate;
+use crate::support::zones::UTC;
 use exchange_hours::{
     Exchange, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 use std::path::Path;
 
 pub(super) const README: &str = include_str!("../../README.md");
@@ -110,11 +112,9 @@ pub(super) const EVIDENCE_DIR: &str = "docs/evidence";
 ///
 /// LAW-UTC-DATES says a recorded date later than the current UTC date is
 /// future-dated and wrong, so the bound needs the real date. LAW-DETERMINISM
-/// binds *library* code, and `chrono` is built without its `clock` feature so
-/// `Utc::now` does not exist to call; tests are integration tests and may read
-/// a clock, so this reads the Unix timestamp and converts it with
-/// `from_timestamp`, which the feature gate does not remove.
-pub(super) fn today_utc() -> NaiveDate {
+/// binds library code. This integration-test fence reads the system clock and
+/// converts its Unix timestamp to a UTC civil date.
+pub(super) fn today_utc() -> Date {
     #[expect(
         clippy::disallowed_methods,
         reason = "LAW-DETERMINISM binds library code; this fence is a test and must \
@@ -125,9 +125,10 @@ pub(super) fn today_utc() -> NaiveDate {
         .expect("the system clock must be at or after the Unix epoch");
     let seconds =
         i64::try_from(since_epoch.as_secs()).expect("the Unix timestamp must fit in an i64");
-    chrono::DateTime::<chrono::Utc>::from_timestamp(seconds, 0)
-        .expect("the Unix timestamp must name a valid UTC instant")
-        .date_naive()
+    UTC.to_datetime(
+        Timestamp::new(seconds, 0).expect("the Unix timestamp must name a valid UTC instant"),
+    )
+    .date()
 }
 
 pub(super) fn repository_cutoff() -> &'static str {
@@ -282,12 +283,7 @@ fn basis_note_sentences(note: &str) -> usize {
 /// policy rather than a venue schedule; every other row must be a real
 /// identity reviewed at or after the repository cutoff and at or before
 /// `today`, the current UTC calendar date (LAW-UTC-DATES).
-pub(super) fn assert_row_shape(
-    row: &str,
-    cutoff: NaiveDate,
-    today: NaiveDate,
-    synthetic_name: &str,
-) {
+pub(super) fn assert_row_shape(row: &str, cutoff: Date, today: Date, synthetic_name: &str) {
     let cells = row_cells(row);
     assert_eq!(
         cells.len(),
@@ -316,7 +312,7 @@ pub(super) fn assert_row_shape(
         "LAW-WATCH: a dormant identity is reviewed on demand and a served one is not: {row}"
     );
     assert!(
-        horizon == "\u{2014}" || NaiveDate::parse_from_str(horizon, "%Y-%m-%d").is_ok(),
+        horizon == "\u{2014}" || Date::strptime("%Y-%m-%d", horizon).is_ok(),
         "horizon must be an ISO date or an em dash: {row}"
     );
     assert!(
@@ -373,7 +369,7 @@ pub(super) fn assert_row_shape(
             matches!(tier, "T1" | "T2"),
             "LAW-PRIMARY-SOURCES: a current schedule at T3 or T4 is a defect: {row}"
         );
-        let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
+        let reviewed = Date::strptime("%Y-%m-%d", reviewed)
             .expect("every non-synthetic identity must have an ISO review date");
         assert!(
             reviewed >= cutoff,

@@ -32,12 +32,12 @@
 //! so the walk's cost stays bounded by the identity's own tables.
 //!
 //! The two iterators are a partition of the supported domain: the runs are
-//! disjoint, ascending, and together they tile `[SUPPORT_FLOOR, NaiveDate::MAX]`,
+//! disjoint, ascending, and together they tile `[SUPPORT_FLOOR, Date::MAX]`,
 //! and each run's verdict is exactly what the per-date accessor answers on every
 //! date inside it.
 
 use super::{CalendarCoverage, CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR};
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 /// The most declarations one identity may carry.
 ///
@@ -66,7 +66,7 @@ pub(super) type Run = (
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Runs {
     coverage: CalendarCoverage,
-    cursor: NaiveDate,
+    cursor: Date,
     done: bool,
 }
 
@@ -98,7 +98,7 @@ impl Runs {
             .has_date_scoped_shapes_between(first, segment_last)
         {
             let mut day = first;
-            while let Some(next) = day.succ_opt() {
+            while let Ok(next) = day.tomorrow() {
                 if next > segment_last || self.verdict_at(next) != verdict {
                     break;
                 }
@@ -108,7 +108,7 @@ impl Runs {
         } else {
             segment_last
         };
-        match last.succ_opt() {
+        match last.tomorrow().ok() {
             Some(next) => self.cursor = next,
             None => self.done = true,
         }
@@ -117,7 +117,7 @@ impl Runs {
 
     /// The verdict one date walks to: the reason the date refuses with, and the
     /// declaration that reason belongs to when a declaration supplies it.
-    fn verdict_at(&self, date: NaiveDate) -> (Option<CoverageGapReason>, Option<super::PhaseGap>) {
+    fn verdict_at(&self, date: Date) -> (Option<CoverageGapReason>, Option<super::PhaseGap>) {
         match self.coverage.phase_gap_on(date) {
             Some(declaration) => (Some(declaration.reason()), Some(declaration)),
             None => (self.coverage.gap_reason_on(date), None),

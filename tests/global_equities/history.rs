@@ -3,18 +3,30 @@
 //! Point-in-time schedule amendments for global cash-equity venues.
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::{
+    AMSTERDAM, BERLIN, BRUSSELS, COPENHAGEN, DUBLIN, HELSINKI, ISTANBUL, JOHANNESBURG, LISBON,
+    LONDON, MADRID, PARIS, RIYADH, ROME, STOCKHOLM, VIENNA, ZURICH,
+};
+use jiff::SignedDuration;
+use jiff::civil::Date;
+use jiff::tz::TimeZone;
 
-fn cutover_sides(exchange: Exchange, tz: Tz, date: (i32, u32, u32)) -> (MarketHours, MarketHours) {
+fn cutover_sides(
+    exchange: Exchange,
+    tz: &TimeZone,
+    date: (i16, i8, i8),
+) -> (MarketHours, MarketHours) {
     let midnight = local(tz, date, (0, 0, 0));
     (
-        hours_for_exchange(exchange, midnight - Duration::nanoseconds(1)),
+        hours_for_exchange(exchange, midnight - SignedDuration::from_nanos(1)),
         hours_for_exchange(exchange, midnight),
     )
 }
 
 #[test]
 fn lse_cutovers() {
-    let tz = Europe::London;
+    let tz = &LONDON;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::Lse, tz, (2012, 4, 30));
@@ -31,7 +43,7 @@ fn lse_cutovers() {
 
 #[test]
 fn xetra_cutovers() {
-    let tz = Europe::Berlin;
+    let tz = &BERLIN;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::Xetra, tz, (2020, 11, 24));
@@ -61,7 +73,7 @@ fn euronext_core_pre_open_cutovers() {
     for (exchange, tz, pre_open_probe, regular_open, auction_open, tal_open, close) in [
         (
             Exchange::EuronextParis,
-            Europe::Paris,
+            &PARIS,
             (7, 20, 0),
             (9, 0, 0),
             (17, 30, 0),
@@ -70,7 +82,7 @@ fn euronext_core_pre_open_cutovers() {
         ),
         (
             Exchange::EuronextAmsterdam,
-            Europe::Amsterdam,
+            &AMSTERDAM,
             (7, 20, 0),
             (9, 0, 0),
             (17, 30, 0),
@@ -79,7 +91,7 @@ fn euronext_core_pre_open_cutovers() {
         ),
         (
             Exchange::EuronextBrussels,
-            Europe::Brussels,
+            &BRUSSELS,
             (7, 20, 0),
             (9, 0, 0),
             (17, 30, 0),
@@ -88,7 +100,7 @@ fn euronext_core_pre_open_cutovers() {
         ),
         (
             Exchange::EuronextLisbon,
-            Europe::Lisbon,
+            &LISBON,
             (6, 20, 0),
             (8, 0, 0),
             (16, 30, 0),
@@ -104,11 +116,11 @@ fn euronext_core_pre_open_cutovers() {
 
         let open = local(tz, (2026, 8, 19), regular_open);
         assert!(
-            pre.is_order_entry_only(open - Duration::seconds(1)),
+            pre.is_order_entry_only(open - SignedDuration::from_secs(1)),
             "{exchange:?}"
         );
         assert!(
-            post.is_order_entry_only(open - Duration::seconds(1)),
+            post.is_order_entry_only(open - SignedDuration::from_secs(1)),
             "{exchange:?}"
         );
         assert!(pre.is_open_regular(open), "{exchange:?}");
@@ -121,7 +133,7 @@ fn euronext_core_pre_open_cutovers() {
         let close = local(tz, (2026, 8, 19), close);
         for hours in [&pre, &post] {
             assert!(
-                hours.is_open_regular(auction_open - Duration::seconds(1)),
+                hours.is_open_regular(auction_open - SignedDuration::from_secs(1)),
                 "{exchange:?}"
             );
             assert!(hours.is_open_extended(auction_open), "{exchange:?}");
@@ -129,7 +141,7 @@ fn euronext_core_pre_open_cutovers() {
 
             let (_, auction_close) = exchange_hours::session_bounds_with(
                 hours,
-                tal_open - Duration::seconds(1),
+                tal_open - SignedDuration::from_secs(1),
                 exchange_hours::SessionKind::Extended,
             )
             .expect("Euronext closing auction");
@@ -150,7 +162,7 @@ fn euronext_core_pre_open_cutovers() {
 
 #[test]
 fn euronext_dublin_cutovers() {
-    let tz = Europe::Dublin;
+    let tz = &DUBLIN;
     let probe = (2026, 8, 19);
 
     // ISE's archived pre-2010 timetable, successive order-book models, and 2018
@@ -201,7 +213,7 @@ fn euronext_dublin_cutovers() {
 
 #[test]
 fn euronext_milan_cutovers() {
-    let tz = Europe::Rome;
+    let tz = &ROME;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::EuronextMilan, tz, (2013, 9, 30));
@@ -223,9 +235,9 @@ fn euronext_milan_cutovers() {
 #[test]
 fn nasdaq_nordic_cutovers() {
     for (exchange, tz, probe_time) in [
-        (Exchange::NasdaqStockholm, Europe::Stockholm, (9, 0, 3)),
-        (Exchange::NasdaqHelsinki, Europe::Helsinki, (10, 0, 3)),
-        (Exchange::NasdaqCopenhagen, Europe::Copenhagen, (9, 0, 3)),
+        (Exchange::NasdaqStockholm, &STOCKHOLM, (9, 0, 3)),
+        (Exchange::NasdaqHelsinki, &HELSINKI, (10, 0, 3)),
+        (Exchange::NasdaqCopenhagen, &COPENHAGEN, (9, 0, 3)),
     ] {
         let (pre, post) = cutover_sides(exchange, tz, (2015, 11, 16));
         let probe = local(tz, (2026, 8, 19), probe_time);
@@ -234,7 +246,7 @@ fn nasdaq_nordic_cutovers() {
         assert!(post.is_open_extended(probe), "{exchange:?}");
     }
 
-    let tz = Europe::Copenhagen;
+    let tz = &COPENHAGEN;
     let (pre, post) = cutover_sides(Exchange::NasdaqCopenhagen, tz, (2019, 5, 1));
     let at_1705 = local(tz, (2026, 8, 19), (17, 5, 0));
     // Both sides are extended: pre-launch this is non-executable post-trading;
@@ -248,7 +260,7 @@ fn nasdaq_nordic_cutovers() {
 
 #[test]
 fn jse_cutovers() {
-    let tz = Africa::Johannesburg;
+    let tz = &JOHANNESBURG;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::Jse, tz, (2012, 7, 2));
@@ -283,7 +295,7 @@ fn jse_cutovers() {
 
 #[test]
 fn borsa_istanbul_cutovers() {
-    let tz = Europe::Istanbul;
+    let tz = &ISTANBUL;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::BorsaIstanbul, tz, (2012, 3, 2));
@@ -333,7 +345,7 @@ fn borsa_istanbul_cutovers() {
 
 #[test]
 fn tadawul_cutovers() {
-    let tz = Asia::Riyadh;
+    let tz = &RIYADH;
     let probe = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::Tadawul, tz, (2013, 6, 29));
@@ -378,19 +390,16 @@ fn borsa_istanbul_pre_2012_grid_is_the_imkb_page_print() {
     // and the same bounds stand on the revision eve
     // (docs/evidence/borsa_istanbul.md, Normal week).
     for probe in [(2010, 3, 26), (2012, 3, 1)] {
-        let h = hours_for_exchange(
-            Exchange::BorsaIstanbul,
-            local(Europe::Istanbul, probe, (12, 0, 0)),
-        );
-        assert!(h.is_open_extended(local(Europe::Istanbul, probe, (9, 35, 0))));
-        assert!(!h.is_open_regular(local(Europe::Istanbul, probe, (9, 35, 0))));
-        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (9, 50, 0))));
-        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (12, 29, 0))));
-        assert!(!h.is_open(local(Europe::Istanbul, probe, (12, 45, 0))));
-        assert!(h.is_open_extended(local(Europe::Istanbul, probe, (14, 5, 0))));
-        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (14, 20, 0))));
-        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (17, 29, 0))));
-        assert!(!h.is_open(local(Europe::Istanbul, probe, (17, 30, 0))));
+        let h = hours_for_exchange(Exchange::BorsaIstanbul, local(&ISTANBUL, probe, (12, 0, 0)));
+        assert!(h.is_open_extended(local(&ISTANBUL, probe, (9, 35, 0))));
+        assert!(!h.is_open_regular(local(&ISTANBUL, probe, (9, 35, 0))));
+        assert!(h.is_open_regular(local(&ISTANBUL, probe, (9, 50, 0))));
+        assert!(h.is_open_regular(local(&ISTANBUL, probe, (12, 29, 0))));
+        assert!(!h.is_open(local(&ISTANBUL, probe, (12, 45, 0))));
+        assert!(h.is_open_extended(local(&ISTANBUL, probe, (14, 5, 0))));
+        assert!(h.is_open_regular(local(&ISTANBUL, probe, (14, 20, 0))));
+        assert!(h.is_open_regular(local(&ISTANBUL, probe, (17, 29, 0))));
+        assert!(!h.is_open(local(&ISTANBUL, probe, (17, 30, 0))));
     }
 }
 
@@ -405,28 +414,22 @@ fn tadawul_pre_2013_grid_is_the_trading_times_print() {
     // the grid is sourced to the 2010-01-01 support floor with nothing
     // carried below it (2026-10-06 domain-lineage sweep).
     for probe in [(2010, 1, 13), (2013, 6, 26)] {
-        let h = hours_for_exchange(Exchange::Tadawul, local(Asia::Riyadh, probe, (12, 0, 0)));
-        assert!(!h.is_open(local(Asia::Riyadh, probe, (10, 59, 0))));
-        assert!(h.is_open_regular(local(Asia::Riyadh, probe, (11, 0, 0))));
-        assert!(h.is_open_regular(local(Asia::Riyadh, probe, (15, 29, 0))));
-        assert!(!h.is_open(local(Asia::Riyadh, probe, (15, 30, 0))));
+        let h = hours_for_exchange(Exchange::Tadawul, local(&RIYADH, probe, (12, 0, 0)));
+        assert!(!h.is_open(local(&RIYADH, probe, (10, 59, 0))));
+        assert!(h.is_open_regular(local(&RIYADH, probe, (11, 0, 0))));
+        assert!(h.is_open_regular(local(&RIYADH, probe, (15, 29, 0))));
+        assert!(!h.is_open(local(&RIYADH, probe, (15, 30, 0))));
     }
     // Thursday sits outside the Saturday-Wednesday week; Saturday trades.
-    let thursday = hours_for_exchange(
-        Exchange::Tadawul,
-        local(Asia::Riyadh, (2010, 1, 14), (12, 0, 0)),
-    );
-    assert!(!thursday.is_open(local(Asia::Riyadh, (2010, 1, 14), (11, 0, 0))));
-    let saturday = hours_for_exchange(
-        Exchange::Tadawul,
-        local(Asia::Riyadh, (2010, 1, 16), (12, 0, 0)),
-    );
-    assert!(saturday.is_open_regular(local(Asia::Riyadh, (2010, 1, 16), (11, 30, 0))));
+    let thursday = hours_for_exchange(Exchange::Tadawul, local(&RIYADH, (2010, 1, 14), (12, 0, 0)));
+    assert!(!thursday.is_open(local(&RIYADH, (2010, 1, 14), (11, 0, 0))));
+    let saturday = hours_for_exchange(Exchange::Tadawul, local(&RIYADH, (2010, 1, 16), (12, 0, 0)));
+    assert!(saturday.is_open_regular(local(&RIYADH, (2010, 1, 16), (11, 30, 0))));
 }
 
 #[test]
 fn six_trading_at_last_cutover() {
-    let tz = Europe::Zurich;
+    let tz = &ZURICH;
     let probe = local(tz, (2026, 8, 19), (17, 35, 0));
     let (pre, post) = cutover_sides(Exchange::Six, tz, (2020, 6, 22));
 
@@ -453,7 +456,7 @@ fn six_trading_at_last_cutover() {
 
 #[test]
 fn bme_trading_at_last_cutover() {
-    let tz = Europe::Madrid;
+    let tz = &MADRID;
     let probe = local(tz, (2026, 8, 19), (17, 40, 0));
     let (pre, post) = cutover_sides(Exchange::Bme, tz, (2023, 12, 4));
 
@@ -469,7 +472,7 @@ fn bme_trading_at_last_cutover() {
 
 #[test]
 fn vienna_xetra_t7_migration_and_closing_extension() {
-    let tz = Europe::Vienna;
+    let tz = &VIENNA;
     let probe_day = (2026, 8, 19);
 
     let (pre, post) = cutover_sides(Exchange::Vienna, tz, (2017, 7, 31));
@@ -493,7 +496,7 @@ fn vienna_xetra_t7_migration_and_closing_extension() {
 
 #[test]
 fn vienna_trade_at_close_cutover() {
-    let tz = Europe::Vienna;
+    let tz = &VIENNA;
     let probe = local(tz, (2026, 8, 19), (17, 47, 0));
     let (pre, post) = cutover_sides(Exchange::Vienna, tz, (2020, 12, 1));
 
@@ -506,7 +509,7 @@ fn vienna_trade_at_close_cutover() {
 
 #[test]
 fn vienna_third_friday_settlement_grid_is_date_aware() {
-    let tz = Europe::Vienna;
+    let tz = &VIENNA;
     let calendar = exchange_hours::calendar_for_exchange(Exchange::Vienna);
 
     // The grid itself belongs to the **fixed snapshot**: which profile an
@@ -553,14 +556,14 @@ fn vienna_third_friday_settlement_grid_is_date_aware() {
     assert_outside_coverage(
         calendar.is_open_regular(ordinary),
         CalendarSource::Exchange(Exchange::Vienna),
-        NaiveDate::from_ymd_opt(2026, 8, 14).expect("fixture date"),
+        date_opt(2026, 8, 14).expect("fixture date"),
         "the third-Friday grid in 2026",
     );
     assert_refusal(
         calendar.is_open_regular(legacy_ordinary),
         CalendarQueryError::OutsideCoveredRange {
             source: CalendarSource::Exchange(Exchange::Vienna),
-            date: NaiveDate::from_ymd_opt(2010, 1, 8).expect("fixture date"),
+            date: date_opt(2010, 1, 8).expect("fixture date"),
         },
         "the third-Friday grid in 2010",
     );
@@ -587,7 +590,7 @@ fn assert_refusal<T>(
 fn assert_outside_coverage<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
     source: CalendarSource,
-    date: NaiveDate,
+    date: Date,
     label: &str,
 ) {
     assert_refusal(

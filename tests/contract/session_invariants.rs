@@ -38,5 +38,8 @@
 //! Failures print the seed, iteration/step index, the enabled venue/resolution
 //! operation space, the venue, and the offending UTC instant.
 
+#[path = "../support/mod.rs"]
+mod support;
+
 #[path = "session_invariants/mod.rs"]
 mod suite;

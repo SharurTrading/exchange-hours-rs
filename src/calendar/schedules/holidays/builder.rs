@@ -102,7 +102,7 @@ macro_rules! holidays {
                 has_blocks: $crate::calendar::schedules::holidays::fences::any_blocks(ROWS),
             };
         const _: () = {
-            const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),*];
+            const DATES: &[(i16, i8, i8)] = &[$(($year, $month, $day)),*];
             $crate::calendar::schedules::holidays::fences::assert_table(WINDOWS, DATES, ROWS);
         };
         TABLE

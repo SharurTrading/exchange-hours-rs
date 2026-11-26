@@ -2,16 +2,11 @@
 
 //! Euronext CAC 40 and AEX index futures (one family, Paris/Amsterdam clock).
 //!
-//! CAC 40 Index futures (`FCE`, Euronext Paris) and AEX Index futures (`FTI`,
-//! Euronext Amsterdam) print one identical Central Order Book grid —
-//! 08:00-22:00 CET/CEST, no lunch break, Monday to Friday — on the operator's
-//! own contract-specification pages, and the two markets' clocks (Paris and
-//! Amsterdam) are the same CET/CEST zone, so one family serves both. The
-//! Large-in-Scale Facility beside that grid (07:30-22:00) is an off-book
-//! wholesale facility, not an order-book phase, and is modelled no further —
-//! the same scope the Eurex families draw over TES.
+//! Evidence: `docs/evidence/euronext_index_futures.md`.
 
-use chrono_tz::Europe;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Europe;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -46,8 +41,6 @@ static EURONEXT_INDEX_FUTURES: StaticHoursProfile = StaticHoursProfile {
 /// the 2026-10-11 retrieval rather than inventing a cutover history. The same
 /// one-grid-at-every-instant shape as a launch-dated family past its launch,
 /// with the horizon disclosure living in the ledger row and evidence file.
-pub(crate) fn euronext_index_futures_profile_at(
-    _as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn euronext_index_futures_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
     &EURONEXT_INDEX_FUTURES
 }

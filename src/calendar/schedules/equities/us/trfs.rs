@@ -2,8 +2,8 @@
 
 //! FINRA Trade Reporting Facility schedules and revisions.
 
-use chrono::{DateTime, Utc};
-use chrono_tz::America;
+use crate::calendar::time_zones::America;
+use jiff::Timestamp;
 
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -97,7 +97,7 @@ static CHICAGO_REVISIONS: &[Revision] = revisions![
 static NYSE_REVISIONS: &[Revision] =
     revisions![(2026, 3, 30, &FINRA_TRF_NYSE_PROFILE, "FINRA Notice 25-15"),];
 
-pub(crate) fn carteret_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn carteret_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &FINRA_TRF_CARTERET_PROFILE_PRE_2026_03_30,
@@ -105,7 +105,7 @@ pub(crate) fn carteret_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursP
     )
 }
 
-pub(crate) fn chicago_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn chicago_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -113,7 +113,7 @@ pub(crate) fn chicago_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursPr
     )
 }
 
-pub(crate) fn nyse_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &FINRA_TRF_NYSE_PROFILE_PRE_2026_03_30,

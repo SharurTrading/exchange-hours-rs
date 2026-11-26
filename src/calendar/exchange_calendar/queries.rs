@@ -4,8 +4,8 @@
 //! surface. Every method delegates through the one date-aware
 //! [`QueryContext`] path.
 
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
+use jiff::{Timestamp, civil::Date};
 
 use super::calendar::{ExchangeCalendar, SessionWindow};
 use crate::calendar::query::{QueryContext, sessions, status};
@@ -26,7 +26,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Both)
     }
 
@@ -46,7 +46,7 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_open_with(&QueryContext::date_aware(self), instant, kind)
@@ -66,7 +66,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open_regular(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open_regular(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Regular)
     }
 
@@ -84,7 +84,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open_extended(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open_extended(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Extended)
     }
 
@@ -112,7 +112,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_accepting_orders(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_accepting_orders(&QueryContext::date_aware(self), instant)
     }
 
@@ -136,7 +136,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_order_entry_only(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_order_entry_only(&QueryContext::date_aware(self), instant)
     }
 
@@ -165,7 +165,7 @@ impl ExchangeCalendar {
     /// where a close must be found for the answer to exist.
     pub fn session_bounds(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.session_bounds_with(instant, SessionKind::Both)
     }
@@ -196,7 +196,7 @@ impl ExchangeCalendar {
     /// where a close must be found for the answer to exist.
     pub fn session_bounds_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::session_bounds_with(&QueryContext::date_aware(self), instant, kind)
@@ -228,7 +228,7 @@ impl ExchangeCalendar {
     /// where a close must be found for the answer to exist.
     pub fn next_session_after(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.next_session_after_with(instant, SessionKind::Both)
     }
@@ -260,7 +260,7 @@ impl ExchangeCalendar {
     /// where a close must be found for the answer to exist.
     pub fn next_session_after_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::next_session_after_with(&QueryContext::date_aware(self), instant, kind)
@@ -285,8 +285,8 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn next_session_open_after(
         self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+        instant: Timestamp,
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         Ok(self.next_session_after(instant)?.map(|(open, _close)| open))
     }
 
@@ -307,7 +307,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_maintenance(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_maintenance(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_maintenance(&QueryContext::date_aware(self), instant)
     }
 
@@ -332,7 +332,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn session_state(self, instant: DateTime<Utc>) -> Result<SessionState, CalendarQueryError> {
+    pub fn session_state(self, instant: Timestamp) -> Result<SessionState, CalendarQueryError> {
         status::session_state(&QueryContext::date_aware(self), instant)
     }
 
@@ -359,10 +359,7 @@ impl ExchangeCalendar {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn trade_date(
-        self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<NaiveDate>, CalendarQueryError> {
+    pub fn trade_date(self, instant: Timestamp) -> Result<Option<Date>, CalendarQueryError> {
         status::trade_date(&QueryContext::date_aware(self), instant)
     }
 
@@ -387,7 +384,7 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_trade_date(
         self,
-        day: NaiveDate,
+        day: Date,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_trade_date(&QueryContext::date_aware(self), day, kind)
@@ -410,8 +407,8 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_in_calendar(
         self,
-        day: NaiveDate,
-        calendar_tz: Tz,
+        day: Date,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_in_calendar(
@@ -438,10 +435,10 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_on(
         self,
-        day: NaiveDate,
+        day: Date,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
-        self.is_closed_all_day_in_calendar(day, self.tz(), kind)
+        self.is_closed_all_day_in_calendar(day, self.zone(), kind)
     }
 
     /// Returns whether no session of `kind` intersects the calendar day
@@ -461,8 +458,8 @@ impl ExchangeCalendar {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_at(
         self,
-        instant: DateTime<Utc>,
-        calendar_tz: Tz,
+        instant: Timestamp,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_at(&QueryContext::date_aware(self), instant, calendar_tz, kind)

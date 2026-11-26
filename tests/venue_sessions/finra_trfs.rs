@@ -3,12 +3,11 @@
 //! FINRA Trade Reporting Facility current and historical contracts.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use jiff::SignedDuration;
 
 fn assert_current_baseline_and_session_kinds(exchange: Exchange) {
-    let hours = hours_for_exchange(
-        exchange,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
     let monday = (2026, 4, 20);
 
     assert!(!hours.is_open(et(monday, (3, 59, 59))));
@@ -27,7 +26,7 @@ fn assert_current_baseline_and_session_kinds(exchange: Exchange) {
 
 fn assert_2026_opening_cutover(exchange: Exchange) {
     let cutover = et((2026, 3, 30), (0, 0, 0));
-    let before = hours_for_exchange(exchange, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(exchange, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(exchange, cutover);
     let prior_business_day = (2026, 3, 27);
     let effective_day = (2026, 3, 30);
@@ -113,7 +112,7 @@ fn finra_trf_chicago_is_closed_before_its_sourced_launch() {
     let cutover = et((2018, 9, 10), (0, 0, 0));
     let before = hours_for_exchange(
         Exchange::FinraTrfChicago,
-        cutover - chrono::Duration::seconds(1),
+        cutover - SignedDuration::from_secs(1),
     );
     let launched = hours_for_exchange(Exchange::FinraTrfChicago, cutover);
 

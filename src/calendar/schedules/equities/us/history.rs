@@ -2,7 +2,9 @@
 
 //! Point-in-time selectors for US cash-equity schedules.
 
-use chrono_tz::America;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::America;
 
 use super::StaticHoursProfile;
 use super::equities::{
@@ -27,9 +29,7 @@ static NASDAQ_REVISIONS: &[Revision] = revisions![(
     "Nasdaq Equity Trader Alert 2013-21"
 ),];
 
-pub(crate) fn nasdaq_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn nasdaq_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NASDAQ_PROFILE_PRE_2013_03_18,
@@ -48,9 +48,7 @@ static NASDAQ_BX_REVISIONS: &[Revision] = revisions![(
     "Nasdaq Equity Trader Alert 2011-20"
 ),];
 
-pub(crate) fn nasdaq_bx_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn nasdaq_bx_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NASDAQ_BX_PROFILE_PRE_2011_04_18,
@@ -73,9 +71,7 @@ static NASDAQ_PSX_REVISIONS: &[Revision] = revisions![
     (2010, 12, 13, &NASDAQ_PSX_PROFILE, "SEC SR-Phlx-2010-172"),
 ];
 
-pub(crate) fn nasdaq_psx_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn nasdaq_psx_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -120,7 +116,7 @@ static MEMX_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn memx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn memx_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -150,9 +146,7 @@ static MIAX_PEARL_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn miax_pearl_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn miax_pearl_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,

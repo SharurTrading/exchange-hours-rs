@@ -2,7 +2,9 @@
 
 //! CME weather temperature-index futures schedules.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -118,6 +120,6 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &AT_2010_FLOOR, REVISIONS)
 }

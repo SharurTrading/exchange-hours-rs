@@ -2,7 +2,7 @@
 
 //! Allocation-free day policies backed by caller-owned static records.
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::DayPolicy;
 
@@ -22,7 +22,7 @@ const SECONDS_PER_DAY: u32 = 86_400;
 /// also carrying boundary changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DayOverride {
-    trade_date: NaiveDate,
+    trade_date: Date,
     kind: DayOverrideKind,
 }
 
@@ -38,7 +38,7 @@ enum DayOverrideKind {
 impl DayOverride {
     /// Closes the complete trading day assigned to `trade_date`.
     #[must_use]
-    pub const fn closed(trade_date: NaiveDate) -> Self {
+    pub const fn closed(trade_date: Date) -> Self {
         Self {
             trade_date,
             kind: DayOverrideKind::Closed,
@@ -50,7 +50,7 @@ impl DayOverride {
     /// The value is venue-local seconds since midnight and is validated by
     /// [`StaticDayPolicy::new`].
     #[must_use]
-    pub const fn early_close(trade_date: NaiveDate, early_close_ssm: u32) -> Self {
+    pub const fn early_close(trade_date: Date, early_close_ssm: u32) -> Self {
         Self {
             trade_date,
             kind: DayOverrideKind::Modified {
@@ -65,7 +65,7 @@ impl DayOverride {
     /// The value is venue-local seconds since midnight and is validated by
     /// [`StaticDayPolicy::new`].
     #[must_use]
-    pub const fn late_open(trade_date: NaiveDate, late_open_ssm: u32) -> Self {
+    pub const fn late_open(trade_date: Date, late_open_ssm: u32) -> Self {
         Self {
             trade_date,
             kind: DayOverrideKind::Modified {
@@ -83,7 +83,7 @@ impl DayOverride {
     /// at a numerically later wall clock than its final close on `trade_date`.
     #[must_use]
     pub const fn late_open_and_early_close(
-        trade_date: NaiveDate,
+        trade_date: Date,
         late_open_ssm: u32,
         early_close_ssm: u32,
     ) -> Self {
@@ -98,7 +98,7 @@ impl DayOverride {
 
     /// Returns the venue-local trade date this record modifies.
     #[must_use]
-    pub const fn trade_date(self) -> NaiveDate {
+    pub const fn trade_date(self) -> Date {
         self.trade_date
     }
 
@@ -143,11 +143,11 @@ impl DayOverride {
 /// # Example
 ///
 /// ```
-/// use chrono::NaiveDate;
+/// use jiff::civil::Date;
 /// use exchange_hours::{DayOverride, DayPolicy, StaticDayPolicy};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let trade_date = NaiveDate::from_ymd_opt(2026, 4, 20).ok_or("invalid date")?;
+/// let trade_date = Date::new(2026, 4, 20)?;
 /// let records = [DayOverride::closed(trade_date)];
 /// let policy = StaticDayPolicy::new(&records)?;
 ///
@@ -177,17 +177,11 @@ impl<'a> StaticDayPolicy<'a> {
     /// Returns [`StaticDayPolicyError`] for the first duplicate or out-of-order
     /// date, early close outside `0..=86_400`, or late open outside
     /// `0..86_400`.
-    pub const fn new(overrides: &'a [DayOverride]) -> Result<Self, StaticDayPolicyError> {
+    pub fn new(overrides: &'a [DayOverride]) -> Result<Self, StaticDayPolicyError> {
         let mut index = 0;
         while index < overrides.len() {
             let current = overrides[index];
-            if index > 0
-                && current
-                    .trade_date
-                    .signed_duration_since(overrides[index - 1].trade_date)
-                    .num_days()
-                    <= 0
-            {
+            if index > 0 && current.trade_date <= overrides[index - 1].trade_date {
                 return Err(StaticDayPolicyError::DatesNotStrictlyIncreasing { index });
             }
             if let Some(early_close_ssm) = current.early_close_ssm()
@@ -215,7 +209,7 @@ impl<'a> StaticDayPolicy<'a> {
     ///
     /// Lookup is allocation-free and logarithmic in the number of records.
     #[must_use]
-    pub fn override_on(self, trade_date: NaiveDate) -> Option<DayOverride> {
+    pub fn override_on(self, trade_date: Date) -> Option<DayOverride> {
         self.overrides
             .binary_search_by_key(&trade_date, |record| record.trade_date)
             .ok()
@@ -230,17 +224,17 @@ impl<'a> StaticDayPolicy<'a> {
 }
 
 impl DayPolicy for StaticDayPolicy<'_> {
-    fn is_closed(&self, trade_date: NaiveDate) -> bool {
+    fn is_closed(&self, trade_date: Date) -> bool {
         self.override_on(trade_date)
             .is_some_and(DayOverride::is_closed)
     }
 
-    fn early_close_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
+    fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
         self.override_on(trade_date)
             .and_then(DayOverride::early_close_ssm)
     }
 
-    fn late_open_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
+    fn late_open_ssm(&self, trade_date: Date) -> Option<u32> {
         self.override_on(trade_date)
             .and_then(DayOverride::late_open_ssm)
     }
@@ -251,7 +245,7 @@ impl DayPolicy for StaticDayPolicy<'_> {
     /// search instead of the full trading-day derivation, which is what kept a
     /// far-from-the-date [`StaticDayPolicy`] at ~15x the bare calendar's
     /// `is_open` cost.
-    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    fn may_affect(&self, first: Date, last: Date) -> bool {
         let start = self
             .overrides
             .partition_point(|record| record.trade_date < first);

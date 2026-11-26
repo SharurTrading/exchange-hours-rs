@@ -2,19 +2,18 @@
 
 //! Containing- and next-session queries over a [`QueryContext`].
 
-use chrono::{DateTime, Duration, Utc};
+use jiff::Timestamp;
 
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, find_occurrence};
-use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const SESSION_LOOKAHEAD_DAYS: i64 = 14;
-type SessionBounds = (DateTime<Utc>, DateTime<Utc>);
+type SessionBounds = (Timestamp, Timestamp);
 
 fn merge_occurrences_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: chrono::NaiveDate,
+    day: jiff::civil::Date,
     kind: SessionKind,
     bounds: &mut SessionBounds,
 ) -> Result<(), G::Error> {
@@ -57,11 +56,11 @@ fn coalesce_same_kind<G: SourceGate>(
     let mut bounds = seed;
     for _ in 0..=SESSION_LOOKAHEAD_DAYS {
         let before = bounds;
-        let start_day = bounded_utc(bounds.0, tz).with_timezone(&tz).date_naive();
-        let end_day = bounded_utc(bounds.1, tz).with_timezone(&tz).date_naive();
+        let start_day = tz.to_datetime(bounds.0).date();
+        let end_day = tz.to_datetime(bounds.1).date();
 
         for boundary_day in [start_day, end_day] {
-            if let Some(previous_day) = boundary_day.pred_opt() {
+            if let Ok(previous_day) = boundary_day.yesterday() {
                 merge_occurrences_on_day(context, previous_day, kind, &mut bounds)?;
             }
             merge_occurrences_on_day(context, boundary_day, kind, &mut bounds)?;
@@ -75,11 +74,11 @@ fn coalesce_same_kind<G: SourceGate>(
 
 fn containing_occurrence_of_kind<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
-    day: chrono::NaiveDate,
+    instant: Timestamp,
+    day: jiff::civil::Date,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
-    let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
+    let hit = |open: Timestamp, close: Timestamp| {
         (open <= instant && instant < close).then_some((open, close))
     };
 
@@ -94,7 +93,7 @@ fn containing_occurrence_of_kind<G: SourceGate>(
     // probe can answer; only a query *addressed* to an earlier day is refused,
     // and that verdict is taken at the entry point from the caller's own instant
     // (see `status::is_open_with`).
-    let Some(yesterday) = day.pred_opt() else {
+    let Some(yesterday) = day.yesterday().ok() else {
         return Ok(None);
     };
     // The probe filters to occurrences that close on the following local day, so
@@ -111,12 +110,10 @@ fn containing_occurrence_of_kind<G: SourceGate>(
 
 fn containing_concrete_kind<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
-    let day = bounded_utc(instant, context.tz())
-        .with_timezone(&context.tz())
-        .date_naive();
+    let day = context.tz().to_datetime(instant).date();
     containing_occurrence_of_kind(context, instant, day, kind)?
         .map(|candidate| coalesce_same_kind(context, candidate, kind))
         .transpose()
@@ -131,8 +128,8 @@ fn containing_concrete_kind<G: SourceGate>(
 /// function of the instant and the context's zone.
 pub(super) fn contains_in_session_on<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
-    day: chrono::NaiveDate,
+    instant: Timestamp,
+    day: jiff::civil::Date,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     let found = match kind {
@@ -161,7 +158,7 @@ pub(super) fn contains_in_session_on<G: SourceGate>(
 
 pub(in crate::calendar) fn session_bounds_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     context.require_floor_at(instant)?;
@@ -173,7 +170,7 @@ pub(in crate::calendar) fn session_bounds_with<G: SourceGate>(
 
 pub(in crate::calendar) fn containing_session_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     match kind {
@@ -192,8 +189,8 @@ pub(in crate::calendar) fn containing_session_with<G: SourceGate>(
 /// Normal rules and replacement offsets are not visited in chronological order.
 fn next_occurrence_after_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: chrono::NaiveDate,
-    instant: DateTime<Utc>,
+    day: jiff::civil::Date,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     let mut best = None;
@@ -226,8 +223,8 @@ fn next_occurrence_after_on_day<G: SourceGate>(
 
 fn consider_next_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: chrono::NaiveDate,
-    instant: DateTime<Utc>,
+    day: jiff::civil::Date,
+    instant: Timestamp,
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
 ) -> Result<(), G::Error> {
@@ -241,15 +238,18 @@ fn consider_next_on_day<G: SourceGate>(
 
 pub(in crate::calendar) fn next_session_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     context.require_floor_at(instant)?;
     let tz = context.tz();
-    let base_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
+    let base_day = tz.to_datetime(instant).date();
 
     for offset in 0..=SESSION_LOOKAHEAD_DAYS {
-        let Some(day) = base_day.checked_add_signed(Duration::days(offset)) else {
+        let Some(day) = base_day
+            .checked_add(jiff::SignedDuration::from_hours(24 * (offset)))
+            .ok()
+        else {
             break;
         };
         let mut best = None;
@@ -277,8 +277,8 @@ pub(in crate::calendar) fn next_session_after_with<G: SourceGate>(
 /// A coalescing error stops the scan and propagates through the result.
 fn previous_occurrence_before_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: chrono::NaiveDate,
-    instant: DateTime<Utc>,
+    day: jiff::civil::Date,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     let mut best = None;
@@ -311,8 +311,8 @@ fn previous_occurrence_before_on_day<G: SourceGate>(
 
 fn consider_previous_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: chrono::NaiveDate,
-    instant: DateTime<Utc>,
+    day: jiff::civil::Date,
+    instant: Timestamp,
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
 ) -> Result<(), G::Error> {
@@ -326,16 +326,19 @@ fn consider_previous_on_day<G: SourceGate>(
 
 pub(super) fn previous_session_before_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
     let tz = context.tz();
-    let base_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
+    let base_day = tz.to_datetime(instant).date();
     let mut best = None;
     let mut scan_one_older_day = false;
 
     for offset in 0..=SESSION_LOOKAHEAD_DAYS {
-        let Some(day) = base_day.checked_sub_signed(Duration::days(offset)) else {
+        let Some(day) = base_day
+            .checked_sub(jiff::SignedDuration::from_hours(24 * (offset)))
+            .ok()
+        else {
             break;
         };
         match kind {

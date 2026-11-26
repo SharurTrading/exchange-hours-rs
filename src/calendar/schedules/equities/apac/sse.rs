@@ -2,7 +2,9 @@
 
 //! Shanghai Stock Exchange cash equities.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -99,7 +101,7 @@ static REVISIONS: &[Revision] = revisions![(
     "SSE news release 4947833"
 ),];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &SSE_PROFILE_PRE_2018_08_20,

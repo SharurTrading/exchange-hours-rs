@@ -15,14 +15,18 @@
 //! 2026-10-04), so those queries answer rather than refuse. A caller's `DayPolicy` can only tighten
 //! a day — it never licenses a date the identity does not answer.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
-use chrono_tz::{America, Asia, US};
+mod support;
+
+use crate::support::zones::{BANGKOK, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
     DayPolicy, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR,
     SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
     hours_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 /// Asserts an identity-backed query returns exactly `expected`, the coverage
 /// error the shipped data declares. The variant, identity and date are all part
@@ -47,7 +51,7 @@ fn assert_refusal<T: std::fmt::Debug>(
 fn assert_outside_coverage<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
     source: CalendarSource,
-    date: NaiveDate,
+    date: Date,
     label: &str,
 ) {
     assert_refusal(
@@ -120,60 +124,44 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     }
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid CT instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be a valid CT instant")
 }
 
-fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    America::New_York
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid ET instant")
-        .with_timezone(&Utc)
+fn et(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&NEW_YORK, date, time).expect("fixture must be a valid ET instant")
 }
 
-fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Asia::Singapore
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid SGT instant")
-        .with_timezone(&Utc)
+fn sgt(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&SINGAPORE, date, time).expect("fixture must be a valid SGT instant")
 }
 
-fn bangkok(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Asia::Bangkok
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid Bangkok instant")
-        .with_timezone(&Utc)
+fn bangkok(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&BANGKOK, date, time).expect("fixture must be a valid Bangkok instant")
 }
 
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 struct TestPolicy<'a> {
-    closed: &'a [NaiveDate],
-    early: Option<(NaiveDate, u32)>,
-    late: Option<(NaiveDate, u32)>,
+    closed: &'a [Date],
+    early: Option<(Date, u32)>,
+    late: Option<(Date, u32)>,
 }
 
 impl DayPolicy for TestPolicy<'_> {
-    fn is_closed(&self, trade_date: NaiveDate) -> bool {
+    fn is_closed(&self, trade_date: Date) -> bool {
         self.closed.contains(&trade_date)
     }
 
-    fn early_close_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
+    fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
         self.early
             .filter(|(date, _ssm)| *date == trade_date)
             .map(|(_date, ssm)| ssm)
     }
 
-    fn late_open_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
+    fn late_open_ssm(&self, trade_date: Date) -> Option<u32> {
         self.late
             .filter(|(date, _ssm)| *date == trade_date)
             .map(|(_date, ssm)| ssm)
@@ -183,11 +171,11 @@ impl DayPolicy for TestPolicy<'_> {
 struct Closed;
 
 impl DayPolicy for Closed {
-    fn is_closed(&self, _trade_date: NaiveDate) -> bool {
+    fn is_closed(&self, _trade_date: Date) -> bool {
         true
     }
 
-    fn early_close_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
+    fn early_close_ssm(&self, _trade_date: Date) -> Option<u32> {
         None
     }
 }
@@ -696,7 +684,7 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
         let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
             .with_day_policy(&policy);
         let previous_day = holiday
-            .pred_opt()
+            .yesterday()
             .expect("holiday fixture has a predecessor");
 
         // The daily candle ends at the **trade date's** final close, and since
@@ -705,7 +693,7 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
         // following business day. A `DayPolicy` is keyed by trade date too, so
         // the caller's `early` above — which names the holiday — correctly clips
         // nothing here; the holiday's own noon close is now built in.
-        let trade_date = holiday.succ_opt().expect("holiday fixture has a successor");
+        let trade_date = holiday.tomorrow().expect("holiday fixture has a successor");
 
         assert_eq!(
             calendar
@@ -1066,11 +1054,9 @@ fn trade_dates_and_states_cover_the_globex_day() {
 
 #[test]
 fn session_state_and_trade_date_are_consistent_for_every_key() {
-    let mut instant = Utc
-        .with_ymd_and_hms(2026, 4, 19, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid start");
-    let end = instant + Duration::days(7);
+    let mut instant =
+        local_opt(&UTC, (2026, 4, 19), (0, 0, 0)).expect("fixture must have a valid start");
+    let end = instant + elapsed_days(7);
 
     while instant < end {
         for &key in MarketHoursKey::ALL {
@@ -1177,20 +1163,15 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 _ => panic!("unhandled SessionState variant at {instant} for {key}"),
             }
         }
-        instant += Duration::hours(1);
+        instant += SignedDuration::from_hours(1);
     }
 }
 
 #[test]
 fn all_key_calendars_match_dated_snapshots_over_two_years() {
-    let instant = Utc
-        .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid start");
-    let end = Utc
-        .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid end");
+    let instant =
+        local_opt(&UTC, (2022, 1, 1), (0, 0, 0)).expect("fixture must have a valid start");
+    let end = local_opt(&UTC, (2024, 1, 1), (0, 0, 0)).expect("fixture must have a valid end");
 
     // At the 2010 floor the 2022-2023 window answers again, so the hourly
     // sweep asserts the coverage contract itself: no probe may read as a
@@ -1204,7 +1185,7 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
     while instant < end {
         for &key in MarketHoursKey::ALL {
             let calendar = calendar_for_market_hours_key(key);
-            let local = instant.with_timezone(&calendar.tz()).date_naive();
+            let local = instant.to_zoned_datetime(calendar.tz()).date();
             let label = format!("{key} at {instant}");
             assert_ne!(
                 calendar.coverage().coverage_on(local),
@@ -1326,7 +1307,7 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
             );
             probes += 1;
         }
-        instant += Duration::hours(1);
+        instant += SignedDuration::from_hours(1);
     }
 
     assert!(probes > 0, "the sweep must have probed the window");

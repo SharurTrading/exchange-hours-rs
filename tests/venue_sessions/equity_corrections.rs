@@ -3,6 +3,9 @@
 //! Primary-source-verified US and European equity schedules.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use crate::support::zones::{DUBLIN, HELSINKI, LISBON};
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // Venue data verified against primary sources (2026-08 pass): NYSE-family and
@@ -13,10 +16,7 @@ use super::prelude::*;
 #[test]
 fn nyse_accepts_orders_from_0630_before_its_core_session() {
     // NYSE's living hours table opens its pre-opening order queue at 06:30 ET.
-    let hours = hours_for_exchange(
-        Exchange::Nyse,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(Exchange::Nyse, PROFILE_INSTANT);
     assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))));
     assert!(hours.is_order_entry_only(et((2026, 4, 20), (6, 30, 0))));
     assert!(!hours.is_open(et((2026, 4, 20), (16, 30, 0))));
@@ -30,10 +30,7 @@ fn current_nyse_and_cboe_queues_precede_their_active_early_sessions() {
         Exchange::NyseNational,
         Exchange::NyseTexas,
     ] {
-        let hours = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))), "{exch:?}");
         assert!(
             hours.is_order_entry_only(et((2026, 4, 20), (6, 30, 0))),
@@ -46,10 +43,7 @@ fn current_nyse_and_cboe_queues_precede_their_active_early_sessions() {
     }
 
     for exch in [Exchange::CboeByx, Exchange::CboeEdga] {
-        let hours = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(!hours.is_open(et((2026, 4, 20), (5, 59, 59))), "{exch:?}");
         assert!(
             hours.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))),
@@ -71,7 +65,7 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     let cessation = et((2017, 2, 1), (0, 0, 0));
     let before = hours_for_exchange(
         Exchange::NyseNational,
-        cessation - chrono::Duration::seconds(1),
+        cessation - SignedDuration::from_secs(1),
     );
     let dormant = hours_for_exchange(Exchange::NyseNational, cessation);
 
@@ -82,7 +76,7 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     let relaunch = et((2018, 5, 21), (0, 0, 0));
     let still_dormant = hours_for_exchange(
         Exchange::NyseNational,
-        relaunch - chrono::Duration::seconds(1),
+        relaunch - SignedDuration::from_secs(1),
     );
     let reopened = hours_for_exchange(Exchange::NyseNational, relaunch);
 
@@ -123,10 +117,7 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
 #[test]
 fn bzx_edgx_and_arca_accept_orders_at_0230_today() {
     for exch in [Exchange::CboeBzx, Exchange::CboeEdgx, Exchange::NyseArca] {
-        let hours = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(!hours.is_open(et((2026, 4, 20), (2, 29, 59))));
         assert!(
             hours.is_order_entry_only(et((2026, 4, 20), (2, 30, 0))),
@@ -156,10 +147,7 @@ fn edgx_unconfirmed_overnight_session_is_not_encoded() {
     // readiness and a later EDGX filing, so future lookups retain current hours.
     // https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process
     // https://www.sec.gov/files/rules/sro/cboeedgx/2026/34-105587.pdf
-    let fixed = hours_for_exchange(
-        Exchange::CboeEdgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let fixed = hours_for_exchange(Exchange::CboeEdgx, PROFILE_INSTANT);
     let future = hours_for_exchange(Exchange::CboeEdgx, et((2026, 12, 7), (12, 0, 0)));
     let sunday_night = et((2026, 12, 6), (21, 0, 0));
 
@@ -198,7 +186,7 @@ fn memx_is_closed_before_its_2020_09_21_launch() {
     // 2020.
     // https://memx.com/insights/day-1
     let cutover = et((2020, 9, 21), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::MemxEq, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::MemxEq, cutover - SignedDuration::from_secs(1));
     let launched = hours_for_exchange(Exchange::MemxEq, cutover);
 
     assert!(before.regular.is_empty());
@@ -213,7 +201,7 @@ fn memx_0400_premarket_started_2025_05_19() {
     // launch of 04:00 ET trading.
     // https://memx.com/insights/pre-market-share-gains-and-new-options-active-risk-feature
     let cutover = et((2025, 5, 19), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::MemxEq, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::MemxEq, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::MemxEq, cutover);
 
     assert!(!before.is_open(et((2025, 5, 19), (5, 0, 0))));
@@ -248,7 +236,7 @@ fn miax_pearl_is_closed_before_its_2020_09_29_launch() {
     let cutover = et((2020, 9, 29), (0, 0, 0));
     let before = hours_for_exchange(
         Exchange::MiaxPearlEq,
-        cutover - chrono::Duration::seconds(1),
+        cutover - SignedDuration::from_secs(1),
     );
     let launched = hours_for_exchange(Exchange::MiaxPearlEq, cutover);
 
@@ -266,7 +254,7 @@ fn miax_pearl_extended_sessions_started_2025_02_20() {
     let cutover = et((2025, 2, 20), (0, 0, 0));
     let before = hours_for_exchange(
         Exchange::MiaxPearlEq,
-        cutover - chrono::Duration::seconds(1),
+        cutover - SignedDuration::from_secs(1),
     );
     let after = hours_for_exchange(Exchange::MiaxPearlEq, cutover);
 
@@ -283,10 +271,7 @@ fn nasdaq_stockholm_continuous_ends_1725() {
     // order book randomly from 09:00:00 through 09:00:05 CET, then trades
     // continuously to 17:25 with a closing call to 17:30 and post-trading to
     // 18:00.
-    let hours = hours_for_exchange(
-        Exchange::NasdaqStockholm,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(Exchange::NasdaqStockholm, PROFILE_INSTANT);
     assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 4))));
     assert!(!hours.is_open_regular(cet((2026, 4, 20), (9, 0, 4))));
     assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 5))));
@@ -304,22 +289,19 @@ fn nasdaq_helsinki_trades_1000_to_1825_local_eet() {
     // Nasdaq Nordic Market Model 2026:03 publishes Helsinki on the common CET
     // clock. Its venue-local open is therefore the same randomized edge at
     // 10:00:05 EET/EEST, simultaneous with 09:00:05 CET.
-    let hours = hours_for_exchange(
-        Exchange::NasdaqHelsinki,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    assert!(!hours.is_open_regular(zoned(Europe::Helsinki, (2026, 4, 20), (9, 30, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Helsinki, (2026, 4, 20), (9, 30, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Helsinki, (2026, 4, 20), (10, 0, 4))));
-    assert!(!hours.is_open_regular(zoned(Europe::Helsinki, (2026, 4, 20), (10, 0, 4))));
-    assert!(hours.is_open_regular(zoned(Europe::Helsinki, (2026, 4, 20), (10, 0, 5))));
-    assert!(hours.is_open_regular(zoned(Europe::Helsinki, (2026, 4, 20), (18, 24, 59))));
-    assert!(!hours.is_open_regular(zoned(Europe::Helsinki, (2026, 4, 20), (18, 25, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Helsinki, (2026, 4, 20), (18, 45, 0))));
-    assert!(!hours.is_open(zoned(Europe::Helsinki, (2026, 4, 20), (19, 0, 0))));
+    let hours = hours_for_exchange(Exchange::NasdaqHelsinki, PROFILE_INSTANT);
+    assert!(!hours.is_open_regular(zoned(&HELSINKI, (2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_extended(zoned(&HELSINKI, (2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_extended(zoned(&HELSINKI, (2026, 4, 20), (10, 0, 4))));
+    assert!(!hours.is_open_regular(zoned(&HELSINKI, (2026, 4, 20), (10, 0, 4))));
+    assert!(hours.is_open_regular(zoned(&HELSINKI, (2026, 4, 20), (10, 0, 5))));
+    assert!(hours.is_open_regular(zoned(&HELSINKI, (2026, 4, 20), (18, 24, 59))));
+    assert!(!hours.is_open_regular(zoned(&HELSINKI, (2026, 4, 20), (18, 25, 0))));
+    assert!(hours.is_open_extended(zoned(&HELSINKI, (2026, 4, 20), (18, 45, 0))));
+    assert!(!hours.is_open(zoned(&HELSINKI, (2026, 4, 20), (19, 0, 0))));
     // Helsinki's regular open coincides with Stockholm's in absolute time.
     assert_eq!(
-        zoned(Europe::Helsinki, (2026, 4, 20), (10, 0, 5)),
+        zoned(&HELSINKI, (2026, 4, 20), (10, 0, 5)),
         cet((2026, 4, 20), (9, 0, 5)),
         "the Nordic books align on CET"
     );
@@ -330,10 +312,7 @@ fn nasdaq_copenhagen_closes_1655_with_optional_trade_at_close() {
     // Nasdaq Nordic Market Model 2026:03: randomized open through 09:00:05,
     // continuous trading to 16:55, closing call to 17:00, and
     // Trading@Closing Price 17:00-17:10, then post-trading through 17:20.
-    let hours = hours_for_exchange(
-        Exchange::NasdaqCopenhagen,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(Exchange::NasdaqCopenhagen, PROFILE_INSTANT);
     assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 4))));
     assert!(!hours.is_open_regular(cet((2026, 4, 20), (9, 0, 4))));
     assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 5))));
@@ -355,10 +334,7 @@ fn euronext_central_books_use_nominal_exchange_boundaries() {
         Exchange::EuronextAmsterdam,
         Exchange::EuronextBrussels,
     ] {
-        let hours = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(!hours.is_open(cet((2026, 4, 20), (7, 29, 59))));
         assert!(hours.is_order_entry_only(cet((2026, 4, 20), (7, 30, 0))));
         assert!(hours.is_order_entry_only(cet((2026, 4, 20), (8, 59, 59))));
@@ -398,109 +374,88 @@ fn euronext_lisbon_keeps_its_zone_but_follows_the_cet_book() {
     // Euronext publishes all cash-market hours in CET/CEST. Lisbon keeps its
     // venue zone, so every phase is one local-clock hour earlier while
     // remaining simultaneous with the continental books.
-    let hours = hours_for_exchange(
-        Exchange::EuronextLisbon,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    assert_eq!(hours.tz, Europe::Lisbon);
-    assert!(!hours.is_open(zoned(Europe::Lisbon, (2026, 4, 20), (6, 29, 59))));
-    assert!(hours.is_order_entry_only(zoned(Europe::Lisbon, (2026, 4, 20), (6, 30, 0))));
-    assert!(hours.is_order_entry_only(zoned(Europe::Lisbon, (2026, 4, 20), (7, 59, 59))));
-    assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
-    assert!(!hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
+    let hours = hours_for_exchange(Exchange::EuronextLisbon, PROFILE_INSTANT);
+    assert_eq!(hours.tz, LISBON);
+    assert!(!hours.is_open(zoned(&LISBON, (2026, 4, 20), (6, 29, 59))));
+    assert!(hours.is_order_entry_only(zoned(&LISBON, (2026, 4, 20), (6, 30, 0))));
+    assert!(hours.is_order_entry_only(zoned(&LISBON, (2026, 4, 20), (7, 59, 59))));
+    assert!(hours.is_open_regular(zoned(&LISBON, (2026, 4, 20), (8, 0, 0))));
+    assert!(!hours.is_open_extended(zoned(&LISBON, (2026, 4, 20), (8, 0, 0))));
     assert_eq!(
-        zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0)),
+        zoned(&LISBON, (2026, 4, 20), (8, 0, 0)),
         cet((2026, 4, 20), (9, 0, 0)),
         "Lisbon and continental Euronext books must open simultaneously"
     );
-    assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (16, 29, 59))));
-    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (16, 30, 0))));
-    assert!(!hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (16, 30, 0))));
+    assert!(hours.is_open_regular(zoned(&LISBON, (2026, 4, 20), (16, 29, 59))));
+    assert!(hours.is_open_extended(zoned(&LISBON, (2026, 4, 20), (16, 30, 0))));
+    assert!(!hours.is_open_regular(zoned(&LISBON, (2026, 4, 20), (16, 30, 0))));
     let (_, auction_close) = session_bounds_with(
         &hours,
-        zoned(Europe::Lisbon, (2026, 4, 20), (16, 34, 59)),
+        zoned(&LISBON, (2026, 4, 20), (16, 34, 59)),
         SessionKind::Extended,
     )
     .expect("Euronext Lisbon closing auction");
-    assert_eq!(
-        auction_close,
-        zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0))
-    );
+    assert_eq!(auction_close, zoned(&LISBON, (2026, 4, 20), (16, 35, 0)));
     let (tal_open, tal_close) = session_bounds_with(
         &hours,
-        zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0)),
+        zoned(&LISBON, (2026, 4, 20), (16, 35, 0)),
         SessionKind::Extended,
     )
     .expect("Euronext Lisbon Trading-at-Last");
-    assert_eq!(tal_open, zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0)));
-    assert_eq!(tal_close, zoned(Europe::Lisbon, (2026, 4, 20), (16, 40, 0)));
-    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (16, 37, 0))));
-    assert!(!hours.is_open(zoned(Europe::Lisbon, (2026, 4, 20), (16, 40, 0))));
+    assert_eq!(tal_open, zoned(&LISBON, (2026, 4, 20), (16, 35, 0)));
+    assert_eq!(tal_close, zoned(&LISBON, (2026, 4, 20), (16, 40, 0)));
+    assert!(hours.is_open_extended(zoned(&LISBON, (2026, 4, 20), (16, 37, 0))));
+    assert!(!hours.is_open(zoned(&LISBON, (2026, 4, 20), (16, 40, 0))));
 }
 
 #[test]
 fn euronext_dublin_uses_the_distinct_cet_close_in_its_venue_zone() {
     // The current 4-01/4-03 appendix gives Dublin shares the common CET open
     // but a 17:28 CET continuous close, followed by closing/TAL through 17:40.
-    let hours = hours_for_exchange(
-        Exchange::EuronextDublin,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    assert_eq!(hours.tz, Europe::Dublin);
-    assert!(!hours.is_open(zoned(Europe::Dublin, (2026, 4, 20), (6, 29, 59))));
-    assert!(hours.is_order_entry_only(zoned(Europe::Dublin, (2026, 4, 20), (6, 30, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Dublin, (2026, 4, 20), (8, 0, 29))));
-    assert!(hours.is_open_regular(zoned(Europe::Dublin, (2026, 4, 20), (8, 0, 30))));
-    assert!(hours.is_open_regular(zoned(Europe::Dublin, (2026, 4, 20), (16, 27, 59))));
-    assert!(!hours.is_open_regular(zoned(Europe::Dublin, (2026, 4, 20), (16, 28, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Dublin, (2026, 4, 20), (16, 29, 0))));
+    let hours = hours_for_exchange(Exchange::EuronextDublin, PROFILE_INSTANT);
+    assert_eq!(hours.tz, DUBLIN);
+    assert!(!hours.is_open(zoned(&DUBLIN, (2026, 4, 20), (6, 29, 59))));
+    assert!(hours.is_order_entry_only(zoned(&DUBLIN, (2026, 4, 20), (6, 30, 0))));
+    assert!(hours.is_open_extended(zoned(&DUBLIN, (2026, 4, 20), (8, 0, 29))));
+    assert!(hours.is_open_regular(zoned(&DUBLIN, (2026, 4, 20), (8, 0, 30))));
+    assert!(hours.is_open_regular(zoned(&DUBLIN, (2026, 4, 20), (16, 27, 59))));
+    assert!(!hours.is_open_regular(zoned(&DUBLIN, (2026, 4, 20), (16, 28, 0))));
+    assert!(hours.is_open_extended(zoned(&DUBLIN, (2026, 4, 20), (16, 29, 0))));
     let (_, auction_close) = session_bounds_with(
         &hours,
-        zoned(Europe::Dublin, (2026, 4, 20), (16, 30, 29)),
+        zoned(&DUBLIN, (2026, 4, 20), (16, 30, 29)),
         SessionKind::Extended,
     )
     .expect("Dublin closing auction");
-    assert_eq!(
-        auction_close,
-        zoned(Europe::Dublin, (2026, 4, 20), (16, 30, 30))
-    );
+    assert_eq!(auction_close, zoned(&DUBLIN, (2026, 4, 20), (16, 30, 30)));
     let (tal_open, tal_close) = session_bounds_with(
         &hours,
-        zoned(Europe::Dublin, (2026, 4, 20), (16, 30, 30)),
+        zoned(&DUBLIN, (2026, 4, 20), (16, 30, 30)),
         SessionKind::Extended,
     )
     .expect("Dublin Trading-at-Last");
-    assert_eq!(tal_open, zoned(Europe::Dublin, (2026, 4, 20), (16, 30, 30)));
-    assert_eq!(tal_close, zoned(Europe::Dublin, (2026, 4, 20), (16, 40, 0)));
-    assert!(hours.is_open_extended(zoned(Europe::Dublin, (2026, 4, 20), (16, 35, 0))));
-    assert!(!hours.is_open(zoned(Europe::Dublin, (2026, 4, 20), (16, 40, 0))));
+    assert_eq!(tal_open, zoned(&DUBLIN, (2026, 4, 20), (16, 30, 30)));
+    assert_eq!(tal_close, zoned(&DUBLIN, (2026, 4, 20), (16, 40, 0)));
+    assert!(hours.is_open_extended(zoned(&DUBLIN, (2026, 4, 20), (16, 35, 0))));
+    assert!(!hours.is_open(zoned(&DUBLIN, (2026, 4, 20), (16, 40, 0))));
 }
 
 #[test]
 fn lse_closing_price_crossing_runs_to_1640() {
     // LSE Guide to the Trading System (MIT201): Closing Auction Call
     // 16:30-16:35, Closing Price Crossing Session to 16:40.
-    let hours = hours_for_exchange(
-        Exchange::Lse,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(Exchange::Lse, PROFILE_INSTANT);
     assert!(hours.is_open_extended(lon((2026, 4, 20), (16, 37, 0))));
     assert!(!hours.is_open(lon((2026, 4, 20), (16, 40, 0))));
 }
 
 #[test]
 fn bme_and_vienna_run_post_close_phases() {
-    let bme = hours_for_exchange(
-        Exchange::Bme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let bme = hours_for_exchange(Exchange::Bme, PROFILE_INSTANT);
     assert!(bme.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
     assert!(!bme.is_open(cet((2026, 4, 20), (17, 45, 0))));
 
-    let vienna = hours_for_exchange(
-        Exchange::Vienna,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let vienna = hours_for_exchange(Exchange::Vienna, PROFILE_INSTANT);
     assert!(vienna.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
     assert!(vienna.is_order_entry_only(cet((2026, 4, 20), (17, 45, 0))));
     assert!(!vienna.is_open(cet((2026, 4, 20), (17, 50, 0))));
@@ -508,10 +463,7 @@ fn bme_and_vienna_run_post_close_phases() {
 
 #[test]
 fn xetra_extended_retail_has_a_sourced_current_cutover() {
-    let current = hours_for_exchange(
-        Exchange::Xetra,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let current = hours_for_exchange(Exchange::Xetra, PROFILE_INSTANT);
     assert!(!current.is_open(cet((2026, 4, 20), (6, 59, 59))));
     assert!(current.is_order_entry_only(cet((2026, 4, 20), (7, 0, 0))));
     assert!(!current.is_open_regular(cet((2026, 4, 20), (9, 0, 29))));

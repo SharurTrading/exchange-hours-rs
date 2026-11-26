@@ -2,7 +2,9 @@
 
 //! BMV cash-equity grids, including its New York reference-zone regime.
 
-use chrono_tz::America;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::America;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -163,15 +165,15 @@ static SOURCED_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-const REFERENCE_GRID: chrono::NaiveDate = effective_date(2010, 11, 1);
-const HD_EXTENSION_2016: chrono::NaiveDate = effective_date(2016, 9, 5);
-const EARLY_HD_EXTENSION_2023: chrono::NaiveDate = effective_date(2023, 5, 29);
-const NORMAL_HD_EXTENSION_2023: chrono::NaiveDate = effective_date(2023, 11, 6);
+const REFERENCE_GRID: jiff::civil::Date = effective_date(2010, 11, 1);
+const HD_EXTENSION_2016: jiff::civil::Date = effective_date(2016, 9, 5);
+const EARLY_HD_EXTENSION_2023: jiff::civil::Date = effective_date(2023, 5, 29);
+const NORMAL_HD_EXTENSION_2023: jiff::civil::Date = effective_date(2023, 11, 6);
 
 // BMV's regulator-filed 2016 report dates the first HD extension to 2016-09-05. Narrative:
 // docs/evidence/bmv.md.
 
-fn profile_for_regime(day: chrono::NaiveDate, early: bool) -> &'static StaticHoursProfile {
+fn profile_for_regime(day: jiff::civil::Date, early: bool) -> &'static StaticHoursProfile {
     if day < HD_EXTENSION_2016 {
         return if early {
             &BMV_PROFILE_EARLY_PRE_2016
@@ -201,7 +203,7 @@ fn profile_for_regime(day: chrono::NaiveDate, early: bool) -> &'static StaticHou
 }
 
 /// Resolves BMV's sourced bounded exceptions and recurring offset regime.
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Mexico_City);
     if day < REFERENCE_GRID {
         return select_revision(day, &BMV_PROFILE_NORMAL_PRE_2016, SOURCED_REVISIONS);

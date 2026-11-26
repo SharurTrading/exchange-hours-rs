@@ -8,7 +8,7 @@
 //! `docs/evidence/sgx_equity_index_japan.md`, which holds the narrative this
 //! module carried until it moved there on 2026-10-01 UTC.
 
-use chrono_tz::Asia;
+use crate::calendar::time_zones::Asia;
 
 use super::{MON_FRI, SessionRule, StaticHoursProfile};
 

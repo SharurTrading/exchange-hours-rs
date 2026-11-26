@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Broker-native Asia CFD boundaries and current publication coverage.
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+mod support;
+
+use crate::support::zones::SINGAPORE;
+use crate::support::{date_opt, elapsed_days};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, ExchangeCalendar, MarketHoursKey as K,
     SessionKind, SessionState, session_profile,
 };
+use jiff::{SignedDuration, Timestamp};
 
-fn utc(s: &str) -> DateTime<Utc> {
+fn utc(s: &str) -> Timestamp {
     s.parse().expect("valid UTC fixture")
 }
 
@@ -30,34 +34,32 @@ fn broker_day_night_boundaries_and_friday_wrap_are_exact() {
         ),
     ] {
         let c = ExchangeCalendar::for_market_hours_key(key);
-        assert_eq!(session_profile(key).tz, chrono_tz::Asia::Singapore);
+        assert_eq!(session_profile(key).tz, &SINGAPORE);
         assert_eq!(session_profile(key).regular, []);
         assert_eq!(session_profile(key).order_entry, []);
         for (open, close) in [
             (utc(day_open), utc(day_close)),
             (utc(night_open), utc(night_close)),
         ] {
-            assert_eq!(c.is_open(open - Duration::seconds(1)), Ok(false));
+            assert_eq!(c.is_open(open - SignedDuration::from_secs(1)), Ok(false));
             assert_eq!(c.is_open(open), Ok(true));
             assert_eq!(c.is_open_regular(open), Ok(false));
             assert_eq!(c.is_open_extended(open), Ok(true));
             assert_eq!(
                 c.candle_end(open, CalendarResolution::Minutes(1)),
-                Ok(Some(open + Duration::minutes(1)))
+                Ok(Some(open + SignedDuration::from_mins(1)))
             );
             assert_eq!(c.session_state(open), Ok(SessionState::OpenExtended));
             assert_eq!(c.is_order_entry_only(open), Ok(false));
-            assert_eq!(c.is_open(close - Duration::seconds(1)), Ok(true));
+            assert_eq!(c.is_open(close - SignedDuration::from_secs(1)), Ok(true));
             assert_eq!(c.is_open(close), Ok(false));
         }
-        let friday_open = utc(night_open) + Duration::days(4);
-        let saturday_close = utc(night_close) + Duration::days(4);
+        let friday_open = utc(night_open) + elapsed_days(4);
+        let saturday_close = utc(night_close) + elapsed_days(4);
         assert_eq!(c.is_open(friday_open), Ok(true));
         assert_eq!(
             c.trade_date(friday_open),
-            Ok(Some(
-                NaiveDate::from_ymd_opt(2026, 10, 17).expect("Saturday")
-            ))
+            Ok(Some(date_opt(2026, 10, 17).expect("Saturday")))
         );
         assert_eq!(
             c.session_bounds(friday_open),
@@ -68,7 +70,7 @@ fn broker_day_night_boundaries_and_friday_wrap_are_exact() {
         assert_eq!(c.is_open(utc("2026-10-18T10:00:00Z")), Ok(false));
         assert_eq!(
             c.next_session_open_after(saturday_close),
-            Ok(Some(utc(day_open) + Duration::days(7)))
+            Ok(Some(utc(day_open) + elapsed_days(7)))
         );
         assert_eq!(key.as_str().parse::<K>(), Ok(key));
         assert_eq!(
@@ -96,9 +98,7 @@ fn night_and_next_day_have_closing_civil_trade_date_but_separate_bounds() {
         let c = ExchangeCalendar::for_market_hours_key(key);
         assert_eq!(
             c.trade_date(utc(open)),
-            Ok(Some(
-                NaiveDate::from_ymd_opt(2026, 10, 13).expect("Tuesday")
-            ))
+            Ok(Some(date_opt(2026, 10, 13).expect("Tuesday")))
         );
         assert_eq!(
             c.session_bounds(utc(open)),
@@ -113,10 +113,10 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
         let c = ExchangeCalendar::for_market_hours_key(key);
         assert_eq!(
             c.coverage()
-                .coverage_on(NaiveDate::from_ymd_opt(2026, 10, 12).expect("current date")),
+                .coverage_on(date_opt(2026, 10, 12).expect("current date")),
             DateCoverage::Covered
         );
-        let unaudited = NaiveDate::from_ymd_opt(2026, 10, 9).expect("unaudited holiday date");
+        let unaudited = date_opt(2026, 10, 9).expect("unaudited holiday date");
         assert_eq!(
             c.coverage().coverage_on(unaudited),
             DateCoverage::OutsideCoveredRange
@@ -135,7 +135,7 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
             Err(CalendarQueryError::OutsideCoveredRange { .. })
         ));
         assert!(
-            c.holiday_on(NaiveDate::from_ymd_opt(2026, 10, 19).expect("HK-only holiday"))
+            c.holiday_on(date_opt(2026, 10, 19).expect("HK-only holiday"))
                 .is_none()
         );
     }
@@ -156,7 +156,7 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
         ),
     ] {
         let c = ExchangeCalendar::for_market_hours_key(key);
-        let saturday = NaiveDate::from_ymd_opt(2026, 10, 31).expect("closing civil date");
+        let saturday = date_opt(2026, 10, 31).expect("closing civil date");
         for instant in [utc(open), utc("2026-10-30T15:59:59Z")] {
             assert_eq!(c.is_open(instant), Ok(true));
             assert_eq!(c.session_bounds(instant), Ok(Some((utc(open), utc(close)))));
@@ -166,7 +166,7 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
         }
         for instant in [
             utc("2026-10-30T16:00:00Z"),
-            utc(close) - Duration::seconds(1),
+            utc(close) - SignedDuration::from_secs(1),
             utc(close),
         ] {
             assert!(
@@ -241,7 +241,7 @@ fn witnessed_eras_answer_on_their_own_opening_days() {
         );
         // The witnessed span sits below the first audited window, so the
         // holiday classification refuses typed while sessions answer.
-        let legacy_day = NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date");
+        let legacy_day = date_opt(2022, 6, 8).expect("valid date");
         assert!(matches!(
             c.is_closed_trade_date(legacy_day, SessionKind::Both),
             Err(CalendarQueryError::UnresolvedGap { .. })
@@ -253,7 +253,7 @@ fn witnessed_eras_answer_on_their_own_opening_days() {
 fn books_refuse_below_their_2021_witness() {
     for key in [K::OandaChina50Cfd, K::OandaSingapore30Cfd] {
         let c = ExchangeCalendar::for_market_hours_key(key);
-        let carried = NaiveDate::from_ymd_opt(2021, 2, 15).expect("valid date");
+        let carried = date_opt(2021, 2, 15).expect("valid date");
         assert!(matches!(
             c.is_closed_trade_date(carried, SessionKind::Both),
             Err(CalendarQueryError::OutsideCoveredRange { .. })

@@ -2,7 +2,9 @@
 
 //! SIX Swiss Exchange cash equities.
 
-use chrono_tz::Europe;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Europe;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -106,7 +108,7 @@ static REVISIONS: &[Revision] = revisions![(
     "SIX SMR8.2 participant readiness"
 ),];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::Zurich),
         &SIX_PROFILE_PRE_2020_06_22,

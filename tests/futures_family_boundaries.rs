@@ -9,5 +9,7 @@
 //! This root is a harness; the fixtures live in `futures_family_boundaries/`,
 //! split by venue family.
 
+mod support;
+
 #[path = "futures_family_boundaries/mod.rs"]
 mod suite;

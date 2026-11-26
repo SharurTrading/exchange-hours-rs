@@ -5,17 +5,21 @@
 //! reads a date before an identity's coverage from the next week it knows, while
 //! every answer the default calendar gives inside coverage stands (LAW-COVERAGE).
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+mod support;
+
+use crate::support::{date_opt, elapsed_days, utc_datetime};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar,
     MarketHoursKey, SUPPORT_FLOOR, SessionKind,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
-fn utc(text: &str) -> DateTime<Utc> {
+fn utc(text: &str) -> Timestamp {
     text.parse().expect("fixture must be an RFC 3339 instant")
 }
 
@@ -36,10 +40,7 @@ fn nyse() -> ExchangeCalendar {
 
 /// Every instant-addressed answer one calendar gives, rendered so two views can
 /// be compared and a refusal stays visible as a refusal.
-fn answers(
-    calendar: ExchangeCalendar,
-    at: DateTime<Utc>,
-) -> [Result<String, CalendarQueryError>; 8] {
+fn answers(calendar: ExchangeCalendar, at: Timestamp) -> [Result<String, CalendarQueryError>; 8] {
     fn text<T: core::fmt::Debug>(
         answer: Result<T, CalendarQueryError>,
     ) -> Result<String, CalendarQueryError> {
@@ -115,14 +116,11 @@ fn a_carried_era_reads_the_next_known_week() {
         let Some(sourced_from) = calendar.coverage().normal_week_sourced_from() else {
             continue;
         };
-        if sourced_from <= SUPPORT_FLOOR + Duration::days(3) {
+        if sourced_from <= SUPPORT_FLOOR + elapsed_days(3) {
             continue;
         }
-        let carried = sourced_from - Duration::days(3);
-        let at = carried
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc();
+        let carried = sourced_from - elapsed_days(3);
+        let at = utc_datetime(carried.at(12, 0, 0, 0));
         let view = calendar.with_next_known_week();
         assert_eq!(
             view.coverage().coverage_on(carried),
@@ -167,7 +165,7 @@ fn the_view_agrees_with_the_default_wherever_the_default_answers() {
                     assert_eq!(bare, seen, "{:?} at {at}", calendar.source());
                 }
             }
-            at += Duration::hours(24 * 97 + 5);
+            at += SignedDuration::from_hours(24 * 97 + 5);
         }
     }
 }
@@ -188,7 +186,7 @@ fn with_the_last_known_week_no_date_refuses() {
                     view.source()
                 );
             }
-            at += Duration::hours(24 * 59 + 7);
+            at += SignedDuration::from_hours(24 * 59 + 7);
         }
     }
 }

@@ -22,12 +22,11 @@ pub use profiles::session_profile;
 
 use std::borrow::Cow;
 
-use chrono::{DateTime, Utc};
-use chrono_tz::Tz;
+use jiff::Timestamp;
+use jiff::tz::TimeZone;
 
 use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
-use super::schedules::from_profile;
 use super::schedules::futures::international::{
     asx_spi_200_profile_at, bme_ibex_profile_at, eurex_fixed_income_profile_at, eurex_profile_at,
     eurex_smi_profile_at, euronext_index_futures_profile_at, hkex_index_futures_profile_at,
@@ -48,6 +47,7 @@ use super::schedules::futures::us::{
     silver_100oz_profile_at, silver_tas_profile_at, spot_quoted_profile_at, sugar_profile_at,
     weather_profile_at,
 };
+use super::schedules::{StaticHoursProfile, from_profile};
 use super::{Exchange, MarketHours, SessionRule};
 
 /// A timezone-aware set of normal-week futures session rules.
@@ -59,7 +59,7 @@ use super::{Exchange, MarketHours, SessionRule};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FuturesSessionProfile {
     /// Exchange local timezone used to interpret `SessionRule` SSM values.
-    pub tz: Tz,
+    pub tz: &'static TimeZone,
     /// Primary trading sessions.
     pub regular: &'static [SessionRule],
     /// Electronic, overnight, and other tradeable non-regular sessions.
@@ -75,7 +75,7 @@ pub struct FuturesSessionProfile {
 impl FuturesSessionProfile {
     /// Returns `true` when any regular or extended normal-week session is active.
     #[must_use]
-    pub fn is_open(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_open(&self, t: Timestamp) -> bool {
         self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
             .is_open(t)
     }
@@ -85,7 +85,7 @@ impl FuturesSessionProfile {
     /// Mirrors [`MarketHours::is_order_entry_only`] so a profile and the hours
     /// it produces answer identically.
     #[must_use]
-    pub fn is_order_entry_only(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_order_entry_only(&self, t: Timestamp) -> bool {
         self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
             .is_order_entry_only(t)
     }
@@ -93,7 +93,7 @@ impl FuturesSessionProfile {
     /// True during a tradeable session or a published order-entry phase at `t`.
     /// Broker-side pending-order storage outside those phases is not modelled.
     #[must_use]
-    pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_accepting_orders(&self, t: Timestamp) -> bool {
         self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
             .is_accepting_orders(t)
     }
@@ -112,7 +112,7 @@ impl FuturesSessionProfile {
     pub fn to_market_hours(self, source: CalendarSource) -> MarketHours {
         MarketHours {
             source,
-            tz: self.tz,
+            tz: self.tz.clone(),
             regular: Cow::Borrowed(self.regular),
             extended: Cow::Borrowed(self.extended),
             order_entry: Cow::Borrowed(self.order_entry),
@@ -608,8 +608,15 @@ market_hours_keys! {
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key) for
 /// date-aware scans that cross a family revision.
 #[must_use]
-pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> MarketHours {
-    let profile = match key {
+pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: Timestamp) -> MarketHours {
+    from_profile(
+        CalendarSource::MarketHoursKey(key),
+        key_profile_at(key, as_of),
+    )
+}
+
+pub(super) fn key_profile_at(key: MarketHoursKey, as_of: Timestamp) -> &'static StaticHoursProfile {
+    match key {
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
         MarketHoursKey::GlobexSilver100Oz => silver_100oz_profile_at(as_of),
@@ -663,6 +670,5 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::IceEuropeGilts => ice_europe_gilts_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
-    };
-    from_profile(CalendarSource::MarketHoursKey(key), profile)
+    }
 }

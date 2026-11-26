@@ -2,28 +2,11 @@
 
 //! SGX equity-index derivatives: Japan, China and Singapore grids.
 //!
-//! SGX runs each equity-index family on its own clock rather than one venue
-//! schedule, so every family below is modelled separately. All five SGX
-//! equity-index grids share one shape: a daytime "T" session that opens after a
-//! Pre-Opening/Non-Cancel order-entry routine and ends with a Pre-Closing /
-//! Non-Cancel closing routine, then an overnight "T+1" session that reopens
-//! after a short second order-entry routine and runs to 05:15 the next calendar
-//! day. Continuous, executable phases are `regular`.
-//!
-//! The non-continuous phases split in two. The Pre-Opening/Non-Cancel routines
-//! that precede the T and T+1 opens only collect orders - nothing matches until
-//! the open, and the opening match falls on the session-open instant that
-//! already starts a `regular` window - so they are `order_entry`. The closing
-//! routine is different: it matches at a single closing price, a trade prints
-//! in it, so it stays `extended`.
-//!
-//! The Taiwan and NTR (USD) grids live in the `sgx_equity_index_more` module.
-//! The pre-2020 and 2024 era tables for the three families here live in the
-//! `eras` submodule, and the published evidence behind every family's dated
-//! history — which artifacts were read, where they disagree, and how the
-//! undated changeovers are served — lives in the `history` submodule.
+//! Shared phase definitions and evidence: `docs/evidence/sgx_equity_index_japan.md`.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -147,9 +130,7 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX Japan equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_japan_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_japan_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_JAPAN_FLOOR,
@@ -255,9 +236,7 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX China equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_china_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_china_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_CHINA_FLOOR,
@@ -368,7 +347,7 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions!
 
 /// Selects the SGX Singapore equity-index profile in force on `as_of`'s Singapore day.
 pub(crate) fn sgx_equity_index_singapore_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
+    as_of: Timestamp,
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),

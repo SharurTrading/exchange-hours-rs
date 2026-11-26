@@ -5,27 +5,21 @@
 use super::historical_expectations::*;
 use super::identity_expectations::*;
 use super::prelude::*;
+use crate::support::zones::UTC;
+use crate::support::{PROFILE_INSTANT, local_earliest, local_opt};
+use jiff::SignedDuration;
 
 #[test]
 fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
-    use chrono::TimeZone;
     use exchange_hours::{MarketHoursKey, hours_for_exchange, session_profile};
 
     // Epochs on both sides of every recorded cutover, so the historical
     // profiles (including pre-go-live empties) are validated too.
     let epochs = [
-        Utc.with_ymd_and_hms(2012, 6, 1, 12, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2015, 6, 1, 12, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2020, 6, 1, 12, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2026, 6, 1, 12, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
+        local_opt(&UTC, (2012, 6, 1), (12, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2015, 6, 1), (12, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2020, 6, 1), (12, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2026, 6, 1), (12, 0, 0)).expect("valid UTC instant"),
     ];
 
     let validate_all = |hours: &MarketHours, source: &str| {
@@ -38,11 +32,7 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
 
     for &exchange in ALL_EXCHANGES {
         validate_all(
-            &hours_for_exchange(
-                exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            ),
+            &hours_for_exchange(exchange, PROFILE_INSTANT),
             &format!("{exchange:?}"),
         );
         for epoch in epochs {
@@ -53,13 +43,10 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
         }
     }
 
-    for &(exchange, (year, month, day), tz) in HISTORICAL_CUTOVERS {
-        let at = tz
-            .with_ymd_and_hms(year, month, day, 0, 0, 0)
-            .earliest()
-            .expect("cutover midnight resolves in the venue zone")
-            .with_timezone(&Utc);
-        for epoch in [at - Duration::seconds(1), at] {
+    for &(exchange, (year, month, day), ref tz) in HISTORICAL_CUTOVERS {
+        let at = local_earliest(tz, (year, month, day), (0, 0, 0))
+            .expect("cutover midnight resolves in the venue zone");
+        for epoch in [at - SignedDuration::from_secs(1), at] {
             validate_all(
                 &hours_for_exchange(exchange, epoch),
                 &format!("{exchange:?} as of {epoch}"),
@@ -68,11 +55,9 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
     }
 
     for &(exchange, (year, month, day, hour, minute, second)) in HISTORICAL_INSTANT_CUTOVERS {
-        let at = Utc
-            .with_ymd_and_hms(year, month, day, hour, minute, second)
-            .single()
+        let at = local_opt(&UTC, (year, month, day), (hour, minute, second))
             .expect("sourced UTC cutover resolves");
-        for epoch in [at - Duration::nanoseconds(1), at] {
+        for epoch in [at - SignedDuration::from_nanos(1), at] {
             validate_all(
                 &hours_for_exchange(exchange, epoch),
                 &format!("{exchange:?} as of {epoch}"),
@@ -100,10 +85,7 @@ fn every_equal_endpoint_rule_is_an_intentional_complete_day_session() {
     let mut exchange_rules = 0_u8;
 
     for &exchange in ALL_EXCHANGES {
-        let hours = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(exchange, PROFILE_INSTANT);
         for rule in hours
             .regular
             .iter()

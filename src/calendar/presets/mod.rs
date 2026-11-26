@@ -12,3 +12,5 @@
 mod historical;
 
 pub use historical::hours_for_exchange;
+
+pub(super) use historical::exchange_profile_at;

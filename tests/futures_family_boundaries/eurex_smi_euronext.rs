@@ -6,38 +6,32 @@
 //! floor's explicit refusals below the 2026-10-11 retrieval.
 
 use super::prelude::*;
-use chrono::TimeZone as _;
-use chrono_tz::Europe;
+use crate::support::zones::{PARIS, UTC, ZURICH};
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, Holiday, HolidayKind, SessionState, calendar_for_market_hours_key,
 };
+use jiff::{SignedDuration, Timestamp};
 
-fn zurich(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Europe::Zurich
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Zurich instant")
-        .with_timezone(&Utc)
+fn zurich(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&ZURICH, date, time).expect("fixture must be an unambiguous Zurich instant")
 }
 
-fn paris(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Europe::Paris
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Paris instant")
-        .with_timezone(&Utc)
+fn paris(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&PARIS, date, time).expect("fixture must be an unambiguous Paris instant")
 }
 
-fn utc_seconds(instant: (i32, u32, u32, u32, u32, u32)) -> DateTime<Utc> {
-    Utc.with_ymd_and_hms(
-        instant.0, instant.1, instant.2, instant.3, instant.4, instant.5,
+fn utc_seconds(instant: (i16, i8, i8, i8, i8, i8)) -> Timestamp {
+    local_opt(
+        &UTC,
+        (instant.0, instant.1, instant.2),
+        (instant.3, instant.4, instant.5),
     )
-    .single()
     .expect("fixture must be an unambiguous UTC instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> chrono::NaiveDate {
-    chrono::NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> jiff::civil::Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 // ---------------------------------------------------------------------------
@@ -65,7 +59,7 @@ fn smi_baseline_serves_the_pre_extension_grid_on_both_sides_of_every_boundary() 
     );
     let close = zurich((2010, 2, 1), (17, 27, 0));
     assert!(
-        open_at(key, close - Duration::seconds(1)),
+        open_at(key, close - SignedDuration::from_secs(1)),
         "the second before the close trades"
     );
     assert!(
@@ -105,7 +99,7 @@ fn smi_baseline_serves_the_pre_extension_grid_on_both_sides_of_every_boundary() 
     assert!(open_regular_at(key, summer_open));
     assert!(!open_at(key, just_before(summer_open)));
     let summer_close = zurich((2010, 6, 1), (17, 27, 0));
-    assert!(open_at(key, summer_close - Duration::seconds(1)));
+    assert!(open_at(key, summer_close - SignedDuration::from_secs(1)));
     assert!(!open_at(key, summer_close));
 }
 
@@ -124,7 +118,7 @@ fn the_smi_extension_cutover_holds_on_both_sides_of_zurich_midnight() {
         utc(2010, 7, 4, 22, 0),
         "the cutover midnight resolves as documented"
     );
-    let before = at - Duration::seconds(1);
+    let before = at - SignedDuration::from_secs(1);
     assert_eq!(
         before,
         utc_seconds((2010, 7, 4, 21, 59, 59)),
@@ -172,7 +166,7 @@ fn the_smi_extension_cutover_holds_on_both_sides_of_zurich_midnight() {
         "the extended grid trades at 19:00, where the baseline was dark"
     );
     let new_close = zurich((2010, 7, 6), (22, 0, 0));
-    assert!(open_at(key, new_close - Duration::seconds(1)));
+    assert!(open_at(key, new_close - SignedDuration::from_secs(1)));
     assert!(
         !open_at(key, new_close),
         "the extended close is end-exclusive too"
@@ -395,7 +389,7 @@ fn the_euronext_grid_answers_from_its_horizon_and_refuses_below_it() {
     assert!(open_regular_at(key, open));
     let close = paris((2026, 10, 12), (22, 0, 0));
     assert_eq!(close, utc(2026, 10, 12, 20, 0));
-    assert!(open_at(key, close - Duration::seconds(1)));
+    assert!(open_at(key, close - SignedDuration::from_secs(1)));
     assert!(!open_at(key, close), "the 22:00 close is end-exclusive");
 
     // 2026-11-16 is inside CET: the same local seconds, one UTC hour later.
@@ -405,7 +399,7 @@ fn the_euronext_grid_answers_from_its_horizon_and_refuses_below_it() {
     assert!(open_regular_at(key, winter_open));
     let winter_close = paris((2026, 11, 16), (22, 0, 0));
     assert_eq!(winter_close, utc(2026, 11, 16, 21, 0));
-    assert!(open_at(key, winter_close - Duration::seconds(1)));
+    assert!(open_at(key, winter_close - SignedDuration::from_secs(1)));
     assert!(!open_at(key, winter_close));
 
     // No lunch break and no order-entry phase: the grid runs 08:00-22:00

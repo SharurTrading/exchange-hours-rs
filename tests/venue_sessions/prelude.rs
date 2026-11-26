@@ -2,43 +2,38 @@
 
 //! Shared imports and fixture helpers for this suite.
 
-pub(super) use chrono::{DateTime, Datelike, TimeZone, Utc};
-pub(super) use chrono_tz::{America, Asia, Europe, US};
+use crate::support::local_opt;
+use crate::support::zones::{BERLIN, LONDON, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
 pub(super) use exchange_hours::*;
+pub(super) use jiff::Timestamp;
+use jiff::tz::TimeZone;
 
-pub(super) fn zoned(
-    tz: chrono_tz::Tz,
-    date: (i32, u32, u32),
-    time: (u32, u32, u32),
-) -> DateTime<Utc> {
-    tz.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("valid zoned instant")
-        .with_timezone(&Utc)
+pub(super) fn zoned(tz: &TimeZone, date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(tz, date, time).expect("valid zoned instant")
 }
 
-pub(super) fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(chrono_tz::UTC, date, time)
+pub(super) fn utc(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&UTC, date, time)
 }
 
-pub(super) fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(US::Central, date, time)
+pub(super) fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&US_CENTRAL, date, time)
 }
 
-pub(super) fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(America::New_York, date, time)
+pub(super) fn et(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&NEW_YORK, date, time)
 }
 
-pub(super) fn cet(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(Europe::Berlin, date, time)
+pub(super) fn cet(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&BERLIN, date, time)
 }
 
-pub(super) fn lon(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(Europe::London, date, time)
+pub(super) fn lon(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&LONDON, date, time)
 }
 
-pub(super) fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    zoned(Asia::Singapore, date, time)
+pub(super) fn sgt(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    zoned(&SINGAPORE, date, time)
 }
 
 /// Asserts a date-aware query refused with the error variant `expected`
@@ -89,13 +84,13 @@ pub(super) fn assert_refused_variant(
 ///
 /// The `Result` is taken by value so each call site stays one expression;
 /// the query helpers return owned payloads (`bool`, `Option<SessionWindow>`,
-/// `Option<NaiveDate>`).
+/// `Option<Date>`).
 pub(super) fn assert_refuses_before_floor<T: core::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
     calendar: ExchangeCalendar,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) {
-    let local_date = instant.with_timezone(&calendar.tz()).date_naive();
+    let local_date = instant.to_zoned_datetime(calendar.tz()).date();
     // A date the metadata calls covered answers: the value may be `false`
     // for a real pre-launch closure.
     if calendar.coverage().coverage_on(local_date) == DateCoverage::Covered {
@@ -181,7 +176,7 @@ pub(super) fn assert_refuses_before_floor<T: core::fmt::Debug>(
 /// Whether a declared phase gap shadows the date-level verdict on `date`:
 /// a gap applies on the date while the date-level facts — sourced normal
 /// week, audited holiday window, no withheld row — would answer it.
-fn phase_shadow_answers(calendar: ExchangeCalendar, date: chrono::NaiveDate) -> bool {
+fn phase_shadow_answers(calendar: ExchangeCalendar, date: jiff::civil::Date) -> bool {
     let coverage = calendar.coverage();
     let gap_applies = coverage.phase_gaps().iter().any(|gap| gap.applies_on(date));
     let date_level_answers = coverage
@@ -216,9 +211,9 @@ pub(super) fn assert_refused(
     answer: Result<impl core::fmt::Debug, CalendarQueryError>,
     expected: DateCoverage,
     calendar: ExchangeCalendar,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) {
-    let local_date = instant.with_timezone(&calendar.tz()).date_naive();
+    let local_date = instant.to_zoned_datetime(calendar.tz()).date();
     let reported = calendar.coverage().coverage_on(local_date);
     assert_eq!(
         reported,

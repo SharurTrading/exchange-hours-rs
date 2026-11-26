@@ -5,19 +5,23 @@
 //! the default calendar would refuse, while every audited row keeps its
 //! arrangement and only the support floor still refuses (LAW-COVERAGE).
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+mod support;
+
+use crate::support::{date_opt, elapsed_days, utc_datetime};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
     ExchangeCalendar, HolidayContract, HolidayKind, MarketHoursKey, SUPPORT_FLOOR,
     SessionExceptionRecord, SessionKind, StaticDayPolicy, StaticSessionExceptions,
 };
 use exchange_hours::{DayOverride, ExceptionBlock};
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
-fn utc(text: &str) -> DateTime<Utc> {
+fn utc(text: &str) -> Timestamp {
     text.parse().expect("fixture must be an RFC 3339 instant")
 }
 
@@ -38,10 +42,7 @@ fn nyse() -> ExchangeCalendar {
 
 /// Every instant-addressed answer one calendar gives, rendered so two views can
 /// be compared and a refusal stays visible as a refusal.
-fn answers(
-    calendar: ExchangeCalendar,
-    at: DateTime<Utc>,
-) -> [Result<String, CalendarQueryError>; 12] {
+fn answers(calendar: ExchangeCalendar, at: Timestamp) -> [Result<String, CalendarQueryError>; 12] {
     fn text<T: core::fmt::Debug>(
         answer: Result<T, CalendarQueryError>,
     ) -> Result<String, CalendarQueryError> {
@@ -59,7 +60,7 @@ fn answers(
         text(calendar.candle_start(at, CalendarResolution::Monthly)),
         text(calendar.is_accepting_orders(at)),
         text(calendar.is_order_entry_only(at)),
-        text(calendar.is_closed_all_day_at(at, calendar.tz(), SessionKind::Both)),
+        text(calendar.is_closed_all_day_at(at, &calendar.tz(), SessionKind::Both)),
     ]
 }
 
@@ -164,19 +165,15 @@ fn the_view_agrees_with_the_default_wherever_the_default_answers() {
             continue;
         };
         let view = calendar.with_last_known_week();
-        let end = coverage
-            .last()
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc();
-        let mut at = end - Duration::days(21);
-        while at < end + Duration::days(5) {
+        let end = utc_datetime(coverage.last().at(12, 0, 0, 0));
+        let mut at = end - elapsed_days(21);
+        while at < end + elapsed_days(5) {
             for (bare, seen) in answers(calendar, at).iter().zip(answers(view, at).iter()) {
                 if bare.is_ok() {
                     assert_eq!(bare, seen, "{:?} at {at}", calendar.source());
                 }
             }
-            at += Duration::hours(19);
+            at += SignedDuration::from_hours(19);
         }
     }
 }
@@ -189,14 +186,9 @@ fn well_above_the_last_window_the_view_answers_exactly_the_normal_week() {
         };
         let view = calendar.with_last_known_week();
         let detached = calendar.without_holidays();
-        let start = coverage
-            .last()
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc()
-            + Duration::days(60);
+        let start = utc_datetime(coverage.last().at(12, 0, 0, 0)) + elapsed_days(60);
         for step in 0..21 {
-            let at = start + Duration::hours(step * 11);
+            let at = start + SignedDuration::from_hours(step * 11);
             assert_eq!(
                 answers(view, at),
                 answers(detached, at),
@@ -274,14 +266,11 @@ fn a_carried_era_reads_the_earliest_known_week() {
         let Some(sourced_from) = calendar.coverage().normal_week_sourced_from() else {
             continue;
         };
-        if sourced_from <= SUPPORT_FLOOR + Duration::days(3) {
+        if sourced_from <= SUPPORT_FLOOR + elapsed_days(3) {
             continue;
         }
-        let carried = sourced_from - Duration::days(3);
-        let at = carried
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc();
+        let carried = sourced_from - elapsed_days(3);
+        let at = utc_datetime(carried.at(12, 0, 0, 0));
         assert!(
             matches!(
                 calendar.is_open(at),
@@ -324,7 +313,7 @@ fn at_or_above_the_floor_the_view_never_refuses_a_date() {
                     view.source()
                 );
             }
-            at += Duration::hours(24 * 41 + 7);
+            at += SignedDuration::from_hours(24 * 41 + 7);
         }
     }
 }
@@ -340,7 +329,7 @@ fn every_withheld_date_answers_under_the_view() {
                 .holiday_on(day)
                 .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
             {
-                let at = day.and_hms_opt(12, 0, 0).expect("noon exists").and_utc();
+                let at = utc_datetime(day.at(12, 0, 0, 0));
                 assert_eq!(
                     view.is_open(at),
                     Ok(view.hours_at(at).is_open(at)),
@@ -349,7 +338,7 @@ fn every_withheld_date_answers_under_the_view() {
                 );
                 checked += 1;
             }
-            day = day.succ_opt().expect("fixture dates are representable");
+            day = day.tomorrow().expect("fixture dates are representable");
         }
     }
     assert!(checked > 0, "no identity withholds a date to check");
@@ -485,7 +474,7 @@ fn the_reported_spans_agree_with_the_verdict_date_by_date() {
                     coverage.identity()
                 );
             }
-            day = day.succ_opt().expect("fixture dates are representable");
+            day = day.tomorrow().expect("fixture dates are representable");
         }
     }
 }
@@ -504,7 +493,7 @@ fn a_date_the_view_calls_answered_is_never_refused_for_another_answered_date() {
                 )
             };
             if answered(day) {
-                let at = day.and_hms_opt(14, 7, 0).expect("14:07 exists").and_utc();
+                let at = utc_datetime(day.at(14, 7, 0, 0));
                 for answer in answers(view, at) {
                     if let Err(error) = answer
                         && !matches!(error, CalendarQueryError::SearchExhausted { .. })
@@ -518,7 +507,7 @@ fn a_date_the_view_calls_answered_is_never_refused_for_another_answered_date() {
                     }
                 }
             }
-            day += Duration::days(9);
+            day += elapsed_days(9);
         }
     }
 }
@@ -536,7 +525,7 @@ fn every_identity_with_no_table_answers_above_its_sourced_week() {
             utc("2028-03-01T03:00:00Z"),
             utc("2030-10-12T12:00:00Z"),
         ] {
-            let day = at.date_naive();
+            let day = jiff::tz::TimeZone::UTC.to_datetime(at).date();
             if day < view.coverage().sourced_normal_week().first() {
                 continue;
             }

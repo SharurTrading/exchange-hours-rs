@@ -2,8 +2,10 @@
 
 //! Vienna Stock Exchange cash equities, represented by the ATX segment.
 
-use chrono::{Datelike, NaiveDate, Weekday};
-use chrono_tz::Europe;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Europe;
+use jiff::{civil::Date, civil::Weekday};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -189,15 +191,15 @@ static CURRENT_SETTLEMENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-const T7_MIGRATION: NaiveDate = effective_date(2017, 7, 31);
-const CLOSING_EXTENSION: NaiveDate = effective_date(2019, 5, 2);
-const TRADE_AT_CLOSE: NaiveDate = effective_date(2020, 12, 1);
+const T7_MIGRATION: Date = effective_date(2017, 7, 31);
+const CLOSING_EXTENSION: Date = effective_date(2019, 5, 2);
+const TRADE_AT_CLOSE: Date = effective_date(2020, 12, 1);
 
-fn is_settlement_day(day: NaiveDate) -> bool {
-    day.weekday() == Weekday::Fri && (15..=21).contains(&day.day())
+fn is_settlement_day(day: Date) -> bool {
+    day.weekday() == Weekday::Friday && (15..=21).contains(&day.day())
 }
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Europe::Vienna);
     let settlement = is_settlement_day(day);
 

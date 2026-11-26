@@ -7,6 +7,9 @@
 //! there is no single `sgx_equity_index` family to select. Modelling one would
 //! answer a Taiwan contract with Singapore's close.
 
+mod support;
+
+use crate::support::PROFILE_INSTANT;
 use exchange_hours::MarketHoursKey;
 
 /// Names that must resolve, because their profiles are now sourced.
@@ -81,11 +84,7 @@ fn sgx_equity_index_grids_are_genuinely_distinct() {
         .filter(|name| name.starts_with("sgx_equity_index_"))
         .map(|name| {
             let key = name.parse::<MarketHoursKey>().expect("sgx key parses");
-            exchange_hours::hours_for_market_hours_key(
-                key,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            )
+            exchange_hours::hours_for_market_hours_key(key, PROFILE_INSTANT)
         })
         .collect();
 

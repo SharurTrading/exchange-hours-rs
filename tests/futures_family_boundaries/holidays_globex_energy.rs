@@ -16,40 +16,37 @@
 //! late-open case answered by proving the family ships no late open in this
 //! window rather than by inventing one.
 
-use chrono::{
-    DateTime, Datelike as _, Days, Duration, NaiveDate, TimeDelta, TimeZone as _, Utc, Weekday,
-};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, EvidenceTier, ExceptionBlockKind,
     ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
     calendar_for_market_hours_key,
 };
+use jiff::civil::{Date, Weekday};
+use jiff::{SignedDuration, Timestamp};
 
 const KEY: MarketHoursKey = MarketHoursKey::GlobexEnergy;
 
 /// A venue-local calendar date stated as `(year, month, day)`.
-type Ymd = (i32, u32, u32);
+type Ymd = (i16, i8, i8);
 
 fn calendar() -> ExchangeCalendar {
     calendar_for_market_hours_key(KEY)
 }
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: Ymd, hour: u32, minute: u32) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, hour, minute, 0)
-        .single()
+fn ct(date: Ymd, hour: u32, minute: u32) -> Timestamp {
+    local_opt(&US_CENTRAL, date, (hour, minute, 0))
         .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
 }
 
-fn day(date: Ymd) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: Ymd) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn one_second_before(instant: DateTime<Utc>) -> DateTime<Utc> {
-    instant - TimeDelta::seconds(1)
+fn one_second_before(instant: Timestamp) -> Timestamp {
+    instant - SignedDuration::from_secs(1)
 }
 
 /// The verdict every probe below the permanent 2025-01-01 support floor now
@@ -353,7 +350,7 @@ fn no_late_open_row_ships_in_the_published_window() {
             );
         }
         date = date
-            .succ_opt()
+            .tomorrow()
             .expect("the coverage window ends well inside the calendar range");
     }
 }
@@ -446,7 +443,11 @@ fn the_coverage_window_bounds_every_answer_the_table_gives() {
     );
     assert!(!coverage.contains(day((2028, 12, 25))));
     let probe = ct((2028, 12, 25), 10, 0);
-    assert!(calendar.holiday_on(probe.date_naive()).is_none());
+    assert!(
+        calendar
+            .holiday_on(jiff::tz::TimeZone::UTC.to_datetime(probe).date())
+            .is_none()
+    );
     assert_refused(calendar.is_open(probe), OUTSIDE_COVERAGE);
     assert!(
         calendar
@@ -482,18 +483,15 @@ fn without_holidays_restores_the_normal_week_answer() {
     let mut differences = 0_u32;
     for offset in 0..7_u64 {
         let date = day((2025, 12, 22))
-            .checked_add_days(Days::new(offset))
+            .checked_add(elapsed_days(
+                i64::try_from(offset).expect("fixture day count fits"),
+            ))
             .expect("the fixture week is inside the calendar range");
-        for hour in 0..24_u32 {
-            let probe = US::Central
-                .from_local_datetime(
-                    &date
-                        .and_hms_opt(hour, 0, 0)
-                        .expect("a whole hour is a valid local time"),
-                )
-                .single()
-                .expect("Central has no ambiguous hour in the fixture week")
-                .with_timezone(&Utc);
+        for hour in 0..24_i8 {
+            let probe = US_CENTRAL
+                .to_ambiguous_timestamp(date.at(hour, 0, 0, 0))
+                .unambiguous()
+                .expect("Central has no ambiguous hour in the fixture week");
             if calendar
                 .is_open(probe)
                 .expect("the coverage contract must answer a covered date")
@@ -512,18 +510,15 @@ fn without_holidays_restores_the_normal_week_answer() {
 
     for offset in 0..7_u64 {
         let date = day((2026, 10, 19))
-            .checked_add_days(Days::new(offset))
+            .checked_add(elapsed_days(
+                i64::try_from(offset).expect("fixture day count fits"),
+            ))
             .expect("the reference week is inside the calendar range");
-        for hour in 0..24_u32 {
-            let probe = US::Central
-                .from_local_datetime(
-                    &date
-                        .and_hms_opt(hour, 0, 0)
-                        .expect("a whole hour is a valid local time"),
-                )
-                .single()
-                .expect("Central has no ambiguous hour in the reference week")
-                .with_timezone(&Utc);
+        for hour in 0..24_i8 {
+            let probe = US_CENTRAL
+                .to_ambiguous_timestamp(date.at(hour, 0, 0, 0))
+                .unambiguous()
+                .expect("Central has no ambiguous hour in the reference week");
             assert_eq!(
                 calendar
                     .is_open(probe)
@@ -637,7 +632,7 @@ fn era_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
             }
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the era stays inside the representable calendar");
     }
     assert_eq!(early_closes, 30, "early closes, 2010-2012");
@@ -749,7 +744,7 @@ fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::seconds(1))
+                .is_open(cutoff - SignedDuration::from_secs(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -817,7 +812,7 @@ fn wave2_closures_remove_the_trade_date_and_ship_no_late_open() {
             None => {}
             Some(other) => panic!("{date}: the era ships no {other:?}"),
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(closures, 9, "2016-2018 closures");
     assert_eq!(early_closes, 22, "2016-2018 early closes");
@@ -843,7 +838,7 @@ const ERA_THIRTEEN_FORTY_FIVE: u32 = 13 * 3_600 + 45 * 60;
 /// and compares against this list row for row, so a dropped, added or moved
 /// row fails as loudly as a wrong instant. A sample would let a slipped close
 /// move unnoticed on the dates nobody probed.
-const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+const ERA_ROWS: &[((i16, i8, i8), HolidayKind, EvidenceTier)] = &[
     (
         (2022, 1, 17),
         HolidayKind::EarlyClose {
@@ -1031,26 +1026,26 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
 
 /// `ct` for a date the walk computed rather than spelled, so day arithmetic
 /// cannot drift out of step with a hand-written tuple.
-fn ct_on(date: NaiveDate, hour: u32, minute: u32) -> DateTime<Utc> {
+fn ct_on(date: Date, hour: u32, minute: u32) -> Timestamp {
     ct((date.year(), date.month(), date.day()), hour, minute)
 }
 
-fn day_before(date: NaiveDate) -> NaiveDate {
-    date.checked_sub_days(Days::new(1))
+fn day_before(date: Date) -> Date {
+    date.checked_sub(elapsed_days(1))
         .expect("the era is far from the representable bound")
 }
 
-fn day_after(date: NaiveDate) -> NaiveDate {
-    date.checked_add_days(Days::new(1))
+fn day_after(date: Date) -> Date {
+    date.checked_add(elapsed_days(1))
         .expect("the era is far from the representable bound")
 }
 
 /// The ordinary 17:00 CT evening open that follows a closed trade date: this
 /// civil date's own leg when the week has one, otherwise the Sunday evening
 /// that opens the next week — the grid has no Friday-evening occurrence.
-fn era_reopen_after_closure(date: NaiveDate) -> DateTime<Utc> {
-    let reopen = if date.weekday() == Weekday::Fri {
-        date.checked_add_days(Days::new(2))
+fn era_reopen_after_closure(date: Date) -> Timestamp {
+    let reopen = if date.weekday() == Weekday::Friday {
+        date.checked_add(elapsed_days(2))
             .expect("the era is far from the representable bound")
     } else {
         date
@@ -1065,8 +1060,8 @@ fn era_reopen_after_closure(date: NaiveDate) -> DateTime<Utc> {
 /// family no Friday-evening reopen after a closure. A 18:00 CT probe is held
 /// only when its own day opens one, and a daytime probe only when the day
 /// before it does.
-fn opens_evening(day: NaiveDate) -> bool {
-    !matches!(day.weekday(), Weekday::Fri | Weekday::Sat)
+fn opens_evening(day: Date) -> bool {
+    !matches!(day.weekday(), Weekday::Friday | Weekday::Saturday)
 }
 
 /// The era-wide sweep: every shipped date's kind, instant and tier, with both
@@ -1121,7 +1116,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
                     // One second before the close is open; at it, closed.
                     assert!(
                         calendar
-                            .is_open(cutoff - TimeDelta::seconds(1))
+                            .is_open(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -1149,7 +1144,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
                     );
                     assert_eq!(
                         calendar
-                            .trade_date(cutoff - TimeDelta::seconds(1))
+                            .trade_date(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         Some(date),
                         "{date}"
@@ -1161,7 +1156,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
             }
             index += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
@@ -1269,7 +1264,7 @@ fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
 /// while one no session holds is refused by the declared phase-level gap. On
 /// this grid an opening day is Sunday through Thursday 17:00 CT and its session
 /// runs to 16:00 CT the next local day, which is what `opens_evening` states.
-fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: EvidenceTier) {
+fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier) {
     let calendar = calendar();
     let detached = calendar.without_holidays();
     assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
@@ -1281,7 +1276,7 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
     // asked *about* the date, so the strict claim holds on a withheld weekend
     // too (issue #107's explicit day gate); the detached grid keeps its
     // NormalWeekOnly relaxation and answers from the sourced week.
-    if matches!(date.weekday(), Weekday::Sat | Weekday::Sun) {
+    if matches!(date.weekday(), Weekday::Saturday | Weekday::Sunday) {
         // A withheld weekend is still withheld (issue #107's explicit day
         // gate): the closure question is asked *about* the date, so the
         // attached identity refuses it rather than letting the normal week
@@ -1333,7 +1328,7 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
         // daytime probes on the withheld date are refused outright as
         // `UnresolvedGap` — never as a claimed closure — while the eve probe's
         // verdict follows the session its wrap resolves to.
-        if probe.with_timezone(&US::Central).date_naive() == date {
+        if probe.to_zoned_datetime(US_CENTRAL).date() == date {
             assert_refused(calendar.is_open(probe), UNRESOLVED);
         }
         // The detached grid is the ordinary week: `is_open` reads exactly
@@ -1620,7 +1615,7 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                     // One second before the close is open; at it, closed.
                     assert!(
                         calendar
-                            .is_open(cutoff - TimeDelta::seconds(1))
+                            .is_open(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -1634,7 +1629,7 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                     // so does the daily candle. The probe sits just inside the
                     // session, so an earlier-than-expected close cannot make
                     // the query answer `None` instead.
-                    let inside = cutoff - TimeDelta::minutes(1);
+                    let inside = cutoff - SignedDuration::from_mins(1);
                     assert_eq!(
                         calendar
                             .session_bounds(inside)
@@ -1651,7 +1646,7 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                     );
                     assert_eq!(
                         calendar
-                            .trade_date(cutoff - TimeDelta::seconds(1))
+                            .trade_date(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         Some(date),
                         "{date}"
@@ -1707,7 +1702,7 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
             }
             rows += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(rows, 32, "the era's rows");
     assert_eq!(
@@ -1734,7 +1729,7 @@ fn era_2019_2021_unsourced_rows_change_no_answer() {
             assert_unsourced_changes_nothing(date, row, EvidenceTier::T1);
             checked += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(checked, 0, "the era's `Unsourced` rows");
     for date in [(2019, 6, 19), (2020, 6, 19), (2021, 6, 19)] {
@@ -1761,7 +1756,7 @@ fn era_2019_2021_window_edges_answer_as_the_module_declares() {
         coverage.windows().contains(&era),
         "the 2019-2021 window is declared as a window of its own"
     );
-    let inside = |date: NaiveDate| era.0 <= date && date <= era.1;
+    let inside = |date: Date| era.0 <= date && date <= era.1;
     assert!(inside(day((2019, 1, 1))));
     assert!(inside(day((2021, 12, 31))));
     assert!(
@@ -1824,7 +1819,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
             assert!(coverage.contains(date), "{date} ships outside its window");
             rows += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(rows, 32, "the era's rows");
     for probe in [day((2018, 12, 31)), day((2022, 1, 1))] {
@@ -1837,7 +1832,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
 /// counts kinds and instants, which a row moved to another audited date with
 /// the same kind and instant would leave unchanged; this pins the date set
 /// itself, in the order `holiday_on` must answer it.
-const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+const ERA_2019_2021_ROWS: &[((i16, i8, i8), HolidayKind, EvidenceTier)] = &[
     ((2019, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
     (
         (2019, 1, 21),
@@ -2030,7 +2025,7 @@ fn era_2019_2021_rows_are_the_audited_date_kind_and_tier_set() {
             assert_eq!(row.tier(), tier, "{date}");
             index += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2019_2021_ROWS.len(), "every recorded row ships");
 }
@@ -2082,7 +2077,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     let cutoff = ct_on(date, h, m);
                     assert!(
                         venue
-                            .is_open(cutoff - Duration::seconds(1))
+                            .is_open(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -2094,14 +2089,17 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     );
                     assert_eq!(
                         venue
-                            .trade_date(cutoff - Duration::seconds(1))
+                            .trade_date(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         Some(date),
                         "{date}"
                     );
                     assert_eq!(
                         venue
-                            .candle_end(cutoff - Duration::minutes(1), CalendarResolution::Daily)
+                            .candle_end(
+                                cutoff - SignedDuration::from_mins(1),
+                                CalendarResolution::Daily
+                            )
                             .expect("the coverage contract must answer a covered date"),
                         Some(cutoff),
                         "{date}"
@@ -2113,7 +2111,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     let open = ct_on(date, h, m);
                     assert!(
                         !venue
-                            .is_open(open - Duration::seconds(1))
+                            .is_open(open - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -2125,7 +2123,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     );
                     assert_eq!(
                         venue
-                            .trade_date(open + Duration::hours(1))
+                            .trade_date(open + SignedDuration::from_hours(1))
                             .expect("the coverage contract must answer a covered date"),
                         Some(date),
                         "{date}: keyed to its own trade date"
@@ -2143,7 +2141,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     let cutoff = ct_on(date, ch, cm);
                     assert!(
                         !venue
-                            .is_open(open - Duration::seconds(1))
+                            .is_open(open - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -2155,7 +2153,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     );
                     assert!(
                         venue
-                            .is_open(cutoff - Duration::seconds(1))
+                            .is_open(cutoff - SignedDuration::from_secs(1))
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
@@ -2169,7 +2167,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                 other => panic!("{date}: this era ships no {other:?}"),
             }
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(
         (closed, early, late, both),
@@ -2251,7 +2249,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
             assert!(coverage.contains(date), "{date} ships outside its window");
             rows += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(rows, 33, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
@@ -2264,7 +2262,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
 /// counts kinds and instants, which a row moved to another audited date with
 /// the same kind and instant would leave unchanged; this pins the date set
 /// itself, in the order `holiday_on` must answer it.
-const ERA_2013_2015_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+const ERA_2013_2015_ROWS: &[((i16, i8, i8), HolidayKind, EvidenceTier)] = &[
     ((2013, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
     (
         (2013, 1, 21),
@@ -2464,7 +2462,7 @@ fn era_2013_2015_rows_are_the_audited_date_kind_and_tier_set() {
             assert_eq!(row.tier(), tier, "{date}");
             index += 1;
         }
-        date = date.succ_opt().expect("the era ends well before the bound");
+        date = date.tomorrow().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2013_2015_ROWS.len(), "every recorded row ships");
 }
@@ -2495,10 +2493,10 @@ fn a_saturday_session_row_states_the_complete_trade_date() {
     for (trade_date, saturday) in SATURDAY_SESSION_TRADE_DATES {
         assert_eq!(
             day(saturday).weekday(),
-            Weekday::Sat,
+            Weekday::Saturday,
             "{saturday:?} must be the Saturday the session opens on"
         );
-        assert_eq!(day(trade_date).weekday(), Weekday::Mon, "{trade_date:?}");
+        assert_eq!(day(trade_date).weekday(), Weekday::Monday, "{trade_date:?}");
         assert!(
             matches!(
                 calendar.holiday_on(day(trade_date)).map(Holiday::kind),

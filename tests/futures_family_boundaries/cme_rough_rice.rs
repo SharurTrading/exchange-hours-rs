@@ -8,26 +8,24 @@
 //! 2026-06-14 is a Sunday and 2026-06-19 the Friday of the same week;
 //! 2018-01-21 is the Sunday on which CBOT Submission 18-001 takes effect.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     DayOverride, MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_market_hours_key,
     hours_for_market_hours_key, session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const ZR: MarketHoursKey = MarketHoursKey::GlobexRoughRice;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
 /// The state the **fixed snapshot** reports, which is the surface these grid
@@ -38,7 +36,7 @@ fn day(date: (i32, u32, u32)) -> NaiveDate {
 /// them. The published grid is still sourced and
 /// `hours_for_market_hours_key` states it; the refusal is asserted by
 /// `a_dormant_identity_refuses_the_date_aware_surface` below.
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(ZR, instant).session_state(instant)
 }
 
@@ -206,7 +204,7 @@ fn rough_rice_extended_hours_shrink_to_1900_2100_from_2018_01_21() {
     let evening_open = ct((2018, 1, 21), (19, 0, 0));
     for (label, hours) in [("earlier", &earlier), ("revised", &revised)] {
         assert!(
-            !hours.is_open(evening_open - chrono::Duration::seconds(1)),
+            !hours.is_open(evening_open - SignedDuration::from_secs(1)),
             "{label}: the evening leg opens a second too early"
         );
         assert!(hours.is_open(evening_open), "{label}: 19:00 CT must open");

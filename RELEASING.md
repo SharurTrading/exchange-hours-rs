@@ -27,13 +27,12 @@ intersections do not block it; their limitations remain explicit.
 
 Check both repository tags and crates.io before choosing the version.
 Identity additions are minor releases (`Exchange` and `MarketHoursKey` are
-`#[non_exhaustive]`); a breaking change to the query surface requires a major
-version — 1.0.0 absorbed the identity-query `Result` migration (#115), so
-that migration is part of the published 1.x contract. Preserve detached
-snapshot compatibility and identity wire names. Run consumer tests against
-the candidate before publication; pin and verify the published version
-afterwards so the release and consumer gates do not wait on each other's
-nonexistent tag.
+`#[non_exhaustive]`). A breaking change to the query surface requires a major
+version. Version 1.0.0 introduced typed coverage errors (#115). The Jiff API
+requires a 2.0.0 release. The [1.x migration guide](README.md#migrating-from-1x)
+describes the new types and the consumer boundary. Run consumer tests against
+the release candidate before publication. Pin and verify the published
+version afterwards.
 
 ## Release pull request
 

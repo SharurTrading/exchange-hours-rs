@@ -2,7 +2,7 @@
 
 //! US listed-equity-options profiles.
 
-use chrono_tz::America;
+use crate::calendar::time_zones::America;
 
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;

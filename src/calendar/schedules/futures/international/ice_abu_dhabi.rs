@@ -2,7 +2,9 @@
 
 //! ICE Futures Abu Dhabi Murban Crude Oil Futures.
 
-use chrono_tz::{America, Asia};
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::{America, Asia};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -86,11 +88,9 @@ const fn dubai_profile(
     }
 }
 
-const IFAD_LAUNCH: chrono::NaiveDate = effective_date(2021, 3, 29);
+const IFAD_LAUNCH: jiff::civil::Date = effective_date(2021, 3, 29);
 
-pub(crate) fn ice_abu_dhabi_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn ice_abu_dhabi_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     if local_date(as_of, Asia::Dubai) < IFAD_LAUNCH {
         return &ICE_ABU_DHABI_CLOSED;
     }

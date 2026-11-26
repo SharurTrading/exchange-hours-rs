@@ -8,8 +8,8 @@ mod week;
 
 pub use static_policy::{DayOverride, StaticDayPolicy, StaticDayPolicyError};
 
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
+use jiff::{Timestamp, civil::Date};
 
 use super::exceptions::{DateException, ExceptionScopeError, SessionExceptionSource};
 use super::exchange_calendar::SessionWindow;
@@ -44,13 +44,13 @@ pub trait DayPolicy: Send + Sync {
     /// This normally removes that complete trading day. An identified family
     /// with a sourced following-business-day convention may instead reassign
     /// its continuous trading to the next date for which this returns `false`.
-    fn is_closed(&self, trade_date: NaiveDate) -> bool;
+    fn is_closed(&self, trade_date: Date) -> bool;
 
     /// Moves the trade date's final close to venue-local seconds since midnight.
     ///
     /// Later phases are removed. `None` keeps the normal close. Values greater
     /// than `86_400` are invalid and make that trade date unavailable.
-    fn early_close_ssm(&self, trade_date: NaiveDate) -> Option<u32>;
+    fn early_close_ssm(&self, trade_date: Date) -> Option<u32>;
 
     /// Delays the trade date's first open to venue-local seconds since midnight.
     ///
@@ -58,7 +58,7 @@ pub trait DayPolicy: Send + Sync {
     /// after the normal first-open wall clock is interpreted on the preceding
     /// opening date; smaller values are interpreted on the trade date. Values
     /// at or above `86_400` are invalid and make that trade date unavailable.
-    fn late_open_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
+    fn late_open_ssm(&self, _trade_date: Date) -> Option<u32> {
         None
     }
 
@@ -80,7 +80,7 @@ pub trait DayPolicy: Send + Sync {
     /// skip the derivation and serve the unmodified normal week for an
     /// occurrence the record should have moved. [`StaticDayPolicy`] answers
     /// from one binary search over its validated, sorted records.
-    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    fn may_affect(&self, first: Date, last: Date) -> bool {
         let _ = (first, last);
         true
     }
@@ -91,17 +91,17 @@ pub trait DayPolicy: Send + Sync {
 pub struct NoPolicy;
 
 impl DayPolicy for NoPolicy {
-    fn is_closed(&self, _trade_date: NaiveDate) -> bool {
+    fn is_closed(&self, _trade_date: Date) -> bool {
         false
     }
 
-    fn early_close_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
+    fn early_close_ssm(&self, _trade_date: Date) -> Option<u32> {
         None
     }
 
     /// No record anywhere: the policy can never affect an answer, so the
     /// engine's gate may always skip its derivation.
-    fn may_affect(&self, _first: NaiveDate, _last: NaiveDate) -> bool {
+    fn may_affect(&self, _first: Date, _last: Date) -> bool {
         false
     }
 }
@@ -208,7 +208,7 @@ impl<'a> PolicyCalendar<'a> {
     /// tell an audited-and-normal date from one the provider never covered:
     /// runtime queries necessarily serve the normal week for both.
     #[must_use]
-    pub fn session_exception_on(self, trade_date: NaiveDate) -> Option<DateException<'a>> {
+    pub fn session_exception_on(self, trade_date: Date) -> Option<DateException<'a>> {
         self.exceptions
             .map(|provider| provider.exception_on(trade_date))
     }
@@ -239,7 +239,7 @@ impl<'a> PolicyCalendar<'a> {
     /// already holds. See [`ExchangeCalendar::holiday_on`] for what `None`
     /// means.
     #[must_use]
-    pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+    pub fn holiday_on(self, trade_date: Date) -> Option<Holiday> {
         self.calendar.holiday_on(trade_date)
     }
 
@@ -274,13 +274,13 @@ impl<'a> PolicyCalendar<'a> {
 
     /// Resolves the unmodified fixed profile in force at `instant`.
     #[must_use]
-    pub fn hours_at(self, instant: DateTime<Utc>) -> MarketHours {
+    pub fn hours_at(self, instant: Timestamp) -> MarketHours {
         self.calendar.hours_at(instant)
     }
 
     /// Returns the schedule's invariant IANA time zone.
     #[must_use]
-    pub fn tz(self) -> Tz {
+    pub fn tz(self) -> TimeZone {
         self.calendar.tz()
     }
 
@@ -298,7 +298,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Both)
     }
 
@@ -318,7 +318,7 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_open_with(&self.context(), instant, kind)
@@ -338,7 +338,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open_regular(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open_regular(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Regular)
     }
 
@@ -356,7 +356,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_open_extended(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_open_extended(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Extended)
     }
 
@@ -379,7 +379,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_accepting_orders(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_accepting_orders(&self.context(), instant)
     }
 
@@ -399,7 +399,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_order_entry_only(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_order_entry_only(&self.context(), instant)
     }
 
@@ -426,7 +426,7 @@ impl<'a> PolicyCalendar<'a> {
     /// where a close must be found for the answer to exist.
     pub fn session_bounds(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.session_bounds_with(instant, SessionKind::Both)
     }
@@ -454,7 +454,7 @@ impl<'a> PolicyCalendar<'a> {
     /// where a close must be found for the answer to exist.
     pub fn session_bounds_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::session_bounds_with(&self.context(), instant, kind)
@@ -483,7 +483,7 @@ impl<'a> PolicyCalendar<'a> {
     /// where a close must be found for the answer to exist.
     pub fn next_session_after(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.next_session_after_with(instant, SessionKind::Both)
     }
@@ -511,7 +511,7 @@ impl<'a> PolicyCalendar<'a> {
     /// where a close must be found for the answer to exist.
     pub fn next_session_after_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         kind: SessionKind,
     ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::next_session_after_with(&self.context(), instant, kind)
@@ -533,8 +533,8 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn next_session_open_after(
         self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+        instant: Timestamp,
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         Ok(self.next_session_after(instant)?.map(|(open, _close)| open))
     }
 
@@ -552,7 +552,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn is_maintenance(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
+    pub fn is_maintenance(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
         status::is_maintenance(&self.context(), instant)
     }
 
@@ -574,7 +574,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn session_state(self, instant: DateTime<Utc>) -> Result<SessionState, CalendarQueryError> {
+    pub fn session_state(self, instant: Timestamp) -> Result<SessionState, CalendarQueryError> {
         status::session_state(&self.context(), instant)
     }
 
@@ -596,10 +596,7 @@ impl<'a> PolicyCalendar<'a> {
     /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
-    pub fn trade_date(
-        self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<NaiveDate>, CalendarQueryError> {
+    pub fn trade_date(self, instant: Timestamp) -> Result<Option<Date>, CalendarQueryError> {
         status::trade_date(&self.context(), instant)
     }
 
@@ -623,7 +620,7 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_trade_date(
         self,
-        day: NaiveDate,
+        day: Date,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_trade_date(&self.context(), day, kind)
@@ -645,8 +642,8 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_in_calendar(
         self,
-        day: NaiveDate,
-        calendar_tz: Tz,
+        day: Date,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_in_calendar(&self.context(), day, calendar_tz, kind)
@@ -672,10 +669,10 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_on(
         self,
-        day: NaiveDate,
+        day: Date,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
-        self.is_closed_all_day_in_calendar(day, self.tz(), kind)
+        self.is_closed_all_day_in_calendar(day, self.calendar.zone(), kind)
     }
 
     /// Returns whether no effective session intersects the selected calendar day.
@@ -694,8 +691,8 @@ impl<'a> PolicyCalendar<'a> {
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_at(
         self,
-        instant: DateTime<Utc>,
-        calendar_tz: Tz,
+        instant: Timestamp,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_at(&self.context(), instant, calendar_tz, kind)

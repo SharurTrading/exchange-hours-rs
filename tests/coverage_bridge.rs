@@ -31,92 +31,73 @@
 //! timeline, so a flipped window edge, a moved baseline row or a changed
 //! bridge input fails here rather than passing by agreement.
 
-use chrono::{NaiveDate, TimeZone as _, Utc};
-use chrono_tz::{Asia, Europe, US};
+mod support;
+
+use crate::support::zones::{
+    ISTANBUL, KOLKATA, NEW_YORK, RIYADH, SAO_PAULO, SHANGHAI, SINGAPORE, US_CENTRAL,
+};
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, Exchange,
     MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
 
 /// A venue-local fixture date.
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 /// A Singapore-local instant, as UTC.
-fn sgt(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    Asia::Singapore
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn sgt(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&SINGAPORE, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Singapore instant")
-        .with_timezone(&Utc)
 }
 
 /// An India-local instant, as UTC.
-fn ist(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    Asia::Kolkata
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn ist(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&KOLKATA, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Kolkata instant")
-        .with_timezone(&Utc)
 }
 
 /// A Chicago-local instant, as UTC.
-fn ct(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn ct(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&US_CENTRAL, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Chicago instant")
-        .with_timezone(&Utc)
 }
 
 /// A Riyadh-local instant, as UTC.
-fn riyadh(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    Asia::Riyadh
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn riyadh(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&RIYADH, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Riyadh instant")
-        .with_timezone(&Utc)
 }
 
 /// A Shanghai-local instant, as UTC.
-fn shanghai(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    Asia::Shanghai
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn shanghai(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&SHANGHAI, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Shanghai instant")
-        .with_timezone(&Utc)
 }
 
 /// An Istanbul-local instant, as UTC.
-fn istanbul(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    Europe::Istanbul
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn istanbul(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&ISTANBUL, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Istanbul instant")
-        .with_timezone(&Utc)
 }
 
 /// A Sao Paulo-local instant, as UTC.
-fn sao_paulo(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    chrono_tz::America::Sao_Paulo
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn sao_paulo(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&SAO_PAULO, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Sao Paulo instant")
-        .with_timezone(&Utc)
 }
 
 /// A New York-local instant, as UTC.
-fn ny(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
-    chrono_tz::America::New_York
-        .with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
+fn ny(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
+    local_opt(&NEW_YORK, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous New York instant")
-        .with_timezone(&Utc)
 }
 
 /// The reason the metadata reports for `date`, taken from the gap records.
-fn gap_reason_on(coverage: CalendarCoverage, day: NaiveDate) -> Option<CoverageGapReason> {
+fn gap_reason_on(coverage: CalendarCoverage, day: Date) -> Option<CoverageGapReason> {
     coverage
         .gaps()
         .find(|gap| gap.range().contains(day))
@@ -132,17 +113,17 @@ fn gap_reason_on(coverage: CalendarCoverage, day: NaiveDate) -> Option<CoverageG
 /// per-date partition fence in `coverage_metadata.rs` holds every record to
 /// the per-date accessor, so merging equal-verdict neighbours here cannot
 /// hide a verdict change.
-fn bridged_union(coverage: CalendarCoverage) -> Vec<(NaiveDate, NaiveDate)> {
-    let mut records: Vec<(NaiveDate, NaiveDate)> = coverage
+fn bridged_union(coverage: CalendarCoverage) -> Vec<(Date, Date)> {
+    let mut records: Vec<(Date, Date)> = coverage
         .gaps()
         .filter(|gap| gap.reason() == CoverageGapReason::HolidayWindowsBridged)
         .map(|gap| (gap.range().first(), gap.range().last()))
         .collect();
     records.sort();
-    let mut merged: Vec<(NaiveDate, NaiveDate)> = Vec::new();
+    let mut merged: Vec<(Date, Date)> = Vec::new();
     for (first, last) in records {
         match merged.last_mut() {
-            Some((_, open_last)) if first.pred_opt() == Some(*open_last) => *open_last = last,
+            Some((_, open_last)) if first.yesterday().ok() == Some(*open_last) => *open_last = last,
             _ => merged.push((first, last)),
         }
     }
@@ -186,7 +167,7 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
         while day <= last {
             bridged_days += 1;
             day = day
-                .succ_opt()
+                .tomorrow()
                 .expect("the residual span stays inside the representable calendar");
         }
     }
@@ -216,12 +197,7 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
 
 /// One below-first span row: the identity's wire name, the span's first and
 /// last venue-local dates, and the first audited window's own first day.
-type BelowFirstSpan = (
-    &'static str,
-    (i32, u32, u32),
-    (i32, u32, u32),
-    (i32, u32, u32),
-);
+type BelowFirstSpan = (&'static str, (i16, i8, i8), (i16, i8, i8), (i16, i8, i8));
 
 /// Every below-first span the shipped tables state, with the identity that
 /// carries it and the first audited window's own first day. The spans are
@@ -303,7 +279,7 @@ fn every_below_first_span_reports_the_bridged_residual() {
             "{name}: the below-first span is the bridged residual"
         );
         assert_eq!(
-            window_first.pred_opt(),
+            window_first.yesterday().ok(),
             Some(last),
             "{name}: the span ends the day before the first audited window"
         );
@@ -385,7 +361,7 @@ fn bridged_dates_answer_their_session_questions_from_the_sourced_normal_week() {
 /// One below-first date per span, with a mid-session venue-local hour and the
 /// weekday the date falls on, so the session-answer fence can compare the
 /// date-aware answer against the detached normal week.
-const BELOW_FIRST_PROBES: &[(&str, (i32, u32, u32))] = &[
+const BELOW_FIRST_PROBES: &[(&str, (i16, i8, i8))] = &[
     ("sgx_securities", (2011, 6, 15)),
     ("cfe", (2012, 6, 13)),
     ("cfe_vix", (2012, 6, 13)),
@@ -406,7 +382,7 @@ const BELOW_FIRST_PROBES: &[(&str, (i32, u32, u32))] = &[
 ];
 
 /// The mid-session venue-local instant for a probe date, per identity zone.
-fn probe_instant(name: &str, day: (i32, u32, u32)) -> chrono::DateTime<Utc> {
+fn probe_instant(name: &str, day: (i16, i8, i8)) -> jiff::Timestamp {
     let (year, month, d) = day;
     match name {
         "sgx_securities" => sgt(year, month, d, 10, 0),
@@ -524,7 +500,7 @@ fn a_below_first_date_holiday_classification_refuses_with_the_baseline() {
         .normal_week_baseline()
         .expect("the sourced week states a baseline");
     assert_eq!(baseline.identity(), sgx.source());
-    assert_eq!(baseline.weekday(), chrono::Weekday::Wed);
+    assert_eq!(baseline.weekday(), jiff::civil::Weekday::Wednesday);
     let rendered = baseline.to_string();
     assert!(
         rendered.contains("normal week Wednesday")
@@ -742,10 +718,10 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
         nse.source(),
         "the baseline belongs to the refusing identity"
     );
-    assert_eq!(baseline.tz(), Asia::Kolkata);
+    assert_eq!(baseline.tz(), KOLKATA);
     assert_eq!(
         baseline.weekday(),
-        chrono::Weekday::Thu,
+        jiff::civil::Weekday::Thursday,
         "2014-10-23 is a Thursday in the venue's own zone"
     );
     // The tradeable windows are the timeline's own 2011-10-03 grid: the

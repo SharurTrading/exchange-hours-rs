@@ -2,7 +2,9 @@
 
 //! CBOT standard-size grain and oilseed futures schedules.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -271,6 +273,6 @@ static REVISIONS: &[Revision] = revisions![
     (2015, 7, 5, &DATED_CURRENT, "CME SER-7395R"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &AT_2010_FLOOR, REVISIONS)
 }

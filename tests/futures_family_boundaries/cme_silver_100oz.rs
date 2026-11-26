@@ -9,46 +9,44 @@
 //! Every probe is stated in America/Chicago wall-clock and converted, so a DST
 //! slip in either direction fails rather than passing on a coincidence.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
     hours_for_market_hours_key, session_bounds_with, session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const SILVER: MarketHoursKey = MarketHoursKey::GlobexSilver100Oz;
 const ENERGY: MarketHoursKey = MarketHoursKey::GlobexEnergy;
 const CRYPTOCURRENCY: MarketHoursKey = MarketHoursKey::GlobexCryptocurrency;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
+fn open_at(key: MarketHoursKey, instant: Timestamp) -> bool {
     hours_for_market_hours_key(key, instant).is_open(instant)
 }
 
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(SILVER, instant).session_state(instant)
 }
 
 /// Returns the venue-local date of the close of the extended session enclosing
 /// `instant`, which is the trade date the close-date convention names.
-fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>) -> NaiveDate {
+fn close_trade_date(hours: &exchange_hours::MarketHours, instant: Timestamp) -> Date {
     session_bounds_with(hours, instant, SessionKind::Extended)
         .expect("the fixed snapshot states the enclosing session")
         .1
-        .with_timezone(&US::Central)
-        .date_naive()
+        .to_zoned_datetime(US_CENTRAL)
+        .date()
 }
 
 /// Asserts the answer a **dormant** identity's date-aware surface gives: no
@@ -78,7 +76,7 @@ fn the_shared_era_is_the_energy_metals_grid_by_reference() {
             hours_for_market_hours_key(ENERGY, instant).session_state(instant),
             "{instant}: the shared era must be the energy/metals grid exactly"
         );
-        instant += chrono::Duration::minutes(30);
+        instant += SignedDuration::from_mins(30);
     }
     // The floor-era close is 16:15 CT and the 2015-09-20 revision's is 16:00,
     // on this key's own timeline rather than only the family's: mid-week,
@@ -236,20 +234,20 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
         let open = ct(saturday, (reopen.0, reopen.1, 0));
         let close = ct(monday, (16, 0, 0));
         assert_eq!(
-            (close - open).num_hours(),
+            (close - open).as_hours(),
             hours,
             "{saturday:?}: block length"
         );
         let snapshot = hours_for_market_hours_key(SILVER, open);
-        let sunday_noon = open + chrono::Duration::hours(32);
-        for instant in [open, sunday_noon, close - chrono::Duration::seconds(1)] {
+        let sunday_noon = open + SignedDuration::from_hours(32);
+        for instant in [open, sunday_noon, close - SignedDuration::from_secs(1)] {
             assert!(
                 snapshot.is_open(instant),
                 "{saturday:?}: the weekend block is executable across the clock change"
             );
         }
         assert_eq!(
-            close_trade_date(&snapshot, close - chrono::Duration::seconds(1)),
+            close_trade_date(&snapshot, close - SignedDuration::from_secs(1)),
             day(monday)
         );
         assert!(

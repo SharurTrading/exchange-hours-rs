@@ -10,27 +10,24 @@
 //! serde form — and, because the ASX selector is seasonal, both sides of each
 //! US daylight-saving transition.
 
-use chrono::{DateTime, TimeZone, Utc};
-use chrono_tz::{Asia::Hong_Kong, Australia};
+mod support;
+
+use crate::support::zones::{HONG_KONG, SYDNEY};
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, DateCoverage, Holiday, HolidayKind, MarketHoursKey, SessionKind,
     SessionState, calendar_for_market_hours_key,
 };
+use jiff::Timestamp;
 
-fn sydney(year: i32, month: u32, day: u32, hour: u32, min: u32) -> DateTime<Utc> {
-    Australia::Sydney
-        .with_ymd_and_hms(year, month, day, hour, min, 0)
-        .single()
+fn sydney(year: i16, month: i8, day: i8, hour: u32, min: u32) -> Timestamp {
+    local_opt(&SYDNEY, (year, month, day), (hour, min, 0))
         .expect("fixture civil time must be unambiguous")
-        .with_timezone(&Utc)
 }
 
-fn hongkong(year: i32, month: u32, day: u32, hour: u32, min: u32) -> DateTime<Utc> {
-    Hong_Kong
-        .with_ymd_and_hms(year, month, day, hour, min, 0)
-        .single()
+fn hongkong(year: i16, month: i8, day: i8, hour: u32, min: u32) -> Timestamp {
+    local_opt(&HONG_KONG, (year, month, day), (hour, min, 0))
         .expect("fixture civil time must be unambiguous")
-        .with_timezone(&Utc)
 }
 
 // --- asx_spi_200 -------------------------------------------------------------
@@ -104,7 +101,7 @@ fn asx_baseline_normal_week_in_the_us_standard_season() {
         calendar
             .trade_date(sydney(2024, 7, 2, 6, 0))
             .expect("trade date"),
-        Some(chrono::NaiveDate::from_ymd_opt(2024, 7, 2).expect("fixture"))
+        Some(date_opt(2024, 7, 2).expect("fixture"))
     );
     // Weekend: the Friday-evening leg ends Saturday 07:00 (July is the US
     // daylight column), and Saturday daytime is closed.
@@ -175,8 +172,7 @@ fn asx_holiday_rows_clip_and_delete_across_the_arrangements() {
             .is_open(sydney(2024, 1, 26, 18, 0))
             .expect("night reopen")
     );
-    let holiday =
-        calendar.holiday_on(chrono::NaiveDate::from_ymd_opt(2024, 1, 26).expect("fixture"));
+    let holiday = calendar.holiday_on(date_opt(2024, 1, 26).expect("fixture"));
     assert!(matches!(
         holiday.map(Holiday::kind),
         Some(HolidayKind::EarlyClose { close_ssm })
@@ -202,7 +198,7 @@ fn asx_holiday_rows_clip_and_delete_across_the_arrangements() {
         calendar
             .trade_date(sydney(2019, 4, 18, 20, 0))
             .expect("trade date"),
-        Some(chrono::NaiveDate::from_ymd_opt(2019, 4, 19).expect("fixture"))
+        Some(date_opt(2019, 4, 19).expect("fixture"))
     );
     assert!(
         !calendar
@@ -315,9 +311,7 @@ fn asx_holiday_rows_clip_and_delete_across_the_arrangements() {
 #[test]
 fn asx_t24_2028_rows_answer_and_the_withheld_eves_refuse() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::AsxSpi200);
-    let day = |month: u32, date: u32| {
-        chrono::NaiveDate::from_ymd_opt(2028, month, date).expect("fixture")
-    };
+    let day = |month: u32, date: u32| date_opt(2028, month, date).expect("fixture");
     // A 2028 Closed date: Easter Monday 2028-04-17 (T24: ASX 24 Closed).
     assert!(
         calendar
@@ -480,7 +474,7 @@ fn hkex_current_era_baseline_with_the_wrapped_overnight_session() {
         calendar
             .trade_date(hongkong(2026, 11, 3, 2, 0))
             .expect("trade date"),
-        Some(chrono::NaiveDate::from_ymd_opt(2026, 11, 3).expect("fixture"))
+        Some(date_opt(2026, 11, 3).expect("fixture"))
     );
     // Weekend: the Friday T+1 leg ends Saturday 03:00 and nothing runs after.
     assert!(

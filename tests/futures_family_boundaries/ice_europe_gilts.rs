@@ -5,8 +5,8 @@
 //! the 12:15 and 13:00 half-day closes, the announced-but-untimed eves that
 //! ship `Unsourced`, and the typed refusals the windowed history owes.
 
-use chrono::{Datelike as _, TimeZone as _};
-use chrono_tz::Europe;
+use crate::support::zones::LONDON;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key, hours_for_market_hours_key,
@@ -14,19 +14,15 @@ use exchange_hours::{
 
 const GILTS: MarketHoursKey = MarketHoursKey::IceEuropeGilts;
 
-fn london(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    Europe::London
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous London instant")
-        .with_timezone(&chrono::Utc)
+fn london(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&LONDON, date, time).expect("fixture must be an unambiguous London instant")
 }
 
-fn day(date: (i32, u32, u32)) -> chrono::NaiveDate {
-    chrono::NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> jiff::civil::Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn regular_bounds(instant: chrono::DateTime<chrono::Utc>) -> (u32, u32) {
+fn regular_bounds(instant: jiff::Timestamp) -> (u32, u32) {
     let hours = hours_for_market_hours_key(GILTS, instant);
     let rule = hours.regular.first().expect("one regular rule per era");
     (rule.open_ssm, rule.close_ssm)
@@ -66,16 +62,10 @@ fn the_shared_grid_serves_the_product_page_print() {
 /// cutover day serves 01:00-21:00 with the circular's 00:45 pre-open.
 #[test]
 fn the_2026_split_flips_at_london_local_midnight() {
-    let last_shared = Europe::London
-        .with_ymd_and_hms(2026, 7, 5, 23, 59, 59)
-        .single()
-        .expect("an unambiguous London instant")
-        .with_timezone(&chrono::Utc);
-    let first_split = Europe::London
-        .with_ymd_and_hms(2026, 7, 6, 0, 0, 0)
-        .single()
-        .expect("an unambiguous London instant")
-        .with_timezone(&chrono::Utc);
+    let last_shared =
+        local_opt(&LONDON, (2026, 7, 5), (23, 59, 59)).expect("an unambiguous London instant");
+    let first_split =
+        local_opt(&LONDON, (2026, 7, 6), (0, 0, 0)).expect("an unambiguous London instant");
 
     assert_eq!(regular_bounds(last_shared), (8 * 3600, 18 * 3600));
     assert_eq!(regular_bounds(first_split), (3600, 21 * 3600));

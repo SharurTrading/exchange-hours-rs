@@ -3,6 +3,7 @@
 //! Named futures-session profile contracts.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
 use serde_test::{Configure, Token, assert_de_tokens_error, assert_tokens};
 
 const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
@@ -280,11 +281,8 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
     assert!(energy_before.is_open(ct((2015, 9, 21), (16, 14, 59))));
     assert!(!energy_after.is_open(ct((2015, 9, 21), (16, 0, 0))));
     assert!(
-        !hours_for_market_hours_key(
-            MarketHoursKey::GlobexEnergy,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
-        )
-        .is_open(ct((2015, 9, 21), (16, 5, 0))),
+        !hours_for_market_hours_key(MarketHoursKey::GlobexEnergy, PROFILE_INSTANT)
+            .is_open(ct((2015, 9, 21), (16, 5, 0))),
         "the pre-existing date-free function remains a current snapshot"
     );
 
@@ -310,11 +308,7 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         "the dated snapshot keeps its key identity"
     );
     assert_eq!(
-        hours_for_market_hours_key(
-            MarketHoursKey::CfeVix,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
-        )
-        .market_hours_key(),
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, PROFILE_INSTANT).market_hours_key(),
         Some(MarketHoursKey::CfeVix),
         "the fixed snapshot keeps its key identity"
     );
@@ -365,9 +359,6 @@ fn synthetic_key_without_an_in_scope_revision_returns_the_current_snapshot() {
         hours_for_market_hours_key(MarketHoursKey::AlwaysOpen, utc((2010, 1, 4), (12, 0, 0)));
     assert_eq!(
         continuous_2010,
-        hours_for_market_hours_key(
-            MarketHoursKey::AlwaysOpen,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
-        )
+        hours_for_market_hours_key(MarketHoursKey::AlwaysOpen, PROFILE_INSTANT)
     );
 }

@@ -6,8 +6,8 @@
 use crate::calendar::SessionRule;
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{effective_date, local_date};
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::Asia::Singapore;
+use crate::calendar::time_zones::Asia::Singapore;
+use jiff::{Timestamp, civil::Date};
 
 const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
 
@@ -17,8 +17,8 @@ const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
 // observation (2024-02-21 00:55 UTC = 08:55 Singapore, inside that day's day
 // session). The undated changeovers serve the sourced intersections; these
 // key observations, never effective days — docs/evidence/oanda_china50_cfd.md.
-const SINGAPORE_INTERSECTION_FIRST_OPEN_DAY: NaiveDate = effective_date(2023, 6, 6);
-const SINGAPORE_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 21);
+const SINGAPORE_INTERSECTION_FIRST_OPEN_DAY: Date = effective_date(2023, 6, 6);
+const SINGAPORE_CURRENT_FIRST_OPEN_DAY: Date = effective_date(2024, 2, 21);
 
 // No separately declared regular session; the published executable blocks are extended.
 // Evidence: docs/evidence/oanda_china50_cfd.md
@@ -141,7 +141,7 @@ static SINGAPORE30_INTERSECTION: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-pub(crate) fn oanda_china50_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_china50_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Singapore);
     // The current grid nests inside the legacy one, so the undated span's
     // sourced intersection is the current profile itself; the span is dated
@@ -152,7 +152,7 @@ pub(crate) fn oanda_china50_profile_at(as_of: DateTime<Utc>) -> &'static StaticH
         &CHINA50_LEGACY
     }
 }
-pub(crate) fn oanda_singapore30_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_singapore30_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Singapore);
     if day >= SINGAPORE_CURRENT_FIRST_OPEN_DAY {
         &SINGAPORE30

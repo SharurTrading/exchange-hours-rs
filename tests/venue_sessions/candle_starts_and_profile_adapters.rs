@@ -3,13 +3,12 @@
 //! Candle starts, profile adapters, and schedule-duration behavior.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use crate::support::zones::US_CENTRAL;
 
 #[test]
 fn candle_start_daily_uses_the_overnight_session_open() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     let first_trade = ct((2026, 1, 29), (18, 0, 0));
 
     assert_eq!(
@@ -26,10 +25,7 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 
 #[test]
 fn candle_start_resolves_the_post_dst_globex_open() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     let post_spring_forward_trade = ct((2026, 3, 8), (18, 0, 0));
     let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily)
         .expect("the Globex week is open");
@@ -44,10 +40,7 @@ fn candle_start_resolves_the_post_dst_globex_open() {
 
 #[test]
 fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     let first_june_session_trade = ct((2026, 5, 31), (18, 0, 0));
 
     assert_eq!(
@@ -80,10 +73,7 @@ fn hours_for_market_hours_key_matches_session_profile() {
         MarketHoursKey::GlobexEnergy,
         MarketHoursKey::Eurex,
     ] {
-        let hours = hours_for_market_hours_key(
-            key,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_market_hours_key(key, PROFILE_INSTANT);
         let profile = session_profile(key);
         for t in [
             utc((2026, 1, 5), (10, 0, 0)),
@@ -106,10 +96,7 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     // `session_bounds`, weekly/monthly consolidation), so validate the boundary
     // math on its hours — not only `is_open`. A field-copy bug that preserved
     // `is_open` while shifting boundaries would otherwise pass.
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
 
     // Daily: a weekday instant resolves to a strictly-later close.
     let wed = ct((2026, 1, 7), (9, 0, 0));
@@ -140,14 +127,14 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     let monthly =
         candle_end(&hours, mid_jan, CalendarResolution::Monthly).expect("January has daily closes");
     assert_eq!(
-        monthly.with_timezone(&US::Central).month(),
+        monthly.to_zoned_datetime(US_CENTRAL).month(),
         1,
         "monthly boundary stays in January (exchange-local)"
     );
     assert_eq!(
         candle_end(&hours, monthly, CalendarResolution::Daily)
             .expect("trading continues in February")
-            .with_timezone(&US::Central)
+            .to_zoned_datetime(US_CENTRAL)
             .month(),
         2,
         "the next daily close after the monthly boundary is in February"
@@ -156,10 +143,7 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
 
 #[test]
 fn normal_week_open_seconds_unions_overlapping_session_rules() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
 
     assert_eq!(
         hours.normal_week_open_seconds(),
@@ -167,10 +151,7 @@ fn normal_week_open_seconds_unions_overlapping_session_rules() {
         "down 7_200s from 421_200: Pre-Open queues are order entry and no longer\n         count as scheduled open time; still no post-2021 RTH pause"
     );
 
-    let always_open = hours_for_market_hours_key(
-        MarketHoursKey::AlwaysOpen,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let always_open = hours_for_market_hours_key(MarketHoursKey::AlwaysOpen, PROFILE_INSTANT);
     assert_eq!(
         always_open.normal_week_open_seconds(),
         7 * 86_400,
@@ -182,21 +163,12 @@ fn normal_week_open_seconds_unions_overlapping_session_rules() {
 fn market_hours_derives_eq() {
     // Two profiles built for the same exchange compare equal (the derive Task 3
     // depends on); distinct venues do not.
-    let a = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let b = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let a = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
+    let b = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     assert_eq!(a, b, "same exchange yields equal hours");
     assert_ne!(
         a,
-        hours_for_exchange(
-            Exchange::Eurex,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
-        ),
+        hours_for_exchange(Exchange::Eurex, PROFILE_INSTANT),
         "distinct exchanges yield unequal hours"
     );
 }

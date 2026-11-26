@@ -4,7 +4,9 @@
 //!
 //! Evidence, quotations and URLs: `docs/evidence/globex_cryptocurrency.md`.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
@@ -276,6 +278,6 @@ static REVISIONS: &[Revision] = revisions![
     (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, REVISIONS)
 }

@@ -2,15 +2,11 @@
 
 //! SGX equity-index derivatives: Taiwan and NTR (USD) grids.
 //!
-//! Continuation of the `sgx_equity_index` module, which documents the shared
-//! shape of the SGX equity-index families and the Pre-Opening/Non-Cancel
-//! versus closing-routine classification applied below; its `history`
-//! submodule holds the evidence behind every family's timeline, whose
-//! boundaries now differ per family (the FTSE Taiwan launch and the NTR (USD)
-//! suite's first calendar edition here). Split out only to keep each
-//! production file within the source-reviewability ceiling.
+//! Shared phase definitions and evidence: `docs/evidence/sgx_equity_index_japan.md`.
 
-use chrono_tz::Asia;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -223,9 +219,7 @@ pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX Taiwan equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_taiwan_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_taiwan_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_EQUITY_INDEX_CLOSED,
@@ -322,9 +316,7 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX NTR (USD) equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_ntr_usd_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_ntr_usd_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_EQUITY_INDEX_CLOSED,

@@ -13,36 +13,34 @@
 //! whose coverage `coverage_metadata.rs` already derives, so a query verdict
 //! and a metadata verdict are read from the same source of truth.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::{Asia, US};
+mod support;
+
+use crate::support::zones::{TOKYO, US_CENTRAL};
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
     MarketHours, MarketHoursKey, SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, SessionState,
     StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
     hours_for_exchange, session_profile,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
 /// A venue-local fixture date.
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 /// A Chicago-local instant.
-fn ct(day: (i32, u32, u32), time: (u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(day.0, day.1, day.2, time.0, time.1, 0)
-        .single()
+fn ct(day: (i16, i8, i8), time: (u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, (day.0, day.1, day.2), (time.0, time.1, 0))
         .expect("fixture must be an unambiguous Chicago instant")
-        .with_timezone(&Utc)
 }
 
 /// A Tokyo-local instant, for the opposing-zone half of the floor contract.
-fn jst(day: (i32, u32, u32), time: (u32, u32)) -> DateTime<Utc> {
-    Asia::Tokyo
-        .with_ymd_and_hms(day.0, day.1, day.2, time.0, time.1, 0)
-        .single()
+fn jst(day: (i16, i8, i8), time: (u32, u32)) -> Timestamp {
+    local_opt(&TOKYO, (day.0, day.1, day.2), (time.0, time.1, 0))
         .expect("fixture must be an unambiguous Tokyo instant")
-        .with_timezone(&Utc)
 }
 
 /// A complete CME equity-index family calendar.
@@ -80,8 +78,8 @@ fn the_floor_is_a_local_date_so_two_zones_refuse_at_different_utc_instants() {
     // The floor is a **venue-local** date, so the same UTC instant near the
     // floor is a covered date for one zone and a pre-floor date for another.
     let tokyo_instant = jst((2010, 1, 1), (0, 30));
-    let tokyo_day = tokyo_instant.with_timezone(&Asia::Tokyo).date_naive();
-    let chicago_day = tokyo_instant.with_timezone(&US::Central).date_naive();
+    let tokyo_day = tokyo_instant.to_zoned_datetime(TOKYO).date();
+    let chicago_day = tokyo_instant.to_zoned_datetime(US_CENTRAL).date();
     assert_eq!(tokyo_day, date(2010, 1, 1));
     assert_eq!(chicago_day, date(2009, 12, 31));
 
@@ -216,12 +214,12 @@ fn every_migrated_query_refuses_the_same_pre_floor_date() {
     );
     assert!(
         calendar
-            .is_closed_all_day_in_calendar(day, tz, SessionKind::Both)
+            .is_closed_all_day_in_calendar(day, &tz, SessionKind::Both)
             .is_err()
     );
     assert!(
         calendar
-            .is_closed_all_day_at(instant, tz, SessionKind::Both)
+            .is_closed_all_day_at(instant, &tz, SessionKind::Both)
             .is_err()
     );
     assert!(
@@ -410,7 +408,7 @@ fn the_documented_static_accessors_are_unaffected() {
     // `session_profile` resolves no date, so it stays infallible and returns
     // the family's static current table (see #77 for the seasonal exception).
     let profile = session_profile(MarketHoursKey::GlobexEquityIndex);
-    assert_eq!(profile.tz, US::Central);
+    assert_eq!(profile.tz, &US_CENTRAL);
 
     // `without_holidays` and `hours_at` likewise keep their shapes.
     let calendar = globex();
@@ -476,7 +474,7 @@ fn a_withheld_phase_refuses_the_order_entry_query_but_not_the_session_query() {
     let day = date(2015, 6, 7);
     let queue_instant = ct((2015, 6, 7), (16, 5));
     let session_instant = ct((2015, 6, 7), (18, 0));
-    assert_eq!(queue_instant.with_timezone(&cal.tz()).date_naive(), day);
+    assert_eq!(queue_instant.to_zoned_datetime(cal.tz()).date(), day);
 
     // The date is completely covered: the residual convention serves the
     // sourced 16:15-17:00 CT intersection and discloses the disputed slice.

@@ -2,15 +2,11 @@
 
 //! Eurex SMI® index futures (`FSMI`) schedules.
 //!
-//! The Swiss benchmark-index future on Eurex trades one Zurich-clock grid whose
-//! only recorded change is the 2010-07-05 extension of continuous trading to
-//! 22:00. The operator's annual Trading Calendar editions print the product's
-//! row from 2010 (07:50-17:27) and 2011 onward (07:50-22:00), and the
-//! operator's archived Contract Specifications amendment of 2010-07-05 is the
-//! dated change between them, so the family carries a dated baseline and one
-//! revision rather than an undated changeover.
+//! Evidence: `docs/evidence/eurex_smi.md`.
 
-use chrono_tz::Europe;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::Europe;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -110,9 +106,7 @@ static EUREX_SMI_REVISIONS: &[Revision] = revisions![(
 /// The grid's endpoints are stated on the local clock in every era (the
 /// Trading Calendar editions print no seasonal footnote for this row), so one
 /// timeline serves the whole history; no CET/CEST selector exists.
-pub(crate) fn eurex_smi_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn eurex_smi_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::Zurich),
         &EUREX_SMI_BASELINE,

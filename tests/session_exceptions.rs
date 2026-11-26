@@ -27,8 +27,10 @@
 //! engine's runtime semantics remain exercised on covered dates by the 2026
 //! fixtures in this file and by `tests/coverage_query_errors.rs`.
 
-use chrono::{DateTime, Datelike, NaiveDate, TimeZone, Utc};
-use chrono_tz::US;
+mod support;
+
+use crate::support::zones::{US_CENTRAL, US_EASTERN, UTC};
+use crate::support::{elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
     DayOverride, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, Exchange, Holiday,
@@ -36,31 +38,23 @@ use exchange_hours::{
     SessionState, StaticDayPolicy, StaticSessionExceptions, StaticSessionExceptionsError,
     calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
-const fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("valid fixture date")
+const fn day(year: i16, month: i8, date: i8) -> Date {
+    Date::constant(year, month, date)
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid CT instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be a valid CT instant")
 }
 
-fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Eastern
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid ET instant")
-        .with_timezone(&Utc)
+fn et(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_EASTERN, date, time).expect("fixture must be a valid ET instant")
 }
 
-fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid UTC instant")
+fn utc(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&UTC, date, time).expect("fixture must be a valid UTC instant")
 }
 
 fn assert_copy_send_sync_static<T: Copy + Send + Sync + 'static>() {}
@@ -137,7 +131,7 @@ fn a_caller_overlay_never_lifts_a_withheld_row() {
 fn assert_declared_refusal<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
     calendar: exchange_hours::ExchangeCalendar,
-    date: NaiveDate,
+    date: Date,
     label: &str,
 ) {
     let error = answer.expect_err(&format!("{label}: expected a coverage refusal"));
@@ -162,7 +156,7 @@ fn assert_declared_refusal<T: std::fmt::Debug>(
 /// date complete.
 fn declared_error(
     coverage: exchange_hours::CalendarCoverage,
-    date: NaiveDate,
+    date: Date,
 ) -> Option<CalendarQueryError> {
     match coverage.coverage_on(date) {
         DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
@@ -207,8 +201,8 @@ fn declared_error(
 // moves only its close.
 // ---------------------------------------------------------------------------
 
-const CME_THURSDAY: NaiveDate = day(2015, 11, 26);
-const CME_FRIDAY: NaiveDate = day(2015, 11, 27);
+const CME_THURSDAY: Date = day(2015, 11, 26);
+const CME_FRIDAY: Date = day(2015, 11, 27);
 
 static CME_FRIDAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
@@ -227,16 +221,14 @@ static CME_RECORDS: [SessionExceptionRecord<'static>; 6] = [
     SessionExceptionRecord::known_normal(day(2015, 11, 30)),
 ];
 
-const CME_TABLE: Result<StaticSessionExceptions<'static>, StaticSessionExceptionsError> =
+fn cme_table() -> StaticSessionExceptions<'static> {
     StaticSessionExceptions::new(
         CalendarSource::Exchange(Exchange::Cme),
         day(2015, 11, 23),
         day(2015, 11, 30),
         &CME_RECORDS,
-    );
-
-fn cme_table() -> StaticSessionExceptions<'static> {
-    CME_TABLE.expect("the CME fixture records must be valid")
+    )
+    .expect("the CME fixture records must be valid")
 }
 
 #[test]
@@ -540,8 +532,8 @@ fn cme_thanksgiving_thursday_carries_no_trade_date() {
 // sourced Nasdaq grid for 2011.
 // ---------------------------------------------------------------------------
 
-const NASDAQ_THANKSGIVING: NaiveDate = day(2011, 11, 24);
-const NASDAQ_HALF_DAY: NaiveDate = day(2011, 11, 25);
+const NASDAQ_THANKSGIVING: Date = day(2011, 11, 24);
+const NASDAQ_HALF_DAY: Date = day(2011, 11, 25);
 
 static NASDAQ_HALF_DAY_BLOCKS: [ExceptionBlock; 3] = [
     ExceptionBlock::extended(0, 7 * 3_600, 9 * 3_600 + 30 * 60),
@@ -554,16 +546,14 @@ static NASDAQ_RECORDS: [SessionExceptionRecord<'static>; 2] = [
     SessionExceptionRecord::replace_sessions(NASDAQ_HALF_DAY, &NASDAQ_HALF_DAY_BLOCKS),
 ];
 
-const NASDAQ_TABLE: Result<StaticSessionExceptions<'static>, StaticSessionExceptionsError> =
+fn nasdaq_table() -> StaticSessionExceptions<'static> {
     StaticSessionExceptions::new(
         CalendarSource::Exchange(Exchange::Nasdaq),
         day(2011, 11, 21),
         day(2011, 11, 28),
         &NASDAQ_RECORDS,
-    );
-
-fn nasdaq_table() -> StaticSessionExceptions<'static> {
-    NASDAQ_TABLE.expect("the Nasdaq fixture records must be valid")
+    )
+    .expect("the Nasdaq fixture records must be valid")
 }
 
 #[test]
@@ -1108,10 +1098,7 @@ fn a_profile_without_a_daily_close_ignores_the_replacement_layer() {
     let plain = calendar_for_exchange(Exchange::BinanceFutures);
 
     for hour in [3_u32, 10, 14, 22] {
-        let instant = Utc
-            .with_ymd_and_hms(2026, 4, 20, hour, 0, 0)
-            .single()
-            .expect("valid UTC instant");
+        let instant = local_opt(&UTC, (2026, 4, 20), (hour, 0, 0)).expect("valid UTC instant");
         assert!(
             calendar
                 .is_open(instant)
@@ -1153,10 +1140,7 @@ fn a_profile_without_a_daily_close_ignores_the_replacement_layer() {
         .with_session_exceptions(&closed_table)
         .expect("the fixture is scoped to this calendar");
     for hour in [3_u32, 10, 14, 22] {
-        let instant = Utc
-            .with_ymd_and_hms(2026, 4, 20, hour, 0, 0)
-            .single()
-            .expect("valid UTC instant");
+        let instant = local_opt(&UTC, (2026, 4, 20), (hour, 0, 0)).expect("valid UTC instant");
         assert!(
             closed_calendar
                 .is_open(instant)
@@ -1386,7 +1370,7 @@ fn an_attached_but_recordless_layer_changes_no_answer() {
             (other_a, other_b) => {
                 // One side answered and the other refused: the recordless
                 // layer must never change *whether* an instant answers.
-                let status = |r: &Result<Option<chrono::DateTime<Utc>>, CalendarQueryError>| {
+                let status = |r: &Result<Option<jiff::Timestamp>, CalendarQueryError>| {
                     if r.is_ok() { "answered" } else { "refused" }
                 };
                 assert_eq!(
@@ -1396,7 +1380,7 @@ fn an_attached_but_recordless_layer_changes_no_answer() {
                 );
             }
         }
-        instant += chrono::TimeDelta::minutes(37);
+        instant += SignedDuration::from_mins(37);
     }
     // The recordless window's Sunday answers under the residual convention
     // (the #79 retirement, 2026-10-04): the bracket-era Sunday no longer
@@ -1590,7 +1574,7 @@ fn an_all_closed_window_terminates_every_forward_scan() {
     let mut date = first;
     while date <= last {
         records.push(SessionExceptionRecord::closed(date));
-        date = date.succ_opt().expect("in-range fixture date");
+        date = date.tomorrow().expect("in-range fixture date");
     }
     let table = StaticSessionExceptions::new(
         CalendarSource::Exchange(Exchange::NasdaqBx),
@@ -1638,7 +1622,7 @@ fn an_all_closed_window_terminates_every_forward_scan() {
     );
     for offset in 0..21 {
         let day_in_window = first
-            .checked_add_signed(chrono::Duration::days(offset))
+            .checked_add(elapsed_days(offset))
             .expect("in-range fixture date");
         // `is_closed_trade_date` asks the composed rules whether the trade date
         // has a close, so it is answered by the caller's record without needing
@@ -1952,9 +1936,9 @@ static ADDED_SATURDAY_BLOCKS: [ExceptionBlock; 1] =
 #[test]
 fn an_added_session_on_a_normally_empty_day_carries_its_own_trade_date() {
     let trade_date = day(2026, 8, 24);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Mon);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Monday);
     let saturday = day(2026, 8, 22);
-    assert_eq!(saturday.weekday(), chrono::Weekday::Sat);
+    assert_eq!(saturday.weekday(), jiff::civil::Weekday::Saturday);
 
     let records = [SessionExceptionRecord::replace_sessions(
         trade_date,
@@ -2051,7 +2035,7 @@ static MULTI_DAY_BLOCKS: [ExceptionBlock; 3] = [
 #[test]
 fn a_trade_date_may_span_three_opening_days_with_pauses_between_them() {
     let trade_date = day(2026, 8, 31);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Mon);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Monday);
     let records = [SessionExceptionRecord::replace_sessions(
         trade_date,
         &MULTI_DAY_BLOCKS,
@@ -2123,7 +2107,7 @@ static RESTATED_ORDER_ENTRY_BLOCKS: [ExceptionBlock; 2] = [
 #[test]
 fn a_replaced_day_restates_its_order_entry_topology() {
     let trade_date = day(2026, 8, 27);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Thursday);
     let records = [SessionExceptionRecord::replace_sessions(
         trade_date,
         &RESTATED_ORDER_ENTRY_BLOCKS,
@@ -2206,7 +2190,7 @@ static SUPPRESSED_BUILTIN_BLOCKS: [ExceptionBlock; 4] = [
 #[test]
 fn a_caller_replacement_suppresses_the_built_in_row_for_that_trade_date() {
     let trade_date = day(2026, 11, 27);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Fri);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Friday);
 
     let bare = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
     assert_eq!(
@@ -2294,7 +2278,7 @@ static EXTENDED_ONLY_BLOCKS: [ExceptionBlock; 1] =
 #[test]
 fn a_replaced_day_with_no_regular_block_closes_regular_trading_only() {
     let trade_date = day(2026, 8, 27);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Thursday);
     let records = [SessionExceptionRecord::replace_sessions(
         trade_date,
         &EXTENDED_ONLY_BLOCKS,
@@ -2381,7 +2365,7 @@ static POLICY_CLIP_BLOCKS: [ExceptionBlock; 1] =
 #[test]
 fn a_day_policy_clips_a_replaced_trading_day_above_the_floor() {
     let trade_date = day(2026, 8, 27);
-    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    assert_eq!(trade_date.weekday(), jiff::civil::Weekday::Thursday);
     let records = [SessionExceptionRecord::replace_sessions(
         trade_date,
         &POLICY_CLIP_BLOCKS,
@@ -2645,7 +2629,7 @@ fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
         // The last instant inside the block, where the two candidate windows
         // differ most: the normal occurrence would still have nearly twelve
         // hours to run.
-        close - chrono::Duration::nanoseconds(1),
+        close - SignedDuration::from_nanos(1),
     ] {
         assert!(
             calendar
@@ -2678,7 +2662,7 @@ fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
     // it alone — the same rule that keeps a replaced date's queue when its
     // record states only tradeable blocks. A caller that wants the ordinary week
     // around a block states the whole day in blocks instead of a fragment.
-    let after = close + chrono::Duration::hours(1);
+    let after = close + SignedDuration::from_hours(1);
     assert_eq!(
         calendar
             .session_bounds(after)
@@ -2783,9 +2767,7 @@ fn no_identity_is_open_where_it_reports_no_trade_date() {
         for (year, month) in [(2025, 11_u32), (2026, 3), (2026, 8), (2027, 6)] {
             for date in 1..=28 {
                 for hour in [1_u32, 7, 13, 19, 23] {
-                    let Some(instant) =
-                        Utc.with_ymd_and_hms(year, month, date, hour, 0, 0).single()
-                    else {
+                    let Some(instant) = local_opt(&UTC, (year, month, date), (hour, 0, 0)) else {
                         continue;
                     };
                     let Ok(Some(bounds)) = calendar.session_bounds(instant) else {

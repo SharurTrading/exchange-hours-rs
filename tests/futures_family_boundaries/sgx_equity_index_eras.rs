@@ -19,12 +19,13 @@
 //! executable fact that survives — nothing in the gap trades or queues — and
 //! names what is no longer claimable.
 
-use chrono::{DateTime, TimeZone as _, Utc};
-use chrono_tz::Asia;
+use crate::support::local_opt;
+use crate::support::zones::SINGAPORE as SINGAPORE_ZONE;
 use exchange_hours::{
     CalendarQueryError, MarketHoursKey, SessionState, calendar_for_market_hours_key,
     hours_for_market_hours_key,
 };
+use jiff::Timestamp;
 
 const JAPAN: MarketHoursKey = MarketHoursKey::SgxEquityIndexJapan;
 const CHINA: MarketHoursKey = MarketHoursKey::SgxEquityIndexChina;
@@ -33,25 +34,22 @@ const TAIWAN: MarketHoursKey = MarketHoursKey::SgxEquityIndexTaiwan;
 const NTR: MarketHoursKey = MarketHoursKey::SgxEquityIndexNtrUsd;
 
 /// A probe instant stated in Singapore wall-clock.
-fn sgt(date: (i32, u32, u32), time: (u32, u32)) -> DateTime<Utc> {
-    Asia::Singapore
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, 0)
-        .single()
+fn sgt(date: (i16, i8, i8), time: (u32, u32)) -> Timestamp {
+    local_opt(&SINGAPORE_ZONE, date, (time.0, time.1, 0))
         .expect("Singapore keeps no DST, so every wall-clock instant is unambiguous")
-        .with_timezone(&Utc)
 }
 
-fn open(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
+fn open(key: MarketHoursKey, at: Timestamp) -> bool {
     hours_for_market_hours_key(key, at).is_open(at)
 }
 
-fn state(key: MarketHoursKey, at: DateTime<Utc>) -> SessionState {
+fn state(key: MarketHoursKey, at: Timestamp) -> SessionState {
     hours_for_market_hours_key(key, at).session_state(at)
 }
 
 /// Whether a trade or a queued order is possible at `at` on the instant
 /// selector, which is the executable fact a gap probe can still state.
-fn accepts(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
+fn accepts(key: MarketHoursKey, at: Timestamp) -> bool {
     hours_for_market_hours_key(key, at).is_accepting_orders(at)
 }
 
@@ -71,7 +69,7 @@ fn accepts(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
 /// are asserted here, so the pair cannot drift: a change that makes the
 /// snapshot lose the kind, or the calendar start answering the date, fails
 /// this helper.
-fn assert_withheld_kind(key: MarketHoursKey, at: DateTime<Utc>, kind: SessionState, label: &str) {
+fn assert_withheld_kind(key: MarketHoursKey, at: Timestamp, kind: SessionState, label: &str) {
     let answer = calendar_for_market_hours_key(key).session_state(at);
     assert!(
         matches!(answer, Err(CalendarQueryError::OutsideCoveredRange { .. })),

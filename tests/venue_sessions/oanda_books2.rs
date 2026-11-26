@@ -4,6 +4,9 @@
 //! continuous grids, and the Brent grid.
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::{LONDON, NEW_YORK};
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // oanda_metals — Sunday 18:05 through Friday 16:59 New York time.
@@ -29,7 +32,7 @@ fn oanda_metals_runs_the_printed_grid_in_both_dst_regimes() {
         summer.is_open(et((2026, 7, 12), (18, 5, 0))),
         "the summer Sunday open"
     );
-    assert_eq!(summer.tz, America::New_York);
+    assert_eq!(summer.tz, NEW_YORK);
 }
 
 #[test]
@@ -128,10 +131,8 @@ fn oanda_metals_answers_the_witnessed_eras_on_their_own_opening_days() {
         "the current era's first session"
     );
     assert_refused_variant(
-        &calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date"),
-            SessionKind::Both,
-        ),
+        &calendar
+            .is_closed_trade_date(date_opt(2022, 6, 8).expect("valid date"), SessionKind::Both),
         DateCoverage::UnresolvedGap,
         "the witnessed span below the first audited window has no holiday bracket",
     );
@@ -148,13 +149,13 @@ fn oanda_metals_group_closes_at_the_printed_instants() {
         ((2026, 7, 3), 12 * 3_600 + 59 * 60),
         ((2025, 12, 24), 13 * 3_600 + 44 * 60),
     ] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
-        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + chrono::Duration::seconds(ssm - 1);
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
+        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + SignedDuration::from_secs(ssm - 1);
         assert!(
             calendar.is_open(instant).expect("an audited date answers"),
             "{date} still trades one second before its printed early close",
         );
-        let at = instant + chrono::Duration::seconds(1);
+        let at = instant + SignedDuration::from_secs(1);
         assert!(
             !calendar.is_open(at).expect("an audited date answers"),
             "{date} is closed from its printed early close instant",
@@ -166,7 +167,7 @@ fn oanda_metals_group_closes_at_the_printed_instants() {
             "{date} answers its holiday classification inside the window",
         );
     }
-    let good_friday = chrono::NaiveDate::from_ymd_opt(2025, 4, 18).expect("valid date");
+    let good_friday = date_opt(2025, 4, 18).expect("valid date");
     assert!(
         calendar
             .is_closed_trade_date(good_friday, SessionKind::Both)
@@ -207,7 +208,7 @@ fn oanda_us_books_print_one_absolute_clock_in_two_zones() {
             "Friday 16:59 ends the week"
         );
         assert!(!h.is_open(et((2026, 6, 13), (12, 0, 0))), "Saturday closed");
-        assert_eq!(h.tz, America::New_York);
+        assert_eq!(h.tz, NEW_YORK);
     }
 }
 
@@ -221,15 +222,15 @@ fn oanda_us_index_cfd_group_closes_at_the_printed_instants() {
         ((2025, 12, 24), 13 * 3_600 + 14 * 60),
         ((2025, 7, 3), 13 * 3_600 + 15 * 60),
     ] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
-        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + chrono::Duration::seconds(ssm - 1);
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
+        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + SignedDuration::from_secs(ssm - 1);
         assert!(
             calendar.is_open(instant).expect("an audited date answers"),
             "{date} still trades one second before its printed early close",
         );
         assert!(
             !calendar
-                .is_open(instant + chrono::Duration::seconds(1))
+                .is_open(instant + SignedDuration::from_secs(1))
                 .expect("an audited date answers"),
             "{date} is closed from its printed early close instant",
         );
@@ -244,20 +245,20 @@ fn oanda_us_commodity_cfd_group_closes_at_the_printed_instants() {
         ((2026, 7, 3), 12 * 3_600 + 59 * 60),
         ((2025, 12, 24), 13 * 3_600 + 44 * 60),
     ] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
-        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + chrono::Duration::seconds(ssm - 1);
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
+        let instant = et((day.0, day.1, day.2), (0, 0, 0)) + SignedDuration::from_secs(ssm - 1);
         assert!(
             calendar.is_open(instant).expect("an audited date answers"),
             "{date} still trades one second before its printed early close",
         );
         assert!(
             !calendar
-                .is_open(instant + chrono::Duration::seconds(1))
+                .is_open(instant + SignedDuration::from_secs(1))
                 .expect("an audited date answers"),
             "{date} is closed from its printed early close instant",
         );
     }
-    let good_friday = chrono::NaiveDate::from_ymd_opt(2026, 4, 3).expect("valid date");
+    let good_friday = date_opt(2026, 4, 3).expect("valid date");
     assert!(
         calendar
             .is_closed_trade_date(good_friday, SessionKind::Both)
@@ -288,7 +289,7 @@ fn oanda_brent_opens_sunday_2301_london_in_both_dst_regimes() {
         summer.is_open(lon((2026, 7, 12), (23, 1, 0))),
         "the summer Sunday open"
     );
-    assert_eq!(summer.tz, Europe::London);
+    assert_eq!(summer.tz, LONDON);
 }
 
 #[test]
@@ -347,21 +348,21 @@ fn oanda_brent_group_closes_at_the_printed_instants_in_london_time() {
         ((2025, 11, 28), 20 * 3_600),
         ((2026, 5, 25), 18 * 3_600 + 29 * 60),
     ] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
-        let instant = lon((day.0, day.1, day.2), (0, 0, 0)) + chrono::Duration::seconds(ssm - 1);
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
+        let instant = lon((day.0, day.1, day.2), (0, 0, 0)) + SignedDuration::from_secs(ssm - 1);
         assert!(
             calendar.is_open(instant).expect("an audited date answers"),
             "{date} still trades one second before its converted early close",
         );
         assert!(
             !calendar
-                .is_open(instant + chrono::Duration::seconds(1))
+                .is_open(instant + SignedDuration::from_secs(1))
                 .expect("an audited date answers"),
             "{date} is closed from its converted early close instant",
         );
     }
     for day in [(2025, 1, 1), (2025, 12, 25), (2026, 1, 1), (2026, 4, 3)] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
@@ -373,7 +374,7 @@ fn oanda_brent_group_closes_at_the_printed_instants_in_london_time() {
     // 2025-04-17 at 23:01 London — and 04-17 is one of this book's withheld
     // dates — so answering the classification completely would consult a
     // gap: it refuses typed rather than answer from a half-known day.
-    let shadowed = chrono::NaiveDate::from_ymd_opt(2025, 4, 18).expect("valid date");
+    let shadowed = date_opt(2025, 4, 18).expect("valid date");
     assert_refused_variant(
         &calendar.is_closed_trade_date(shadowed, SessionKind::Both),
         DateCoverage::UnresolvedGap,
@@ -385,7 +386,7 @@ fn oanda_brent_group_closes_at_the_printed_instants_in_london_time() {
 fn oanda_brent_withholds_its_silent_dates() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaBrent);
     for day in [(2025, 1, 9), (2025, 4, 17), (2025, 7, 3), (2025, 11, 26)] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
         assert_refused_variant(
             &calendar.is_closed_trade_date(date, SessionKind::Both),
             DateCoverage::UnresolvedGap,
@@ -474,10 +475,8 @@ fn oanda_us_books_answer_the_witnessed_eras_on_their_own_opening_days() {
         // The witnessed span sits below the first audited window, so the
         // holiday classification refuses typed while sessions answer.
         assert_refused_variant(
-            &calendar.is_closed_trade_date(
-                chrono::NaiveDate::from_ymd_opt(2022, 6, 8).expect("valid date"),
-                SessionKind::Both,
-            ),
+            &calendar
+                .is_closed_trade_date(date_opt(2022, 6, 8).expect("valid date"), SessionKind::Both),
             DateCoverage::UnresolvedGap,
             "{key:?}: the witnessed span below the first audited window has no holiday bracket",
         );
@@ -500,8 +499,7 @@ fn oanda_books_refuse_below_their_own_witnesses() {
         let calendar = calendar_for_market_hours_key(key);
         assert_refused(
             calendar.is_closed_trade_date(
-                chrono::NaiveDate::from_ymd_opt(carried.0, carried.1, carried.2)
-                    .expect("valid date"),
+                date_opt(carried.0, carried.1, carried.2).expect("valid date"),
                 SessionKind::Both,
             ),
             DateCoverage::OutsideCoveredRange,
@@ -511,10 +509,7 @@ fn oanda_books_refuse_below_their_own_witnesses() {
     }
     let brent = calendar_for_market_hours_key(MarketHoursKey::OandaBrent);
     assert_refused(
-        brent.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
-            SessionKind::Both,
-        ),
+        brent.is_closed_trade_date(date_opt(2023, 6, 7).expect("valid date"), SessionKind::Both),
         DateCoverage::OutsideCoveredRange,
         brent,
         et((2023, 6, 7), (12, 0, 0)),

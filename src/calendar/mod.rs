@@ -21,7 +21,7 @@
 //! ## The three things that decide every answer
 //!
 //! **Time semantics.** All public helpers take and return
-//! `chrono::DateTime<Utc>`. The exchange's local zone is used only internally —
+//! `Timestamp`. The exchange's local zone is used only internally —
 //! to interpret a rule's seconds-since-local-midnight (SSM) and to define "the
 //! day". Weekdays are indexed Monday = 0 through Sunday = 6 throughout.
 //!
@@ -68,6 +68,7 @@ mod rule;
 mod schedules;
 mod session;
 mod state;
+mod time_zones;
 
 pub use bulk::{
     hours_for_all, hours_for_apac_equities, hours_for_eu_equities, hours_for_global_equities,

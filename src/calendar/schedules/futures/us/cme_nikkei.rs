@@ -2,30 +2,11 @@
 
 //! CME Nikkei 225 Dollar (`NKD`) futures schedules.
 //!
-//! CME Globex NKD (clearing/ClearPort `NK`, BTIC `NKT`, CME product id 168,
-//! CME Rulebook Chapter 352) is quoted by CME in both Eastern and Central time;
-//! CME's trading-hours page states that hours are U.S. Central unless otherwise
-//! noted, so Central is the zone modelled here. `US::Central` is the IANA link
-//! for `America/Chicago` and is the zone constant every other CME/CBOT module
-//! in this crate already uses.
-//!
-//! One continuous 17:00-16:00 CT envelope per trade date, and the 16:00-17:00 CT
-//! break between consecutive trade dates carries the operator's Pre-Open queue:
-//! `16:45 preopen` Monday-Thursday and a Sunday onset that moved from 16:15 to
-//! 16:00 CT without a day-level statement, both handing over to the 17:00 CT
-//! open. A queue is `order_entry`, so it accepts orders without reporting a
-//! session. The disputed Sunday quarter-hour's undated move is a disclosed
-//! residual beside this family's served onset (#79, retired 2026-10-04), and
-//! the 2011/2012/2013 eras ship no order-entry phase; both records are in
-//! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
-//!
-//! Below the served grid sits the old 2010 grid, modelled from the operator's
-//! own equities-hours page (captures 2009-04-06 and 2010-04-02 print it
-//! identically): daytime-anchored sessions per DST regime, keyed at the Chicago
-//! DST transitions because the page states the hours per regime. The 2010-04-05
-//! Globex notice ends that era at the Sunday 2010-04-11 session-opening day.
+//! Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
 
-use chrono_tz::US;
+use jiff::Timestamp;
+
+use crate::calendar::time_zones::US;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -300,6 +281,6 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 /// spellings; from 2010-04-11 — the day the operator's own Globex notice of
 /// 2010-04-05 dates the served grid's first Sunday session — the served grid
 /// answers.
-pub(crate) fn nkd_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn nkd_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &NKD_CLOSED, NKD_REVISIONS)
 }

@@ -11,5 +11,7 @@
 //!   - DST-transition edge cases (covered separately by the bias-aware helpers)
 //!   - Binance quarterly-expiry pauses
 
+mod support;
+
 #[path = "venue_sessions/mod.rs"]
 mod suite;

@@ -3,6 +3,8 @@
 //! COMEX and NYMEX normal-week session boundaries.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // COMEX (Metals)
@@ -13,20 +15,14 @@ use super::prelude::*;
 
 #[test]
 fn comex_sunday_open() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     let t = ct((2026, 4, 19), (17, 0, 0));
     assert!(h.is_open(t), "COMEX matching begins Sun 17:00 CT");
 }
 
 #[test]
 fn comex_monday_trading() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     assert!(
         h.is_open(ct((2026, 4, 20), (10, 0, 0))),
         "COMEX Mon 10:00 CT"
@@ -35,10 +31,7 @@ fn comex_monday_trading() {
 
 #[test]
 fn comex_daily_maintenance() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (16, 30, 0));
     assert!(!h.is_open(t), "COMEX maintenance gap 16:30 CT");
     assert!(
@@ -49,20 +42,14 @@ fn comex_daily_maintenance() {
 
 #[test]
 fn comex_monday_reopen() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (17, 0, 0));
     assert!(h.is_open(t), "COMEX matching resumes Mon 17:00 CT");
 }
 
 #[test]
 fn comex_friday_close() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     let t = ct((2026, 4, 24), (16, 0, 0));
     assert!(!h.is_open(t), "COMEX closes Fri 16:00 CT (end-exclusive)");
     assert!(
@@ -73,10 +60,7 @@ fn comex_friday_close() {
 
 #[test]
 fn comex_saturday_closed() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     assert!(
         !h.is_open(ct((2026, 4, 25), (10, 0, 0))),
         "COMEX closed Saturday"
@@ -85,10 +69,7 @@ fn comex_saturday_closed() {
 
 #[test]
 fn comex_weekend_boundary() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     assert!(
         !h.is_open(ct((2026, 4, 26), (15, 59, 59))),
         "COMEX closed before Sunday Pre-Open"
@@ -109,10 +90,7 @@ fn comex_weekend_boundary() {
 
 #[test]
 fn nymex_sunday_open() {
-    let h = hours_for_exchange(
-        Exchange::Nymex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Nymex, PROFILE_INSTANT);
     assert!(
         h.is_open(ct((2026, 4, 19), (17, 0, 0))),
         "NYMEX matching begins Sun 17:00 CT"
@@ -121,10 +99,7 @@ fn nymex_sunday_open() {
 
 #[test]
 fn nymex_daily_maintenance() {
-    let h = hours_for_exchange(
-        Exchange::Nymex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Nymex, PROFILE_INSTANT);
     assert!(
         !h.is_open(ct((2026, 4, 20), (16, 30, 0))),
         "NYMEX maintenance 16:30 CT"
@@ -133,10 +108,7 @@ fn nymex_daily_maintenance() {
 
 #[test]
 fn nymex_friday_close_and_weekend() {
-    let h = hours_for_exchange(
-        Exchange::Nymex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Nymex, PROFILE_INSTANT);
     assert!(
         !h.is_open(ct((2026, 4, 24), (16, 0, 0))),
         "NYMEX closes Fri 16:00 CT"
@@ -158,7 +130,7 @@ fn comex_and_nymex_close_change_applies_to_the_2015_09_21_trade_date() {
     let monday = (2015, 9, 21);
 
     for exchange in [Exchange::Comex, Exchange::Nymex] {
-        let before = hours_for_exchange(exchange, cutover - chrono::Duration::seconds(1));
+        let before = hours_for_exchange(exchange, cutover - SignedDuration::from_secs(1));
         let after = hours_for_exchange(exchange, cutover);
 
         assert!(before.is_open(ct(monday, (16, 14, 59))), "{exchange:?}");

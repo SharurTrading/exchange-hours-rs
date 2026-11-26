@@ -4,6 +4,25 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** use Jiff 1.x throughout the calendar API. Pass `jiff::Timestamp`
+  for UTC instants and `jiff::civil::Date` for trade dates, coverage dates, and
+  policy and exception tables. The normal-week baseline uses
+  `jiff::civil::Weekday`. Custom snapshots take an owned `jiff::tz::TimeZone`
+  and civil-day queries borrow caller-supplied zones. The validated static
+  policy and exception table constructors now run at runtime. Session bounds
+  require both endpoints to fit Jiff's timestamp range. See
+  [Migrating from 1.x](README.md#migrating-from-1x).
+- Built-in calendars use compile-time IANA 2026f time zones. A repeated local
+  interval resolves to the earlier instant for opens and the later instant for
+  closes. A wall time inside a gap resolves to the first instant after it.
+  Winnipeg's updated UTC offset can change the civil date attached to a refusal
+  for the retired ICE Canada calendar. See the
+  [IANA time zone database releases](https://www.iana.org/time-zones/releases).
+- Remove Chrono and chrono-tz and their unmaintained dependency exceptions
+  ([#403](https://github.com/SharurTrading/exchange-hours-rs/issues/403)).
+
 ## [1.4.0] - 2026-11-18
 
 ### Added

@@ -19,19 +19,20 @@
 //! pair sits zero minutes away — the silent-default trap that motivated the
 //! `Option` surface.
 
-use chrono::{TimeZone, Utc};
+mod support;
+
+use crate::support::zones::UTC;
+use crate::support::{PROFILE_INSTANT, local_opt};
 use exchange_hours::{
     CalendarResolution, Exchange, SessionKind, candle_end, candle_start, hours_for_exchange,
     next_session_after, session_bounds,
 };
+use jiff::SignedDuration;
 
 /// A pre-go-live instant for Blue Ocean ATS (production launch 2021-10-05):
 /// the returned profile has no regular and no extended rules.
 fn no_session_hours() -> exchange_hours::MarketHours {
-    let pre_launch = Utc
-        .with_ymd_and_hms(2021, 3, 1, 12, 0, 0)
-        .single()
-        .expect("valid UTC instant");
+    let pre_launch = local_opt(&UTC, (2021, 3, 1), (12, 0, 0)).expect("valid UTC instant");
     let hours = hours_for_exchange(Exchange::BlueOceanAts, pre_launch);
     assert!(
         hours.regular.is_empty() && hours.extended.is_empty(),
@@ -40,10 +41,8 @@ fn no_session_hours() -> exchange_hours::MarketHours {
     hours
 }
 
-fn probe() -> chrono::DateTime<Utc> {
-    Utc.with_ymd_and_hms(2021, 3, 1, 12, 0, 0)
-        .single()
-        .expect("valid UTC instant")
+fn probe() -> jiff::Timestamp {
+    local_opt(&UTC, (2021, 3, 1), (12, 0, 0)).expect("valid UTC instant")
 }
 
 #[test]
@@ -56,7 +55,10 @@ fn no_session_profile_is_closed_and_never_in_maintenance() {
         "a venue with no sessions is not 'about to reopen'; maintenance must be false"
     );
     assert!(
-        hours.is_closed_all_day_on(t.with_timezone(&hours.tz).date_naive(), SessionKind::Both),
+        hours.is_closed_all_day_on(
+            t.to_zoned_datetime(hours.tz.clone()).date(),
+            SessionKind::Both
+        ),
         "every day is fully closed for a no-session profile"
     );
 }
@@ -131,7 +133,7 @@ fn no_session_intraday_candles_are_none_but_seconds_stays_an_offset() {
     assert_eq!(candle_end(&hours, t, CalendarResolution::Hours(1)), None);
     assert_eq!(
         candle_end(&hours, t, CalendarResolution::Seconds(30)),
-        Some(t + chrono::Duration::seconds(30))
+        Some(t + SignedDuration::from_secs(30))
     );
     // The paired starts agree on bar existence.
     assert_eq!(
@@ -150,10 +152,7 @@ fn zero_intervals_have_no_bar_on_any_profile() {
     // A zero interval could never advance, so both ends of the bar are None —
     // on a no-session profile and on a normal venue alike.
     use exchange_hours::{candle_end_with, candle_start_with, hours_for_exchange};
-    let cme = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let cme = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     let empty = no_session_hours();
     let t = probe();
     for res in [

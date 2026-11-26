@@ -3,6 +3,7 @@
 //! Session-kind-aware candle starts.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
 
 // ---------------------------------------------------------------------------
 // candle_start_with — kind-aware period starts
@@ -10,10 +11,7 @@ use super::prelude::*;
 
 #[test]
 fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
 
     // Consulting only regular sessions, the Monday trading day runs
@@ -42,10 +40,7 @@ fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
 
 #[test]
 fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
 
     // Consulting only extended sessions, the Monday trading day opened with
@@ -75,10 +70,7 @@ fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() 
 
 #[test]
 fn candle_start_with_both_matches_candle_start() {
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     for (res, t) in [
         (CalendarResolution::Daily, ct((2026, 1, 29), (18, 0, 0))),
         (

@@ -1626,18 +1626,7 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
     }
 }
 
-/// §4.1 case 4, as a negative over the whole coverage: the table ships only
-/// closures, early closes, late opens and two replacement days, with no
-/// withheld date.
-///
-/// The counts are per date, read back from the shipped table: 157 rows in all,
-/// thirty-five closures, seventy-three 10:30 CT early closes, twenty-two 12:15 CT
-/// ones, three 08:30 CT ones, the single pre-migration 08:15 CT Good Friday,
-/// thirteen 17:00 CT late opens, two combined late-open-and-early-close half
-/// days, two replacements and no `Unsourced` date (2017-07-03
-/// has keyed CFEIC17-022's own 12:15 row since 2026-10-10 UTC). The
-/// distinct instants are counted separately so a row that silently takes a
-/// neighbouring holiday's close fails here.
+/// Count the holiday kinds and distinct close times across all audited windows.
 #[test]
 fn the_window_ships_only_sourced_holiday_kinds() {
     let calendar = cfe();

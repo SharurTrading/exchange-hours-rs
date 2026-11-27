@@ -54,13 +54,13 @@ sourcing move changes the grid's attestation, not its phase split.
 
 ## Holidays
 
-**Coverage:** 2012-03-02..2026-12-31 (inclusive trade dates; the window opens at the operator's own first sourced normal-week day). Tier: T1 throughout.
+**Coverage:** 2012-03-02..2027-01-03 (inclusive trade dates; the window opens at the operator's own first sourced normal-week day). Tier: T1 throughout.
 
-One table serves the `borsa_istanbul` venue: Borsa İstanbul publishes one holiday arrangement per market, and the Equity Market's own `Tatil Tablosu` annex states it. Two artifacts key each year: the corporate `Resmi Tatil Günleri` page, which prints the year's holidays with the half-days marked `Yarım Gün Tatil / Saat 13:00'e kadar` (half-day holiday until 13:00), and the per-market annex `EK-3 — Borsa İstanbul A.Ş. Pay Piyasası <year> Yılı Tatil Tablosu`, which states per holiday whether a session takes place (`seans yapılmayacaktır`) or a half-day session is held (`yarım gün seans yapılacaktır`). The annex keys the closure rows; the corporate page keys the early-close rows, because the 13:00 instant those rows state is printed only there. The document ids record which: `BIST-PP-TATIL-<year>` for the annex, `BIST-RESMI-TATIL-GUNLERI` for the page.
+One table serves the `borsa_istanbul` venue: Borsa İstanbul publishes one holiday arrangement per market, and the Equity Market's own `Tatil Tablosu` annex states it. Two artifacts key the annual schedules through 2026: the corporate `Resmi Tatil Günleri` page, which prints the year's holidays with the half-days marked `Yarım Gün Tatil / Saat 13:00'e kadar` (half-day holiday until 13:00), and the per-market annex `EK-3 — Borsa İstanbul A.Ş. Pay Piyasası <year> Yılı Tatil Tablosu`, which states per holiday whether a session takes place (`seans yapılmayacaktır`) or a half-day session is held (`yarım gün seans yapılacaktır`). The annex keys the closure rows; the corporate page keys the early-close rows, because the 13:00 instant those rows state is printed only there. The document ids record which: `BIST-PP-TATIL-<year>` for the annex, `BIST-RESMI-TATIL-GUNLERI` for the page.
 
 The 2012-2024 rows were backfilled on 2026-09-29 (UTC) from the same corporate page the early-close rows already keyed: its server-rendered year tabs print every year 2012-2026 in one artifact, so no new retrieval was needed. In the backfilled years the corporate page alone states the arrangement — `Kapalı` for a closure, `Yarım Gün Tatil / Saat 13:00'e kadar` for a half day — so every 2012-2024 row keys to `BIST-RESMI-TATIL-GUNLERI`; the 2025-2026 closure rows keep their annex citations.
 
-Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29, and the weekend legs of the backfilled years (for example 1 Ocak 2016, 23 Nisan 2016, 1 Mayıs 2016 and 2017's 1 Ocak, 23 Nisan, 15 Temmuz, 28 Ekim and 29 Ekim) — changes no Monday-Friday trade date and ships no row; the page prints those legs as `Kapalı` beside the holiday that does remove a trade date, and the annex prints them as `seans yapılmayacaktır`.
+Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29, and the weekend legs of the backfilled years (for example 23 Nisan 2016, 1 Mayıs 2016 and 2017's 1 Ocak, 23 Nisan, 15 Temmuz, 28 Ekim and 29 Ekim) — changes no Monday-Friday trade date and ships no row; the page prints those legs as `Kapalı` beside the holiday that does remove a trade date, and the annex prints them as `seans yapılmayacaktır`.
 
 ### 2012
 
@@ -318,7 +318,30 @@ Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-
 
 **Gaps, 2012-2024:** none inside the window. The corporate page's year tabs print each year's complete table, every Monday-Friday date its rows modify ships a row, and every other date inside the window is audited normal.
 
-**Gaps, 2027:** the operator has published no 2027 arrangement. Verified 2026-09-28 UTC: the `Resmi Tatil Günleri` page's year list runs 2012-2026 and names no 2027 table, and no 2027 `Pay Piyasası Tatil Tablosu` annex is linked from it. Re-checked 2026-09-29 UTC with a fresh live read of the same page (artifact under `holidays/raw/equities/borsa_istanbul/forward-2027/`): its bytes carry zero `2027` mentions. Re-checked again 2026-10-03 UTC with a fresh live read (artifact `bist_resmi_tatil_gunleri.live-20261003T001400Z.html` and `INDEX-recheck-2026-10-03.md` beside the earlier one): the bytes still carry zero `2027` mentions and the newest table is still 2026. Re-checked again 2026-11-03 UTC (#391): the TR and EN pages still run 2012-2026 with zero `2027` mentions and the 2027 annex URLs at the established patterns return the operator's 404 page, while the 2025/2026 annex digests still reproduce this file's recorded digests exactly. Nothing is being withheld by this crate — there is no 2027 table yet. **Closing condition:** the corporate 2027 holiday page or the 2027 equity-market annex, at which point the window extends to 2027-12-31. Re-checked monthly per LAW-WATCH: the identity is holiday-bearing, so its cadence is monthly.
+### 2027
+
+| Trade date | Kind | Source statement | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `Borsa İstanbul hafta sonu ve resmî tatillerde faaliyet göstermez.` | `BIST-PAY-SSS-2026-11-27` | T1 | The Equity Market FAQ says Borsa İstanbul does not operate on weekends or public holidays. Article 2(C) of Law 2429 fixes New Year's Day on January 1. |
+
+January 1 is a Friday in 2027. Borsa İstanbul's annual tables state the
+same full closure when January 1 fell on Friday in 2016 and 2021. The
+standing weekend rule covers Saturday, January 2 and Sunday, January 3.
+The normal week supplies those closures. A weekend holiday changes no
+trade date and receives no date-exception row.
+
+**Gap from 2027-01-04.** On 2026-11-27 UTC, the exchange's Turkish and
+English holiday pages still listed 2012–2026 and its Turkish
+announcement index carried no 2027 schedule. The established 2027
+annex URLs returned HTTP 404. Previous checks on 2026-09-28, 2026-09-29,
+2026-10-03 and 2026-11-03 reached the same publication status. The
+standing rule supplies the New Year closure and weekend. The annual
+schedule is needed to audit subsequent trading dates, half days and
+any administrative exceptions.
+
+**Confirm by 2026-12-18 UTC.** Recheck the Equity Market FAQ and the
+annual holiday page or Equity Market annex before the New Year
+closure. The annual schedule remains tracked in [#391](https://github.com/SharurTrading/exchange-hours-rs/issues/391).
 
 **Interpretive steps.** On the half-day dates the corporate page prints the holiday as `Yarım Gün Tatil / Saat 13:00'e kadar` — a half-day holiday *until 13:00* — and the 2025-2026 market annex states for the same day that a half-day session takes place (`yarım gün seans yapılacaktır`). The crate reads the pair as one statement: the trade date keeps its session with the final close moved to the printed 13:00, which is what `EarlyClose { 13:00 }` states. Two eras sit under that scalar. From the 2015-11-30 midday call onward the 13:00 bound falls inside a live session, so the day trades to one second before 13:00. On the 2012-2015 half days the 13:00 bound sits inside the era's lunch gap: the executable morning ends at its own 12:30 and the clip deletes the 14:00 afternoon, so the day's last trade is 12:29:59.999... and the candle ends at 12:30. The half days' own settlement column (`takas yapılmayacaktır`) is settlement data, not a session boundary (LAW-SESSION-NOT-EXPIRY), and nothing is modelled for it. This reading is fenced per date in `tests/global_equities/holidays.rs`.
 
@@ -331,8 +354,17 @@ Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-
 | `BIST-RESMI-TATIL-GUNLERI` | 2012-03-02 .. 2026-12-31 | <https://www.borsaistanbul.com/resmi-tatil-gunleri> | retrieved 2026-09-28 01:02 UTC | T1 | `a598c8021f1bfa4887612816a9845232eac5f8afdcbce8be278f359edd885ed2` |
 | `IMKB-TH-2010-03-25` | 2010-03-25 .. 2012-03-01 (the pre-2012 İşlem Saatleri page; Normal-week rows) | <https://web.archive.org/web/20100325232952id_/http://www.imkb.gov.tr/Markets/StockMarket/TransactionHours.aspx> | Wayback `id_` replay of capture `20100325232952`, retrieved 2026-09-30 04:30 UTC | T1 | `f09a1962671b53fde20f02edb86bee6de72d22f98ca719c94bb02d05a33277a2` |
 | `IMKB-TH-2011-07-27` | 2010-03-25 .. 2012-03-01 (the same page with auction methods detailed; Normal-week corroboration) | <https://web.archive.org/web/20110727072510id_/http://www.imkb.gov.tr/Markets/StockMarket/TransactionHours.aspx> | Wayback `id_` replay of capture `20110727072510`, retrieved 2026-09-30 04:32 UTC | T1 | `c0815e3e31fecbb9bbf6b4c88514e7b6de82688dd7e2a03fd9b3af26bbbb0e23` |
+| `BIST-PAY-SSS-2026-11-27` | 2027-01-01 .. 2027-01-03 | <https://www.borsaistanbul.com/sss/pay-piyasasi> | retrieved 2026-11-27 05:52:22 UTC | T1 | `04c7e4337acebf91c64518052f13f839b571880660b3247790eee2b1422997db` |
+| `TR-LAW-2429` | statutory January 1 date, Article 2(C) | <https://www5.tbmm.gov.tr/tutanaklar/KANUNLAR_KARARLAR/kanuntbmmc064/kanunmgkc064/kanunmgkc06402429.pdf> | retrieved 2026-11-27 05:52:22 UTC | T1, statutory date | `a14e215037cc61330a58c81c37328984e12ea6c343818ad9aa0cf81e7eda83bb` |
+| `BIST-HOL-TR-2026-11-27` | 2027 publication check | <https://www.borsaistanbul.com/resmi-tatil-gunleri> | retrieved 2026-11-27 05:52:22 UTC | T1 | `167924a05b579e3f23ca78c98917ed1bed73d54f9555495f12e5f9a92744877c` |
+| `BIST-HOL-EN-2026-11-27` | 2027 publication check | <https://www.borsaistanbul.com/en/official-holidays> | retrieved 2026-11-27 05:52:22 UTC | T1 | `c4fd708d384e1cb5a202e74d5cff5095727ffd9ede567119d6a1f2af30acafd1` |
+| `BIST-ANN-TR-2026-11-27` | 2027 publication check | <https://www.borsaistanbul.com/duyurular> | retrieved 2026-11-27 05:52:22 UTC | T1 | `389c0678187cca8247029569437e2231e3f972c1a03b51b30aabe928908dea2c` |
 
-All three artifacts were saved under `holidays/raw/equities/borsa_istanbul/2025-2027/` in the research store, whose `INDEX.md` repeats the URLs and digests.
+The historical holiday captures are under
+`holidays/raw/equities/borsa_istanbul/2025-2027/` in the research store.
+The November 27 captures are under
+`holidays/raw/equities/borsa_istanbul/2027-new-year-standing-rule/`.
+Both directories have an `INDEX.md` with capture details.
 
 ## Sources
 

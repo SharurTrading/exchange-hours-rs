@@ -342,16 +342,15 @@ fn oanda_try_fx_closes_for_the_weekend_and_carries_dst_in_the_zone() {
 #[test]
 fn oanda_try_fx_refuses_its_carried_history() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaTryFx);
-    // The TRY grid's only witness is the 2026-10-10 capture; every earlier
-    // day is carried and the date-aware surface refuses it.
+    // This Friday is before the first archived witness on Saturday, November 15.
     assert_refused(
         calendar.is_closed_trade_date(
-            date_opt(2026, 6, 10).expect("valid date"),
+            date_opt(2025, 11, 14).expect("valid date"),
             SessionKind::Both,
         ),
         DateCoverage::OutsideCoveredRange,
         calendar,
-        cet((2026, 6, 10), (12, 0, 0)),
+        cet((2025, 11, 14), (12, 0, 0)),
     );
 }
 

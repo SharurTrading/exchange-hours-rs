@@ -10,12 +10,14 @@ use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
 
-static YEAR_END_2026: [ExceptionBlock; 5] = [
-    ExceptionBlock::extended(0, 7 * 3_600, 9 * 3_600 + 59 * 60),
-    ExceptionBlock::extended(0, 9 * 3_600 + 59 * 60, 10 * 3_600),
+static YEAR_END_2026: [ExceptionBlock; 7] = [
+    ExceptionBlock::order_entry(0, 7 * 3_600, 9 * 3_600 + 59 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 59 * 60, 9 * 3_600 + 59 * 60 + 15),
+    ExceptionBlock::extended(0, 9 * 3_600 + 59 * 60 + 45, 10 * 3_600),
     ExceptionBlock::regular(0, 10 * 3_600, 14 * 3_600),
     ExceptionBlock::order_entry(0, 14 * 3_600, 14 * 3_600 + 10 * 60),
-    ExceptionBlock::extended(0, 14 * 3_600 + 10 * 60, 14 * 3_600 + 21 * 60 + 30),
+    ExceptionBlock::extended(0, 14 * 3_600 + 10 * 60, 14 * 3_600 + 10 * 60 + 30),
+    ExceptionBlock::extended(0, 14 * 3_600 + 11 * 60, 14 * 3_600 + 21 * 60 + 30),
 ];
 
 // Evidence: docs/evidence/asx.md

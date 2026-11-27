@@ -389,22 +389,29 @@ identical to `ASX-CAL-2025`'s, and corroborates it.
 
 ASX notice 1245.26.10 was published on 2026-10-30. Its attachment's
 Equity Securities column gives both 2026-12-24 and 2026-12-31 the same
-Sydney timetable. The normal 07:00 pre-open, opening auction and randomized
-continuous open carry over. The replacement keeps the 07:00–09:59 pre-open and
-09:59–10:00 opening-auction envelopes and starts Regular at 10:00, the
-latest possible continuous open.
+Sydney timetable. The Equity Securities pre-open accepts orders from 07:00
+and queues them for the auction. The ASX phase page also allows certain
+trade reports, which record transactions and do not execute orders. The
+operator's Appendix 4013 places each auction at the transition into its
+session state. Footnotes 1 and 3 of the holiday timetable put the opening
+uncross in the 15-second window starting at 09:59 and continuous trading
+in the 15-second transition starting at 09:59:45. The replacement serves
+those two possible matching windows as Extended, with the known
+09:59:15–09:59:45 levelling gap between them. Regular starts at 10:00,
+the latest possible transition to continuous matching.
 
-The attachment marks Pre-CSPA at 14:00, CSPA at 14:10 with a 30-second
-randomization window, Post Close at 14:11 and Adjust at 14:21:30. Use the
-same auction envelope as the ordinary ASX cash profile: order entry only
-from 14:00 to the nominal CSPA start, then one extended block through
-14:21:30 covering the auction and fixed-price Post Close matching.
-The calendar expresses the published auction window rather than a specific
-uncross instant. Adjust permits order maintenance without new order entry
-or exchange matching and falls outside the executable envelope. The
-annual calendar's 14:10 early-close reference is the auction edge on these
-two dates. The attachment's 14:20 Late Trading entry belongs to the
-Equity Options column.
+The attachment gives 14:00 for the beginning of order entry before the
+closing auction and 14:10 for the nominal CSPA start, with a 30-second
+randomization window. The replacement serves the possible uncross window
+from 14:10:00 to 14:10:30 as Extended. The CSPA order book permits only
+cancellations after the uncross, so the remainder of its session state
+through 14:11 is outside the order-capable and executable envelope. Post
+Close accepts and matches orders at the auction price from 14:11 to
+14:21:30. Adjust permits order maintenance without new order entry or
+exchange matching. The annual calendar's 14:10 reference is the initial
+auction edge on these two dates. The separate 14:20 Late Trading entry
+belongs to Equity Options. The handling of pre-open trade reports and
+auction buffering in the ordinary and historical grids is tracked in [#422](https://github.com/SharurTrading/exchange-hours-rs/issues/422).
 
 The notice also confirms the 2026-12-25, 2026-12-28 and 2027-01-01 closures.
 The live annual calendar's 2026 and 2027 tables matched the September
@@ -423,10 +430,10 @@ The captured bytes are under `holidays/raw/asx-year-end-2026-11-27/`.
 | 2026-04-06 | closed | `Easter Monday` — `Monday 6 April` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
 | 2026-04-25 | closed | `ANZAC Day` — `Saturday 25 April` — `CLOSED`, no substitute footnote | `ASX-CAL-LIVE` | T1 | the sheet prints the Saturday closure and states no substitution; the row restates a closure the Mon-Fri normal week already makes, so it changes no answer — recorded so the transcription matches the sheet line for line |
 | 2026-06-08 | closed | `King's Birthday` — `Monday 8 June` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
-| 2026-12-24 | replacement blocks | Extended 07:00–09:59 and 09:59–10:00; Regular 10:00–14:00; order entry 14:00–14:10; Extended 14:10–14:21:30 | `ASX-TRADE-XMAS-2026` | T1 | Equity Securities column, Christmas Eve |
+| 2026-12-24 | replacement blocks | Order entry 07:00–09:59; Extended 09:59–09:59:15 and 09:59:45–10:00; Regular 10:00–14:00; order entry 14:00–14:10; Extended 14:10–14:10:30 and 14:11–14:21:30 | `ASX-TRADE-XMAS-2026` | T1 | Equity Securities column, Christmas Eve |
 | 2026-12-25 | closed | `Christmas Day` — `Friday 25 December` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
 | 2026-12-28 | closed | `Boxing Day` — `Monday 28 December` — `CLOSED` | `ASX-CAL-LIVE` | T1 | the sheet's own date for the Saturday 26 December holiday |
-| 2026-12-31 | replacement blocks | Extended 07:00–09:59 and 09:59–10:00; Regular 10:00–14:00; order entry 14:00–14:10; Extended 14:10–14:21:30 | `ASX-TRADE-XMAS-2026` | T1 | Equity Securities column, New Year’s Eve |
+| 2026-12-31 | replacement blocks | Order entry 07:00–09:59; Extended 09:59–09:59:15 and 09:59:45–10:00; Regular 10:00–14:00; order entry 14:00–14:10; Extended 14:10–14:10:30 and 14:11–14:21:30 | `ASX-TRADE-XMAS-2026` | T1 | Equity Securities column, New Year’s Eve |
 
 ### 2027
 
@@ -474,6 +481,8 @@ and is covered by the monthly watch.
 | `ASX-CAL-LIVE` | 2025-01-01 .. 2027-12-31 | <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:00 UTC | T1 | `adb2344ca5e13dcbfb8de9b0cf40334c992f4ffb660026b22bca7d21d964cd19` |
 | `ASX-TRADE-XMAS-NOTICE-2026` | 2026 year-end equity holiday notice | <https://www.asxonline.com/content/asxonline/public/notices/2026/october/1245.26.10.html> | published 2026-10-30, retrieved 2026-11-27 UTC | T1 | `65ec1ca8c340e4267ae0a2274cf3220823a0c7644a0df33c178e6d5f8426ea29` |
 | `ASX-TRADE-XMAS-2026` | 2026-12-24 and 2026-12-31 holiday timetable | <https://www.asxonline.com/content/dam/asxonline/public/notices/2026/october/asx-trade-xmas-2026-attachment.pdf> | published 2026-10-30, retrieved 2026-11-27 UTC | T1 | `6c678dc05ef3caff89cb716c94116e62987fe3ce5d7d309885808628312e26d4` |
+| `ASX-CASH-PHASES-2026-11` | Cash-market phase definitions | <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours> | retrieved 2026-11-27 UTC | T1 | `d2e1df64a9afa85f04d873475f4be233e6f423ae8d37cf9cbed4dab4ae020a29` |
+| `ASX-SR15-APPENDIX-4013` | Appendix 4013 auction transition and order handling | <https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf> | retrieved 2026-11-27 UTC | T1 | `ca64bde4a20d1684d6feb522653e256470becee94f4da8bbe71d33cb9a810f01` |
 | `ASX-TH-2013-09-16` | 2013-09-16 .. 2025-06-22 (the pre-SR15 phase timetable; Normal-week rows) | <https://web.archive.org/web/20130916140725id_/http://www.asx.com.au/about/trading-hours.htm> | Wayback `id_` replay of capture `20130916140725`, retrieved 2026-09-30 04:44 UTC | T1 | `a02cbf558a9519dd467afabc94189362a71404c55442421ba76231498354ca34` |
 | `ASX-TH-2016-01-20` | 2013-09-16 .. 2025-06-22 (the same page, last capture; Normal-week corroboration) | <https://web.archive.org/web/20160120000651id_/http://www.asx.com.au/about/trading-hours.htm> | Wayback `id_` replay of capture `20160120000651`, retrieved 2026-09-30 04:44 UTC | T1 | `6e260285e884be0068d85e8db60d3d3a19358fe3efbf19f1ba172263a500c4d6` |
 | `ASX-TH-2020-10-22` | 2013-09-16 .. 2025-06-22 (the successor page's earliest capture; Normal-week corroboration) | <https://web.archive.org/web/20201022120436id_/https://www2.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours> | Wayback `id_` replay of capture `20201022120436`, retrieved 2026-09-30 04:44 UTC | T1 | `c12675d67c4615b7565b94566c31227e59ab55289137ea0971dfc063f73631e8` |

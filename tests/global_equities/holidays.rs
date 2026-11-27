@@ -2408,7 +2408,7 @@ mod asx {
     }
 
     #[test]
-    fn year_end_2026_keeps_the_closing_auction_and_post_close_matching() {
+    fn year_end_2026_answers_the_shortened_phases_and_auction_gaps() {
         use exchange_hours::SessionState;
 
         let calendar = asx();
@@ -2419,12 +2419,23 @@ mod asx {
                 Some(HolidayKind::ReplacementBlocks(_))
             ));
             for (time, expected) in [
-                ((7, 0, 0), SessionState::OpenExtended),
+                ((6, 59, 59), SessionState::Closed),
+                ((7, 0, 0), SessionState::OrderEntry),
+                ((9, 58, 59), SessionState::OrderEntry),
+                ((9, 59, 0), SessionState::OpenExtended),
+                ((9, 59, 14), SessionState::OpenExtended),
+                ((9, 59, 15), SessionState::Closed),
+                ((9, 59, 44), SessionState::Closed),
+                ((9, 59, 45), SessionState::OpenExtended),
+                ((9, 59, 59), SessionState::OpenExtended),
                 ((10, 0, 0), SessionState::OpenRegular),
                 ((13, 59, 59), SessionState::OpenRegular),
                 ((14, 0, 0), SessionState::OrderEntry),
                 ((14, 9, 59), SessionState::OrderEntry),
                 ((14, 10, 0), SessionState::OpenExtended),
+                ((14, 10, 29), SessionState::OpenExtended),
+                ((14, 10, 30), SessionState::Closed),
+                ((14, 10, 59), SessionState::Closed),
                 ((14, 11, 0), SessionState::OpenExtended),
                 ((14, 21, 29), SessionState::OpenExtended),
                 ((14, 21, 30), SessionState::Closed),
@@ -2435,11 +2446,19 @@ mod asx {
                     "{date:?} {time:?}"
                 );
             }
+            let pre_open = syd(date, (8, 0, 0));
+            assert!(calendar.is_order_entry_only(pre_open).expect("covered"));
+            assert!(calendar.is_accepting_orders(pre_open).expect("covered"));
+            assert!(!calendar.is_open(pre_open).expect("covered"));
+            assert_eq!(
+                calendar.session_bounds(pre_open).expect("covered"),
+                Some((syd(date, (9, 59, 0)), syd(date, (9, 59, 15))))
+            );
             assert_eq!(
                 calendar
                     .session_bounds(syd(date, (14, 15, 0)))
                     .expect("covered"),
-                Some((syd(date, (14, 10, 0)), syd(date, (14, 21, 30))))
+                Some((syd(date, (14, 11, 0)), syd(date, (14, 21, 30))))
             );
             assert_eq!(
                 calendar

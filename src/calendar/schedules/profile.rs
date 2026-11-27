@@ -12,19 +12,32 @@ use crate::calendar::exchange_calendar::CalendarSource;
 use crate::calendar::rule::ALL_DAYS;
 use crate::calendar::{MarketHours, SessionRule};
 
-/// A venue's normal-week schedule in fully static form.
-///
-/// Rule slices stay borrowed when converted to [`MarketHours`], so resolving a
-/// current or historical venue schedule never allocates.
+/// A normal-week profile borrowed from a built-in table or a caller's snapshot.
 #[derive(Clone, Copy)]
-pub(crate) struct StaticHoursProfile {
-    pub(crate) tz: &'static TimeZone,
-    pub(crate) regular: &'static [SessionRule],
-    pub(crate) extended: &'static [SessionRule],
+pub(crate) struct HoursProfile<'a> {
+    pub(crate) tz: &'a TimeZone,
+    pub(crate) regular: &'a [SessionRule],
+    pub(crate) extended: &'a [SessionRule],
     /// Order-entry-only phases in which no trade can match.
-    pub(crate) order_entry: &'static [SessionRule],
+    pub(crate) order_entry: &'a [SessionRule],
     pub(crate) has_daily_close: bool,
     pub(crate) has_weekend_close: bool,
+}
+
+/// The stored profile for a built-in schedule.
+pub(crate) type StaticHoursProfile = HoursProfile<'static>;
+
+impl<'a> From<&'a MarketHours> for HoursProfile<'a> {
+    fn from(hours: &'a MarketHours) -> Self {
+        Self {
+            tz: &hours.tz,
+            regular: &hours.regular,
+            extended: &hours.extended,
+            order_entry: &hours.order_entry,
+            has_daily_close: hours.has_daily_close,
+            has_weekend_close: hours.has_weekend_close,
+        }
+    }
 }
 
 pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =

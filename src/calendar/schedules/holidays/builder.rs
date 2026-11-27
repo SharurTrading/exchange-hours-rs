@@ -95,16 +95,11 @@ macro_rules! holidays {
                 )
             ),*
         ];
+        const KEYS: &[i32] = &[$(
+            $crate::calendar::schedules::holidays::fences::day_key(($year, $month, $day))
+        ),*];
         const TABLE: &$crate::calendar::schedules::holidays::HolidayTable =
-            &$crate::calendar::schedules::holidays::HolidayTable {
-                windows: WINDOWS,
-                rows: ROWS,
-                has_blocks: $crate::calendar::schedules::holidays::fences::any_blocks(ROWS),
-            };
-        const _: () = {
-            const DATES: &[(i16, i8, i8)] = &[$(($year, $month, $day)),*];
-            $crate::calendar::schedules::holidays::fences::assert_table(WINDOWS, DATES, ROWS);
-        };
+            &$crate::calendar::schedules::holidays::HolidayTable::new(WINDOWS, ROWS, KEYS);
         TABLE
     }};
 }

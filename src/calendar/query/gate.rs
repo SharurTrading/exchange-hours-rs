@@ -45,7 +45,7 @@ use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::mk_local_open;
 use crate::calendar::{CalendarQueryError, CalendarSource, SUPPORT_FLOOR};
 
-use super::schedule::ResolvedHours;
+use crate::calendar::schedules::HoursProfile;
 
 // Sessions opening on a civil day are governed by the profile in force at the
 // end of that opening day. Midnight-keyed revisions select the same profile
@@ -83,7 +83,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
         source: Self::Source<'a>,
         tz: &TimeZone,
         day: Date,
-    ) -> ResolvedHours<'a>;
+    ) -> HoursProfile<'a>;
 
     /// Returns whether the source's profile carries a final daily close at
     /// `instant`.
@@ -239,8 +239,8 @@ impl SourceGate for FixedSnapshot {
         source: Self::Source<'a>,
         _tz: &TimeZone,
         _day: Date,
-    ) -> ResolvedHours<'a> {
-        ResolvedHours::Borrowed(source)
+    ) -> HoursProfile<'a> {
+        source.into()
     }
 
     fn has_daily_close_at(source: &MarketHours, _instant: Timestamp) -> bool {
@@ -305,7 +305,7 @@ impl SourceGate for Identified {
         calendar: Self::Source<'a>,
         tz: &TimeZone,
         day: Date,
-    ) -> ResolvedHours<'a> {
+    ) -> HoursProfile<'a> {
         let anchor = mk_local_open(tz, day, OPEN_DAY_ANCHOR_SSM).unwrap_or_else(|| {
             // A scan may reach a boundary day without a representable late
             // anchor. Its profile is the one at the nearest timestamp limit.
@@ -315,15 +315,15 @@ impl SourceGate for Identified {
                 Timestamp::MAX
             }
         });
-        ResolvedHours::Selected(calendar.hours_at(anchor))
+        *calendar.profile_at(anchor)
     }
 
     fn has_daily_close_at(calendar: ExchangeCalendar, instant: Timestamp) -> bool {
-        calendar.hours_at(instant).has_daily_close
+        calendar.profile_at(instant).has_daily_close
     }
 
     fn has_weekend_close_at(calendar: ExchangeCalendar, instant: Timestamp) -> bool {
-        calendar.hours_at(instant).has_weekend_close
+        calendar.profile_at(instant).has_weekend_close
     }
 
     fn require_answerable(

@@ -1425,7 +1425,7 @@ impl CalendarCoverage {
             }
         }
         if let Some(table) = self.table {
-            let index = table.rows.partition_point(|row| row.trade_date < date);
+            let index = table.lower_bound(date);
             // Walk the rows on both sides of `date` out to the radius: rows are
             // sorted, so each direction stops at the first row past it. (A
             // single row on the near side of the partition is not enough — a

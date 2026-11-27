@@ -6,8 +6,8 @@ use jiff::Timestamp;
 
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, find_occurrence, rules};
-use crate::calendar::hours::MarketHours;
 use crate::calendar::rule::{SECONDS_PER_NORMAL_WEEK, SessionKind, normal_week_rule_intervals};
+use crate::calendar::schedules::HoursProfile;
 
 const WEEK_SECONDS: i64 = SECONDS_PER_NORMAL_WEEK.cast_signed();
 
@@ -33,7 +33,7 @@ fn union_seconds(mut intervals: Vec<(u64, u64)>) -> u64 {
     total.min(SECONDS_PER_NORMAL_WEEK)
 }
 
-pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: &MarketHours) -> u64 {
+pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: HoursProfile<'_>) -> u64 {
     let intervals = rules(hours, RuleSet::Sessions(SessionKind::Both))
         .flat_map(normal_week_rule_intervals)
         .collect();
@@ -52,7 +52,7 @@ pub(in crate::calendar) fn normal_week_open_seconds_containing<G: SourceGate>(
         .ok()
     else {
         let selected = context.profile_for_open_day(local_day);
-        return Ok(fixed_normal_week_open_seconds(selected.as_ref()));
+        return Ok(fixed_normal_week_open_seconds(selected));
     };
     let mut intervals = Vec::new();
 

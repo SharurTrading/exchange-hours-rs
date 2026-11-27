@@ -22,6 +22,8 @@
   [IANA time zone database releases](https://www.iana.org/time-zones/releases).
 - Remove Chrono and chrono-tz and their unmaintained dependency exceptions
   ([#403](https://github.com/SharurTrading/exchange-hours-rs/issues/403)).
+- Speed up built-in holiday lookup with a compile-time date index and skip
+  replacement-session searches on days no replacement can reach.
 
 ## [1.4.0] - 2026-11-18
 

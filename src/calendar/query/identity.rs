@@ -208,7 +208,7 @@ fn a_session_reaches<G: SourceGate>(
     let tz = context.tz();
     let weekday = usize::from(open_day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(open_day);
-    for rule in rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)) {
+    for rule in rules(selected, RuleSet::Sessions(SessionKind::Both)) {
         if !rule.days[weekday] {
             continue;
         }

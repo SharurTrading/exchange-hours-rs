@@ -13,6 +13,7 @@ use crate::calendar::local_time::{
 };
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
+use crate::calendar::schedules::HoursProfile;
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
 use crate::calendar::{CalendarResolution, CalendarSource};
 
@@ -94,7 +95,7 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     /// all. A context with a caller's provider and a table of scalar rows has
     /// `replacement_layer == true` and `builtin_blocks == false`, and must not
     /// pay a `holiday_on` binary search per occurrence to discover that its
-    /// table has nothing to add. Every table the crate ships answers `false`.
+    /// table has nothing to add.
     builtin_blocks: bool,
 }
 
@@ -172,20 +173,6 @@ const fn table_can_replace(holidays: Option<&HolidayTable>) -> bool {
     match holidays {
         Some(table) => table.carries_replacement_blocks(),
         None => false,
-    }
-}
-
-pub(in crate::calendar) enum ResolvedHours<'a> {
-    Borrowed(&'a MarketHours),
-    Selected(MarketHours),
-}
-
-impl AsRef<MarketHours> for ResolvedHours<'_> {
-    fn as_ref(&self) -> &MarketHours {
-        match self {
-            Self::Borrowed(hours) => hours,
-            Self::Selected(hours) => hours,
-        }
     }
 }
 
@@ -551,12 +538,9 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// the crate's own table is sourced evidence about the date whether or not
     /// the caller's provider holds an opinion about it.
     ///
-    /// The table is consulted only when it actually carries a block row
-    /// ([`Self::builtin_blocks`]). Every table the crate ships answers `false`,
-    /// so this returns the caller's answer after one virtual call and no
-    /// lookup — which matters because the callers of this method sit in the
-    /// per-occurrence path. Without that guard a bare calendar would pay a
-    /// `holiday_on` binary search per occurrence for a row that cannot exist.
+    /// Only tables that carry a replacement row ([`Self::builtin_blocks`])
+    /// need a built-in lookup here. A scalar-only table returns the caller's
+    /// answer immediately.
     ///
     /// The `match` below lists every [`HolidayKind`] rather than falling through
     /// on a wildcard, so a sixth kind that needs built-in handling here is a
@@ -723,7 +707,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         }
         let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
         let selected = self.profile_for_open_day(day);
-        rules(selected.as_ref(), set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
+        rules(selected, set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.
@@ -741,7 +725,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     }
 
     /// Selects a profile by the venue-local day on which a session opens.
-    pub(super) fn profile_for_open_day(self, day: Date) -> ResolvedHours<'a> {
+    pub(super) fn profile_for_open_day(self, day: Date) -> HoursProfile<'a> {
         G::profile_for_open_day(self.source, self.tz, day)
     }
 }
@@ -793,13 +777,13 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
     // there would refuse an answer the identity has.
     if matches!(set, RuleSet::OrderEntry) && {
         context.has_unscoped_refusing_phase_gap_on(open_day)
-            || rules(selected.as_ref(), set)
+            || rules(selected, set)
                 .any(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
             || context.builtin_block_may_exist_on(open_day)
     } {
         context.require_phase_coverage(open_day)?;
     }
-    for rule in rules(selected.as_ref(), set)
+    for rule in rules(selected, set)
         .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
     {
         if let Some(bounds) = resolve_rule_bounds(context, open_day, set, rule)? {
@@ -867,7 +851,7 @@ pub(in crate::calendar) fn builtin_resolves_order_entry(
     let weekday = usize::from(date.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(date);
     let mut unresolved = false;
-    for rule in rules(selected.as_ref(), RuleSet::OrderEntry) {
+    for rule in rules(selected, RuleSet::OrderEntry) {
         if !rule.days[weekday] || rule.close_ssm != close_ssm {
             continue;
         }
@@ -904,7 +888,7 @@ pub(in crate::calendar) fn builtin_has_tradeable_rule(source: CalendarSource, da
     let context = QueryContext::date_aware(calendar);
     let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(day);
-    rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)).any(|rule| rule.days[weekday])
+    rules(selected, RuleSet::Sessions(SessionKind::Both)).any(|rule| rule.days[weekday])
 }
 
 /// Resolves one scheduled occurrence and rejects civil-time collapses.
@@ -1064,12 +1048,12 @@ fn clamp_to_clip<G: SourceGate>(
     Ok((open < close).then_some((open, close)))
 }
 
-pub(super) fn rules(hours: &MarketHours, set: RuleSet) -> impl Iterator<Item = &SessionRule> {
+pub(super) fn rules(hours: HoursProfile<'_>, set: RuleSet) -> impl Iterator<Item = &SessionRule> {
     let (first, second): (&[SessionRule], &[SessionRule]) = match set {
-        RuleSet::Sessions(SessionKind::Regular) => (&hours.regular, &[]),
-        RuleSet::Sessions(SessionKind::Extended) => (&[], &hours.extended),
-        RuleSet::Sessions(SessionKind::Both) => (&hours.regular, &hours.extended),
-        RuleSet::OrderEntry => (&hours.order_entry, &[]),
+        RuleSet::Sessions(SessionKind::Regular) => (hours.regular, &[]),
+        RuleSet::Sessions(SessionKind::Extended) => (&[], hours.extended),
+        RuleSet::Sessions(SessionKind::Both) => (hours.regular, hours.extended),
+        RuleSet::OrderEntry => (hours.order_entry, &[]),
     };
     first.iter().chain(second)
 }

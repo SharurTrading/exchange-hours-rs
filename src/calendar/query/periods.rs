@@ -47,7 +47,7 @@ fn latest_close_for_trade_date<G: SourceGate>(
     let today = context.profile_for_open_day(day);
     let mut latest = None;
 
-    for rule in rules(today.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
+    for rule in rules(today, RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
         if let Some((open, close)) =
             resolve_rule_bounds(context, day, RuleSet::Sessions(kind), rule)?
         {
@@ -59,8 +59,8 @@ fn latest_close_for_trade_date<G: SourceGate>(
         let previous_weekday =
             usize::from(yesterday.weekday().to_monday_zero_offset().cast_unsigned());
         let previous = context.profile_for_open_day(yesterday);
-        for rule in rules(previous.as_ref(), RuleSet::Sessions(kind))
-            .filter(|rule| rule.days[previous_weekday])
+        for rule in
+            rules(previous, RuleSet::Sessions(kind)).filter(|rule| rule.days[previous_weekday])
         {
             if let Some((open, close)) =
                 resolve_rule_bounds(context, yesterday, RuleSet::Sessions(kind), rule)?
@@ -72,9 +72,7 @@ fn latest_close_for_trade_date<G: SourceGate>(
     if let Ok(tomorrow) = day.tomorrow() {
         let next_weekday = usize::from(tomorrow.weekday().to_monday_zero_offset().cast_unsigned());
         let next = context.profile_for_open_day(tomorrow);
-        for rule in
-            rules(next.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday])
-        {
+        for rule in rules(next, RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday]) {
             if let Some((open, close)) =
                 resolve_rule_bounds(context, tomorrow, RuleSet::Sessions(kind), rule)?
             {

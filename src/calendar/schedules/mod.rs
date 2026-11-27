@@ -15,4 +15,6 @@ pub(crate) mod sourcing;
 pub(crate) mod timeline;
 
 pub(in crate::calendar::schedules) use profile::CLOSED_NEW_YORK;
-pub(crate) use profile::{ALWAYS_OPEN_PROFILE, ALWAYS_OPEN_RULE, StaticHoursProfile, from_profile};
+pub(crate) use profile::{
+    ALWAYS_OPEN_PROFILE, ALWAYS_OPEN_RULE, HoursProfile, StaticHoursProfile, from_profile,
+};

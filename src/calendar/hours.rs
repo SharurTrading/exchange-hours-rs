@@ -184,7 +184,7 @@ impl MarketHours {
     /// excluded because [`MarketHours`] is a normal-week profile.
     #[must_use]
     pub fn normal_week_open_seconds(&self) -> u64 {
-        week::fixed_normal_week_open_seconds(self)
+        week::fixed_normal_week_open_seconds(self.into())
     }
 
     /// True if **any** (regular or extended) session is open at `t`.

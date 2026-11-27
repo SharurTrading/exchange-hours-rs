@@ -8,10 +8,8 @@ use jiff::{Timestamp, civil::Date};
 
 use super::source::CalendarSource;
 use crate::calendar::schedules::holidays::{self, Holiday, HolidayCoverage, HolidayTable};
-use crate::calendar::{
-    CalendarCoverage, Exchange, MarketHours, MarketHoursKey, hours_for_exchange,
-    hours_for_market_hours_key,
-};
+use crate::calendar::schedules::{StaticHoursProfile, from_profile};
+use crate::calendar::{CalendarCoverage, Exchange, MarketHours, MarketHoursKey};
 
 /// A venue's zone is invariant across its revision eras, so any fixed instant
 /// resolves it; the epoch keeps this independent of schedule data and of any
@@ -309,10 +307,7 @@ impl ExchangeCalendar {
     /// Resolves the fixed [`MarketHours`] profile in force at `instant`.
     #[must_use]
     pub fn hours_at(self, instant: Timestamp) -> MarketHours {
-        match self.source {
-            CalendarSource::Exchange(exchange) => hours_for_exchange(exchange, instant),
-            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key(key, instant),
-        }
+        from_profile(self.source, self.profile_at(instant))
     }
 
     /// Returns the venue's invariant IANA time zone.
@@ -322,12 +317,16 @@ impl ExchangeCalendar {
     }
 
     pub(in crate::calendar) fn zone(self) -> &'static TimeZone {
+        self.profile_at(TZ_RESOLUTION_INSTANT).tz
+    }
+
+    pub(in crate::calendar) fn profile_at(self, instant: Timestamp) -> &'static StaticHoursProfile {
         match self.source {
             CalendarSource::Exchange(exchange) => {
-                crate::calendar::presets::exchange_profile_at(exchange, TZ_RESOLUTION_INSTANT).tz
+                crate::calendar::presets::exchange_profile_at(exchange, instant)
             }
             CalendarSource::MarketHoursKey(key) => {
-                crate::calendar::futures_profile::key_profile_at(key, TZ_RESOLUTION_INSTANT).tz
+                crate::calendar::futures_profile::key_profile_at(key, instant)
             }
         }
     }
@@ -341,7 +340,7 @@ pub const fn calendar_for_exchange(exchange: Exchange) -> ExchangeCalendar {
 
 /// Creates a date-aware calendar for a product-family `key`.
 ///
-/// The calendar reselects [`hours_for_market_hours_key`] for every
+/// The calendar reselects [`crate::hours_for_market_hours_key`] for every
 /// candidate session-opening day, including while scanning across a sourced
 /// historical revision.
 #[must_use]

@@ -139,6 +139,15 @@ pub(super) fn resolve_block_bounds<G: SourceGate>(
     (open < close).then_some((open, close))
 }
 
+/// A block's trade date is its opening date minus its offset in `[-7, 0]`.
+/// Clamping the inclusive upper bound keeps every representable key in reach.
+fn blocks_may_open_on<G: SourceGate>(context: &QueryContext<'_, G>, open_day: Date) -> bool {
+    let last = open_day.saturating_add(jiff::SignedDuration::from_hours(
+        24 * i64::from(-ExceptionBlock::MIN_DAY_OFFSET),
+    ));
+    context.replacement_blocks_may_reach(open_day, last)
+}
+
 /// Visits every replacement occurrence that opens on `open_day`.
 ///
 /// Scans the fixed offset window rather than the record table, so the work per
@@ -164,18 +173,7 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
     if !context.has_replacement_layer() {
         return None;
     }
-    // Every block this scan could find is keyed to a trade date in
-    // `[open_day, open_day + 7]`: a block's offset places its opening day at
-    // `key + offset` with `offset` in `[-7, 0]`, so a block opening on
-    // `open_day` carries a key of `open_day - offset`. A date no record is
-    // keyed near skips the offset loop entirely. The pre-filter is exact in
-    // its `false` direction: no block can exist, so answering `None` here is
-    // the scan's own answer (issue #125).
-    // At the date limit, the representable part of this window still counts.
-    let reach_last = open_day.saturating_add(jiff::SignedDuration::from_hours(
-        24 * i64::from(-ExceptionBlock::MIN_DAY_OFFSET),
-    ));
-    if !context.replacement_blocks_may_reach(open_day, reach_last) {
+    if !blocks_may_open_on(context, open_day) {
         return None;
     }
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
@@ -353,6 +351,9 @@ pub(super) fn replacement_trade_date<G: SourceGate>(
     }
     let tz = context.tz();
     let local_day = tz.to_datetime(open).date();
+    if !blocks_may_open_on(context, local_day) {
+        return None;
+    }
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
     while offset <= ExceptionBlock::MAX_DAY_OFFSET {
         if let Some(trade_date) = local_day
@@ -403,12 +404,7 @@ pub(super) fn daily_close<G: SourceGate>(
         // A record can open on an earlier date even when the trade date's
         // midnight is outside the timestamp domain. The date's selected
         // profile still determines whether it can have a daily close.
-        || {
-            context
-                .profile_for_open_day(trade_date)
-                .as_ref()
-                .has_daily_close
-        },
+        || context.profile_for_open_day(trade_date).has_daily_close,
         |midnight| context.has_daily_close_at(midnight),
     );
     if !has_daily_close {

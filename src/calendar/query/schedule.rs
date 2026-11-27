@@ -588,38 +588,55 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         G::has_weekend_close_at(self.source, instant)
     }
 
+    /// Finds a rule or replacement containing `instant`. Prefer its own
+    /// civil day's occurrences, then a wrapping occurrence from yesterday.
+    /// A rollback across midnight can leave a following opening day's
+    /// occurrence running after the clock has returned to `day`.
+    pub(super) fn containing_occurrence(
+        &self,
+        instant: Timestamp,
+        day: Date,
+        set: RuleSet,
+    ) -> Result<Option<(Timestamp, Timestamp)>, G::Error> {
+        let hit = |open: Timestamp, close: Timestamp| {
+            (open <= instant && instant < close).then_some((open, close))
+        };
+        if let Some(found) = find_occurrence(self, day, set, false, hit)? {
+            return Ok(Some(found));
+        }
+        // A day that cannot host a wrapping occurrence cannot refuse a
+        // lookback query at a coverage edge (#257). A known occurrence may
+        // still extend from before the support floor into an in-range query.
+        if let Ok(yesterday) = day.yesterday()
+            && self.wrapped_occurrence_possible(yesterday, set)
+            && let Some(found) = find_occurrence(self, yesterday, set, true, hit)?
+        {
+            return Ok(Some(found));
+        }
+        // Even a caller-supplied zone cannot jump back by more than the span
+        // between Jiff's extreme offsets, which is under three days.
+        let mut opening_day = day;
+        for _ in 0..3 {
+            let Ok(next) = opening_day.tomorrow() else {
+                break;
+            };
+            if mk_local_open(self.tz, next, 0).is_none_or(|midnight| midnight > instant) {
+                break;
+            }
+            if let Some(found) = find_occurrence(self, next, set, false, hit)? {
+                return Ok(Some(found));
+            }
+            opening_day = next;
+        }
+        Ok(None)
+    }
+
     /// True when `instant` falls in an order-entry-only phase occurrence.
-    ///
-    /// Resolves through the same opening-day-keyed selection as every session
-    /// query: today's occurrences from today's profile and wrapped occurrences
-    /// from yesterday's profile, so a phase is always answered by the profile
-    /// that owns its opening day even when a revision takes effect on the
-    /// following civil date. Both caller overlays apply as they do to tradeable
-    /// sessions: a closed trade date removes the complete trading day including
-    /// the queue that feeds it, and a replaced trade date serves only the
-    /// order-entry blocks the caller supplied for it.
     pub(super) fn contains_order_entry(self, instant: Timestamp) -> Result<bool, G::Error> {
         let day = self.tz.to_datetime(instant).date();
-        let hit =
-            |open: Timestamp, close: Timestamp| (open <= instant && instant < close).then_some(());
-        if find_occurrence(&self, day, RuleSet::OrderEntry, false, hit)?.is_some() {
-            return Ok(true);
-        }
-        // A queue that opened yesterday can still be running, and the day it
-        // opened on is the day this answer depends on — so the probe is gated
-        // by the same rule as the one above rather than being read as a bare
-        // civil-date fact. But a yesterday that cannot host a queue still
-        // running — no wrapping rule of the set on its weekday, and no
-        // replacement layer that could supply one — yields `None` whatever
-        // its holiday layer held, so the answer does not read that day and it
-        // need not answer (#257).
-        let Some(yesterday) = day.yesterday().ok() else {
-            return Ok(false);
-        };
-        if !self.wrapped_occurrence_possible(yesterday, RuleSet::OrderEntry) {
-            return Ok(false);
-        }
-        Ok(find_occurrence(&self, yesterday, RuleSet::OrderEntry, true, hit)?.is_some())
+        Ok(self
+            .containing_occurrence(instant, day, RuleSet::OrderEntry)?
+            .is_some())
     }
 
     /// Returns whether `day`'s grid — or a replacement layer standing in for
@@ -650,6 +667,19 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
         let selected = self.profile_for_open_day(day);
         rules(selected, set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
+    }
+
+    /// A late-open overlay on `day` can move the effective open of a
+    /// previous-day wrapping rule past this day's midnight.
+    pub(super) fn has_late_open_on(self, day: Date) -> bool {
+        self.policy.is_some_and(|policy| {
+            policy.may_affect(day, day) && policy.late_open_ssm(day).is_some()
+        }) || self.holiday_on(day).is_some_and(|holiday| {
+            matches!(
+                holiday.kind(),
+                HolidayKind::LateOpen { .. } | HolidayKind::LateOpenAndEarlyClose { .. }
+            )
+        })
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.

@@ -34,26 +34,95 @@ pub(crate) fn mk_local_close(tz: &TimeZone, day: Date, ssm: u32) -> Option<Times
 #[derive(Debug)]
 pub(crate) struct UnrepresentableDayWindow;
 
-/// Resolves the half-open interval between the earliest consecutive midnights.
-/// An empty interval between represented midnights marks a skipped day.
-/// Midnight windows at the timestamp limits are intersected with Jiff's range.
-pub(crate) fn local_day_window(
+/// The UTC pieces of one local date. A backward jump across midnight can
+/// separate them with time that belongs to a different date.
+pub(crate) struct LocalDayWindows<'a> {
+    tz: &'a TimeZone,
+    first: DateTime,
+    limit: Option<DateTime>,
+    cursor: Timestamp,
+    end: Timestamp,
+    pending: Option<(Timestamp, Timestamp)>,
+}
+
+impl LocalDayWindows<'_> {
+    fn next_piece(&mut self) -> Option<(Timestamp, Timestamp)> {
+        while self.cursor < self.end {
+            let segment_start = self.cursor;
+            let segment_end = self
+                .tz
+                .following(segment_start)
+                .next()
+                .map_or(self.end, |transition| self.end.min(transition.timestamp()));
+            self.cursor = segment_end;
+
+            // Within this offset segment the civil date maps to one interval.
+            let offset = self.tz.to_offset(segment_start);
+            let start = project(self.first, offset).clamped()?.max(segment_start);
+            let end = self
+                .limit
+                .map_or(Some(Timestamp::MAX), |limit| {
+                    project(limit, offset).clamped()
+                })?
+                .min(segment_end);
+            if start < end {
+                return Some((start, end));
+            }
+        }
+        None
+    }
+}
+
+impl Iterator for LocalDayWindows<'_> {
+    type Item = (Timestamp, Timestamp);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (start, mut end) = self.pending.take().or_else(|| self.next_piece())?;
+        // An ordinary DST change inside the date leaves its UTC interval
+        // contiguous. Preserve that single interval for the coverage walk.
+        while let Some(next) = self.next_piece() {
+            if end != next.0 {
+                self.pending = Some(next);
+                break;
+            }
+            end = next.1;
+        }
+        Some((start, end))
+    }
+}
+
+/// Resolves the half-open UTC pieces of a civil day. The outer interval uses
+/// the first midnight and the last following midnight, so it includes both
+/// visits to a date around a rollback. The iterator intersects that interval
+/// with the civil day separately on each side of any offset change. A skipped
+/// day has no pieces. The bounds are clipped to Jiff's timestamp range.
+pub(crate) fn local_day_windows(
     tz: &TimeZone,
     day: Date,
-) -> Result<Option<(Timestamp, Timestamp)>, UnrepresentableDayWindow> {
+) -> Result<LocalDayWindows<'_>, UnrepresentableDayWindow> {
+    let tomorrow = day.tomorrow().ok();
     let start = resolve_boundary(tz, day, 0, FoldBias::Earlier);
-    let end = day.tomorrow().map_or(Boundary::AfterRange, |next| {
-        resolve_boundary(tz, next, 0, FoldBias::Earlier)
+    let end = tomorrow.map_or(Boundary::AfterRange, |next| {
+        resolve_boundary(tz, next, 0, FoldBias::Later)
     });
-    if let (Boundary::At(start), Boundary::At(end)) = (start, end) {
-        return Ok((start < end).then_some((start, end)));
-    }
-    let start = start.clamped().ok_or(UnrepresentableDayWindow)?;
-    let end = end.clamped().ok_or(UnrepresentableDayWindow)?;
-    if start >= end {
-        return Err(UnrepresentableDayWindow);
-    }
-    Ok(Some((start, end)))
+    let (cursor, end) = if let (Boundary::At(start), Boundary::At(end)) = (start, end) {
+        (start, end)
+    } else {
+        let start = start.clamped().ok_or(UnrepresentableDayWindow)?;
+        let end = end.clamped().ok_or(UnrepresentableDayWindow)?;
+        if start >= end {
+            return Err(UnrepresentableDayWindow);
+        }
+        (start, end)
+    };
+    Ok(LocalDayWindows {
+        tz,
+        first: day.to_datetime(Time::midnight()),
+        limit: tomorrow.map(|next| next.to_datetime(Time::midnight())),
+        cursor,
+        end,
+        pending: None,
+    })
 }
 
 /// Applies a late-open cutoff to a representable opening. A cutoff before

@@ -13,7 +13,7 @@ use super::sessions::{
     previous_session_before_with,
 };
 use crate::calendar::SessionState;
-use crate::calendar::local_time::local_day_window;
+use crate::calendar::local_time::local_day_windows;
 use crate::calendar::rule::SessionKind;
 
 const MAX_MAINTENANCE_GAP: SignedDuration = SignedDuration::from_hours(4);
@@ -212,19 +212,19 @@ pub(in crate::calendar) fn is_closed_all_day_in_calendar<G: SourceGate>(
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     context.require_floor(day)?;
-    let (start, end) = match local_day_window(calendar_tz, day) {
-        Ok(Some(window)) => window,
-        Ok(None) => return Ok(true),
-        Err(_) => {
-            context.require_answerable(day)?;
-            return Ok(true);
-        }
+    let Ok(windows) = local_day_windows(calendar_tz, day) else {
+        context.require_answerable(day)?;
+        return Ok(true);
     };
-    if is_open_with(context, start, kind)? {
-        return Ok(false);
+    for (start, end) in windows {
+        if is_open_with(context, start, kind)?
+            || next_session_after_with(context, start, kind)?
+                .is_some_and(|(next_open, _close)| next_open < end)
+        {
+            return Ok(false);
+        }
     }
-    Ok(next_session_after_with(context, start, kind)?
-        .is_none_or(|(next_open, _close)| next_open >= end))
+    Ok(true)
 }
 
 pub(in crate::calendar) fn is_closed_all_day_at<G: SourceGate>(

@@ -262,18 +262,13 @@ impl MarketHours {
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`
-    /// interpreted in `calendar_tz`. This checks whether *any* session (of `kind`)
-    /// intersects the `[day@00:00, next_day@00:00)` window.
+    /// interpreted in `calendar_tz`. This checks whether any instant in a session
+    /// of `kind` belongs to that date in the supplied time zone.
     ///
-    /// `calendar_tz` need not be the exchange time zone: a venue can be open for
-    /// part of a day defined in another zone, so the answer is decided strictly
-    /// by session overlap with that window, never by a weekday shortcut.
-    ///
-    /// A skipped local midnight (some zones start DST at 00:00) resolves to the
-    /// first representable instant of the day via the crate's shared local-time
-    /// resolver. A wholly skipped civil date has an empty window and is closed.
-    /// At either timestamp limit, the window covers only the representable
-    /// portion of the civil day.
+    /// A calendar in a different zone can classify the same instant under a
+    /// different date. A rollback across midnight can split the date into
+    /// multiple UTC intervals, all of which count. A wholly skipped day is
+    /// closed, and at the timestamp limits only representable instants count.
     #[must_use]
     pub fn is_closed_all_day_in_calendar(
         &self,

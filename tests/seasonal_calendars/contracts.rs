@@ -43,7 +43,8 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
         // has unresolved post-2012 queue and PCP onset dates. Coinbase
         // Derivatives' 16:50 Pre-Open onset is undated, so its dated routing
         // gains the queue only at the 2026-09-11 knowledge-bound row, after
-        // the 2026-08-22 fixture.
+        // the 2026-08-22 fixture. NSE's revised closing auction also takes
+        // effect after that fixture, on 2026-12-07.
         let current_snapshot_may_differ = matches!(
             exchange,
             Exchange::B3
@@ -80,6 +81,7 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
                 | Exchange::Comex
                 | Exchange::Nymex
                 | Exchange::CoinbaseDerivatives
+                | Exchange::NseIndia
         );
         // Recurring selectors can reselect during a multi-day candle scan, and
         // SET's identified calendar assigns its post-midnight DR tail to the

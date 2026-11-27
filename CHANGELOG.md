@@ -43,6 +43,9 @@
 
 ### Fixed
 
+- A published full closure answers the trade-date closure query even when
+  the adjacent day has unpublished hours. An explicit caller replacement
+  still takes precedence.
 - Restore the December 26, 2018 CME equity-index and dollar Nikkei 225
   trading day, including the December 25 evening open. CME's Christmas
   schedule identifies 15:30 CT on December 26 as an afternoon reopening.

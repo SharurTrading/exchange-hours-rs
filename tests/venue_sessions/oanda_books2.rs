@@ -361,7 +361,15 @@ fn oanda_brent_group_closes_at_the_printed_instants_in_london_time() {
             "{date} is closed from its converted early close instant",
         );
     }
-    for day in [(2025, 1, 1), (2025, 12, 25), (2026, 1, 1), (2026, 4, 3)] {
+    // OANDA names BCO as closed on Good Friday 2025. That dated closure
+    // supplies the answer even though the preceding Thursday is withheld.
+    for day in [
+        (2025, 1, 1),
+        (2025, 4, 18),
+        (2025, 12, 25),
+        (2026, 1, 1),
+        (2026, 4, 3),
+    ] {
         let date = date_opt(day.0, day.1, day.2).expect("valid date");
         assert!(
             calendar
@@ -370,16 +378,6 @@ fn oanda_brent_group_closes_at_the_printed_instants_in_london_time() {
             "{date} is the stated full closure",
         );
     }
-    // 2025-04-18 is a stated closure too, but its session opens on
-    // 2025-04-17 at 23:01 London — and 04-17 is one of this book's withheld
-    // dates — so answering the classification completely would consult a
-    // gap: it refuses typed rather than answer from a half-known day.
-    let shadowed = date_opt(2025, 4, 18).expect("valid date");
-    assert_refused_variant(
-        &calendar.is_closed_trade_date(shadowed, SessionKind::Both),
-        DateCoverage::UnresolvedGap,
-        "Good Friday 2025's opening day is withheld, so the classification refuses",
-    );
 }
 
 #[test]

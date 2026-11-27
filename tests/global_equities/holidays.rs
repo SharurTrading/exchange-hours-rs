@@ -2619,7 +2619,7 @@ mod sgx_securities {
     #[test]
     fn a_representative_closure_answers_in_each_published_year() {
         let calendar = sgx();
-        for date in [(2025, 1, 29), (2026, 6, 1)] {
+        for date in [(2025, 1, 29), (2026, 6, 1), (2027, 1, 1)] {
             assert_closure(calendar, date, "sgx_securities");
         }
         // The 2026 Vesak closure is MOM's own Sunday substitution moved to
@@ -2797,7 +2797,7 @@ mod sgx_securities {
         let calendar = sgx();
         let coverage = calendar.holiday_coverage().expect("sgx ships a table");
         assert_eq!(coverage.first(), day(2014, 1, 1));
-        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert_eq!(coverage.last(), day(2027, 1, 1));
         assert!(matches!(
             calendar
                 .is_open(sgt((2009, 12, 31), (10, 0, 0)))
@@ -2834,10 +2834,8 @@ mod sgx_securities {
                 .is_open(sgt((2020, 1, 1), (10, 0, 0)))
                 .expect("the date is inside an audited window")
         );
-        // 2027-01-01 is an SGX holiday in fact, but the operator has
-        // published no 2027 half-day schedule, so the identity must refuse
-        // the date outright rather than answer from a normal week it has not
-        // audited. The detached snapshot still answers the pure normal week.
+        assert_eq!(calendar.is_open(sgt((2027, 1, 1), (10, 0, 0))), Ok(false));
+        // The next weekday remains outside the audited window.
         let outside = sgt((2027, 1, 4), (10, 0, 0));
         assert!(matches!(
             calendar.is_open(outside).map_err(|error| error.kind()),
@@ -2857,9 +2855,9 @@ mod sgx_securities {
         let rows = rows_per_year(sgx());
         assert_eq!(
             rows.len(),
-            95,
+            96,
             "63 pre-2025 closures + 7 pre-2025 half-day grids + 19 closures and \
-             six printed half-day grids across 2025-2026"
+             six printed half-day grids across 2025-2026 + New Year's Day 2027"
         );
         // 2014-2020, read off the operator's own sheets per year.
         assert_eq!(tally(&rows, 2014), (9, 0, 0), "2014");
@@ -2895,6 +2893,7 @@ mod sgx_securities {
             (10, 0, 3),
             "2026: ten closures (three Sunday substitutions), three half days"
         );
+        assert_eq!(tally(&rows, 2027), (1, 0, 0), "2027: New Year's Day");
         // The half days are exactly the operator's printed dates: the seven
         // pre-2025 `#` markers and the six 2025-2026 sheet dates, and no row
         // anywhere in the window states a scalar instant.

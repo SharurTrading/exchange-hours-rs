@@ -1,67 +1,13 @@
 // SPDX-License-Identifier: MIT-0
 
-//! SGX-ST securities-market holiday rows, 2014-2020-01-01 backfilled
-//! alongside the operator's published 2025-2026 sheets.
-//!
-//! Keyed by the crate's venue-local trade date in `Asia/Singapore` (design
-//! memo D1). SGX sessions do not wrap past local midnight, so every holiday
-//! row lands on its own civil date. The operator's own securities
-//! `Trading Hours & Calendar` page (`sgx.com/wps/portal/sgxweb/home/trading/
-//! securities/trading_hours_calendar`) prints one `Public Holidays <year>`
-//! table per year with the operator's own substitution and half-day markers —
-//! `*` names the following Monday and `#` names the preceding half day — so
-//! the 2014-2019 rows (and 2020 New Year's Day) are read from that page's
-//! Wayback `id_` replays, verbatim bytes of an operator statement and
-//! therefore T1. The 2025-2026 rows continue to cite the operator's current
-//! `Stock Exchange — Trading` page read as bytes from SGX's content API
-//! (T2), which designates the MOM calendar and prints the current half-day
-//! grid. The per-row derivation is recorded in
-//! [`docs/evidence/sgx_securities.md`](../../../../../docs/evidence/sgx_securities.md).
-//!
-//! The audited windows are `2014-01-01..2019-12-31`, `2020-01-01` (the one
-//! 2020 date the 2019 sheet prints) and `2025-01-01..2026-12-31`. The spans
-//! between them — 2010-01-01 through 2013-12-31 and 2020-01-02 through
-//! 2024-12-31 — are recorded gaps: no capture of any operator trading-hours
-//! page survives in the Wayback index for those eras, so no operator
-//! artifact prints those closures and the table claims nothing there.
-//! Queries inside the gaps refuse rather than answer; the gaps and their
-//! closing conditions are recorded in the evidence file and tracked as
-//! issue #213.
-//!
-//! The pre-2025 half-day dates ship as replacement block sets restating the
-//! half-day grid the operator's own page prints — **not** scalar early
-//! closes, for the same reason the 2025-2026 module records: the half-day
-//! sheet keeps tradeable phases after the trading close (the closing
-//! Non-Cancel match and, today, Trade at Close). The 2017-2019 grid is the
-//! one that page prints in both surviving replays: Pre-Open 08:30-08:58/59,
-//! morning Non-Cancel to 09:00, Trading 09:00-12:30, Pre-Close 12:30-12:34/35
-//! and the closing Non-Cancel to the printed `12:36` close. Whether the June
-//! 2019 Trade-at-Close launch moved the late-2019 half-day close (as it
-//! moved the full-day close to 17:16) is printed by no surviving artifact,
-//! so the printed 12:36 grid is held and the question is disclosed. The
-//! 2014-2016 sheets print no half-day markers or grid at all, so no half-day
-//! row ships for those years and the eves' treatment is recorded as an
-//! evidence-file gap rather than guessed.
+//! SGX-ST securities-market holidays for 2014-2019, 2020-01-01 and 2025-01-01..2027-01-01.
+//! See [evidence](../../../../../docs/evidence/sgx_securities.md).
 
 use super::EvidenceTier::{T1, T2};
 use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::{HolidayTable, holidays};
 use crate::calendar::exceptions::ExceptionBlock;
 
-/// The operator's 2017-2019 half-day trading day, relative to that trade
-/// date.
-///
-/// Read from the `Half Day Trading` column of the operator's own
-/// `Trading Hours & Calendar` page as captured 2017-09-27 and 2018-12-23
-/// (both replays print the identical grid): Pre-Open 08:30-08:58/59 (order
-/// entry; the slice stops at the earliest possible Non-Cancel start, exactly
-/// as the normal-week and current half-day profiles do), morning Non-Cancel
-/// 08:58/59-09:00, Trading 09:00-12:30, Pre-Close 12:30-12:34/35 (order
-/// entry; the slice stops at 12:34), and the closing Non-Cancel to the
-/// printed `12:36` close, which is tradeable and ships as one `extended`
-/// block.
-///
-/// Evidence: `docs/evidence/sgx_securities.md`.
 #[rustfmt::skip]
 static ERA_2017_HALF_DAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(0, 8 * 3_600 + 30 * 60, 8 * 3_600 + 58 * 60),
@@ -71,17 +17,6 @@ static ERA_2017_HALF_DAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 12 * 3_600 + 34 * 60, 12 * 3_600 + 36 * 60),
 ];
 
-/// The operator's half-day trading day, relative to that trade date.
-///
-/// Read from the half-day column of the operator's own `Trading Schedules`
-/// table: Pre-Open 08:30-08:58/08:59 (order entry; the slice stops at the
-/// earliest possible Non-Cancel start, exactly as the normal-week profile
-/// does), morning Non-Cancel to 09:00, Trading 09:00-12:00, Pre-Close
-/// 12:00-12:04/12:05 (order entry), and the closing Non-Cancel plus Trade at
-/// Close to the printed `Close: 12:16pm`. The two closing phases are both
-/// tradeable and ship as one `extended` block.
-///
-/// Evidence: `docs/evidence/sgx_securities.md`.
 #[rustfmt::skip]
 static HALF_DAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(0, 8 * 3_600 + 30 * 60, 8 * 3_600 + 58 * 60),
@@ -91,22 +26,12 @@ static HALF_DAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 12 * 3_600 + 4 * 60, 12 * 3_600 + 16 * 60),
 ];
 
-/// SGX-ST's built-in holiday rows and the windows they were audited over.
-///
-/// Every date inside a window with no row is audited normal; the spans
-/// between the windows (2010-2013 and 2020-01-02..2024-12-31) are the
-/// recorded capture gaps and carry no answer. The 2014-2016 rows cite the
-/// operator's `Public Holidays` tables as replayed 2014-08-21, 2015-09-24
-/// and 2016-01-08; the 2017 rows the 2017-09-27 replay; the 2018-2020 rows
-/// the 2018-12-23 replay, whose sheet prints the 2018, 2019 and the one
-/// 2020 table; the 2025-2026 rows the operator's current page read as bytes
-/// (`SGX-ST-SCHED`).
 // Evidence: docs/evidence/sgx_securities.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
         (2014, 1, 1) ..= (2019, 12, 31),
         (2020, 1, 1) ..= (2020, 1, 1),
-        (2025, 1, 1) ..= (2026, 12, 31),
+        (2025, 1, 1) ..= (2027, 1, 1),
     ],
     rows: [
         // 2014-01-01 - T1 - SGX-CAL-2014 - New Year's Day, `Closed`.
@@ -377,5 +302,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2026-12-31 - T2 - SGX-ST-SCHED - Eve of New Year, half-day trading,
         // `Close: 12:16pm`.
         (2026, 12, 31, ReplacementBlocks(&HALF_DAY_BLOCKS), T2, "SGX-ST-SCHED"),
+        // 2027-01-01 - T2 - SGX-ST-SCHED-2026-11-27 - New Year's Day.
+        (2027, 1, 1, Closed, T2, "SGX-ST-SCHED-2026-11-27"),
     ],
 };

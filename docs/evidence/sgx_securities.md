@@ -60,7 +60,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2014-01-01..2019-12-31, 2020-01-01..2020-01-01, 2025-01-01..2026-12-31 (inclusive trade dates; the spans between the windows are the capture gaps recorded below). Tiers: T1 for the 2014 to 2020 rows, T2 for the 2025 and 2026 rows.
+**Coverage:** 2014-01-01..2019-12-31, 2020-01-01..2020-01-01, 2025-01-01..2027-01-01 (inclusive trade dates; the spans between the windows are the capture gaps recorded below). Tiers: T1 for the 2014 to 2020 rows, T2 for the 2025 to 2027 rows.
 
 **The 2014-2020 rows come from the operator's own securities
 `Trading Hours & Calendar` page** (`sgx.com/wps/portal/sgxweb/home/trading/
@@ -127,10 +127,9 @@ administrative term, not a securities-market calendar clause. The one
 operator sentence that does adopt the state calendar is the current
 `/stock-exchange/trading` page's designation (`SGX follows the Singapore
 holiday calendar available on the Ministry of Manpower website`), read
-2026-09-28 UTC and later — but this file's own `SGX-ST-SCHED` precedent reads
-that designation as scoped to the sheet's printed years (the window stops at
-2026-12-31 although MOM has gazetted 2027), and a capture dates the
-observation, never the state: a 2026 sentence sources no day in 2011-2013 or
+2026-09-28 UTC and later. The standalone designation resolves New Year's
+Day 2027 using the current MOM calendar. A capture dates the observation;
+the 2026 publication supplies no evidence of adoption in 2011-2013 or
 2020-2024.
 
 The **state leg is retrieved and the derivation validated** against every
@@ -453,39 +452,16 @@ three load-bearing statements in the operator's own words:
    be half-day trading in 2025 & 2026.` with the six dates printed in the
    page's own table.
 
-**Why the window ends at 2026-12-31.** The operator's own sheet is printed for
-2025 & 2026 only. MOM has gazetted 2027, but the operator has not stated the
-2027 treatment of the Chinese New Year, Christmas and New Year eves — whether
-any of them is a half day is exactly the fact statement 3 exists to make — so
-a 2027 date without a row could not be audited normal and the window cannot
-honestly extend. Re-checked 2026-09-29 UTC: the `SGX-ST-SCHED` content-api
-endpoint was read again and answered byte-identical bytes (same sha256
-`45dbdc61…`), so the sheet still scopes itself to 2025 & 2026 and the
-2027-01-01..2027-12-31 arrangement remains unpublished. Re-checked again
-2026-10-02 UTC (artifact
-`api2_content-api_stock-exchange_trading.live-20261002T235448Z.json` and
-`INDEX-recheck-2026-10-02.md` under `holidays/raw/equities/sgx_securities/2025-2027/`):
-the endpoint answered changed bytes — editorial deltas elsewhere on the page
-(market-maker programme wording and a board-lot FAQ that mentions a February
-2027 implementation) — and the holiday sheet is content-identical: the
-half-day statement still scopes itself to `2025 & 2026` and names no 2027
-dates. Re-checked again 2026-11-18 UTC (artifacts
-`api2_content-api_stock-exchange_trading.live-20261118T090437Z.json`,
-`live_mom_public_holidays-20261118.html` and
-`INDEX-recheck-2026-11-18.md` in the same store directory): the endpoint
-answered changed bytes whose only `2027` strings are that same board-lot FAQ
-note, and the holiday sheet is again content-identical — still scoped to
-`2025 & 2026`. The state side is now banked for when the operator speaks:
-MOM's live page prints the gazetted 2027 tab (ten rows, eleven dated days,
-including its own "Monday, 8 February 2027, will be a public holiday …"
-substitution sentence), captured beside the operator artifact. The operator
-leg is still the missing half — the designation is read as scoped to the
-sheet's printed years, and MOM alone has never keyed a row — so no 2027 row
-keys. **Closing condition:**
-SGX's own content-api bytes stating the 2027 treatment — the annual
-securities schedule naming the 2027 half days and closures, or the sheet
-extended to 2027 — at which
-point the window extends. Re-checked monthly per LAW-WATCH.
+**Why the window ends at 2027-01-01.** The earlier sweeps through
+2026-11-18 UTC treated the entire SGX page as scoped to 2025 and 2026. The
+2026-11-27 UTC raw CMS recheck resolves the two statements separately. The
+unqualified MOM designation is a standalone paragraph under Singapore Public
+Holidays on the securities trading page. The following paragraph limits the
+specified eve half days to 2025 and 2026. MOM prints Friday, 1 January 2027,
+as New Year's Day. That date immediately follows the previous audited end, so
+only the single confirmed closure extends the window. Later dates still lack
+an audited securities schedule. Reconfirm the closure by 2026-12-31 UTC
+([#401](https://github.com/SharurTrading/exchange-hours-rs/issues/401)).
 
 **Tier.** The rows key at T2 because the artifact behind every row is the
 operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES), which
@@ -544,6 +520,12 @@ and the operator's designation adopts the calendar whole. Each substituted
 Monday above quotes MOM's sentence in full beside it so a reader can check
 the derivation from the saved bytes.
 
+### 2027
+
+| Trade date | Kind | Source statement | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `SGX follows the Singapore holiday calendar` | `SGX-ST-SCHED-2026-11-27` | T2 | `SGX-MOM-CAL-2027` lists `1 January 2027, Friday` as `New Year's Day`. |
+
 **The half-day rows state the sheet exactly.** Every matching phase the
 operator prints on a half day — the morning session to 12:00, the closing
 Non-Cancel to 12:06 and Trade at Close to 12:16 — ends at or before the
@@ -565,6 +547,8 @@ Pre-Close order entry, and the closing routine runs to the printed 12:16.
 | `SGX-CAL-2018-2019` | 2018-01-01 .. 2020-01-01 | <https://web.archive.org/web/20181223141708id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20181223141708`, retrieved 2026-09-29 05:09:54 UTC | T1 | `818e043305ce491a2279d98d4279a26eed2b6d6aae61df9afca7ec3bdbf516ba` |
 | `SGX-ST-SCHED` | 2025-01-01 .. 2026-12-31 | <https://api2.sgx.com/content-api?queryId=dd24dd8e5b3ef52e535a662e01b58d76471f335e%3Apage&variables=%7B%22path%22%3A%22%2Fstock-exchange%2Ftrading%22%2C%22lang%22%3A%22EN%22%7D> | retrieved 2026-09-28 01:59 UTC | T2 | `45dbdc61d808b4f72bb8bbddb198107f08759a20b85b288271d6d5a0326facd7` |
 | `SGX-MOM-CAL-2025-2026` | 2025-01-01 .. 2026-12-31 | <https://www.mom.gov.sg/employment-practices/public-holidays> | retrieved 2026-09-28 01:48 UTC | T1 | `a4f175a7d33222b91f1c8c2f84e6d1e75f0c0b15e265addb478b73e3e65dcf3d` |
+| `SGX-ST-SCHED-2026-11-27` | 2027-01-01 | <https://api2.sgx.com/content-api?queryId=dd24dd8e5b3ef52e535a662e01b58d76471f335e%3Apage&variables=%7B%22path%22%3A%22%2Fstock-exchange%2Ftrading%22%2C%22lang%22%3A%22EN%22%7D> | retrieved 2026-11-27 04:47 UTC | T2 | `debd651570b4932ef6ac8bed871d535cb3b2fc8260f69668359fbcf8a32d77ac` |
+| `SGX-MOM-CAL-2027` | 2027-01-01 | <https://www.mom.gov.sg/employment-practices/public-holidays> | retrieved 2026-11-27 04:47 UTC | T1 | `e64567484c5d6f70620a34de75a11ebfb2deaa823f0d12cca40ec3c0ddec082a` |
 | `SGX-TH-2009-05-14` | no rows keyed (the pre-floor securities Trading Hours page; Normal-week corroboration) | <https://web.archive.org/web/20090514003555id_/http://www.sgx.com:80/wps/wcm/connect/mp_en/site/trading_on_sgx/securities_market/securities_trading_and_settlement/Trading+Hours?> | Wayback `id_` replay of capture `20090514003555`, retrieved 2026-09-30 04:47 UTC | T1 | `0dd72053814bf349b1177d300027cd4bfae160cc4fd75c22afa824d5f7099bf1` |
 
 `SGX-ST-SCHED` is the document id the 2025-2026 rows cite; `SGX-MOM-CAL-
@@ -634,18 +618,11 @@ shells and key nothing.
   scoped to closures. **Closing condition:** a 2014-2016 artifact printing
   the operator's half-day treatment (a sheet edition with the legend, or a
   participant notice).
-- **2027 is unpublished on the operator channel** (re-checked 2026-11-18
-  UTC) — the `SGX-ST-SCHED` sheet still scopes its half-day statement to
-  2025 & 2026, so the audited window stops at 2026-12-31 and no 2027 date is
-  asserted normal. The state side is published and captured: MOM's gazetted
-  2027 list (ten rows, eleven dated days) is held as
-  `live_mom_public_holidays-20261118.html` with `INDEX-recheck-2026-11-18.md`
-  in the store's `sgx_securities/2025-2027/` directory, but MOM alone has
-  never keyed a row and the designation is read as scoped to the sheet's
-  printed years. **Closing condition:** the SGX content-API bytes carrying
-  the 2027 closure designation — a half-day sheet extended to 2027, or a
-  2027 securities trading schedule naming the year's closures and half days
-  (tracked as #401).
+- **The 2027 annual schedule is outstanding.** The operator's standing
+  designation and the gazetted list together establish January 1. Coverage
+  after that date stays open under [#401](https://github.com/SharurTrading/exchange-hours-rs/issues/401)
+  pending an SGX-ST publication auditing the remaining closures, half days and
+  intervening trading dates.
 - **the 2019 Trade-at-Close half-day question** — no surviving artifact
   prints the half-day grid as it stood after the 2019-06-03 Trade-at-Close
   launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid
@@ -685,6 +662,12 @@ wherever the holiday windows reach; below the first window the dates answer
 their session questions as the one-flank bridged residual (#213, the
 2026-10-07 ruling, #296) while their holiday-table classification refuses
 typed.
+
+SGX-ST securities sessions do not wrap past local midnight. Each holiday is
+keyed to the matching Singapore civil trade date. The 2017-2019 half-day grid
+uses its printed 12:36 close and slices order entry at the earliest possible
+Non-Cancel start. The current half-day grid uses the same rule and includes
+the matching Trade at Close phase through 12:16.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/sgx.rs on 2026-10-02 UTC)
 

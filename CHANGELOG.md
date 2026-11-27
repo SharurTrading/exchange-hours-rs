@@ -43,6 +43,8 @@
 
 ### Fixed
 
+- Fill NSE's 2018 cash holiday calendar, restore eight historical Muhurat
+  sessions and correct the two 2014 election closures from NSE circulars.
 - A published full closure answers the trade-date closure query even when
   the adjacent day has unpublished hours. An explicit caller replacement
   still takes precedence.

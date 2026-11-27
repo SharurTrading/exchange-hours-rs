@@ -22,10 +22,7 @@
 //! sourced Nasdaq's two TBA early closes (Equity Trader Alerts 2010-73 and
 //! 2011-54, the operator's own live Trader News pages), so the Nasdaq
 //! fixtures run on an ordinary covered Friday and assert the overlay's
-//! answers; the withheld-row refusal the fixtures used to pin there is pinned
-//! on `nse_india`'s still-withheld 2014-10-23 Muhurat row instead. The
-//! engine's runtime semantics remain exercised on covered dates by the 2026
-//! fixtures in this file and by `tests/coverage_query_errors.rs`.
+//! answers. The withheld-row refusal uses an OANDA Brent fixture.
 
 mod support;
 
@@ -81,15 +78,7 @@ fn assert_withheld_shadow<T: std::fmt::Debug>(answer: Result<T, CalendarQueryErr
 /// A caller-owned overlay never lifts the holiday layer's own refusal on a
 /// withheld date (LAW-HOLIDAY-SCOPE: caller data does not improve the built-in
 /// ledger's completeness claim).
-///
-/// Nasdaq's two `TBA` early closes — the dates this contract was pinned on —
-/// sourced on 2026-10-09 UTC from Equity Trader Alerts 2010-73 and 2011-54,
-/// so the contract is pinned on `nse_india`'s 2014-10-23 Muhurat row instead:
-/// the operator's own 2014 list footnotes the special session without instants
-/// and no circular was recoverable, so the date still withholds. The fixture
-/// blocks are shape fixtures, not sourced instants, exactly as the Nasdaq
-/// ones above are.
-static NSE_WITHHELD_BLOCKS: [ExceptionBlock; 2] = [
+static WITHHELD_BLOCKS: [ExceptionBlock; 2] = [
     ExceptionBlock::regular(0, 18 * 3_600 + 15 * 60, 19 * 3_600 + 15 * 60),
     ExceptionBlock::extended(0, 19 * 3_600 + 25 * 60, 19 * 3_600 + 35 * 60),
 ];
@@ -97,28 +86,28 @@ static NSE_WITHHELD_BLOCKS: [ExceptionBlock; 2] = [
 #[test]
 fn a_caller_overlay_never_lifts_a_withheld_row() {
     let records = [SessionExceptionRecord::replace_sessions(
-        day(2014, 10, 23),
-        &NSE_WITHHELD_BLOCKS,
+        day(2025, 7, 3),
+        &WITHHELD_BLOCKS,
     )];
     let table = StaticSessionExceptions::new(
-        CalendarSource::Exchange(Exchange::NseIndia),
-        day(2014, 10, 20),
-        day(2014, 10, 27),
+        CalendarSource::MarketHoursKey(MarketHoursKey::OandaBrent),
+        day(2025, 7, 1),
+        day(2025, 7, 5),
         &records,
     )
     .expect("the fixture records must be valid");
-    let calendar = calendar_for_exchange(Exchange::NseIndia)
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaBrent)
         .with_session_exceptions(&table)
         .expect("the fixture is scoped to this calendar");
 
     // The withheld row refuses the session surface with or without the
     // caller's replacement, and the trade-date walk refuses with it.
     assert_withheld_shadow(
-        calendar.is_open(et((2014, 10, 23), (10, 0, 0))),
-        "the withheld Muhurat date under a caller replacement",
+        calendar.is_open(et((2025, 7, 3), (10, 0, 0))),
+        "the withheld Brent date under a caller replacement",
     );
     assert_withheld_shadow(
-        calendar.trade_date(et((2014, 10, 23), (10, 0, 0))),
+        calendar.trade_date(et((2025, 7, 3), (10, 0, 0))),
         "the withheld date's trade date",
     );
 }

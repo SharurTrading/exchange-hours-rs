@@ -823,14 +823,8 @@ fn withheld(calendar: ExchangeCalendar, date: Date) -> bool {
 /// closes at their printed 1:00 p.m., 2012-45 states the Sandy Tuesday
 /// closure unconditionally, and 2025-1 (a Wayback replay) states the mourning
 /// closure, so the scope reads complete to 2026-12-31.
-/// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026; from
-/// 2026-10-06 UTC five of its Muhurat dates ship the operator's own circulars
-/// as `ReplacementBlocks`; a second pass the same UTC day recovered the 2010,
-/// 2015 and 2016 circulars the same way and the 2012 list's own annual
-/// circular, whose window merged with the year's printed Muhurat date
-/// withheld — leaving seven withheld dates (2011, 2012, 2013, 2014, 2017,
-/// 2019 and the 2026 banner date; none in 2021, which names no date), with no
-/// phase-level gap behind the denial either. `hkex` was the next from
+/// NSE recovered the 2018 list and its remaining Muhurat circulars on
+/// 2026-11-27 UTC. Special Saturday sessions remain tracked in #410. `hkex` was the next from
 /// 2026-09-29 UTC, and left the map on
 /// 2026-09-30 UTC: the operator's own Phase-Two-era Trading Hours page states the
 /// eve session deletions in session language, so the ten 2012-2015 half-day eves
@@ -877,10 +871,9 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // resolved the 2026-12-28 `open1` withholding onto family rows and
         // shipped 2026-12-24 as one new disagreement date to the intersection.
         ("iceus", 70),
-        // 7 since the 2026-10-06 second pass: three more Muhurat circulars
-        // (2010, 2015, 2016) landed as replacement blocks and the recovered
-        // 2012 list carried that year's own withheld Muhurat date in.
-        ("nse_india", 6),
+        // The NSE date-level gaps are omitted Saturday sessions (#410),
+        // so none of its shipped rows carries Unsourced.
+        ("nse_india", 0),
         // 3 since the 2026-11-14 wave: the 2028/2029 Eid windows the operator
         // page already printed key the extension to the witnessed resume day,
         // and the three dates its 2028/2029 tabs leave unworked (2028-02-22,
@@ -1069,7 +1062,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          to 2013-09-16 so its carried region answers and it reads complete, and nasdaq's horizon \
          to the 2010-01-01 floor the same day (the operator's own SEC filings and archived Trading \
          Hours page — #231's last half discharged); tse and \
-         sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
+         sse windows end at the operator's horizon, and NSE Saturday sessions are tracked in #410; \
          the LSE public mirror closes its five 2025 withheld dates on 2026-10-11 UTC, \
          euronext_paris two announced-but-unstated 2026 eves (four since 2026-11-14: the \
          published 2027 calendar adds its two eves), the 2026-09-29/30 UTC backfills \

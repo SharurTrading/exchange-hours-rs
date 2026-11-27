@@ -34,7 +34,7 @@
 mod support;
 
 use crate::support::zones::{
-    ISTANBUL, KOLKATA, NEW_YORK, RIYADH, SAO_PAULO, SHANGHAI, SINGAPORE, US_CENTRAL,
+    ISTANBUL, KOLKATA, NEW_YORK, PARIS, RIYADH, SAO_PAULO, SHANGHAI, SINGAPORE, US_CENTRAL,
 };
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
@@ -52,12 +52,6 @@ fn date(year: i16, month: i8, day: i8) -> Date {
 fn sgt(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
     local_opt(&SINGAPORE, (year, month, day), (hour, minute, 0))
         .expect("fixture must be an unambiguous Singapore instant")
-}
-
-/// An India-local instant, as UTC.
-fn ist(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> jiff::Timestamp {
-    local_opt(&KOLKATA, (year, month, day), (hour, minute, 0))
-        .expect("fixture must be an unambiguous Kolkata instant")
 }
 
 /// A Chicago-local instant, as UTC.
@@ -146,53 +140,26 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
         ],
         "the sgx below-first span and its capture gap are both residual spans"
     );
-    // `nse_india` ships windows 2010-2017 and 2019-2026; 2018 is the bridged
-    // residual. 2012 sat beside it until 2026-10-06 UTC, when the 2012 list's
-    // own annual circular (`NSE-CIRC-2011-66`) surfaced and the window merged.
     let nse = calendar_for_exchange(Exchange::NseIndia).coverage();
-    assert_eq!(
-        bridged_union(nse),
-        vec![(date(2018, 1, 1), date(2018, 12, 31))],
-        "the one unrecovered NSE year is one residual span"
+    assert!(
+        bridged_union(nse).is_empty(),
+        "the 2018 annual list closes the bridge"
     );
-    // The residual spans together cover 1,826 sgx trade dates (2020-01-02 was
-    // a holiday in its own right, so the span opens on 01-02) and 365 nse
-    // trade dates: 2,191 in all.
-    let mut bridged_days = 0_usize;
-    for (first, last) in [
-        (date(2020, 1, 2), date(2024, 12, 31)),
-        (date(2018, 1, 1), date(2018, 12, 31)),
-    ] {
-        let mut day = first;
-        while day <= last {
-            bridged_days += 1;
-            day = day
-                .tomorrow()
-                .expect("the residual span stays inside the representable calendar");
-        }
-    }
+    let day = date(2022, 6, 8);
     assert_eq!(
-        bridged_days, 2_191,
-        "the bridged union is the 1,826 sgx days plus the 365 nse days"
+        gap_reason_on(sgx, day),
+        Some(CoverageGapReason::HolidayWindowsBridged),
+        "{day} reports the bridged residual"
     );
-    // The residual withholds the complete-calendar claim — it is not an
-    // audited normal and not `Covered`.
-    for (coverage, day) in [(&sgx, date(2022, 6, 8)), (&nse, date(2018, 3, 12))] {
-        assert_eq!(
-            gap_reason_on(*coverage, day),
-            Some(CoverageGapReason::HolidayWindowsBridged),
-            "{day} reports the bridged residual"
-        );
-        assert_eq!(
-            coverage.coverage_on(day),
-            DateCoverage::OutsideCoveredRange,
-            "{day} withholds the complete-calendar claim"
-        );
-        assert!(
-            !coverage.is_complete_on(day),
-            "{day} is not claimed complete: the holiday layer is absent"
-        );
-    }
+    assert_eq!(
+        sgx.coverage_on(day),
+        DateCoverage::OutsideCoveredRange,
+        "{day} withholds the complete-calendar claim"
+    );
+    assert!(
+        !sgx.is_complete_on(day),
+        "{day} is not claimed complete: the holiday layer is absent"
+    );
 }
 
 /// One below-first span row: the identity's wire name, the span's first and
@@ -337,24 +304,6 @@ fn bridged_dates_answer_their_session_questions_from_the_sourced_normal_week() {
         sgx.is_open(sgt(2021, 6, 19, 10, 0)),
         Ok(false),
         "the bridged Saturday answers the normal week's own weekend closure"
-    );
-    // `nse_india`: the trade-date closure question answers from the sourced
-    // normal week — a Friday and a Monday of the bridged year are open.
-    let nse = calendar_for_exchange(Exchange::NseIndia);
-    assert_eq!(
-        nse.is_closed_trade_date(date(2018, 6, 15), SessionKind::Both),
-        Ok(false),
-        "the bridged Friday answers not-closed beside the disclosed residual"
-    );
-    assert_eq!(
-        nse.is_closed_trade_date(date(2018, 3, 12), SessionKind::Both),
-        Ok(false),
-        "the bridged Monday answers not-closed beside the disclosed residual"
-    );
-    assert_eq!(
-        nse.is_open(ist(2018, 6, 15, 10, 0)),
-        Ok(true),
-        "the bridged NSE Friday answers its normal-week session"
     );
 }
 
@@ -587,7 +536,6 @@ fn the_flank_kinds_disagree_on_classification_at_the_first_window() {
 #[test]
 fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
     let sgx = calendar_for_exchange(Exchange::SgxSecurities);
-    let nse = calendar_for_exchange(Exchange::NseIndia);
     // Inside the bridge the table states nothing: no row, no audited normal,
     // and no closure fabricated from either flank.
     for (calendar, day) in [
@@ -595,8 +543,6 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
         (&sgx, date(2021, 6, 14)),
         (&sgx, date(2024, 12, 30)),
         (&sgx, date(2011, 6, 14)),
-        (&nse, date(2018, 6, 15)),
-        (&nse, date(2018, 3, 12)),
     ] {
         assert_eq!(
             calendar.holiday_on(day),
@@ -605,8 +551,7 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
         );
     }
     // The flanking windows' own rows are untouched: the one 2020 date the
-    // 2019 sheet prints answers shut, and the withheld NSE Muhurat date
-    // inside its window still refuses as an unresolved gap.
+    // 2019 sheet prints answers shut.
     assert_eq!(
         sgx.holiday_on(date(2020, 1, 1))
             .map(exchange_hours::Holiday::kind),
@@ -618,11 +563,6 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
             .expect("inside a window"),
         "the 2020 New Year closure answers shut"
     );
-    assert!(matches!(
-        nse.is_closed_trade_date(date(2014, 10, 23), SessionKind::Both)
-            .map_err(|error| error.kind()),
-        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
-    ));
 }
 
 #[test]
@@ -702,35 +642,30 @@ fn above_the_last_window_still_refuses_everywhere() {
 
 #[test]
 fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
-    let nse = calendar_for_exchange(Exchange::NseIndia);
-    // 2014-10-23 is one of the Muhurat dates the operator footnotes without
-    // instants: the refusal is unchanged, and the baseline names the sourced
-    // normal week it sits inside.
-    let error = nse
-        .is_closed_trade_date(date(2014, 10, 23), SessionKind::Both)
+    let paris = calendar_for_exchange(Exchange::EuronextParis);
+    // The operator announced the 2027 Christmas Eve half day without its instants.
+    let error = paris
+        .is_closed_trade_date(date(2027, 12, 24), SessionKind::Both)
         .expect_err("the withheld date refuses");
     assert!(matches!(
         error.kind(),
         CalendarQueryErrorKind::UnresolvedGap { source, date: refused }
-            if source == nse.source() && refused == date(2014, 10, 23)
+            if source == paris.source() && refused == date(2027, 12, 24)
     ));
     let baseline = error
         .normal_week_baseline()
         .expect("the sourced week states a baseline");
     assert_eq!(
         baseline.identity(),
-        nse.source(),
+        paris.source(),
         "the baseline belongs to the refusing identity"
     );
-    assert_eq!(baseline.tz(), KOLKATA);
+    assert_eq!(baseline.tz(), PARIS);
     assert_eq!(
         baseline.weekday(),
-        jiff::civil::Weekday::Thursday,
-        "2014-10-23 is a Thursday in the venue's own zone"
+        jiff::civil::Weekday::Friday,
+        "2027-12-24 is a Friday in the venue's own zone"
     );
-    // The tradeable windows are the timeline's own 2011-10-03 grid: the
-    // 09:15-15:30 continuous session, the 09:07-09:15 routine and the
-    // 15:40-16:00 closing session; the order-entry queue opens 09:00.
     let tradeable: Vec<(u32, u32)> = baseline
         .tradeable_rules()
         .map(|rule| (rule.open_ssm(), rule.close_ssm()))
@@ -740,9 +675,9 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
     assert_eq!(
         tradeable,
         vec![
-            (9 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
-            (9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
-            (15 * 3_600 + 40 * 60, 16 * 3_600),
+            (9 * 3_600, 17 * 3_600 + 30 * 60),
+            (17 * 3_600 + 30 * 60, 17 * 3_600 + 35 * 60),
+            (17 * 3_600 + 35 * 60, 17 * 3_600 + 40 * 60),
         ],
         "the baseline states the normal week's own tradeable slices"
     );
@@ -751,18 +686,18 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
             .order_entry_rules()
             .map(|rule| (rule.open_ssm(), rule.close_ssm()))
             .collect::<Vec<_>>(),
-        vec![(9 * 3_600, 9 * 3_600 + 7 * 60)],
+        vec![(7 * 3_600 + 30 * 60, 9 * 3_600)],
         "the baseline states the normal week's own order-entry queue"
     );
     // The rendered context reads as the issue's example does, and the
     // baseline itself says nothing about the holiday arrangement.
     let rendered = baseline.to_string();
     assert!(
-        rendered.contains("normal week Thursday"),
+        rendered.contains("normal week Friday"),
         "the baseline names the weekday: {rendered}"
     );
     assert!(
-        rendered.contains("open 09:15-15:30"),
+        rendered.contains("open 09:00-17:30"),
         "the baseline renders the ordinary session: {rendered}"
     );
     assert!(
@@ -787,7 +722,7 @@ fn the_baseline_is_absent_where_the_normal_week_is_not_sourced() {
     // A pre-floor refusal states no baseline: the supported domain has not
     // started, and the below-floor contract is unchanged.
     let error = nse
-        .is_open(ist(2009, 12, 31, 10, 0))
+        .is_open(local_opt(&KOLKATA, (2009, 12, 31), (10, 0, 0)).unwrap())
         .expect_err("a pre-floor instant refuses");
     assert!(matches!(
         error.kind(),

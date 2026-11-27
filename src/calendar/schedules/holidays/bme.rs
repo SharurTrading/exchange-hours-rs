@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! BME principal-share cash holidays, 2010–2026.
+//! BME principal-share cash holidays, 2010–2027.
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
@@ -29,7 +29,7 @@ static HALF_DAY_TAL: [ExceptionBlock; 5] = [
 
 // Evidence: docs/evidence/bme.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
     rows: [
         (2010, 1, 1, Closed, T1, "BME-CAL-2010"),
         (2010, 4, 2, Closed, T1, "BME-CAL-2010"),
@@ -134,8 +134,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 4, 3, Closed, T1, "BME-CAL-2026"),
         (2026, 4, 6, Closed, T1, "BME-CAL-2026"),
         (2026, 5, 1, Closed, T1, "BME-CAL-2026"),
-        (2026, 12, 24, Unsourced, T1, "BME-CAL-2026"),
+        (2026, 12, 24, ReplacementBlocks(&HALF_DAY_TAL), T1, "BME-EVES-2026"),
         (2026, 12, 25, Closed, T1, "BME-CAL-2026"),
-        (2026, 12, 31, Unsourced, T1, "BME-CAL-2026"),
+        (2026, 12, 31, ReplacementBlocks(&HALF_DAY_TAL), T1, "BME-EVES-2026"),
+        (2027, 1, 1, Closed, T1, "BME-CAL-2027"),
+        (2027, 3, 26, Closed, T1, "BME-CAL-2027"),
+        (2027, 3, 29, Closed, T1, "BME-CAL-2027"),
+        (2027, 12, 24, Unsourced, T1, "BME-CAL-2027"),
+        (2027, 12, 31, Unsourced, T1, "BME-CAL-2027"),
     ],
 };

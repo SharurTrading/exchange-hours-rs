@@ -1,22 +1,18 @@
 // SPDX-License-Identifier: MIT-0
 
 //! MEFF IBEX 35 futures holiday and early-close table: audited windows
-//! 2010-01-01..2011-12-31 and 2014-01-01..2026-12-31.
+//! 2010-01-01..2011-12-31 and 2014-01-01..2027-12-31.
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, EarlyClose};
 use super::{HolidayTable, holidays};
 
-// The MEFF Christmas-eve and New-Year-eve shorthand closes the market at
-// 14:00 CET ("trade until 14:00 hrs CET"; notice 49/2025 prints "Cierre de
-// Negociación: 14:00h"). The 13:54 VWAP settlement window the same notice
-// prints is a fixing instant, never a session boundary.
-// Evidence: docs/evidence/bme_ibex.md
+// The 14:00 Madrid trading close. Evidence: docs/evidence/bme_ibex.md
 const EVE_CLOSE_SSM: u32 = 14 * 3_600;
 
 // Evidence: docs/evidence/bme_ibex.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2011, 12, 31), (2014, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2011, 12, 31), (2014, 1, 1) ..= (2027, 12, 31)],
     rows: [
         (2010, 1, 1, Closed, T1, "MEFF-CAL-2010"),
         (2010, 4, 2, Closed, T1, "MEFF-CAL-2010"),
@@ -105,8 +101,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 4, 3, Closed, T1, "BME-NOTA-2026"),
         (2026, 4, 6, Closed, T1, "BME-NOTA-2026"),
         (2026, 5, 1, Closed, T1, "BME-NOTA-2026"),
-        (2026, 12, 24, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "BME-NOTA-2026"),
+        (2026, 12, 24, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "MEFF-EVES-2026"),
         (2026, 12, 25, Closed, T1, "BME-NOTA-2026"),
-        (2026, 12, 31, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "BME-NOTA-2026"),
+        (2026, 12, 31, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "MEFF-EVES-2026"),
+        (2027, 1, 1, Closed, T1, "MEFF-CAL-2027"),
+        (2027, 3, 26, Closed, T1, "MEFF-CAL-2027"),
+        (2027, 3, 29, Closed, T1, "MEFF-CAL-2027"),
+        (2027, 12, 24, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "MEFF-CAL-2027"),
+        (2027, 12, 31, EarlyClose { close_ssm: EVE_CLOSE_SSM }, T1, "MEFF-CAL-2027"),
     ],
 };

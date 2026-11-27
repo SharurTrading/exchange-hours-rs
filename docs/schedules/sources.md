@@ -487,9 +487,9 @@ per-record review before any exception can drive runtime.
 
 - **Official current/rulebook:** [BME trading hours](https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html) and the [Regulation Explorer](https://www.bolsasymercados.es/bme-exchange/en/Regulation/Regulation-Explorer).
 - **Channel note (verified live 2026-11-18 UTC):** the venue's pages answer on [bolsasymercados.es](https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html); `bolsademadrid.es` HTTPS connections reset.
-- **Holiday calendar (watch list entry, added 2026-10-23 UTC):** the operator's [trading calendar](https://www.bolsasymercados.es/en/bme-exchange/trading/trading-calendar.html) page — 2026 as of the addition, with the 2027 edition the watch item — and [MEFF's trading calendar](https://www.meff.es/ing/Trading-Calendar) for the IBEX derivatives family; re-checked monthly per LAW-WATCH.
+- **Holiday calendar (watch list entry, added 2026-10-23 UTC):** the operator's [trading calendar](https://www.bolsasymercados.es/en/bme-exchange/trading/trading-calendar.html) page and [MEFF's trading calendar](https://www.meff.es/ing/Trading-Calendar) for the IBEX derivatives family; re-checked monthly per LAW-WATCH.
 - **Notices/evidence:** the operator's [pre-floor SIBE circular](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf) establishes the baseline; [Circular 1/2023](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2023/circular-1-23-english.pdf) and [Operating Instruction 47/2023](https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2023/oi-47-2023-application-of-tal-phase-for-fixing-instruments.pdf) establish the 2023-12-04 Trading-At-Last launch.
-- **Status:** principal-share phases, the conservative 30-second auction envelope, and the 2023 Trading-At-Last revision are primary-supported through the complete audit window.
+- **Status:** the 2027 SIBE annual instruction and the detailed 2026 year-end timetable were verified on 2026-11-27 UTC. The detailed 2027 year-end timetable remains the watch item.
 
 <a id="eu-meff"></a>
 
@@ -497,7 +497,7 @@ per-record review before any exception can drive runtime.
 
 - **Official current/rulebook:** [MEFF Trading Hours](https://www.meff.es/ing/Trading-Hours) and the [IBEX 35 futures product page](https://www.meff.es/ing/Financial-Derivatives/Futures-on-IBEX35).
 - **Notices/evidence:** the market-notice archive (the 2017-01-23 extension release, notice 7/2024's CNMV-conditional date, notice 13/2024's postponement, notice 16/2025's unconditional 2025-06-23 day, and the 24/31-December session notices), and the yearly [BME press-release](https://www.bolsasymercados.es/en/media/press-releases) trading calendars that name MEFF among the Spanish markets they close. **Channel note, 2026-11-14 UTC sweep:** the old `meff.es/docs/comunicadosMercado/` path now serves a catch-all page — the notices moved to [BME's MEFF market-notices page](https://www.bolsasymercados.es/en/bme-exchange/prices-and-markets/meff/market-notices.html), whose list is a client-side component over `apiweb.bolsasymercados.es` (endpoint probes 404 as of the sweep), so notice enumeration needs a browser session.
-- **Status:** Primary for the IBEX 35 / Mini / Micro index-futures family; every other MEFF product family (Bono 10, xRolling FX, stock futures) requires its own review.
+- **Status:** the 2027 financial derivatives circular and the detailed 2026 year-end notice were verified for IBEX 35, Mini and Micro futures on 2026-11-27 UTC.
 
 <a id="ice-eu-fixed-income"></a>
 

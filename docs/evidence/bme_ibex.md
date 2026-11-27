@@ -75,15 +75,15 @@ language and is encoded as a holiday-table early close.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2011-12-31, 2014-01-01..2026-12-31 (MEFF derivatives
-trade dates, Europe/Madrid; BME-wide operator calendars that name MEFF).
+**Coverage:** 2010-01-01..2011-12-31, 2014-01-01..2027-12-31 (MEFF derivatives
+trade dates, Europe/Madrid; BME-wide calendars that name MEFF and MEFF circulars).
 
 The closure set is constant across every audited year: 1 January, Good
 Friday, Easter Monday, 1 May (when a weekday), 25 December, and 26 December in
 lieu. The operator never closes for Epiphany, 12 October, 15 August, 1
 November, 6 or 8 December — those days traded in every audited year. 24 and
 31 December are 14:00 early closes in the years they fall on weekdays (2014,
-2015, 2018–2020, 2024–2026); 2021 closed both fully; 2010 closed 31 December
+2015, 2018–2020, 2024–2027); 2021 closed both fully; 2010 closed 31 December
 fully while 24 December 2010 traded. The early-close instant is the
 operator's "trade until 14:00 hrs CET" (2018–2020 releases, the live
 calendar page) and notice 14/2024 and notice 49/2025's MEFF-specific "Cierre
@@ -259,9 +259,27 @@ typed.
 | 2026-04-03 | closed | − "Friday, 3 April" (Good Friday) | `BME-NOTA-2026` | T1 | BME release names MEFF among the Spanish markets it closes; same local civil trade date |
 | 2026-04-06 | closed | − "Monday, 6 April" (Easter Monday) | `BME-NOTA-2026` | T1 | BME release names MEFF among the Spanish markets it closes; same local civil trade date |
 | 2026-05-01 | closed | − "Friday, 1 May" | `BME-NOTA-2026` | T1 | BME release names MEFF among the Spanish markets it closes; same local civil trade date |
-| 2026-12-24 | early close | 14:00 — "On Thursday, 24 December and Thursday, 31 December, the market will be open until 2:00 pm" | `BME-NOTA-2026` | T1 | Operator release half-day clause; same local civil trade date |
+| 2026-12-24 | early close | `Cierre de Negociación: 14:00h` | `MEFF-EVES-2026` | T1 | MEFF financial derivatives timetable confirms the BME-wide release |
 | 2026-12-25 | closed | − "Friday, 25 December" | `BME-NOTA-2026` | T1 | BME release names MEFF among the Spanish markets it closes; 26 December 2026 is a Saturday |
-| 2026-12-31 | early close | 14:00 — "On Thursday, 24 December and Thursday, 31 December, the market will be open until 2:00 pm" | `BME-NOTA-2026` | T1 | Operator release half-day clause; same local civil trade date |
+| 2026-12-31 | early close | `Cierre de Negociación: 14:00h` | `MEFF-EVES-2026` | T1 | MEFF financial derivatives timetable confirms the BME-wide release |
+
+### 2027
+
+MEFF Circular C-EX-DF-23/2026, dated 20 November 2026 and effective 1 January
+2027, supersedes C-EX-DF-18/2026. Its full-day exclusions apply to IBEX 35,
+Mini and Micro futures. Its additional exceptions refer to contracts whose
+underlyings use Frankfurt Xetra or Nasdaq Helsinki as the reference market.
+The IBEX 35 underlying falls outside those exceptions. The two year-end IBEX
+sessions close at 14:00 Madrid time. The circular states: `Los días 24 y 31
+de diciembre serán hábiles hasta las 14 horas.`
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | 1 January | `MEFF-CAL-2027` | T1 | MEFF financial derivatives exemption from weekday trading |
+| 2027-03-26 | closed | 26 March | `MEFF-CAL-2027` | T1 | MEFF financial derivatives exemption from weekday trading |
+| 2027-03-29 | closed | 29 March | `MEFF-CAL-2027` | T1 | MEFF financial derivatives exemption from weekday trading |
+| 2027-12-24 | early close | 14:00 Madrid | `MEFF-CAL-2027` | T1 | Shortened session under the same-day IBEX grid |
+| 2027-12-31 | early close | 14:00 Madrid | `MEFF-CAL-2027` | T1 | Shortened session under the same-day IBEX grid |
 
 ### Documents
 
@@ -296,6 +314,8 @@ UTC.
 | `MEFF-NOTICE-49-2025` | 2025-12-24 and 2025-12-31 | <https://www.meff.es/docs/comunicadosMercado/2025/11/Comunicado-2549-Horario-de-las-sesiones-24-y-31-de-diciembre.pdf> | retrieved 2026-10-11 UTC | T1 | `52c040aef322385c2cd5baf822a4814253fbe1bcfa91303c849b93f7812e8742` |
 | `BME-NOTA-2025` | 2025-01-01..2025-12-31 | <https://www.bolsasymercados.es/en/media/press-releases/2024/spanish-financial-markets-2025-trading-calendar.html> | retrieved 2026-10-11 UTC | T1 | `81a0507d6ec7d46bd7521b08a4262f9057abab491c7daf985102420ee5731d51` |
 | `BME-NOTA-2026` | 2026-01-01..2026-12-31 | <https://www.bolsasymercados.es/en/media/press-releases/2025/spanish-financial-markets-2026-trading-calendar.html> | retrieved 2026-10-11 UTC | T1 | `13ea1b88ca96472cf3335328542af31e820e665363bbb1e684faec7db640f319` |
+| `MEFF-EVES-2026` | 2026-12-24 and 2026-12-31 | <https://www.bolsasymercados.es/dam/descargas/exchange/derivados-meff/financiero/avisos-mercado/2026/11/comunicado-2626-horario-de-las-sesiones-24-y-31-de-diciembre.pdf> | 2026-11-27 06:29:02 UTC | T1 | `179af0d70528a5ef45ce3d4a0d3128aeef43401ff51f16c41b9031741f6659c0` |
+| `MEFF-CAL-2027` | 2027-01-01..2027-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/meff/circular/2026/c-ex-df-2026-23-calendario-de-negociacion.pdf> | 2026-11-27 06:24:14 UTC | T1 | `0f6303a6b99f49ac4aaaffe27961c1389ddfb34899849f4ed5563882151cb03b` |
 | `MEFF-HOURS-2017` | the 2017 grid restated | <https://web.archive.org/web/20171123132817id_/https://www.meff.es/ing/Trading-Hours> | Wayback `id_` replay of capture `20171123132817`, retrieved 2026-10-11 UTC | T1 | `977009c9dd81c143b391973a1c82974dc3afd712a093596f17cce4485a6c0efc` |
 | `MEFF-HOURS-LIVE` | current grid | <https://www.meff.es/ing/Trading-Hours> | retrieved 2026-10-11 UTC | T1 | `1289aa60e8d785a78ddd368d57c97d5507e30d5cc7432eb56054edbab218b553` |
 | `MEFF-IBEX35-LIVE` | current grid | <https://www.meff.es/ing/Financial-Derivatives/Futures-on-IBEX35> | retrieved 2026-10-11 UTC | T1 | `a84f9bd0be545d1882760c1f030c691f75b13797fdce9dfc0789a794511bbef0` |
@@ -328,9 +348,10 @@ UTC.
   member-test-environment notice of the same 22:00 schedule per its siblings
   12/2025 and 15/2025 and keys no row. Closing condition: the MEFF circular
   archive or desk.
-- **2027** is unpublished: the BME release under the predictable slug 404s
-  (checked 2026-10-11 UTC; prior years' editions appeared each November). The
-  audited window ends at 2026-12-31 and no 2027 date is asserted normal.
+- **Publication horizon.** Circular C-EX-DF-23/2026 extends the audited window
+  through 2027-12-31. No 2028 MEFF calendar was available on 2026-11-27 UTC.
+  The November follow-up captures live under
+  `holidays/raw/europe-forward-2026-11-27/bme/` in the research store.
 - The 2010 calendario PDF is a wall calendar read from its struck cells; the
   24 December 2010 cell carries no strike (the diagonal crossing that region
   is the 25/26 weekend strike), so the day traded. The 2026-10-11 hunter

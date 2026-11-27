@@ -191,6 +191,35 @@ fn the_current_grid_and_the_christmas_eve_early_close_answer() {
     );
 }
 
+#[test]
+fn the_2027_meff_calendar_sets_ibex_closures_and_eve_hours() {
+    let calendar = calendar_for_market_hours_key(IBEX);
+    for trade_date in [(2027, 1, 1), (2027, 3, 26), (2027, 3, 29)] {
+        assert_eq!(
+            calendar.holiday_on(day(trade_date)).unwrap().kind(),
+            HolidayKind::Closed
+        );
+        assert_eq!(
+            calendar.is_closed_trade_date(day(trade_date), SessionKind::Both),
+            Ok(true)
+        );
+    }
+    for trade_date in [(2027, 1, 6), (2027, 5, 6), (2027, 6, 25), (2027, 12, 6)] {
+        assert_eq!(calendar.is_open(madrid(trade_date, (12, 0, 0))), Ok(true));
+    }
+    for trade_date in [(2027, 12, 24), (2027, 12, 31)] {
+        assert_eq!(
+            calendar.session_bounds(madrid(trade_date, (12, 0, 0))),
+            Ok(Some((
+                madrid(trade_date, (8, 0, 0)),
+                madrid(trade_date, (14, 0, 0))
+            )))
+        );
+        assert_eq!(calendar.is_open(madrid(trade_date, (13, 59, 59))), Ok(true));
+        assert_eq!(calendar.is_open(madrid(trade_date, (14, 0, 0))), Ok(false));
+    }
+}
+
 /// The coverage contract: refusals below the floor and above the audited
 /// windows, and the bridged 2012-2013 span whose sessions answer while the
 /// holiday classification refuses typed.
@@ -201,7 +230,7 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
         .holiday_coverage()
         .expect("bme_ibex ships a built-in table");
     assert_eq!(coverage.first(), day((2010, 1, 1)));
-    assert_eq!(coverage.last(), day((2026, 12, 31)));
+    assert_eq!(coverage.last(), day((2027, 12, 31)));
 
     // Below the support floor.
     assert!(matches!(
@@ -226,10 +255,10 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
     );
 
     // Above the last audited window nothing is asserted.
-    let above = madrid((2027, 1, 4), (10, 0, 0));
+    let above = madrid((2028, 1, 3), (10, 0, 0));
     assert!(matches!(
         calendar.is_open(above).map_err(|error| error.kind()),
-        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2028, 1, 3))
     ));
     assert!(
         calendar

@@ -36,6 +36,7 @@ fn each_annual_cash_calendar_closes_its_own_good_friday() {
         (2024, 3, 29),
         (2025, 4, 18),
         (2026, 4, 3),
+        (2027, 3, 26),
     ] {
         let date = date_opt(year, month, day).unwrap();
         let row = calendar.holiday_on(date).unwrap();
@@ -62,7 +63,7 @@ fn each_annual_cash_calendar_closes_its_own_good_friday() {
 #[test]
 fn detailed_half_days_replace_regular_and_auction_phases() {
     let calendar = calendar_for_exchange(Exchange::Bme);
-    for year in [2012, 2013, 2014, 2015, 2018, 2019, 2020, 2024, 2025] {
+    for year in [2012, 2013, 2014, 2015, 2018, 2019, 2020, 2024, 2025, 2026] {
         for day in [24, 31] {
             let date = date_opt(year, 12, day).unwrap();
             assert!(matches!(
@@ -136,7 +137,7 @@ fn detailed_half_days_replace_regular_and_auction_phases() {
 }
 
 #[test]
-fn cash_calendar_has_no_invented_substitutes_and_keeps_2026_unknown() {
+fn cash_calendar_has_no_invented_substitutes_and_keeps_2027_eves_unknown() {
     let calendar = calendar_for_exchange(Exchange::Bme);
     for (year, day) in [
         (2011, 23),
@@ -154,22 +155,38 @@ fn cash_calendar_has_no_invented_substitutes_and_keeps_2026_unknown() {
         assert_eq!(calendar.holiday_on(date), None);
         assert_eq!(calendar.is_open(at(year, 12, day, 16, 0, 0)), Ok(true));
     }
+    assert_eq!(
+        calendar.holiday_coverage().unwrap().last(),
+        date_opt(2027, 12, 31).unwrap()
+    );
+    for (month, day) in [(1, 1), (3, 29)] {
+        let date = date_opt(2027, month, day).unwrap();
+        assert_eq!(
+            calendar.holiday_on(date).unwrap().kind(),
+            HolidayKind::Closed
+        );
+        assert_eq!(
+            calendar.is_closed_trade_date(date, SessionKind::Both),
+            Ok(true)
+        );
+    }
+    assert_eq!(calendar.is_open(at(2027, 1, 4, 12, 0, 0)), Ok(true));
     for day in [24, 31] {
-        let date = date_opt(2026, 12, day).unwrap();
+        let date = date_opt(2027, 12, day).unwrap();
         assert_eq!(
             calendar.holiday_on(date).unwrap().kind(),
             HolidayKind::Unsourced
         );
         assert!(matches!(
             calendar
-                .is_open(at(2026, 12, day, 12, 0, 0))
+                .is_open(at(2027, 12, day, 12, 0, 0))
                 .map_err(|error| error.kind()),
             Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
     assert!(matches!(
         calendar
-            .is_open(at(2027, 1, 4, 12, 0, 0))
+            .is_open(at(2028, 1, 3, 12, 0, 0))
             .map_err(|error| error.kind()),
         Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     ));

@@ -13,6 +13,16 @@
 
 - Assign both Cboe Futures Exchange VIX futures Thanksgiving 2026 and 2027
   overnight sessions to the Friday trade date.
+### Added
+
+- Extend the BME principal-share and MEFF IBEX futures holiday calendars through
+  2027. MEFF closes at 14:00 Madrid time on December 24 and 31. BME cash half-day
+  phases on those dates await the detailed instruction.
+
+### Fixed
+
+- Apply BME’s published 2026 cash-market half-day phases on December 24 and 31,
+  including Trading-at-Last until 14:10 Madrid time.
 
 ## [2.0.0] - 2026-11-27
 

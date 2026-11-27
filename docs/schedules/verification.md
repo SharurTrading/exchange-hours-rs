@@ -11,6 +11,11 @@ The 2026-09-27 amendment restored the permanent 2010-01-01 floor, retained
 earlier history and cancelled Stage 5 (#117, reverted by #185). Audited
 windows containing `Unsourced` dates are not complete coverage.
 
+On 2026-11-27 UTC, the Christmas 2018 source check corrected the 2018-12-26
+replacement sessions for `globex_equity_index`, its venue clock `cme`, and
+`globex_nikkei_225_dollar`. Each retains 34 rows in 2016–2018, comprising
+nine closures, 24 early closes and one replacement trade date.
+
 Every row below is a fixed shape (LAW-EVIDENCE-FILES): identity, owner module,
 source sets, basis with its gap kind, evidence tier, service tier, horizon,
 holiday coverage window, reviewed-on date, review cadence, at most three

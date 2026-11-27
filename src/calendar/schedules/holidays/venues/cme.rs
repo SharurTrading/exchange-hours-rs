@@ -1,29 +1,25 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The `Exchange::Cme` table holiday rows — the clock family `globex_equity_index`, carried verbatim.
+//! CME venue holidays mirror the U.S. equity-index clock.
 //!
-//! Coverage is 233 rows over nine windows - the six audited eras plus the three 2028 split windows: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54 and 2028 5.
-//!
-//! Evidence: docs/evidence/cme.md, and the family's evidence file for
-//! every retrieved row.
+//! Coverage is 233 rows across nine windows: 2010-2012 34, 2013-2015 38,
+//! 2016-2018 34, 2019-2021 33, 2022-2024 35, 2025-2027 54, and 2028 5.
+//! See the [evidence](../../../../../docs/evidence/cme.md).
+
 use super::super::{
     EvidenceTier::{T1, T2},
     HolidayKind::{Closed, ReplacementBlocks},
     HolidayTable,
     fences::{early_close, late_open},
     globex_equity_index::{
-        MERGED_SESSION_AFTER_WEEKDAY_BLOCKS, MERGED_SESSION_BLOCKS,
+        CHRISTMAS_2018_BLOCKS, MERGED_SESSION_AFTER_WEEKDAY_BLOCKS, MERGED_SESSION_BLOCKS,
         MERGED_SESSION_EARLY_CLOSE_BLOCKS, MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28,
         SATURDAY_SESSION_BLOCKS,
     },
     holidays,
 };
 
-/// The `Exchange::Cme` table: the `globex_equity_index` rows, carried verbatim.
-///
-/// Every row below is the profile clock's own row on that trade date —
-/// kind, tier and document id unchanged — because the venue answers from
-/// its clock. The clock's evidence file cites every artifact.
+/// The venue’s holiday rows and audited trade-date windows.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
@@ -210,8 +206,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2018, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - late open 15:30 CT: no prior-evening leg.
-        (2018, 12, 26, late_open(15 * 3_600 + 30 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - two trading segments and both Pre-Open queues.
+        (2018, 12, 26, ReplacementBlocks(&CHRISTMAS_2018_BLOCKS), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - CME prints no session running through this date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.

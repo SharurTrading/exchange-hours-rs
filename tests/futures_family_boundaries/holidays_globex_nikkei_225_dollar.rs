@@ -226,9 +226,7 @@ fn good_friday_2026_closes_at_the_equity_index_instant_not_the_rates_instant() {
 /// there is no row to push an occurrence later. The memo's late-open case is
 /// therefore vacuous there, and this is the fence that keeps it honest: it
 /// walks every date of that era, so a late open introduced by a later edit
-/// fails immediately rather than going untested. The 2016-2018 era's one late
-/// open — 2018-12-26 at 15:30 CT — is asserted by
-/// `wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive`.
+/// fails immediately rather than going untested.
 #[test]
 fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
     let nkd = nkd();
@@ -268,7 +266,7 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
     assert_eq!(early, 25, "twenty-five early closes across 2025-2027");
 
     // The 2016-2018 era is the other shape: 34 rows, all T1.
-    let (mut closed, mut early, mut late) = (0_usize, 0_usize, 0_usize);
+    let (mut closed, mut early, mut replacements) = (0_usize, 0_usize, 0_usize);
     let mut date = day(2016, 1, 1);
     while date <= day(2018, 12, 31) {
         if let Some(holiday) = nkd.holiday_on(date) {
@@ -280,16 +278,16 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
             match holiday.kind() {
                 HolidayKind::Closed => closed += 1,
                 HolidayKind::EarlyClose { .. } => early += 1,
-                HolidayKind::LateOpen { .. } => late += 1,
+                HolidayKind::ReplacementBlocks(_) => replacements += 1,
                 other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
             }
         }
         date = date.tomorrow().expect("coverage stays inside the calendar");
     }
     assert_eq!(
-        (closed, early, late),
+        (closed, early, replacements),
         (9, 24, 1),
-        "nine closures, twenty-four early closes and one late open across 2016-2018"
+        "nine closures, twenty-four early closes and one replacement trade date across 2016-2018"
     );
 
     // Both post-closure reopens the family has, fenced on each side of the
@@ -979,12 +977,23 @@ fn wave2_rows_follow_the_equity_index_line() {
     let mut closures = Vec::new();
     let mut date = day(2016, 1, 1);
     while date <= day(2018, 12, 31) {
-        assert_eq!(
-            kind_on(calendar, date),
-            kind_on(equity, date),
-            "{date}: NKD and the Equity Index line agree in this era"
-        );
-        if kind_on(calendar, date) == Some(HolidayKind::Closed) {
+        let nikkei_kind = kind_on(calendar, date);
+        let equity_kind = kind_on(equity, date);
+        if date == day(2018, 12, 26) {
+            // Both clocks follow the same printed opens, but NKD classifies
+            // both matching legs as regular while the U.S. family splits RTH.
+            assert!(matches!(
+                nikkei_kind,
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+            assert!(matches!(
+                equity_kind,
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+        } else {
+            assert_eq!(nikkei_kind, equity_kind, "{date}: CME Equity Products");
+        }
+        if nikkei_kind == Some(HolidayKind::Closed) {
             closures.push(date);
         }
         date = date.tomorrow().expect("the era ends well before the bound");
@@ -1005,12 +1014,9 @@ fn wave2_rows_follow_the_equity_index_line() {
     );
 }
 
-/// The era's early closes and its one late open. The row's printed instant is
-/// still fenced on both sides, but the fence now holds the refusal those probes
-/// earn below the 2025 floor rather than the open state they used to state,
-/// and the trade date the late open carried is refused with them.
+/// The 2016 Martin Luther King Day session ends at the published early close.
 #[test]
-fn wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive() {
+fn wave2_early_close_is_end_exclusive() {
     let calendar = nkd();
 
     let noon = ct(2016, 1, 18, 12, 0, 0);
@@ -1034,32 +1040,6 @@ fn wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive() {
         calendar
             .is_open(ct(2016, 1, 17, 18, 0, 0))
             .expect("the coverage contract must answer a covered date")
-    );
-
-    // 2018-12-26: the Christmas sheet's Equity line opens the trade date at
-    // 15:30 CT rather than the grid's 15:15.
-    let late = ct(2018, 12, 26, 15, 30, 0);
-    assert_eq!(
-        kind_on(calendar, day(2018, 12, 26)),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 15 * 3_600 + 30 * 60
-        })
-    );
-    assert!(
-        !calendar
-            .is_open(late - SignedDuration::from_secs(1))
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert!(
-        calendar
-            .is_open(late)
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert_eq!(
-        calendar
-            .trade_date(late)
-            .expect("the coverage contract must answer a covered date"),
-        Some(day(2018, 12, 26))
     );
 }
 

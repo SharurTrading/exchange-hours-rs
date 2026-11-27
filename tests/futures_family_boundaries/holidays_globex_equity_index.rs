@@ -980,8 +980,6 @@ fn era_window_edges_answer_as_the_module_declares() {
 // The 2016-2018 rows.
 // ---------------------------------------------------------------------------
 
-/// 15:30 CT, the open the 2018 Christmas sheet prints on 26 December.
-const WAVE2_LATE_OPEN: u32 = 15 * 3_600 + 30 * 60;
 /// 12:15 CT is the same instant the 2025-2027 window's half-days close at, so
 /// the era reuses the constant above rather than restating it.
 const WAVE2_HALF_DAY_CLOSE: u32 = QUARTER_PAST_NOON;
@@ -1004,12 +1002,7 @@ fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
         ((2016, 11, 25), (2016, 11, 24), WAVE2_HALF_DAY_CLOSE),
         ((2017, 7, 3), (2017, 7, 2), WAVE2_HALF_DAY_CLOSE),
         ((2018, 12, 24), (2018, 12, 23), WAVE2_HALF_DAY_CLOSE),
-        ((2018, 12, 26), (2018, 12, 25), 16 * 3_600),
     ] {
-        if close_ssm == 16 * 3_600 {
-            // 2018-12-26 is the late-open case, asserted on its own below.
-            continue;
-        }
         let kind = calendar
             .holiday_on(day(date.0, date.1, date.2))
             .map(Holiday::kind);
@@ -1176,61 +1169,70 @@ fn wave2_closures_remove_the_trade_date_and_the_prior_evening_leg() {
     );
 }
 
-/// 2018-12-26 is the era's one late open: the Christmas sheet prints the
-/// Equity line's `Pre-opening 15:15` and `Open 15:30` on a date the crate's
-/// grid has open at 15:15 CT, so the first open moves half an hour later and
-/// nothing else about the day moves.
-///
-/// The row is the claim that survives; the moved boundary, the bounds it
-/// produced and the 16:00 CT close the row left alone are all pre-floor
-/// schedule answers, so each probe states the refusal instead.
+/// The final 2018 CME Christmas workbook assigns both trading legs to Wednesday.
 #[test]
-fn wave2_2018_12_26_opens_late_at_1530_central() {
-    let calendar = equity_index();
+fn christmas_2018_equities_keep_the_previous_evening_and_both_preopens() {
     let date = day(2018, 12, 26);
-    let cutoff = ct((2018, 12, 26), (15, 30, 0));
+    let first_queue = ct((2018, 12, 25), (16, 0, 0));
+    let open = ct((2018, 12, 25), (17, 0, 0));
+    let rth = ct((2018, 12, 26), (8, 30, 0));
+    let afternoon_queue = ct((2018, 12, 26), (15, 15, 0));
+    let reopen = ct((2018, 12, 26), (15, 30, 0));
+    let close = ct((2018, 12, 26), (16, 0, 0));
+    let tick = SignedDuration::from_nanos(1);
 
-    assert_eq!(
-        calendar.holiday_on(date).map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: WAVE2_LATE_OPEN
-        })
-    );
-    assert!(
-        !calendar
-            .is_open(cutoff - SignedDuration::from_secs(1))
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert!(
-        calendar
-            .is_open(cutoff)
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert_eq!(
-        calendar
-            .session_bounds(cutoff + SignedDuration::from_secs(1))
-            .expect("the coverage contract must answer a covered date"),
-        Some((cutoff, ct((2018, 12, 26), (16, 0, 0))))
-    );
-    assert_eq!(
-        calendar
-            .trade_date(cutoff)
-            .expect("the coverage contract must answer a covered date"),
-        Some(date)
-    );
-
-    // The 16:00 CT final close is the normal week's, and the row does not
-    // reach it: the crate and the detached calendar answer it the same.
-    assert!(
-        calendar
-            .is_open(ct((2018, 12, 26), (15, 59, 0)))
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert!(
-        !calendar
-            .is_open(ct((2018, 12, 26), (16, 0, 0)))
-            .expect("the coverage contract must answer a covered date")
-    );
+    for (calendar, nikkei) in [
+        (equity_index(), false),
+        (calendar_for_exchange(exchange_hours::Exchange::Cme), false),
+        (
+            calendar_for_market_hours_key(MarketHoursKey::GlobexNikkei225Dollar),
+            true,
+        ),
+    ] {
+        let first_kind = if nikkei {
+            SessionKind::Regular
+        } else {
+            SessionKind::Extended
+        };
+        let first_close = if nikkei { afternoon_queue } else { rth };
+        assert!(matches!(
+            calendar.holiday_on(date).map(Holiday::kind),
+            Some(HolidayKind::ReplacementBlocks(_))
+        ));
+        assert!(!calendar.is_accepting_orders(first_queue - tick).unwrap());
+        for (queue, matching) in [(first_queue, open), (afternoon_queue, reopen)] {
+            for instant in [queue, matching - tick] {
+                assert!(calendar.is_order_entry_only(instant).unwrap());
+                assert!(!calendar.is_open(instant).unwrap());
+                assert_eq!(calendar.trade_date(instant).unwrap(), Some(date));
+            }
+            assert!(calendar.is_open(matching).unwrap());
+            assert_eq!(calendar.trade_date(matching).unwrap(), Some(date));
+        }
+        assert_eq!(
+            calendar
+                .next_session_after_with(first_queue, first_kind)
+                .unwrap(),
+            Some((open, first_close))
+        );
+        assert_eq!(
+            calendar.session_bounds_with(open, first_kind).unwrap(),
+            Some((open, first_close))
+        );
+        assert_eq!(
+            calendar
+                .session_bounds_with(rth, SessionKind::Regular)
+                .unwrap(),
+            Some((if nikkei { open } else { rth }, afternoon_queue))
+        );
+        assert!(calendar.is_open(afternoon_queue - tick).unwrap());
+        assert_eq!(
+            calendar.session_bounds_with(reopen, first_kind).unwrap(),
+            Some((reopen, close))
+        );
+        assert!(calendar.is_open(close - tick).unwrap());
+        assert!(!calendar.is_open(close).unwrap());
+    }
 }
 
 /// The era's own window edges, and the one unaudited interval below it.

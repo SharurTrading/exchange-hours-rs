@@ -28,6 +28,9 @@
   year-end half days. ASX SPI 200 reopens with its day session on
   trade date 2027-01-04.
 
+- Apply the revised NSE India cash closing auction from 2026-12-07,
+  including the order-entry phase and the later matching window.
+
 ## [2.0.0] - 2026-11-27
 
 ### Changed

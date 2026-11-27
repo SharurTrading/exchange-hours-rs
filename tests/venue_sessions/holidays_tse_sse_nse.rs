@@ -1845,6 +1845,38 @@ fn assert_nse_weekend_phases(
     }
 }
 
+#[test]
+fn nse_revised_closing_auction_takes_effect_on_december_7() {
+    use exchange_hours::SessionState;
+
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    let prior = zoned(&KOLKATA, (2026, 12, 4), (15, 32, 0));
+    assert_eq!(
+        nse.session_state(prior).expect("covered prior era"),
+        SessionState::OpenExtended
+    );
+
+    let effective = (2026, 12, 7);
+    for (time, expected) in [
+        ((15, 29, 59), SessionState::OpenRegular),
+        ((15, 30, 0), SessionState::Closed),
+        ((15, 31, 0), SessionState::OrderEntry),
+        ((15, 37, 59), SessionState::OrderEntry),
+        ((15, 38, 0), SessionState::OpenExtended),
+        ((15, 44, 59), SessionState::OpenExtended),
+        ((15, 45, 0), SessionState::Closed),
+        ((15, 50, 0), SessionState::OpenExtended),
+        ((16, 0, 0), SessionState::Closed),
+    ] {
+        assert_eq!(
+            nse.session_state(zoned(&KOLKATA, effective, time))
+                .expect("covered revised era"),
+            expected,
+            "{time:?}"
+        );
+    }
+}
+
 /// Circular NSE/CMTR/76941's Sunday session, including both CAS and non-CAS
 /// securities, the random pre-open closure, and the post-close gap.
 #[test]

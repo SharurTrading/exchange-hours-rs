@@ -30,11 +30,12 @@ static NSE_EXTENDED_PRE_2010_10_18: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600,
 }];
 
-static INDIA_ORDER_ENTRY_PREOPEN: &[SessionRule] = &[SessionRule {
+static NSE_PREOPEN_ORDER_ENTRY: SessionRule = SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600,
     close_ssm: 9 * 3600 + 7 * 60,
-}];
+};
+static INDIA_ORDER_ENTRY_PREOPEN: &[SessionRule] = &[NSE_PREOPEN_ORDER_ENTRY];
 static INDIA_PREOPEN_MATCH: SessionRule = SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 7 * 60,
@@ -65,6 +66,11 @@ static NSE_EXTENDED_POST_2018_01_01: &[SessionRule] = &[
     INDIA_PREOPEN_MATCH,
     NSE_POST_CLOSE_PRE_CAS,
 ];
+static NSE_POST_CLOSE_CAS: SessionRule = SessionRule {
+    days: MON_FRI,
+    open_ssm: 15 * 3600 + 50 * 60,
+    close_ssm: 16 * 3600,
+};
 static INDIA_EXTENDED_CURRENT: &[SessionRule] = &[
     NSE_MORNING_BLOCK_DEAL,
     INDIA_PREOPEN_MATCH,
@@ -73,10 +79,24 @@ static INDIA_EXTENDED_CURRENT: &[SessionRule] = &[
         open_ssm: 15 * 3600 + 15 * 60,
         close_ssm: 15 * 3600 + 35 * 60,
     },
+    NSE_POST_CLOSE_CAS,
+];
+static NSE_EXTENDED_FROM_2026_12_07: &[SessionRule] = &[
+    NSE_MORNING_BLOCK_DEAL,
+    INDIA_PREOPEN_MATCH,
     SessionRule {
         days: MON_FRI,
-        open_ssm: 15 * 3600 + 50 * 60,
-        close_ssm: 16 * 3600,
+        open_ssm: 15 * 3600 + 38 * 60,
+        close_ssm: 15 * 3600 + 45 * 60,
+    },
+    NSE_POST_CLOSE_CAS,
+];
+static NSE_ORDER_ENTRY_FROM_2026_12_07: &[SessionRule] = &[
+    NSE_PREOPEN_ORDER_ENTRY,
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 31 * 60,
+        close_ssm: 15 * 3600 + 38 * 60,
     },
 ];
 // Evidence: docs/evidence/nse_india.md.
@@ -87,6 +107,11 @@ pub(crate) static NSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     order_entry: INDIA_ORDER_ENTRY_PREOPEN,
     has_daily_close: true,
     has_weekend_close: true,
+};
+static NSE_PROFILE_FROM_2026_12_07: StaticHoursProfile = StaticHoursProfile {
+    extended: NSE_EXTENDED_FROM_2026_12_07,
+    order_entry: NSE_ORDER_ENTRY_FROM_2026_12_07,
+    ..NSE_PROFILE_CURRENT
 };
 static NSE_PROFILE_POST_2018_01_01: StaticHoursProfile = StaticHoursProfile {
     extended: NSE_EXTENDED_POST_2018_01_01,
@@ -155,6 +180,8 @@ static REVISIONS: &[Revision] = revisions![
     ),
     (2018, 1, 1, &NSE_PROFILE_POST_2018_01_01, "NSE-CIRC-2017-77"),
     (2026, 8, 3, &NSE_PROFILE_CURRENT, "SEBI circular 99122"),
+    // 2026-12-07 - T1 - NSE-CAS-2-FAQ - revised closing auction phases
+    (2026, 12, 7, &NSE_PROFILE_FROM_2026_12_07, "NSE-CAS-2-FAQ"),
 ];
 
 pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {

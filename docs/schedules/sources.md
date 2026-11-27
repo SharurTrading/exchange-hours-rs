@@ -333,6 +333,8 @@ per-record review before any exception can drive runtime.
 
 ### `APAC-INDIA-CASH`
 
+- **Closing auction from 2026-12-07:** the [SEBI final circular](https://www.sebi.gov.in/sebi_data/attachdocs/oct-2026/1792079571420.pdf) dates the change and the [NSE CAS 2.0 FAQ](https://nsearchives.nseindia.com/web/mediaattachment/2026-11/FAQs_for_CM_and_FO_FOR_CAS_2.0_20261109152618.pdf) gives its cash-market phases.
+
 - **Published special sessions (reconfirmed 2026-10-31 UTC):** [NSE circular 149/2026](https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf) supplies the complete 2026-11-08 Muhurat capital-market session. The fresh operator retrieval meets the 2026-11-07 confirmation deadline in #374; the [Muhurat evidence](../evidence/nse_india.md#muhurat-2026-interpretation--2026-10-31-utc) records the confirmation and its scope.
 
 - **Official current/rulebook:** [NSE closing-auction session](https://www.nseindia.com/static/products-services/closing-auction-session), the [SEBI CAS circular](https://www.sebi.gov.in/legal/circulars/jan-2026/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session_99122.html), and BSE's [notices and circulars portal](https://www.bseindia.com/markets/MarketInfo/NoticesCirculars.aspx).

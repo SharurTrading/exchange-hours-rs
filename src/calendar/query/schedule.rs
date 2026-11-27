@@ -130,6 +130,16 @@ impl DayClip {
     }
 }
 
+impl From<DayPolicyOutcome> for DayClip {
+    fn from(policy: DayPolicyOutcome) -> Self {
+        Self {
+            closed: policy.is_closed(),
+            early_close_ssm: policy.early_close_ssm(),
+            late_open_ssm: policy.late_open_ssm(),
+        }
+    }
+}
+
 fn min_option(left: Option<u32>, right: Option<u32>) -> Option<u32> {
     match (left, right) {
         (Some(left), Some(right)) => Some(left.min(right)),
@@ -336,37 +346,35 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// row's trade date is governed by the replacement layer, and clipping it
     /// here as well would apply one row to its own date twice.
     fn builtin_clip(self, trade_date: Date) -> DayClip {
+        let Some(kind) = self.holiday_on(trade_date).map(Holiday::kind) else {
+            return DayClip::NONE;
+        };
         if matches!(
             self.caller_exception_on(trade_date),
             DateException::Closed | DateException::ReplaceSessions(_)
         ) {
             return DayClip::NONE;
         }
-        match self.holiday_on(trade_date).map(Holiday::kind) {
-            // Three kinds contribute no scalar clip, for two different reasons.
-            // `None` is a date the table says nothing about and `Unsourced` is
-            // one it expressly withholds; a replacement row states its whole
-            // arrangement through the replacement layer, so clipping the normal
-            // week here as well would apply one row to its own date twice.
-            None | Some(HolidayKind::Unsourced | HolidayKind::ReplacementBlocks(_)) => {
-                DayClip::NONE
-            }
-            Some(HolidayKind::Closed) => DayClip {
+        match kind {
+            // An unsourced date withholds its arrangement. Replacement blocks
+            // carry their complete arrangement through the replacement layer.
+            HolidayKind::Unsourced | HolidayKind::ReplacementBlocks(_) => DayClip::NONE,
+            HolidayKind::Closed => DayClip {
                 closed: true,
                 ..DayClip::NONE
             },
-            Some(HolidayKind::EarlyClose { close_ssm }) => DayClip {
+            HolidayKind::EarlyClose { close_ssm } => DayClip {
                 early_close_ssm: Some(close_ssm),
                 ..DayClip::NONE
             },
-            Some(HolidayKind::LateOpen { open_ssm }) => DayClip {
+            HolidayKind::LateOpen { open_ssm } => DayClip {
                 late_open_ssm: Some(open_ssm),
                 ..DayClip::NONE
             },
-            Some(HolidayKind::LateOpenAndEarlyClose {
+            HolidayKind::LateOpenAndEarlyClose {
                 open_ssm,
                 close_ssm,
-            }) => DayClip {
+            } => DayClip {
                 early_close_ssm: Some(close_ssm),
                 late_open_ssm: Some(open_ssm),
                 ..DayClip::NONE
@@ -669,17 +677,23 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         rules(selected, set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
     }
 
-    /// A late-open overlay on `day` can move the effective open of a
-    /// previous-day wrapping rule past this day's midnight.
+    /// Whether the effective arrangement can delay a wrapping occurrence's
+    /// open from the previous day into this one.
     pub(super) fn has_late_open_on(self, day: Date) -> bool {
-        self.policy.is_some_and(|policy| {
-            policy.may_affect(day, day) && policy.outcome_on(day).late_open_ssm().is_some()
-        }) || self.holiday_on(day).is_some_and(|holiday| {
-            matches!(
-                holiday.kind(),
-                HolidayKind::LateOpen { .. } | HolidayKind::LateOpenAndEarlyClose { .. }
-            )
-        })
+        let builtin = self.builtin_clip(day);
+        if builtin.closed {
+            return false;
+        }
+        let policy = self
+            .policy
+            .filter(|policy| policy.may_affect(day, day))
+            .map_or(DayPolicyOutcome::Normal, |policy| policy.outcome_on(day));
+        let clip = builtin.tighten(policy.into());
+        // An explicit caller closure masks both scalar layers. A replacement
+        // masks the built-in clip but can still be delayed by caller policy.
+        !clip.closed
+            && clip.late_open_ssm.is_some()
+            && !matches!(self.caller_exception_on(day), DateException::Closed)
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.
@@ -939,11 +953,7 @@ pub(super) fn resolve_rule_bounds<G: SourceGate>(
         return Ok(None);
     }
     let policy = policy.unwrap_or_else(|| context.policy_outcome(trade_date));
-    let clip = context.builtin_clip(trade_date).tighten(DayClip {
-        closed: policy.is_closed(),
-        early_close_ssm: policy.early_close_ssm(),
-        late_open_ssm: policy.late_open_ssm(),
-    });
+    let clip = context.builtin_clip(trade_date).tighten(policy.into());
     if clip.closed {
         return Ok(None);
     }

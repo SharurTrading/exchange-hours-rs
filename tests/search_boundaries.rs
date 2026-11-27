@@ -220,3 +220,23 @@ fn a_proven_midnight_open_does_not_read_the_following_unaudited_opening_day() {
         Err(error) if matches!(error.kind(), exchange_hours::CalendarQueryErrorKind::OutsideCoveredRange { date, .. } if date == unaudited)
     ));
 }
+
+#[test]
+fn a_late_open_masked_by_an_explicit_closure_cannot_refuse_the_forward_search() {
+    let calendar = ExchangeCalendar::new(Exchange::Iceus);
+    let trade_date = date(2025, 1, 22);
+    let records = [SessionExceptionRecord::closed(trade_date)];
+    let exceptions =
+        StaticSessionExceptions::new(calendar.source(), trade_date, trade_date, &records).unwrap();
+    let overrides = [DayOverride::late_open(trade_date, 8 * 3_600).unwrap()];
+    let policy = StaticDayPolicy::new(&overrides).unwrap();
+    let closed = calendar.with_session_exceptions(&exceptions).unwrap();
+    let instant = at("2025-01-22T05:00Z");
+    let expected = Ok(Some((at("2025-01-23T01:00Z"), at("2025-01-23T23:00Z"))));
+
+    assert_eq!(closed.next_session_after(instant), expected);
+    assert_eq!(
+        closed.with_day_policy(&policy).next_session_after(instant),
+        expected
+    );
+}

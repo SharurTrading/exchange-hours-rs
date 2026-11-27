@@ -12,6 +12,7 @@ use jiff::{Timestamp, civil::Date, civil::Weekday};
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, rules};
 use crate::calendar::local_time::mk_local_close;
+use crate::calendar::policy::DayPolicyOutcome;
 use crate::calendar::rule::SessionKind;
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
@@ -262,20 +263,21 @@ pub(super) fn joins_adjacent_same_kind<G: SourceGate>(context: &QueryContext<'_,
 /// local date, and the weekend blocks of CME cryptocurrency, of `ECBTC` and of
 /// COMEX 100-oz silver —
 /// whose documents both say the daily window rolls the trade date — carry the
-/// following open business date.
+/// following open business date. Return the policy outcome when the roll
+/// already looked it up so the clip can use the same answer.
 pub(super) fn assign_normal<G: SourceGate>(
     context: &QueryContext<'_, G>,
     open: Timestamp,
     close: Timestamp,
-) -> Date {
+) -> (Date, Option<DayPolicyOutcome>) {
     let tz = context.tz();
     let default = tz.to_datetime(close).date();
     let Some(source) = context.identity() else {
-        return default;
+        return (default, None);
     };
     let local_open = tz.to_datetime(open);
     if matches!(source, CalendarSource::Exchange(Exchange::SetThailand)) {
-        return if local_open
+        let date = if local_open
             .time()
             .duration_since(jiff::civil::Time::midnight())
             .as_secs()
@@ -285,6 +287,7 @@ pub(super) fn assign_normal<G: SourceGate>(
         } else {
             local_open.date()
         };
+        return (date, None);
     }
     // CBOT Rough Rice stopped wrapping past local midnight on 2018-01-21, so
     // the close-date default would put Sunday's 19:00-21:00 CT session on
@@ -298,7 +301,7 @@ pub(super) fn assign_normal<G: SourceGate>(
         source,
         CalendarSource::MarketHoursKey(MarketHoursKey::GlobexRoughRice)
     ) {
-        return if local_open
+        let date = if local_open
             .time()
             .duration_since(jiff::civil::Time::midnight())
             .as_secs()
@@ -308,6 +311,7 @@ pub(super) fn assign_normal<G: SourceGate>(
         } else {
             default
         };
+        return (date, None);
     }
     if !matches!(
         source,
@@ -317,7 +321,7 @@ pub(super) fn assign_normal<G: SourceGate>(
                 | MarketHoursKey::GlobexSilver100Oz
         )
     ) {
-        return default;
+        return (default, None);
     }
 
     let days_to_monday = match local_open.weekday() {
@@ -350,19 +354,24 @@ pub(super) fn assign_normal<G: SourceGate>(
     // skipped rather than deleting the connected trading block. Legacy
     // five-day profiles retain ordinary closed-trade-date behavior.
     if !context.has_overlay() || context.has_weekend_close_at(open) {
-        return nominal;
+        return (nominal, None);
     }
     let mut candidate = nominal;
+    let mut nominal_outcome = None;
     for _ in 0..=TRADE_DATE_LOOKAHEAD_DAYS {
-        if !matches!(candidate.weekday(), Weekday::Saturday | Weekday::Sunday)
-            && !context.trade_date_is_closed(candidate)
-        {
-            return candidate;
+        if !matches!(candidate.weekday(), Weekday::Saturday | Weekday::Sunday) {
+            let outcome = context.business_date_policy(candidate);
+            if !outcome.is_closed() {
+                return (candidate, Some(outcome));
+            }
+            if candidate == nominal {
+                nominal_outcome = Some(outcome);
+            }
         }
         let Some(next) = candidate.tomorrow().ok() else {
-            return nominal;
+            break;
         };
         candidate = next;
     }
-    nominal
+    (nominal, nominal_outcome)
 }

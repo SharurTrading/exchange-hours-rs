@@ -43,8 +43,9 @@ use std::hint::black_box;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use exchange_hours::{
-    CalendarResolution, CalendarSource, DayOverride, ExchangeCalendar, MarketHoursKey, SessionKind,
-    StaticDayPolicy, StaticSessionExceptions, calendar_for_market_hours_key,
+    CalendarResolution, CalendarSource, DayAdjustment, DayOverride, ExchangeCalendar,
+    MarketHoursKey, SessionKind, StaticDayPolicy, StaticSessionExceptions,
+    calendar_for_market_hours_key,
 };
 use jiff::civil::{Date, DateTime};
 use jiff::{SignedDuration, Timestamp};
@@ -193,7 +194,10 @@ fn overlay_layers(criterion: &mut Criterion) {
 
     // A caller record on the queried trade date: the full derivation runs and
     // the clip applies.
-    let on_date = [DayOverride::early_close(covered, 12 * 3_600)];
+    let Ok(adjustment) = DayAdjustment::early_close(12 * 3_600) else {
+        return;
+    };
+    let on_date = [DayOverride::adjusted(covered, adjustment)];
     let Ok(on_date_policy) = StaticDayPolicy::new(&on_date) else {
         return;
     };
@@ -201,7 +205,7 @@ fn overlay_layers(criterion: &mut Criterion) {
     // `may_affect` (issue #94) lets the gate exit here, so this is the row the
     // ≤ 2x target names: the overlay must cost the bare calendar's gate plus
     // one binary search, not the trading-day derivation.
-    let elsewhere = [DayOverride::early_close(remote_first, 12 * 3_600)];
+    let elsewhere = [DayOverride::adjusted(remote_first, adjustment)];
     let Ok(elsewhere_policy) = StaticDayPolicy::new(&elsewhere) else {
         return;
     };

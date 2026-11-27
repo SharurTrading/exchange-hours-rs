@@ -38,10 +38,10 @@ use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt, utc_datetime};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
-    DayOverride, DayPolicy, ExceptionCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, PolicyCalendar, SUPPORT_FLOOR, SessionExceptionRecord, SessionExceptionSource,
-    SessionKind, StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange,
-    calendar_for_market_hours_key,
+    DayAdjustmentError, DayOverride, ExceptionCoverage, Exchange, ExchangeCalendar, Holiday,
+    HolidayKind, MarketHoursKey, PolicyCalendar, SUPPORT_FLOOR, SessionExceptionRecord,
+    SessionExceptionSource, SessionKind, StaticDayPolicy, StaticSessionExceptions,
+    calendar_for_exchange, calendar_for_market_hours_key,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -1192,10 +1192,10 @@ fn close_dated_calendars() -> Vec<(String, ExchangeCalendar)> {
 /// closes the trading day.
 #[test]
 fn an_early_close_clips_a_trading_day_that_opened_the_previous_evening() {
-    let overrides = [DayOverride::early_close(
-        day(2025, 11, 28),
-        12 * 3_600 + 15 * 60,
-    )];
+    let overrides = [
+        DayOverride::early_close(day(2025, 11, 28), 12 * 3_600 + 15 * 60)
+            .expect("the fixture boundary must be valid"),
+    ];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -1316,7 +1316,8 @@ fn a_late_open_resolves_on_both_of_its_branches() {
 
     // Branch one: 19:00 CT is at or after the trading day's normal 17:00 CT
     // first open, so the cutoff lands on the **preceding** local date.
-    let evening = [DayOverride::late_open(day(2025, 12, 26), 19 * 3_600)];
+    let evening = [DayOverride::late_open(day(2025, 12, 26), 19 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&evening).expect("the fixture records are valid");
     let calendar = base.with_day_policy(&policy);
     assert!(
@@ -1342,7 +1343,8 @@ fn a_late_open_resolves_on_both_of_its_branches() {
 
     // Branch two: 09:00 CT is before that first open, so the cutoff lands on
     // the trade date itself and the whole evening leg goes.
-    let morning = [DayOverride::late_open(day(2025, 12, 26), 9 * 3_600)];
+    let morning = [DayOverride::late_open(day(2025, 12, 26), 9 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&morning).expect("the fixture records are valid");
     let calendar = base.with_day_policy(&policy);
     assert!(
@@ -1384,11 +1386,11 @@ fn a_late_open_resolves_on_both_of_its_branches() {
 /// shape this test encodes.
 #[test]
 fn a_late_open_and_an_early_close_compose_on_one_trade_date() {
-    let overrides = [DayOverride::late_open_and_early_close(
-        day(2025, 12, 26),
-        19 * 3_600,
-        12 * 3_600,
-    )];
+    let overrides =
+        [
+            DayOverride::late_open_and_early_close(day(2025, 12, 26), 19 * 3_600, 12 * 3_600)
+                .expect("the fixture boundary must be valid"),
+        ];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -1457,7 +1459,8 @@ fn a_caller_replacement_resolves_the_day_before_a_clip_applies() {
     )];
     let table = StaticSessionExceptions::new(source, day(2026, 4, 1), day(2026, 4, 30), &records)
         .expect("the fixture table is valid");
-    let overrides = [DayOverride::early_close(day(2026, 4, 20), 11 * 3_600)];
+    let overrides = [DayOverride::early_close(day(2026, 4, 20), 11 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");
 
     let replaced = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
@@ -1519,27 +1522,8 @@ fn a_known_normal_record_suppresses_nothing_below_it() {
     );
 }
 
-/// An out-of-range boundary makes a trade date **unavailable**, which is not
-/// the same as closing it.
-///
-/// An invalid record is not evidence that the operator was shut, so it must not
-/// feed the following-business-day roll: CME cryptocurrency keeps assigning its
-/// continuous trading to that date rather than rolling past it. A closed record
-/// on the same date does roll.
 #[test]
-fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
-    struct OutOfRange(Date);
-
-    impl DayPolicy for OutOfRange {
-        fn is_closed(&self, _trade_date: Date) -> bool {
-            false
-        }
-
-        fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
-            (trade_date == self.0).then_some(86_401)
-        }
-    }
-
+fn rejected_input_keeps_the_trade_date_and_a_closure_rolls_it() {
     // 2026-08-21 is a Friday inside the permanent 24/7 cryptocurrency era, and
     // its trading is continuous: the Thursday-evening block's trade date is
     // what moves when a layer closes the Friday. The date carries no built-in
@@ -1554,28 +1538,14 @@ fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
         Some(day(2026, 8, 21))
     );
 
-    let invalid = OutOfRange(friday);
-    let unavailable = base.with_day_policy(&invalid);
-    assert!(
-        !unavailable
-            .is_open(probe)
-            .expect("the coverage contract must answer a covered date"),
-        "an unavailable trade date takes its sessions with it"
-    );
-    // An invalid record must not roll a trade date. The identity covers the
-    // day, and the boundary the policy states is outside `u32` seconds-in-day,
-    // so the date is **unavailable**: its sessions are removed and there is no
-    // trade date left to name. What the query must not do is name the rolled
-    // date — that is the closed-record leg below, which reports Monday
-    // 2026-08-24 for the same probe, so the roll the invalid record must not
-    // perform is one this engine does perform when the record is a closure.
     assert_eq!(
-        unavailable
-            .trade_date(probe)
-            .expect("the coverage contract must answer a covered date"),
-        None,
-        "an unavailable trade date rolls nowhere, so it names no date",
+        DayOverride::early_close(friday, 86_401),
+        Err(DayAdjustmentError::EarlyCloseOutOfRange {
+            early_close_ssm: 86_401
+        })
     );
+    assert_eq!(base.is_open(probe), Ok(true));
+    assert_eq!(base.trade_date(probe), Ok(Some(friday)));
 
     let overrides = [DayOverride::closed(friday)];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");

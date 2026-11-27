@@ -546,7 +546,8 @@ fn day_policy_overlays_a_closed_date_and_an_early_close() {
     let early_wednesday = day((2026, 9, 16));
     let records = [
         DayOverride::closed(closed_tuesday),
-        DayOverride::early_close(early_wednesday, 12 * 3_600),
+        DayOverride::early_close(early_wednesday, 12 * 3_600)
+            .expect("the fixture boundary must be valid"),
     ];
     let policy = StaticDayPolicy::new(&records).expect("the fixture records must be valid");
     let calendar = calendar_for_market_hours_key(EVENT_CONTRACTS).with_day_policy(&policy);

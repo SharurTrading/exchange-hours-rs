@@ -21,9 +21,9 @@ use crate::support::zones::{BANGKOK, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
-    DayPolicy, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR,
-    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
-    hours_for_market_hours_key,
+    DayAdjustment, DayAdjustmentError, DayPolicy, DayPolicyOutcome, Exchange, ExchangeCalendar,
+    HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR, SessionKind, SessionState,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -146,37 +146,28 @@ fn day(year: i16, month: i8, day: i8) -> Date {
 
 struct TestPolicy<'a> {
     closed: &'a [Date],
-    early: Option<(Date, u32)>,
-    late: Option<(Date, u32)>,
+    adjustment: Option<(Date, DayAdjustment)>,
 }
 
 impl DayPolicy for TestPolicy<'_> {
-    fn is_closed(&self, trade_date: Date) -> bool {
-        self.closed.contains(&trade_date)
-    }
-
-    fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
-        self.early
-            .filter(|(date, _ssm)| *date == trade_date)
-            .map(|(_date, ssm)| ssm)
-    }
-
-    fn late_open_ssm(&self, trade_date: Date) -> Option<u32> {
-        self.late
-            .filter(|(date, _ssm)| *date == trade_date)
-            .map(|(_date, ssm)| ssm)
+    fn outcome_on(&self, trade_date: Date) -> DayPolicyOutcome {
+        if self.closed.contains(&trade_date) {
+            return DayPolicyOutcome::Closed;
+        }
+        match self.adjustment {
+            Some((date, adjustment)) if date == trade_date => {
+                DayPolicyOutcome::Adjusted(adjustment)
+            }
+            _ => DayPolicyOutcome::Normal,
+        }
     }
 }
 
 struct Closed;
 
 impl DayPolicy for Closed {
-    fn is_closed(&self, _trade_date: Date) -> bool {
-        true
-    }
-
-    fn early_close_ssm(&self, _trade_date: Date) -> Option<u32> {
-        None
+    fn outcome_on(&self, _trade_date: Date) -> DayPolicyOutcome {
+        DayPolicyOutcome::Closed
     }
 }
 
@@ -243,8 +234,7 @@ fn closed_trade_date_removes_the_prior_evening_but_not_the_next_trade_date() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     let calendar = base.with_day_policy(&policy);
@@ -291,8 +281,7 @@ fn a_closed_friday_scan_falls_forward_to_sunday() {
     let closed = [friday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -311,8 +300,7 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
         .with_day_policy(&policy);
@@ -408,8 +396,7 @@ fn closed_set_trade_date_removes_its_day_and_after_midnight_tail() {
     let closed = [wednesday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar = calendar_for_exchange(Exchange::SetThailand).with_day_policy(&policy);
 
@@ -475,8 +462,10 @@ fn early_close_clamps_sessions_candles_and_state() {
     let monday = day(2026, 4, 20);
     let policy = TestPolicy {
         closed: &[],
-        early: Some((monday, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            monday,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -523,8 +512,10 @@ fn early_close_on_the_last_trade_date_clamps_weekly_and_monthly_bars() {
     let friday = day(2026, 5, 29);
     let policy = TestPolicy {
         closed: &[],
-        early: Some((friday, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            friday,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -555,8 +546,7 @@ fn cme_good_friday_closed_reference_case_uses_caller_data() {
     let closed = [good_friday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -614,8 +604,10 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     let post_thanksgiving = day(2015, 11, 27);
     let thanksgiving_policy = TestPolicy {
         closed: &[],
-        early: Some((post_thanksgiving, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            post_thanksgiving,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let thanksgiving = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&thanksgiving_policy);
@@ -642,8 +634,10 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     let christmas_closed = [christmas_day];
     let christmas_policy = TestPolicy {
         closed: &christmas_closed,
-        early: Some((christmas_eve, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            christmas_eve,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let christmas = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&christmas_policy);
@@ -678,8 +672,7 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
     for holiday in [day(2026, 1, 19), day(2026, 2, 16)] {
         let policy = TestPolicy {
             closed: &[],
-            early: Some((holiday, 12 * 3_600)),
-            late: None,
+            adjustment: Some((holiday, DayAdjustment::early_close(12 * 3_600).unwrap())),
         };
         let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
             .with_day_policy(&policy);
@@ -752,8 +745,10 @@ fn late_open_clips_every_earlier_phase_of_the_trade_date() {
     let monday = day(2026, 4, 20);
     let policy = TestPolicy {
         closed: &[],
-        early: None,
-        late: Some((monday, 9 * 3_600 + 30 * 60)),
+        adjustment: Some((
+            monday,
+            DayAdjustment::late_open(9 * 3_600 + 30 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -807,8 +802,10 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: Some((monday, 12 * 3_600)),
-        late: Some((monday, 9 * 3_600)),
+        adjustment: Some((
+            monday,
+            DayAdjustment::late_open_and_early_close(9 * 3_600, 12 * 3_600).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::AlwaysOpen).with_day_policy(&policy);
@@ -855,38 +852,55 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
 }
 
 #[test]
-fn invalid_policy_seconds_fail_closed_for_that_trade_date() {
+fn invalid_policy_input_preserves_the_previous_adjustment() {
     let monday = day(2026, 4, 20);
-    let invalid_early = TestPolicy {
+    let accepted = DayAdjustment::early_close(12 * 3_600).unwrap();
+    let mut policy = TestPolicy {
         closed: &[],
-        early: Some((monday, 86_401)),
-        late: None,
+        adjustment: Some((monday, accepted)),
     };
-    let invalid_late = TestPolicy {
-        closed: &[],
-        early: None,
-        late: Some((monday, 86_400)),
+    let mut apply_input = |input: Result<DayAdjustment, DayAdjustmentError>| {
+        policy.adjustment = Some((monday, input?));
+        Ok(())
     };
-    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    assert_eq!(
+        apply_input(DayAdjustment::early_close(86_401)),
+        Err(DayAdjustmentError::EarlyCloseOutOfRange {
+            early_close_ssm: 86_401
+        })
+    );
+    assert_eq!(
+        apply_input(DayAdjustment::late_open(86_400)),
+        Err(DayAdjustmentError::LateOpenOutOfRange {
+            late_open_ssm: 86_400
+        })
+    );
+    assert_eq!(
+        policy.outcome_on(monday),
+        DayPolicyOutcome::Adjusted(accepted)
+    );
 
-    for policy in [&invalid_early, &invalid_late] {
-        let calendar = base.with_day_policy(policy);
-        assert!(
-            !calendar
-                .is_open(ct((2026, 4, 19), (18, 0, 0)))
-                .expect("the coverage contract must answer a covered date")
-        );
-        assert!(
-            !calendar
-                .is_open(ct((2026, 4, 20), (10, 0, 0)))
-                .expect("the coverage contract must answer a covered date")
-        );
-        assert!(
-            calendar
-                .is_closed_trade_date(monday, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date")
-        );
-    }
+    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let open = ct((2026, 4, 20), (10, 0, 0));
+    let cutoff = ct((2026, 4, 20), (12, 0, 0));
+    let calendar = base.with_day_policy(&policy);
+    assert_eq!(calendar.is_open(open), Ok(true));
+    assert_eq!(calendar.is_open(cutoff), Ok(false));
+    assert_eq!(
+        calendar.is_closed_trade_date(monday, SessionKind::Both),
+        Ok(false)
+    );
+
+    let directly_closed = TestPolicy {
+        closed: &[monday],
+        adjustment: None,
+    };
+    let calendar = base.with_day_policy(&directly_closed);
+    assert_eq!(calendar.is_open(open), Ok(false));
+    assert_eq!(
+        calendar.is_closed_trade_date(monday, SessionKind::Both),
+        Ok(true)
+    );
 }
 
 #[test]

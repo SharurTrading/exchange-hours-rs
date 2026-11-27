@@ -7,8 +7,9 @@ mod support;
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    DayOverride, DayPolicy, MarketHoursKey, NoPolicy, StaticDayPolicy, StaticDayPolicyError,
-    calendar_for_market_hours_key,
+    DayAdjustment, DayAdjustmentError, DayOverride, DayPolicy, DayPolicyOutcome, Exchange,
+    MarketHoursKey, NoPolicy, SessionKind, StaticDayPolicy, StaticDayPolicyError,
+    calendar_for_exchange, calendar_for_market_hours_key,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -18,11 +19,22 @@ const TUESDAY: Date = Date::constant(2026, 4, 21);
 const WEDNESDAY: Date = Date::constant(2026, 4, 22);
 const THURSDAY: Date = Date::constant(2026, 4, 23);
 
+const fn validated_record(result: Result<DayOverride, DayAdjustmentError>) -> DayOverride {
+    match result {
+        Ok(record) => record,
+        Err(_) => panic!("invalid static override fixture"),
+    }
+}
+
 static OVERRIDES: [DayOverride; 4] = [
     DayOverride::closed(MONDAY),
-    DayOverride::early_close(TUESDAY, 12 * 3_600 + 15 * 60),
-    DayOverride::late_open(WEDNESDAY, 9 * 3_600 + 30 * 60),
-    DayOverride::late_open_and_early_close(THURSDAY, 17 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
+    validated_record(DayOverride::early_close(TUESDAY, 12 * 3_600 + 15 * 60)),
+    validated_record(DayOverride::late_open(WEDNESDAY, 9 * 3_600 + 30 * 60)),
+    validated_record(DayOverride::late_open_and_early_close(
+        THURSDAY,
+        17 * 3_600 + 30 * 60,
+        12 * 3_600 + 15 * 60,
+    )),
 ];
 
 fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
@@ -71,13 +83,10 @@ fn binary_search_is_exact_and_missing_dates_keep_normal_values() {
     let friday = Date::constant(2026, 4, 24);
 
     assert_eq!(policy.override_on(friday), None);
-    assert!(!policy.is_closed(friday));
-    assert_eq!(policy.early_close_ssm(friday), None);
-    assert_eq!(policy.late_open_ssm(friday), None);
-
-    assert!(policy.is_closed(MONDAY));
-    assert_eq!(policy.early_close_ssm(TUESDAY), Some(12 * 3_600 + 15 * 60));
-    assert_eq!(policy.late_open_ssm(WEDNESDAY), Some(9 * 3_600 + 30 * 60));
+    assert_eq!(policy.outcome_on(friday), DayPolicyOutcome::Normal);
+    assert_eq!(policy.outcome_on(MONDAY), DayPolicyOutcome::Closed);
+    assert_eq!(policy.outcome_on(TUESDAY), OVERRIDES[1].outcome());
+    assert_eq!(policy.outcome_on(WEDNESDAY), OVERRIDES[2].outcome());
 }
 
 #[test]
@@ -93,9 +102,7 @@ fn empty_policy_is_valid_and_total_at_date_extremes() {
 
     for date in [Date::MIN, Date::MAX] {
         assert_eq!(policy.override_on(date), Some(DayOverride::closed(date)));
-        assert!(policy.is_closed(date));
-        assert_eq!(policy.early_close_ssm(date), None);
-        assert_eq!(policy.late_open_ssm(date), None);
+        assert_eq!(policy.outcome_on(date), DayPolicyOutcome::Closed);
     }
 }
 
@@ -103,8 +110,8 @@ fn empty_policy_is_valid_and_total_at_date_extremes() {
 fn validation_rejects_the_first_ordering_violation() {
     let duplicate = [
         DayOverride::closed(MONDAY),
-        DayOverride::early_close(MONDAY, 12 * 3_600),
-        DayOverride::late_open(TUESDAY, 86_400),
+        DayOverride::early_close(MONDAY, 12 * 3_600).unwrap(),
+        DayOverride::late_open(TUESDAY, 86_399).unwrap(),
     ];
     assert_eq!(
         StaticDayPolicy::new(&duplicate),
@@ -121,27 +128,37 @@ fn validation_rejects_the_first_ordering_violation() {
 #[test]
 fn validation_enforces_each_ssm_domain_without_comparing_wrapped_boundaries() {
     let valid_edges = [
-        DayOverride::early_close(MONDAY, 86_400),
-        DayOverride::late_open(TUESDAY, 86_399),
-        DayOverride::late_open_and_early_close(WEDNESDAY, 17 * 3_600, 12 * 3_600 + 15 * 60),
+        DayOverride::early_close(MONDAY, 86_400).unwrap(),
+        DayOverride::late_open(TUESDAY, 86_399).unwrap(),
+        DayOverride::late_open_and_early_close(WEDNESDAY, 17 * 3_600, 12 * 3_600 + 15 * 60)
+            .unwrap(),
     ];
     assert!(StaticDayPolicy::new(&valid_edges).is_ok());
+    assert_eq!(valid_edges[0].early_close_ssm(), Some(86_400));
+    assert_eq!(valid_edges[1].late_open_ssm(), Some(86_399));
 
-    let invalid_early = [DayOverride::early_close(MONDAY, 86_401)];
     assert_eq!(
-        StaticDayPolicy::new(&invalid_early),
-        Err(StaticDayPolicyError::EarlyCloseOutOfRange {
-            index: 0,
-            early_close_ssm: 86_401,
+        DayOverride::early_close(MONDAY, 86_401),
+        Err(DayAdjustmentError::EarlyCloseOutOfRange {
+            early_close_ssm: 86_401
         })
     );
-
-    let invalid_late = [DayOverride::late_open(MONDAY, 86_400)];
     assert_eq!(
-        StaticDayPolicy::new(&invalid_late),
-        Err(StaticDayPolicyError::LateOpenOutOfRange {
-            index: 0,
-            late_open_ssm: 86_400,
+        DayOverride::late_open(MONDAY, 86_400),
+        Err(DayAdjustmentError::LateOpenOutOfRange {
+            late_open_ssm: 86_400
+        })
+    );
+    assert_eq!(
+        DayAdjustment::late_open_and_early_close(86_400, 86_401),
+        Err(DayAdjustmentError::EarlyCloseOutOfRange {
+            early_close_ssm: 86_401
+        })
+    );
+    assert_eq!(
+        DayAdjustment::late_open_and_early_close(86_400, 86_400),
+        Err(DayAdjustmentError::LateOpenOutOfRange {
+            late_open_ssm: 86_400
         })
     );
 }
@@ -152,7 +169,8 @@ fn combined_override_clips_a_wrapped_globex_trade_date() {
         MONDAY,
         17 * 3_600 + 30 * 60,
         12 * 3_600 + 15 * 60,
-    )];
+    )
+    .unwrap()];
     let policy = StaticDayPolicy::new(&records).expect("wrapped boundaries are valid");
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -176,6 +194,26 @@ fn combined_override_clips_a_wrapped_globex_trade_date() {
         !calendar
             .is_open(ct((2026, 4, 20), (12, 15, 0)))
             .expect("the coverage contract must answer a covered date")
+    );
+}
+
+#[test]
+fn crossed_same_day_cutoffs_remove_sessions_without_declaring_a_closure() {
+    let adjustment = DayAdjustment::late_open_and_early_close(11 * 3_600, 10 * 3_600).unwrap();
+    let records = [DayOverride::adjusted(MONDAY, adjustment)];
+    let policy = StaticDayPolicy::new(&records).unwrap();
+    let base = calendar_for_exchange(Exchange::Nyse);
+    let baseline_open = "2026-04-20T14:00:00Z".parse().unwrap();
+    assert_eq!(base.is_open(baseline_open), Ok(true));
+    assert_eq!(
+        policy.outcome_on(MONDAY),
+        DayPolicyOutcome::Adjusted(adjustment)
+    );
+    let adjusted = base.with_day_policy(&policy);
+    assert_eq!(adjusted.is_open(baseline_open), Ok(false));
+    assert_eq!(
+        adjusted.is_closed_trade_date(MONDAY, SessionKind::Both),
+        Ok(true)
     );
 }
 

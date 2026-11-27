@@ -11,7 +11,7 @@ use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::{
     clip_local_close, clip_local_open, mk_local_close, mk_local_open,
 };
-use crate::calendar::policy::DayPolicy;
+use crate::calendar::policy::{DayPolicy, DayPolicyOutcome};
 use crate::calendar::rule::{SessionKind, SessionRule};
 use crate::calendar::schedules::HoursProfile;
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
@@ -20,16 +20,6 @@ use crate::calendar::{CalendarResolution, CalendarSource};
 
 use super::gate::{FixedSnapshot, Identified, SourceGate};
 use super::{candles, identity, replacement};
-
-// Sessions opening on a civil day are governed by the profile in force at the
-// end of that opening day. Midnight-keyed revisions select the same profile
-// at any post-midnight anchor, so this only distinguishes sourced intraday
-// cutovers: one that lands in an intraday gap after noon (ICE Canada's 18:30
-// CT pre-open move) must govern the sessions opening later that day. The last
-// second of the local day exists in every zone — DST transitions never
-// collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
-// ambiguity regardless.
-const SECONDS_PER_DAY: u32 = 86_400;
 
 /// Which of a profile's rule sets a scan consults.
 ///
@@ -109,11 +99,6 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
 #[derive(Clone, Copy)]
 struct DayClip {
     closed: bool,
-    /// A layer stated a boundary outside its documented range, which makes the
-    /// trade date unavailable rather than clipping it. Only a caller's
-    /// [`DayPolicy`] can set this; a built-in row's instants are fenced during
-    /// constant evaluation.
-    unavailable: bool,
     early_close_ssm: Option<u32>,
     late_open_ssm: Option<u32>,
 }
@@ -122,17 +107,13 @@ impl DayClip {
     /// The clip that changes nothing.
     const NONE: Self = Self {
         closed: false,
-        unavailable: false,
         early_close_ssm: None,
         late_open_ssm: None,
     };
 
     /// Returns whether this clip leaves the normal trading day untouched.
     const fn is_none(self) -> bool {
-        !self.closed
-            && !self.unavailable
-            && self.early_close_ssm.is_none()
-            && self.late_open_ssm.is_none()
+        !self.closed && self.early_close_ssm.is_none() && self.late_open_ssm.is_none()
     }
 
     /// Composes two clips by tightening, never by widening.
@@ -143,7 +124,6 @@ impl DayClip {
     fn tighten(self, other: Self) -> Self {
         Self {
             closed: self.closed || other.closed,
-            unavailable: self.unavailable || other.unavailable,
             early_close_ssm: min_option(self.early_close_ssm, other.early_close_ssm),
             late_open_ssm: max_option(self.late_open_ssm, other.late_open_ssm),
         }
@@ -266,8 +246,10 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         self.tz
     }
 
-    pub(super) const fn policy(self) -> Option<&'a dyn DayPolicy> {
-        self.policy
+    pub(super) fn policy_outcome(self, trade_date: Date) -> DayPolicyOutcome {
+        self.policy.map_or(DayPolicyOutcome::Normal, |policy| {
+            policy.outcome_on(trade_date)
+        })
     }
 
     /// Returns whether any day-level layer is attached.
@@ -390,26 +372,6 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
                 ..DayClip::NONE
             },
         }
-    }
-
-    /// Returns the caller's [`DayPolicy`] clip for `trade_date`.
-    ///
-    /// A boundary outside the trait's documented range makes the trade date
-    /// unavailable, which is not the same as closing it: an invalid record is
-    /// not evidence that the operator was shut, so it never feeds the
-    /// following-business-day roll.
-    fn policy_clip(self, trade_date: Date) -> DayClip {
-        self.policy.map_or(DayClip::NONE, |policy| {
-            let early_close_ssm = policy.early_close_ssm(trade_date);
-            let late_open_ssm = policy.late_open_ssm(trade_date);
-            DayClip {
-                closed: policy.is_closed(trade_date),
-                unavailable: early_close_ssm.is_some_and(|ssm| ssm > SECONDS_PER_DAY)
-                    || late_open_ssm.is_some_and(|ssm| ssm >= SECONDS_PER_DAY),
-                early_close_ssm,
-                late_open_ssm,
-            }
-        })
     }
 
     /// Returns whether the built-in table may hold a replacement block row on
@@ -586,49 +548,28 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         self.replacement_layer
     }
 
-    /// Returns whether the exception layer replaces `trade_date` outright.
-    pub(super) fn trade_date_is_replaced(self, trade_date: Date) -> bool {
-        matches!(
-            self.exception_on(trade_date),
-            DateException::ReplaceSessions(_)
-        )
-    }
-
-    /// Returns whether any layer removes `trade_date` completely.
+    /// Resolves the explicit closures and policy used for a business-date roll.
     ///
-    /// The caller's exception layer answers first, the built-in family table
-    /// next, and the caller's [`DayPolicy`] last, overlaying whatever survives
-    /// exactly as it overlays a normal week.
-    pub(super) fn trade_date_is_closed(self, trade_date: Date) -> bool {
-        if matches!(self.exception_on(trade_date), DateException::Closed) {
-            return true;
+    /// The exception and holiday layers can close a weekday outright. Only an
+    /// explicit closure skips that weekday; a clip that removes the entire
+    /// session leaves the date's assignment alone.
+    pub(super) fn business_date_policy(self, trade_date: Date) -> DayPolicyOutcome {
+        if matches!(self.exception_on(trade_date), DateException::Closed)
+            || self.builtin_clip(trade_date).closed
+        {
+            return DayPolicyOutcome::Closed;
         }
-        self.builtin_clip(trade_date)
-            .tighten(self.policy_clip(trade_date))
-            .closed
+        self.policy_outcome(trade_date)
     }
 
     /// Assigns a resolved session block to its venue-local trade date.
     ///
     /// A replacement block carries its assignment explicitly, so it wins over
     /// every derived convention. Everything else falls through to
-    /// [`Self::normal_trade_date_for_bounds`].
+    /// the identity's normal assignment.
     pub(super) fn trade_date_for_bounds(self, open: Timestamp, close: Timestamp) -> Date {
         replacement::replacement_trade_date(&self, open)
-            .unwrap_or_else(|| identity::assign_normal(&self, open, close))
-    }
-
-    /// Assigns bounds produced by a normal-week rule to their trade date.
-    ///
-    /// Most profiles use the local date of the final close. Identified
-    /// calendars retain three sourced exceptions: SET's after-midnight DR night
-    /// phase belongs to its prior local opening date, CBOT Rough Rice's
-    /// evening leg belongs to the following local date, and CME
-    /// cryptocurrency's weekend blocks carry the following business date. A
-    /// detached fixed snapshot has no identity with which to apply any of
-    /// them.
-    pub(super) fn normal_trade_date_for_bounds(self, open: Timestamp, close: Timestamp) -> Date {
-        identity::assign_normal(&self, open, close)
+            .unwrap_or_else(|| identity::assign_normal(&self, open, close).0)
     }
 
     /// Returns whether this identified calendar joins storage-only rule pieces.
@@ -726,6 +667,8 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     }
 
     /// Selects a profile by the venue-local day on which a session opens.
+    /// The selected profile is the one in force at the end of that day so a
+    /// sourced intraday revision governs occurrences opening after it.
     pub(super) fn profile_for_open_day(self, day: Date) -> HoursProfile<'a> {
         G::profile_for_open_day(self.source, self.tz, day)
     }
@@ -949,27 +892,28 @@ pub(super) fn resolve_rule_bounds<G: SourceGate>(
         // own close as the trade-date anchor rather than inventing a date.
         None => raw_close,
     };
-    let trade_date = context.normal_trade_date_for_bounds(raw_open, final_close);
+    let (trade_date, policy) = identity::assign_normal(context, raw_open, final_close);
     // The exception layer resolves the trading day before anything clips it: a
     // replaced or closed trade date deletes its normal-week occurrences, and
     // the replacement blocks -- the caller's record or the built-in table's
     // row, whichever governs the date -- stand in their place.
     //
-    // The two probes run only when some layer can actually replace or close a
-    // date by record. `has_replacement_layer` false means neither a caller
-    // provider nor a block row is attached, and then `exception_on` can only
-    // answer `KnownNormal`, so both tests are already false. Skipping them keeps
-    // two virtual calls out of the per-occurrence path, which is where this
-    // function is called from.
+    // Probe only when a caller provider or built-in block row can replace or
+    // close a date by exception record.
     if context.has_replacement_layer()
-        && (context.trade_date_is_replaced(trade_date)
-            || matches!(context.exception_on(trade_date), DateException::Closed))
+        && matches!(
+            context.exception_on(trade_date),
+            DateException::ReplaceSessions(_) | DateException::Closed
+        )
     {
         return Ok(None);
     }
-    let clip = context
-        .builtin_clip(trade_date)
-        .tighten(context.policy_clip(trade_date));
+    let policy = policy.unwrap_or_else(|| context.policy_outcome(trade_date));
+    let clip = context.builtin_clip(trade_date).tighten(DayClip {
+        closed: policy.is_closed(),
+        early_close_ssm: policy.early_close_ssm(),
+        late_open_ssm: policy.late_open_ssm(),
+    });
     if clip.closed {
         return Ok(None);
     }
@@ -992,9 +936,6 @@ fn clamp_to_clip<G: SourceGate>(
     raw_open: Timestamp,
     raw_close: Timestamp,
 ) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, G::Error> {
-    if clip.unavailable {
-        return Ok(None);
-    }
     let tz = context.tz();
     let mut open = raw_open;
     let mut close = raw_close;

@@ -33,13 +33,15 @@ use crate::support::zones::{US_CENTRAL, US_EASTERN, UTC};
 use crate::support::{elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
-    DayOverride, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, Exchange, Holiday,
-    HolidayKind, MarketHoursKey, SessionExceptionRecord, SessionExceptionSource, SessionKind,
-    SessionState, StaticDayPolicy, StaticSessionExceptions, StaticSessionExceptionsError,
-    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
+    DayAdjustment, DayOverride, DayPolicy, DayPolicyOutcome, ExceptionBlock, ExceptionBlockKind,
+    ExceptionCoverage, Exchange, Holiday, HolidayKind, MarketHoursKey, SessionExceptionRecord,
+    SessionExceptionSource, SessionKind, SessionState, StaticDayPolicy, StaticSessionExceptions,
+    StaticSessionExceptionsError, calendar_for_exchange, calendar_for_market_hours_key,
+    hours_for_exchange,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 const fn day(year: i16, month: i8, date: i8) -> Date {
     Date::constant(year, month, date)
@@ -716,7 +718,8 @@ fn nasdaq_regular_only_early_close_keeps_extended_trading_open() {
 
 #[test]
 fn a_scalar_early_close_cannot_express_the_nasdaq_half_day() {
-    let overrides = [DayOverride::early_close(NASDAQ_HALF_DAY, 13 * 3_600)];
+    let overrides = [DayOverride::early_close(NASDAQ_HALF_DAY, 13 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid override");
     let clipped = calendar_for_exchange(Exchange::Nasdaq).with_day_policy(&policy);
     let table = nasdaq_table();
@@ -837,7 +840,8 @@ fn a_closed_record_removes_the_whole_trading_day() {
 #[test]
 fn a_day_policy_clips_a_replaced_trading_day() {
     let table = nasdaq_table();
-    let overrides = [DayOverride::early_close(NASDAQ_HALF_DAY, 11 * 3_600)];
+    let overrides = [DayOverride::early_close(NASDAQ_HALF_DAY, 11 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid override");
     let calendar = calendar_for_exchange(Exchange::Nasdaq)
         .with_session_exceptions(&table)
@@ -890,9 +894,42 @@ fn a_day_policy_clips_a_replaced_trading_day() {
 }
 
 #[test]
+fn a_replacement_date_samples_the_policy_once_for_all_blocks() {
+    struct CountingPolicy {
+        reads: AtomicUsize,
+        adjustment: DayAdjustment,
+    }
+
+    impl DayPolicy for CountingPolicy {
+        fn outcome_on(&self, trade_date: Date) -> DayPolicyOutcome {
+            assert_eq!(trade_date, NASDAQ_HALF_DAY);
+            self.reads.fetch_add(1, Ordering::Relaxed);
+            DayPolicyOutcome::Adjusted(self.adjustment)
+        }
+    }
+
+    let table = nasdaq_table();
+    let policy = CountingPolicy {
+        reads: AtomicUsize::new(0),
+        adjustment: DayAdjustment::early_close(11 * 3_600).unwrap(),
+    };
+    let calendar = calendar_for_exchange(Exchange::Nasdaq)
+        .with_session_exceptions(&table)
+        .unwrap()
+        .with_day_policy(&policy);
+
+    assert_eq!(
+        calendar.is_closed_trade_date(NASDAQ_HALF_DAY, SessionKind::Both),
+        Ok(false)
+    );
+    assert_eq!(policy.reads.load(Ordering::Relaxed), 1);
+}
+
+#[test]
 fn a_day_policy_late_open_delays_a_replaced_trading_day() {
     let table = nasdaq_table();
-    let overrides = [DayOverride::late_open(NASDAQ_HALF_DAY, 11 * 3_600)];
+    let overrides = [DayOverride::late_open(NASDAQ_HALF_DAY, 11 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid override");
     let calendar = calendar_for_exchange(Exchange::Nasdaq)
         .with_session_exceptions(&table)
@@ -2381,7 +2418,8 @@ fn a_day_policy_clips_a_replaced_trading_day_above_the_floor() {
         .with_session_exceptions(&table)
         .expect("the fixture is scoped to this calendar");
 
-    let overrides = [DayOverride::early_close(trade_date, 13 * 3_600)];
+    let overrides = [DayOverride::early_close(trade_date, 13 * 3_600)
+        .expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid override");
     let clipped = base.with_day_policy(&policy);
     assert!(clipped.has_session_exceptions());

@@ -4,35 +4,17 @@
 
 use jiff::civil::Date;
 
-use super::DayPolicy;
+use super::{DayAdjustment, DayAdjustmentError, DayPolicy, DayPolicyOutcome};
 
-const SECONDS_PER_DAY: u32 = 86_400;
-
-/// One caller-supplied override for a venue-local trade date.
+/// One validated override for a venue-local trade date.
 ///
-/// An override can close the complete trading day, move its final close
-/// earlier, delay its first open, or apply both boundary changes. It cannot
-/// replace arbitrary intraday phases, add a split session, or express a
-/// product-specific topology change; those cases are outside the [`DayPolicy`]
-/// model and belong to
+/// An override can close the trading day, tighten its outer boundaries, or
+/// combine both boundary changes. To replace or split intraday phases, use
 /// [`StaticSessionExceptions`](crate::StaticSessionExceptions).
-///
-/// Boundary values are checked when the record is placed in a
-/// [`StaticDayPolicy`]. The explicit constructors prevent a closed date from
-/// also carrying boundary changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DayOverride {
     trade_date: Date,
-    kind: DayOverrideKind,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum DayOverrideKind {
-    Closed,
-    Modified {
-        late_open_ssm: Option<u32>,
-        early_close_ssm: Option<u32>,
-    },
+    outcome: DayPolicyOutcome,
 }
 
 impl DayOverride {
@@ -41,58 +23,63 @@ impl DayOverride {
     pub const fn closed(trade_date: Date) -> Self {
         Self {
             trade_date,
-            kind: DayOverrideKind::Closed,
+            outcome: DayPolicyOutcome::Closed,
         }
     }
 
-    /// Moves `trade_date`'s final close to `early_close_ssm`.
-    ///
-    /// The value is venue-local seconds since midnight and is validated by
-    /// [`StaticDayPolicy::new`].
+    /// Applies an already validated adjustment to `trade_date`.
     #[must_use]
-    pub const fn early_close(trade_date: Date, early_close_ssm: u32) -> Self {
+    pub const fn adjusted(trade_date: Date, adjustment: DayAdjustment) -> Self {
         Self {
             trade_date,
-            kind: DayOverrideKind::Modified {
-                late_open_ssm: None,
-                early_close_ssm: Some(early_close_ssm),
-            },
+            outcome: DayPolicyOutcome::Adjusted(adjustment),
         }
     }
 
-    /// Delays `trade_date`'s first open to `late_open_ssm`.
+    /// Moves `trade_date`'s final close earlier.
     ///
-    /// The value is venue-local seconds since midnight and is validated by
-    /// [`StaticDayPolicy::new`].
-    #[must_use]
-    pub const fn late_open(trade_date: Date, late_open_ssm: u32) -> Self {
-        Self {
-            trade_date,
-            kind: DayOverrideKind::Modified {
-                late_open_ssm: Some(late_open_ssm),
-                early_close_ssm: None,
-            },
+    /// # Errors
+    ///
+    /// Returns [`DayAdjustmentError::EarlyCloseOutOfRange`] above `86_400`.
+    pub const fn early_close(
+        trade_date: Date,
+        early_close_ssm: u32,
+    ) -> Result<Self, DayAdjustmentError> {
+        match DayAdjustment::early_close(early_close_ssm) {
+            Ok(adjustment) => Ok(Self::adjusted(trade_date, adjustment)),
+            Err(error) => Err(error),
         }
     }
 
-    /// Delays the first open and moves the final close for `trade_date`.
+    /// Delays `trade_date`'s first open.
     ///
-    /// Both values are venue-local seconds since midnight and are validated by
-    /// [`StaticDayPolicy::new`]. Their numeric order is deliberately not
-    /// constrained: a wrapped trading day can open on the preceding local date
-    /// at a numerically later wall clock than its final close on `trade_date`.
-    #[must_use]
+    /// # Errors
+    ///
+    /// Returns [`DayAdjustmentError::LateOpenOutOfRange`] at or above `86_400`.
+    pub const fn late_open(
+        trade_date: Date,
+        late_open_ssm: u32,
+    ) -> Result<Self, DayAdjustmentError> {
+        match DayAdjustment::late_open(late_open_ssm) {
+            Ok(adjustment) => Ok(Self::adjusted(trade_date, adjustment)),
+            Err(error) => Err(error),
+        }
+    }
+
+    /// Delays the first open and moves the final close earlier for `trade_date`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DayAdjustmentError`] if either cutoff is out of range. See
+    /// [`DayAdjustment::late_open_and_early_close`] for wrapped trading days.
     pub const fn late_open_and_early_close(
         trade_date: Date,
         late_open_ssm: u32,
         early_close_ssm: u32,
-    ) -> Self {
-        Self {
-            trade_date,
-            kind: DayOverrideKind::Modified {
-                late_open_ssm: Some(late_open_ssm),
-                early_close_ssm: Some(early_close_ssm),
-            },
+    ) -> Result<Self, DayAdjustmentError> {
+        match DayAdjustment::late_open_and_early_close(late_open_ssm, early_close_ssm) {
+            Ok(adjustment) => Ok(Self::adjusted(trade_date, adjustment)),
+            Err(error) => Err(error),
         }
     }
 
@@ -102,56 +89,51 @@ impl DayOverride {
         self.trade_date
     }
 
+    /// Returns this record's validated outcome.
+    #[must_use]
+    pub const fn outcome(self) -> DayPolicyOutcome {
+        self.outcome
+    }
+
     /// Returns whether this record closes the complete trading day.
     #[must_use]
     pub const fn is_closed(self) -> bool {
-        matches!(self.kind, DayOverrideKind::Closed)
+        self.outcome.is_closed()
     }
 
     /// Returns the replacement final-close SSM, if present.
     #[must_use]
     pub const fn early_close_ssm(self) -> Option<u32> {
-        match self.kind {
-            DayOverrideKind::Closed => None,
-            DayOverrideKind::Modified {
-                early_close_ssm, ..
-            } => early_close_ssm,
-        }
+        self.outcome.early_close_ssm()
     }
 
     /// Returns the replacement first-open SSM, if present.
     #[must_use]
     pub const fn late_open_ssm(self) -> Option<u32> {
-        match self.kind {
-            DayOverrideKind::Closed => None,
-            DayOverrideKind::Modified { late_open_ssm, .. } => late_open_ssm,
-        }
+        self.outcome.late_open_ssm()
     }
 }
 
 /// An allocation-free [`DayPolicy`] over caller-owned, sorted records.
 ///
-/// Records are keyed by venue-local **trade date**, not calendar date. Missing
-/// dates retain the normal-week schedule. Construction validates the entire
-/// slice once; queries then use exact-date binary search without allocation,
-/// recurrence inference, I/O, or clock reads.
+/// Records are keyed by venue-local **trade date**. Missing dates retain the
+/// schedule. Construction validates record order once. Queries use exact-date
+/// binary search without allocation, recurrence inference, I/O, or clock reads.
 ///
-/// This type stores no operator data and makes no source or coverage claim. It
-/// represents only the closed/early-close/late-open vocabulary of
-/// [`DayPolicy`], not arbitrary intraday topology changes.
+/// This type stores no operator data and makes no source or coverage claim.
 ///
 /// # Example
 ///
 /// ```
 /// use jiff::civil::Date;
-/// use exchange_hours::{DayOverride, DayPolicy, StaticDayPolicy};
+/// use exchange_hours::{DayOverride, DayPolicy, DayPolicyOutcome, StaticDayPolicy};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let trade_date = Date::new(2026, 4, 20)?;
-/// let records = [DayOverride::closed(trade_date)];
+/// let records = [DayOverride::early_close(trade_date, 13 * 3_600)?];
 /// let policy = StaticDayPolicy::new(&records)?;
 ///
-/// assert!(policy.is_closed(trade_date));
+/// assert!(matches!(policy.outcome_on(trade_date), DayPolicyOutcome::Adjusted(_)));
 /// # Ok(())
 /// # }
 /// ```
@@ -161,45 +143,23 @@ pub struct StaticDayPolicy<'a> {
 }
 
 impl<'a> StaticDayPolicy<'a> {
-    /// Validates and borrows a slice of trade-date overrides.
+    /// Validates the order of the borrowed trade-date overrides.
     ///
     /// An empty slice is valid and behaves like [`super::NoPolicy`]. Records
-    /// must be strictly increasing by trade date, so duplicates are rejected.
-    /// Early closes use `0..=86_400`; late opens use `0..86_400`.
-    /// The constructor validates the borrowed overrides at runtime.
-    ///
-    /// Validation scans from left to right. For each record it checks ordering,
-    /// then the early close, then the late open, returning the first violation.
+    /// must be strictly increasing by trade date. Each override has already
+    /// validated its boundary values.
     ///
     /// # Errors
     ///
     /// Returns [`StaticDayPolicyError`] for the first duplicate or out-of-order
-    /// date, early close outside `0..=86_400`, or late open outside
-    /// `0..86_400`.
+    /// date.
     pub fn new(overrides: &'a [DayOverride]) -> Result<Self, StaticDayPolicyError> {
-        let mut index = 0;
-        while index < overrides.len() {
-            let current = overrides[index];
-            if index > 0 && current.trade_date <= overrides[index - 1].trade_date {
-                return Err(StaticDayPolicyError::DatesNotStrictlyIncreasing { index });
-            }
-            if let Some(early_close_ssm) = current.early_close_ssm()
-                && early_close_ssm > SECONDS_PER_DAY
-            {
-                return Err(StaticDayPolicyError::EarlyCloseOutOfRange {
-                    index,
-                    early_close_ssm,
-                });
-            }
-            if let Some(late_open_ssm) = current.late_open_ssm()
-                && late_open_ssm >= SECONDS_PER_DAY
-            {
-                return Err(StaticDayPolicyError::LateOpenOutOfRange {
-                    index,
-                    late_open_ssm,
-                });
-            }
-            index += 1;
+        if let Some(index) = overrides
+            .iter()
+            .zip(overrides.iter().skip(1))
+            .position(|(previous, current)| previous.trade_date >= current.trade_date)
+        {
+            return Err(StaticDayPolicyError::DatesNotStrictlyIncreasing { index: index + 1 });
         }
         Ok(Self { overrides })
     }
@@ -223,27 +183,11 @@ impl<'a> StaticDayPolicy<'a> {
 }
 
 impl DayPolicy for StaticDayPolicy<'_> {
-    fn is_closed(&self, trade_date: Date) -> bool {
+    fn outcome_on(&self, trade_date: Date) -> DayPolicyOutcome {
         self.override_on(trade_date)
-            .is_some_and(DayOverride::is_closed)
+            .map_or(DayPolicyOutcome::Normal, DayOverride::outcome)
     }
 
-    fn early_close_ssm(&self, trade_date: Date) -> Option<u32> {
-        self.override_on(trade_date)
-            .and_then(DayOverride::early_close_ssm)
-    }
-
-    fn late_open_ssm(&self, trade_date: Date) -> Option<u32> {
-        self.override_on(trade_date)
-            .and_then(DayOverride::late_open_ssm)
-    }
-
-    /// One partition point over the validated, sorted records — the same shape
-    /// the built-in table's gate answers from (issue #94). A queried trading
-    /// day nowhere near a record therefore costs the engine's gate one binary
-    /// search instead of the full trading-day derivation, which is what kept a
-    /// far-from-the-date [`StaticDayPolicy`] at ~15x the bare calendar's
-    /// `is_open` cost.
     fn may_affect(&self, first: Date, last: Date) -> bool {
         let start = self
             .overrides
@@ -263,20 +207,6 @@ pub enum StaticDayPolicyError {
         /// Index of the duplicate or out-of-order record.
         index: usize,
     },
-    /// An early close is outside `0..=86_400`.
-    EarlyCloseOutOfRange {
-        /// Index of the invalid record.
-        index: usize,
-        /// Rejected early-close value.
-        early_close_ssm: u32,
-    },
-    /// A late open is outside `0..86_400`.
-    LateOpenOutOfRange {
-        /// Index of the invalid record.
-        index: usize,
-        /// Rejected late-open value.
-        late_open_ssm: u32,
-    },
 }
 
 impl core::fmt::Display for StaticDayPolicyError {
@@ -288,20 +218,6 @@ impl core::fmt::Display for StaticDayPolicyError {
                     "override at index {index} is not later than its predecessor"
                 )
             }
-            Self::EarlyCloseOutOfRange {
-                index,
-                early_close_ssm,
-            } => write!(
-                f,
-                "early_close_ssm {early_close_ssm} at index {index} is outside 0..=86400"
-            ),
-            Self::LateOpenOutOfRange {
-                index,
-                late_open_ssm,
-            } => write!(
-                f,
-                "late_open_ssm {late_open_ssm} at index {index} is outside 0..86400"
-            ),
         }
     }
 }

@@ -467,7 +467,8 @@ fn an_early_close_beyond_the_timestamp_limit_keeps_a_representable_session() {
     let at = |hour, minute| NEW_YORK.to_timestamp(day.at(hour, minute, 0, 0)).unwrap();
     let probe = at(12, 0);
     let expected = Some((at(9, 30), at(16, 0)));
-    let overrides = [DayOverride::early_close(day, 20 * 3_600)];
+    let overrides =
+        [DayOverride::early_close(day, 20 * 3_600).expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid early-close override");
 
     assert!(NEW_YORK.to_timestamp(day.at(20, 0, 0, 0)).is_err());
@@ -497,7 +498,8 @@ fn an_early_close_beyond_the_timestamp_limit_keeps_a_representable_replacement()
     let records = [SessionExceptionRecord::replace_sessions(day, &blocks)];
     let exceptions = StaticSessionExceptions::new(calendar.source(), day, day, &records)
         .expect("valid replacement session");
-    let overrides = [DayOverride::early_close(day, 20 * 3_600)];
+    let overrides =
+        [DayOverride::early_close(day, 20 * 3_600).expect("the fixture boundary must be valid")];
     let policy = StaticDayPolicy::new(&overrides).expect("valid early-close override");
 
     assert_eq!(

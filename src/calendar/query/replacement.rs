@@ -23,9 +23,8 @@ use crate::calendar::exceptions::{DateException, ExceptionBlock, ExceptionBlockK
 use crate::calendar::local_time::{
     clip_local_close, clip_local_open, mk_local_close, mk_local_open,
 };
+use crate::calendar::policy::DayPolicyOutcome;
 use crate::calendar::rule::SessionKind;
-
-const SECONDS_PER_DAY: u32 = 86_400;
 
 /// The exception layer's answer for one trade date's final close.
 pub(super) enum ExceptionDailyClose {
@@ -90,12 +89,14 @@ fn late_open_day(trade_date: Date, blocks: &[ExceptionBlock], ssm: u32) -> Date 
 /// Precedence is fixed and one-directional: the exception layer decides what
 /// the trading day is, and the policy then clips it exactly as it clips a
 /// normal week. `blocks` is the record's complete ordered set, needed only to
-/// anchor a late-open override to the replaced day's own first open.
-pub(super) fn resolve_block_bounds<G: SourceGate>(
+/// anchor a late-open override to the replaced day's own first open. The scan
+/// reads the date's policy once when the first eligible block needs it.
+fn resolve_block_bounds<G: SourceGate>(
     context: &QueryContext<'_, G>,
     trade_date: Date,
     blocks: &[ExceptionBlock],
     block: ExceptionBlock,
+    cached_policy: &mut Option<DayPolicyOutcome>,
 ) -> Option<(Timestamp, Timestamp)> {
     let open_day = opening_day(trade_date, block)?;
     let close_day = if block.wraps_to_next_day() {
@@ -115,24 +116,16 @@ pub(super) fn resolve_block_bounds<G: SourceGate>(
         // same refusal the `DayPolicy` path makes for the same reason.
         return None;
     }
-    let Some(policy) = context.policy() else {
-        return Some((raw_open, raw_close));
-    };
-    if policy.is_closed(trade_date) {
+    let policy = *cached_policy.get_or_insert_with(|| context.policy_outcome(trade_date));
+    if policy.is_closed() {
         return None;
     }
     let mut open = raw_open;
     let mut close = raw_close;
-    if let Some(ssm) = policy.early_close_ssm(trade_date) {
-        if ssm > SECONDS_PER_DAY {
-            return None;
-        }
+    if let Some(ssm) = policy.early_close_ssm() {
         close = clip_local_close(tz, trade_date, ssm, close)?;
     }
-    if let Some(ssm) = policy.late_open_ssm(trade_date) {
-        if ssm >= SECONDS_PER_DAY {
-            return None;
-        }
+    if let Some(ssm) = policy.late_open_ssm() {
         let cutoff_day = late_open_day(trade_date, blocks, ssm);
         open = clip_local_open(tz, cutoff_day, ssm, open)?;
     }
@@ -183,13 +176,14 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
             .ok()
             && let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date)
         {
+            let mut policy = None;
             for block in blocks.iter().copied().filter(|block| {
                 block.open_day_offset() == offset
                     && selects(*block, set)
                     && (!wrapped_only || block.wraps_to_next_day())
             }) {
                 if let Some((open, close)) =
-                    resolve_block_bounds(context, trade_date, blocks, block)
+                    resolve_block_bounds(context, trade_date, blocks, block, &mut policy)
                     && let Some(found) = probe(open, close)
                 {
                     return Some(found);
@@ -292,6 +286,7 @@ pub(super) fn governs_instant<G: SourceGate>(
     let mut trade_date = first_trade_date;
     loop {
         if let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date) {
+            let mut policy = None;
             // A block meeting this occurrence opens on one of its own local
             // days or on the day before it; the resolved comparison below
             // rejects the rest whatever they hold.
@@ -305,7 +300,7 @@ pub(super) fn governs_instant<G: SourceGate>(
                     .filter(|block| block.open_day_offset() == offset && selects(*block, set))
                 {
                     if let Some((block_open, block_close)) =
-                        resolve_block_bounds(context, trade_date, blocks, block)
+                        resolve_block_bounds(context, trade_date, blocks, block, &mut policy)
                         && block_open < window_close
                         && block_close > window_open
                     {
@@ -361,12 +356,13 @@ pub(super) fn replacement_trade_date<G: SourceGate>(
             .ok()
             && let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date)
         {
+            let mut policy = None;
             for block in blocks
                 .iter()
                 .copied()
                 .filter(|block| block.open_day_offset() == offset && is_tradeable(*block))
             {
-                if resolve_block_bounds(context, trade_date, blocks, block)
+                if resolve_block_bounds(context, trade_date, blocks, block, &mut policy)
                     .is_some_and(|(block_open, _close)| block_open == open)
                 {
                     return Some(trade_date);
@@ -413,6 +409,7 @@ pub(super) fn daily_close<G: SourceGate>(
     match context.exception_on(trade_date) {
         DateException::Closed => ExceptionDailyClose::NoSession,
         DateException::ReplaceSessions(blocks) => {
+            let mut policy = None;
             let mut latest: Option<Timestamp> = None;
             for block in blocks
                 .iter()
@@ -420,7 +417,7 @@ pub(super) fn daily_close<G: SourceGate>(
                 .filter(|block| selects(*block, RuleSet::Sessions(kind)))
             {
                 if let Some((_open, close)) =
-                    resolve_block_bounds(context, trade_date, blocks, block)
+                    resolve_block_bounds(context, trade_date, blocks, block, &mut policy)
                     && latest.is_none_or(|current| close > current)
                 {
                     latest = Some(close);

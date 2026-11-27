@@ -97,8 +97,8 @@ pub use futures_profile::{
 };
 pub use hours::MarketHours;
 pub use policy::{
-    DayOverride, DayPolicy, NoPolicy, PolicyCalendar, StaticDayPolicy, StaticDayPolicyError,
-    ZonedPolicyCalendar,
+    DayAdjustment, DayAdjustmentError, DayOverride, DayPolicy, DayPolicyOutcome, NoPolicy,
+    PolicyCalendar, StaticDayPolicy, StaticDayPolicyError, ZonedPolicyCalendar,
 };
 pub use presets::hours_for_exchange;
 pub use resolution::CalendarResolution;

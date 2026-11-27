@@ -410,7 +410,8 @@ fn an_overlay_cannot_lend_coverage_to_a_dormant_identity() {
     let early_wednesday = day((2026, 9, 16));
     let records = [
         DayOverride::closed(closed_tuesday),
-        DayOverride::early_close(early_wednesday, 12 * 3_600),
+        DayOverride::early_close(early_wednesday, 12 * 3_600)
+            .expect("the fixture boundary must be valid"),
     ];
     let policy = StaticDayPolicy::new(&records).expect("the fixture records must be valid");
     let overlaid = calendar_for_market_hours_key(WEATHER).with_day_policy(&policy);

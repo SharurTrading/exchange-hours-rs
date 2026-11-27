@@ -3,9 +3,11 @@
 //! Caller-supplied trade-date overrides and their calendar adapter.
 
 mod candles;
+mod outcome;
 mod static_policy;
 mod week;
 
+pub use outcome::{DayAdjustment, DayAdjustmentError, DayPolicyOutcome};
 pub use static_policy::{DayOverride, StaticDayPolicy, StaticDayPolicyError};
 
 use jiff::tz::TimeZone;
@@ -39,28 +41,17 @@ use super::{
 /// topology goes through [`SessionExceptionSource`], which this overlay then
 /// clips exactly as it clips a normal week.
 pub trait DayPolicy: Send + Sync {
-    /// Returns whether the market does not trade on `trade_date`.
+    /// Returns the policy's validated outcome for `trade_date`.
     ///
-    /// This normally removes that complete trading day. An identified family
-    /// with a sourced following-business-day convention may instead reassign
-    /// its continuous trading to the next date for which this returns `false`.
-    fn is_closed(&self, trade_date: Date) -> bool;
-
-    /// Moves the trade date's final close to venue-local seconds since midnight.
+    /// A closure normally removes the whole trading day. Families with a
+    /// sourced following-business-day convention can reassign continuous
+    /// trading to the next date without a closure. Boundary adjustments only
+    /// clip sessions assigned to the date.
     ///
-    /// Later phases are removed. `None` keeps the normal close. Values greater
-    /// than `86_400` are invalid and make that trade date unavailable.
-    fn early_close_ssm(&self, trade_date: Date) -> Option<u32>;
-
-    /// Delays the trade date's first open to venue-local seconds since midnight.
-    ///
-    /// `None` keeps the normal open. For a wrapped trading day, a value at or
-    /// after the normal first-open wall clock is interpreted on the preceding
-    /// opening date; smaller values are interpreted on the trade date. Values
-    /// at or above `86_400` are invalid and make that trade date unavailable.
-    fn late_open_ssm(&self, _trade_date: Date) -> Option<u32> {
-        None
-    }
+    /// Validate raw input with [`DayAdjustment`] before storing or returning
+    /// it. The checked constructors report [`DayAdjustmentError`] to the code
+    /// accepting the input.
+    fn outcome_on(&self, trade_date: Date) -> DayPolicyOutcome;
 
     /// Returns whether this policy holds any record that can land on a trade
     /// date in the inclusive window `first..=last`.
@@ -70,10 +61,8 @@ pub trait DayPolicy: Send + Sync {
     /// answer by holding a record for a trade date that occurrence could be
     /// assigned to, so a policy answering `false` for the whole window lets
     /// the query finish at the bare calendar's cost. The default answer is
-    /// `true` — *possibly*, which keeps the derivation — so an implementation
-    /// that does not track its own span behaves exactly as it did before this
-    /// method existed, and every existing implementation stays
-    /// source-compatible.
+    /// `true` — *possibly*, which keeps the derivation for implementations
+    /// that do not track their own span.
     ///
     /// Returning `false` for a window that in fact holds a record is a
     /// soundness bug in the implementation, not a tunable: the engine will
@@ -91,12 +80,8 @@ pub trait DayPolicy: Send + Sync {
 pub struct NoPolicy;
 
 impl DayPolicy for NoPolicy {
-    fn is_closed(&self, _trade_date: Date) -> bool {
-        false
-    }
-
-    fn early_close_ssm(&self, _trade_date: Date) -> Option<u32> {
-        None
+    fn outcome_on(&self, _trade_date: Date) -> DayPolicyOutcome {
+        DayPolicyOutcome::Normal
     }
 
     /// No record anywhere: the policy can never affect an answer, so the

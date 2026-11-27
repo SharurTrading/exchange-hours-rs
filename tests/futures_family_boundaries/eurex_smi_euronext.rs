@@ -455,6 +455,41 @@ fn the_euronext_grid_answers_from_its_horizon_and_refuses_below_it() {
     );
 }
 
+/// Holiday evidence predates the family's normal-week horizon.
+#[test]
+fn the_euronext_2012_and_2013_releases_classify_closures_and_withhold_eve_hours() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::EuronextIndexFutures);
+    for (year, doc, closed) in [
+        (
+            2012,
+            "EURONEXT-PR-2012",
+            &[(4, 6), (4, 9), (5, 1), (12, 25), (12, 26)][..],
+        ),
+        (
+            2013,
+            "EURONEXT-PR-2013",
+            &[(1, 1), (3, 29), (4, 1), (5, 1), (12, 25), (12, 26)][..],
+        ),
+    ] {
+        for &(month, date) in closed {
+            let date = day(year, month, date);
+            let holiday = calendar.holiday_on(date).expect("published closure");
+            assert_eq!(holiday.kind(), HolidayKind::Closed, "{date}");
+            assert_eq!(holiday.document_id(), doc);
+        }
+        for date in [day(year, 12, 24), day(year, 12, 31)] {
+            let eve = calendar.holiday_on(date).expect("published half day");
+            assert_eq!(eve.kind(), HolidayKind::Unsourced, "{date}");
+            assert_eq!(eve.document_id(), doc);
+        }
+    }
+    let historical_closure = paris((2012, 4, 6), (12, 0, 0));
+    assert!(matches!(
+        calendar.is_open(historical_closure).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2012, 4, 6)
+    ));
+}
+
 /// The family's holiday rows on the answerable side of the horizon: the
 /// Christmas closure answers, the two announced-but-unstated half days refuse
 /// as `Unsourced`, and the table's window is the operator's published one.

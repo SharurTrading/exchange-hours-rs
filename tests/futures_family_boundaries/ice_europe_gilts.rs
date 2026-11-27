@@ -116,6 +116,8 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         day((2020, 1, 1)),
         day((2020, 4, 10)),
         day((2021, 12, 28)),
+        day((2023, 12, 25)),
+        day((2023, 12, 26)),
     ] {
         assert_eq!(
             calendar.holiday_on(date).map(exchange_hours::Holiday::kind),
@@ -184,15 +186,20 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         );
     }
 
-    // The 2025 eves carry sourced 12:15 closes; both sit below the carried
-    // horizon, so the rows answer through `holiday_on` while the date-aware
-    // session layer refuses.
-    for date in [day((2025, 12, 24)), day((2025, 12, 31))] {
+    // These early closes sit below the carried normal-week horizon.
+    for (date, close_ssm) in [
+        (day((2021, 12, 24)), 15 * 3600 + 30 * 60),
+        (day((2021, 12, 31)), 12 * 3600 + 15 * 60),
+        (day((2023, 12, 22)), 13 * 3600),
+        (day((2023, 12, 29)), 12 * 3600 + 15 * 60),
+        (day((2024, 12, 24)), 12 * 3600 + 15 * 60),
+        (day((2024, 12, 31)), 12 * 3600 + 15 * 60),
+        (day((2025, 12, 24)), 12 * 3600 + 15 * 60),
+        (day((2025, 12, 31)), 12 * 3600 + 15 * 60),
+    ] {
         assert_eq!(
             calendar.holiday_on(date).map(exchange_hours::Holiday::kind),
-            Some(HolidayKind::EarlyClose {
-                close_ssm: 12 * 3600 + 15 * 60
-            }),
+            Some(HolidayKind::EarlyClose { close_ssm }),
             "{date}"
         );
         assert!(matches!(
@@ -203,8 +210,18 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         ));
     }
 
+    assert!(!coverage.contains(day((2023, 12, 21))));
+    for date in [
+        day((2023, 12, 27)),
+        day((2023, 12, 28)),
+        day((2023, 12, 31)),
+    ] {
+        assert!(coverage.contains(date), "{date}");
+        assert!(calendar.holiday_on(date).is_none(), "{date}");
+    }
+
     // The announced eves with unpublished instants ship typed withholdings —
-    // 2015's asterisked gilt rows join 2014, 2021 and 2024 — and so do
+    // 2015's asterisked gilt rows join the 2014 eves, as do
     // the 2019/2020 dates the exchange-wide editions name without printing a
     // family arrangement (the unwitnessed Migrated-edition layer).
     for date in [

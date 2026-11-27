@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+- Add Nasdaq’s 2027 U.S. cash holiday calendar and restore the extended
+  session through 17:00 New York time on Thanksgiving Friday 2026. Two
+  abbreviated dates await their complete operating schedules (#418).
+- Extend CME Globex cryptocurrency maintenance on December 12, 2026, with
+  pre-open at 07:45 and matching at 08:00 Chicago time for the December 14
+  trade date.
+
 ## [2.0.0] - 2026-11-27
 
 ### Changed

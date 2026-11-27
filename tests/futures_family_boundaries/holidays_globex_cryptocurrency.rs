@@ -2263,10 +2263,10 @@ fn era_2019_2021_rows_are_the_audited_date_kind_and_tier_set() {
     assert_eq!(index, ERA_2019_2021_ROWS.len(), "every recorded row ships");
 }
 
-/// CME's complete service windows assign the October maintenance Saturdays to
+/// CME's complete service windows assign extended-maintenance Saturdays to
 /// the following Monday and state the last fifteen minutes as Pre-Open.
 #[test]
-fn october_maintenance_rows_preserve_the_weekend_and_exact_queues() {
+fn saturday_maintenance_rows_preserve_the_weekend_and_exact_queues() {
     let calendar = crypto();
     for (saturday, friday, monday, preopen, reopen, closed_state) in [
         (
@@ -2292,6 +2292,14 @@ fn october_maintenance_rows_preserve_the_weekend_and_exact_queues() {
             (4, 45),
             (5, 0),
             SessionState::Maintenance,
+        ),
+        (
+            (12, 12),
+            (12, 11),
+            (12, 14),
+            (7, 45),
+            (8, 0),
+            SessionState::Closed,
         ),
     ] {
         let trade_date = day(2026, monday.0, monday.1);

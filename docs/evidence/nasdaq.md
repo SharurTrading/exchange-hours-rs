@@ -103,13 +103,15 @@ statement).
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates). Tier: T1 throughout. Two dates await full session terms.
 
-**Service tier.** The identity is served: SharurPlatform routes Nasdaq cash equities (LAW-SERVICE-TIERS admission by consumer reach). The cadence is monthly per LAW-WATCH — holiday-bearing and the operator republishes the calendar yearly. The window ends at 2026-12-31 because the operator has published no 2027 holiday schedule: both live channels (the `nasdaqtrader.com` calendar page and the `nasdaq.com` holiday-schedule page with its PDF twin) carried only 2026 when read on 2026-09-27 UTC, so nothing past 2026 is claimed and nothing is withheld. Re-checked 2026-09-29 UTC: both channels were read again and their raw bytes carry zero 2027 dates (artifacts under `holidays/raw/nyse-nasdaq/forward-2027/nasdaq/` in the research store). Re-checked again 2026-10-03 UTC (artifacts `nasdaqtrader_calendar.live-20261003T000704Z.html`, `nasdaqtrader_calendar.reader-20261003T000903Z.md`, `nasdaq_holiday_schedule.reader-20261003T000903Z.md` and `INDEX-recheck-2026-10-03.md` beside the earlier ones): the direct trader channel answers its Incapsula JS challenge to a plain client, and both channels rendered through the public reader carry zero 2027 dates; **closing condition:** the operator's 2027 schedule page, at which point the window extends.
+**Service tier.** SharurPlatform routes Nasdaq cash equities. The calendar is reviewed monthly under LAW-WATCH. On 2026-11-27 UTC, Nasdaq's own holiday page linked its 2027 trading calendar. The PDF gives ten full exchange holidays and one 13:00 ET core close. The rest of 2027 is audited against that calendar.
 
 **Corpus and retrieval story (2026-09-27 UTC).** Every artifact is the operator's own page or alert, saved under `holidays/raw/nyse-nasdaq/nasdaq/` in the research store with its sha256 (`manifest.json` beside each directory). The cash-equity schedule is the operator's "U.S. Equity and Options Markets Holiday Schedule" page on `nasdaqtrader.com` (the operator's own trader channel): captured roughly monthly by the Wayback Machine 2010-2025, one replay per schedule year is saved, plus the live 2026 page and the live `nasdaq.com` holiday-schedule page and its PDF twin (which restate the 2026 grid with "1:00 p.m. ET" times). A December-of-year-Y capture normally carries the year Y+1 schedule, so row citations follow the schedule an artifact governs, and the Documents table records each artifact's stated window. The 2010 and 2011 pages print the cash market's early close as `Early Market Close* TBA` with the footnote "NASDAQ will continue to send alerts to notify customers of days when the Market will close early. Please refer to those alerts for full information, including system operating times"; from the 2012 page on, the cash market's own times are printed (`Early Close - U.S. 1:00 p.m.`). The TBA-era alerts the footnote defers to — Equity Trader Alerts 2010-73 and 2011-54, plus the Sandy pair 2012-44/2012-45 and the mourning alert 2025-1 — were recovered 2026-10-09 UTC (three live off the operator's still-serving Trader News pages through a cookie warm-up, one as a Wayback `id_` replay) and are saved beside the sheets under `alerts/`.
 
-**Early-close convention (set alongside `nyse.md` for the equities programme).** The sheet's own wording decides, per date. Where the sheet prints the cash market's early close with a time — every recovered date from 2012-07-03 through 2026-12-24 — it prints exactly one fact about this identity ("Early Close - U.S. 1:00 p.m.") and no continuing session, so the row is `EarlyClose{13:00}` and the whole envelope clips. The two TBA-era dates key the same way on their own alerts' printed schedules (2010-73 and 2011-54, recovered 2026-10-09 UTC). The sheet's standing footnote defers "full information, including system operating times" to per-date alerts; no such alert was recoverable from the operator's own channels for the 2012-and-later sheet dates (attempts recorded in the store's `README.md`), so no row invents post-13:00 topology — a `ReplacementBlocks` row would fabricate instants no operator document prints. The sheet's option-product columns (1:00/1:15 p.m. for equity, index and currency options) are a different market and never key a row here; the sheet itself keeps them in separate columns.
+**Abbreviated trading and phase evidence.** The legacy scalar rows carry the 13:00 ET close printed on historical sheets. Nasdaq's standing calendar directs readers to its dated alerts for complete operating times. Equity Trader Alert 2026-69 separates the Nasdaq day session from the Nasdaq extended session on 2026-11-27, with 13:00 and 17:00 ET closes respectively. The 04:00 ET pre-market and 09:30 ET regular open use the unchanged normal-week grid. The Nasdaq Texas, PSX, options and reporting-service rows have separate scopes.
+
+For 2026-12-24 and 2027-11-26, the calendars specify the 13:00 ET regular close and the complete extended session remains unpublished. These two dates use `Unsourced` until exact-date phase terms can be confirmed in [#418](https://github.com/SharurTrading/exchange-hours-rs/issues/418). That issue also tracks verification of older scalar rows against date-specific alerts. The monitored Night Session is governed by [#396](https://github.com/SharurTrading/exchange-hours-rs/issues/396).
 
 **The four former withholdings closed 2026-10-09 UTC on the operator's own Equity Trader Alerts.** LAW-NO-FABRICATED-DATES kept each date out of the table until an operator artifact stated it, and the retrievals that day supplied one per date:
 
@@ -117,7 +119,7 @@ statement).
 - **2012-10-30.** Equity Trader Alert **2012-45**, "NASDAQ OMX Markets Closed on Tuesday, October 30, 2012 Due to Hurricane Sandy", states the closure unconditionally: "NASDAQ OMX will close all U.S. equity and derivatives exchanges, as well as the NASDAQ/FINRA TRF on Tuesday, October 30th, due to Hurricane Sandy" and "NASDAQ OMX has made the decision to close all of its U.S. equity and derivatives exchanges ... on Tuesday, October 30th". The alert also still serves live from the operator's own page (`id=ETA2012-45`); the Wayback CDX holds no capture of that URL (the store's `cdx_tradernews_eta2012-4x` file shows 44, 46, 47 and 49 captured and 45 absent), which is why the four attempts recorded through 2026-09-27 closed negative, and the sibling alert 2012-47 (a testing notice that runs the production system "in a testing capacity" on the Tuesday) stays out of the record because its language is conditional ("the expected resumption of trading on Wednesday").
 - **2025-01-09.** Equity Trader Alert **2025-1**, "Trade Settlement and EX dates for Thursday, January 9, 2025", restates the closure the operator announced in its Equity Trader Alert 2024-86: "As announced in Equity Trader Alert #2024-86, Nasdaq U.S. equities markets, options markets, and the FINRA/Nasdaq TRFs will be closed on Thursday, January 9, 2025, in observance of the passing of President Jimmy Carter", with "Markets Impacted: The Nasdaq Stock Market". The row keys on the 2025-1 replay (Wayback capture `20250122151135`) because the live channel's Trader News redesign serves stale content on replay — the capture of the `id=ETA2024-86` URL at the same archive instant serves alert 2024-85's bytes, which is recorded here so a future pass does not cite that capture for the closure.
 
-**Gaps and residual risks.** No date inside the audited window is withheld: the four former `Unsourced` dates closed on 2026-10-09 UTC on the operator's own alerts (see "The four former withholdings" above), and every other date in the window is audited from the operator's own sheets. The normal-week Night Session horizon note is unchanged and lives in the sections below.
+**Gaps and residual risks.** The two abbreviated dates above remain withheld pending exact operating schedules. The 2027 trading calendar marks only 2027, and the monthly review checks for the 2028 operator publication.
 
 ### 2010
 
@@ -394,9 +396,27 @@ statement).
 | 2026-07-03 | closed | `Closed` | `NQ-HOL-2026` | T1 | event date 2026-07-03; the sheet prints no session for it |
 | 2026-09-07 | closed | `Closed` | `NQ-HOL-2026` | T1 | event date 2026-09-07; the sheet prints no session for it |
 | 2026-11-26 | closed | `Closed` | `NQ-HOL-2026` | T1 | event date 2026-11-26; the sheet prints no session for it |
-| 2026-11-27 | early close | `Early Close - U.S. 1:00 p.m.` | `NQ-HOL-2026` | T1 | event date 2026-11-27; the sheet prints the 1:00 p.m. close and nothing after it |
-| 2026-12-24 | early close | `Early Close - U.S. 1:00 p.m.` | `NQ-HOL-2026` | T1 | event date 2026-12-24; the sheet prints the 1:00 p.m. close and nothing after it |
+| 2026-11-27 | replacement blocks | regular close 13:00 ET and extended close 17:00 ET | `NQ-ETA-2026-69` | T1 | Nasdaq day and extended session rows in the dated operator alert |
+| 2026-12-24 | unsourced | regular close 13:00 ET | `NQ-HOL-2026` | T1 | complete phase timetable pending in #418 |
 | 2026-12-25 | closed | `Closed` | `NQ-HOL-2026` | T1 | event date 2026-12-25; the sheet prints no session for it |
+
+### 2027
+
+The PDF uses filled orange circles for exchange holidays and an outlined orange circle for the 13:00 ET market close. December 31 is an index-review marker outside the holidays legend.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-01-18 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-02-15 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-03-26 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-05-31 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-06-18 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-07-05 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-09-06 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-11-25 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
+| 2027-11-26 | unsourced | regular close 13:00 ET | `NQ-HOL-2027` | T1 | outlined orange early-close marker, with full phases pending in #418 |
+| 2027-12-24 | closed | exchange holiday | `NQ-HOL-2027` | T1 | filled orange exchange-holiday marker |
 
 ### Documents
 
@@ -418,6 +438,8 @@ statement).
 | `NQ-HOL-2024` | 2023-12-25 .. 2024-12-31 | <https://web.archive.org/web/20231225031448id_/https://www.nasdaqtrader.com/Trader.aspx?id=Calendar> | captured 2023-12-25, retrieved 2026-09-27 | T1 | `0c82875d72990b681343f55a3ca594a648bc42332ad22e528838bd0c820d1bc0` |
 | `NQ-HOL-2025` | 2024-12-29 .. 2025-12-31 | <https://web.archive.org/web/20241229150248id_/https://www.nasdaqtrader.com/Trader.aspx?id=Calendar> | captured 2024-12-29, retrieved 2026-09-27 | T1 | `8b57f45eb7cc7e6aa373591d48be9b2e77ff3319500c107a0caebff9d2f32db9` |
 | `NQ-HOL-2026` | 2026-01-01 .. 2026-12-31 | <https://www.nasdaqtrader.com/trader.aspx?id=calendar> | retrieved 2026-09-27 | T1 | `47db9c37c67e3bd095a5e596b02bf61b3ca3d49de48f45a9d4c7e3de5745270a` |
+| `NQ-HOL-2027` | 2027-01-01 .. 2027-12-31 | <https://www.nasdaq.com/docs/2027-trading-calendar> | retrieved 2026-11-27 | T1 | `9f751f5b9fdacebffbeab1c87b03d368cf92659c1fc7df2a28b3b72614a3a57b` |
+| `NQ-ETA-2026-69` | 2026-11-27 | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-69> | retrieved 2026-11-27 | T1 | `5bb15073c78682748be94ba222fb26570821e75b6a928ebb5a39df2ac9d4953e` |
 | `NQ-SANDY-2012` | 2012-10-29 | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2012-44> | captured 2012-10-29, retrieved 2026-09-27 | T1 | `04ff48074681a33f0a14e59411c75ffd34604b806955bdcaa60bad4f0f2a33cc` |
 | `NQ-ETA-2010-73` | 2010-11-26 | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2010-73> (Equity Trader Alert 2010-73) | retrieved 2026-10-09 21:51:36 UTC | T1 | `6ac1373ee80378093980bb7055da31b2cadccba8fc0b0a7ce1fb34fa6d09c067` |
 | `NQ-ETA-2011-54` | 2011-11-25 | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2011-54> (Equity Trader Alert 2011-54) | retrieved 2026-10-09 21:52:22 UTC | T1 | `114764e42c4f2836bf778f97110cc6d4af3cdd6d21afa864c0d85fb65df1beaa` |

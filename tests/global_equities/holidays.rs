@@ -94,23 +94,17 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str, a
         "{label}: {date:?} carries a closure row"
     );
     let covered = day(date.0, date.1, date.2);
+    assert_eq!(
+        calendar.is_closed_trade_date(covered, SessionKind::Both),
+        Ok(true),
+        "{label}: {date:?} has no session in either phase"
+    );
     let coverage = calendar
         .holiday_coverage()
         .expect("these venues ship built-in tables");
     if coverage.first() == covered {
-        // The window's first closure is special exactly as the CFE suite
-        // states it: the derivation reads behind the query's bounds — the day
-        // before the window, outside every audited window — so the
-        // identity-backed probes on the day refuse rather than answer.
-        assert!(
-            calendar
-                .is_closed_trade_date(covered, SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error.kind(),
-                    CalendarQueryErrorKind::OutsideCoveredRange { .. }
-                )),
-            "{label}: the derivation behind {date:?} reads outside the audited windows"
-        );
+        // An instant query can depend on an opening day before the window
+        // even when the trade-date classification answers from its own row.
         assert!(
             calendar
                 .is_open(at(date, (11, 0, 0)))
@@ -121,12 +115,6 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str, a
             "{label}: probes on {date:?} refuse while the derivation reaches behind the window"
         );
     } else {
-        assert!(
-            calendar
-                .is_closed_trade_date(covered, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
-            "{label}: {date:?} has no session in either phase"
-        );
         assert!(
             !calendar
                 .is_open(at(date, (11, 0, 0)))
@@ -3528,9 +3516,7 @@ mod euronext_paris {
         // releases and notice for 2010-2012, the 2012 Info-Flash for 2013,
         // the cash-markets calendars of 2014-2021, the 2025 column of the
         // 2025-12-06 page capture and the 2026 column of the live page and
-        // its INFO-FLASH. 2026-12-25 is fenced separately: its derivation
-        // reads 2026-12-24, the announced-but-unstated eve, so the closure
-        // question refuses.
+        // its INFO-FLASH and 2027 calendar.
         let closed = [
             (2011, 4, 22),
             (2011, 4, 25),
@@ -3563,37 +3549,14 @@ mod euronext_paris {
             (2026, 4, 3),
             (2026, 4, 6),
             (2026, 5, 1),
+            (2026, 12, 25),
+            (2027, 1, 1),
             (2027, 3, 26),
             (2027, 3, 29),
         ];
         for date in closed {
             assert_closed(calendar, date, "euronext_paris", &paris_time);
         }
-        // 2027-01-01 is fenced separately: the row itself answers Closed, but
-        // its behind-derivation reads 2026-12-31 — the announced-but-unstated
-        // 2026 eve — so the trade-date question refuses while noon answers
-        // shut from the Closed row, exactly as 2026-12-25 does behind the
-        // withheld 2026-12-24.
-        assert_eq!(
-            calendar.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "2027-01-01 carries the printed closure row"
-        );
-        assert!(
-            calendar
-                .is_closed_trade_date(day(2027, 1, 1), SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error.kind(),
-                    CalendarQueryErrorKind::UnresolvedGap { .. }
-                )),
-            "the 2027-01-01 closure question must refuse on the unresolved 2026 eve"
-        );
-        assert!(
-            !calendar
-                .is_open(paris_time((2027, 1, 1), (12, 0, 0)))
-                .expect("the closed day answers from its own row"),
-            "the withheld 2026 eve cannot reach the closed 2027 day"
-        );
         // The 2010 rows sit inside the span the 2026-10-05 no-changes
         // verification sourced from the floor, so the holiday rows and the
         // session questions agree: each printed closure deletes the day.
@@ -3894,36 +3857,23 @@ mod euronext_paris {
     }
 
     #[test]
-    fn the_unresolved_eve_shadows_the_following_christmas_derivation() {
+    fn the_unpublished_eve_hours_still_refuse_their_own_trade_dates() {
         let calendar = paris();
-        // The row for 2026-12-25 itself still answers Closed.
-        assert_eq!(
-            calendar.holiday_on(day(2026, 12, 25)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "2026-12-25 carries the printed closure row"
-        );
-        // But the trade-date question reads behind the query's bounds —
-        // 2026-12-24, whose half-day hours are announced and unstated — so it
-        // refuses as an unresolved gap. The intraday question does not: the
-        // Closed row removes 12-25's own sessions, and no Paris session
-        // wraps, so nothing from the withheld eve can reach the closed day
-        // and noon answers shut. 2024-12-25 no longer refuses either: its
-        // eve's instant has been recovered from the 2024 end-of-year appendix.
-        assert!(
-            calendar
-                .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error.kind(),
-                    CalendarQueryErrorKind::UnresolvedGap { .. }
-                )),
-            "the 2026-12-25 closure question must refuse on the unresolved eve"
-        );
-        assert!(
-            !calendar
-                .is_open(paris_time((2026, 12, 25), (12, 0, 0)))
-                .expect("the closed day answers from its own row"),
-            "the withheld eve cannot reach the closed day, so noon answers shut"
-        );
+        for eve in [day(2026, 12, 24), day(2026, 12, 31)] {
+            assert_eq!(
+                calendar.holiday_on(eve).map(Holiday::kind),
+                Some(HolidayKind::Unsourced)
+            );
+            assert_eq!(
+                calendar
+                    .is_closed_trade_date(eve, SessionKind::Both)
+                    .map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::UnresolvedGap {
+                    source: calendar.source(),
+                    date: eve,
+                }),
+            );
+        }
         // 2024-12-31 now ships the appendix's printed 14:05 close.
         assert_eq!(
             calendar.holiday_on(day(2024, 12, 31)).map(Holiday::kind),

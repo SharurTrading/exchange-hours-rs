@@ -38,6 +38,7 @@ The operator's Capital Market circulars supply the exact Muhurat phases for all 
 |---|---|---|---|---|---|
 | 2010-01-01 | closed | `01-Jan-10 Friday New Year` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-01-01, a Friday |
 | 2010-01-26 | closed | `26-Jan-10 Tuesday Republic Day` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-01-26, a Tuesday |
+| 2010-02-06 | replacement blocks | Normal Market 11:00–12:30, Closing Session 12:50–13:00 IST. | `NSE-CMTR-14051` | T1 | No pre-open is listed. The block deal window lies inside the Normal Market. |
 | 2010-02-12 | closed | `12-Feb-10 Friday Mahashivratri` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-02-12, a Friday |
 | 2010-03-01 | closed | `01-Mar-10 Monday Holi` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-03-01, a Monday |
 | 2010-03-24 | closed | `24-Mar-10 Wednesday Ram Navmi` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-03-24, a Wednesday |
@@ -73,14 +74,18 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2012-01-07 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-19734` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-01-26 | closed | `26-Jan-12 Thursday Republic Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-01-26, a Thursday |
 | 2012-02-20 | closed | `20-Feb-12 Monday Mahashivratri` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-02-20, a Monday |
+| 2012-03-03 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-20063` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-03-08 | closed | `08-Mar-12 Thursday Holi` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-03-08, a Thursday |
 | 2012-04-05 | closed | `05-Apr-12 Thursday Mahavir Jayanti` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-04-05, a Thursday |
 | 2012-04-06 | closed | `06-Apr-12 Friday Good Friday` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-04-06, a Friday |
+| 2012-04-28 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-20561` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-05-01 | closed | `01-May-12 Tuesday May Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-05-01, a Tuesday |
 | 2012-08-15 | closed | `15-Aug-12 Wednesday Independence Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-08-15, a Wednesday |
 | 2012-08-20 | closed | `20-Aug-12 Monday Ramzan ID` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-08-20, a Monday |
+| 2012-09-08 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2012-56` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-09-19 | closed | `19-Sep-12 Wednesday Ganesh Chaturthi` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-09-19, a Wednesday |
 | 2012-10-02 | closed | `02-Oct-12 Tuesday Gandhi Jayanti` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-10-02, a Tuesday |
 | 2012-10-24 | closed | `24-Oct-12 Wednesday Dasera` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-10-24, a Wednesday |
@@ -100,6 +105,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 | 2013-04-19 | closed | `19-Apr-13 Friday Ram Navmi` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-04-19, a Friday |
 | 2013-04-24 | closed | `24-Apr-13 Wednesday Mahavir Jayanti` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-04-24, a Wednesday |
 | 2013-05-01 | closed | `01-May-13 Wednesday May Day` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-05-01, a Wednesday |
+| 2013-05-11 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2013-33` | T1 | The block deal, illiquid and SME call auction windows lie inside the Normal Market. |
 | 2013-08-09 | closed | `09-Aug-13 Friday Ramzan ID` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-08-09, a Friday |
 | 2013-08-15 | closed | `15-Aug-13 Thursday Independence Day` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-08-15, a Thursday |
 | 2013-09-09 | closed | `09-Sep-13 Monday Ganesh Chaturthi` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-09-09, a Monday |
@@ -116,6 +122,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 |---|---|---|---|---|---|
 | 2014-02-27 | closed | `27-Feb-2014 Thursday Mahashivratri` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-02-27, a Thursday |
 | 2014-03-17 | closed | `17-Mar-2014 Monday Holi` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-03-17, a Monday |
+| 2014-03-22 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2014-11` | T1 | Live BCP-site session. The evening re-login is administrative, and the call auction and block deal windows lie inside the Normal Market. |
 | 2014-04-08 | closed | `08-Apr-2014 Tuesday Ram Navmi` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-08, a Tuesday |
 | 2014-04-14 | closed | `14-Apr-2014 Monday Dr. Babasaheb Ambedkar Jayanti` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-14, a Monday |
 | 2014-04-18 | closed | `18-Apr-2014 Friday Good Friday` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-18, a Friday |
@@ -140,6 +147,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 |---|---|---|---|---|---|
 | 2015-01-26 | closed | `26-Jan-2015 Monday Republic Day` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-01-26, a Monday |
 | 2015-02-17 | closed | `17-Feb-2015 Tuesday Mahashivratri` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-02-17, a Tuesday |
+| 2015-02-28 | replacement blocks | Order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2015-9` | T1 | Union Budget session. The block deal and illiquid call auction windows lie inside the Normal Market. |
 | 2015-03-06 | closed | `06-Mar-2015 Friday Holi` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-03-06, a Friday |
 | 2015-04-02 | closed | `02-Apr-2015 Thursday Mahavir Jayanti` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-04-02, a Thursday |
 | 2015-04-03 | closed | `03-Apr-2015 Friday Good Friday` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-04-03, a Friday |
@@ -244,6 +252,7 @@ NSE's [2017–18 annual report](https://nsearchives.nseindia.com/global/content/
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2020-02-01 | replacement blocks | Block deal 08:45–09:00, Order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2020-5` | T1 | Union Budget session. The block deal before pre-open adds an executable edge. The second block deal and the security-specific windows add none. |
 | 2020-02-21 | closed | `21-Feb-2020 Friday Mahashivratri` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-02-21, a Friday |
 | 2020-03-10 | closed | `10-Mar-2020 Tuesday Holi` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-03-10, a Tuesday |
 | 2020-04-02 | closed | `02-Apr-2020 Thursday Ram Navami` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-04-02, a Thursday |
@@ -423,7 +432,21 @@ The original PDF and retrieval/digest manifest remain at
 retrieval times, the circular-channel response, amendment-search scope and
 checksums are at `reviews/2026-10-31-confirm-374/nse/` in the evidence checkout.
 
-### 2024–2026 weekend-session interpretation
+### Weekend-session interpretation
+
+The historical live special-session circulars give the phases in the dated
+rows above. The February 2010 timetable starts directly in the Normal
+Market. The later short sessions use an 11:00 pre-open, with random closure
+in the final minute of the published order-entry window. The first three
+2012 sessions trade at the closing price from 12:55–13:05. The September
+2012, May 2013 and March 2014 closing sessions run 13:05–13:15. The 2015
+Budget notice has no separately timed morning block deal. The 2020 Budget
+notice expressly gives the 08:45 morning block deal.
+
+The operator's historical circular catalogue was checked within the relevant
+issuance intervals. The dated Capital Market notices state live trading.
+Related settlement circulars corroborate the date and are not used to
+establish session boundaries.
 
 NSE's final January 20 notice withdrew MSD59999, MSD60300 and MSD60318. It
 called for regular market timings from the primary site. The dated standing
@@ -448,6 +471,15 @@ extend trading.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `NSE-CMTR-14051` | 2010-02-06 | <https://archives.nseindia.com/content/circulars/cmtr14051.pdf> | Direct, 2026-11-27 UTC | T1 | `c0e9c226dd1c37636b82404285fc3e9d3b897006e570842c5495db9803227374` |
+| `NSE-CMTR-19734` | 2012-01-07 | <https://archives.nseindia.com/content/circulars/CMTR19734.pdf> | Direct, 2026-11-27 UTC | T1 | `a8161ca8cb3c350de045b4ee234ebaec09573aa2232630a54792354184cd14a2` |
+| `NSE-CMTR-20063` | 2012-03-03 | <https://archives.nseindia.com/content/circulars/CMTR20063.pdf> | Direct, 2026-11-27 UTC | T1 | `c7e20a561de073efb56f0dfd7a2274460e02f5d4ca424540a41b2bcc93921f2a` |
+| `NSE-CMTR-20561` | 2012-04-28 | <https://archives.nseindia.com/content/circulars/CMTR20561.pdf> | Direct, 2026-11-27 UTC | T1 | `acd086a1d5eeecb7b3061d03b363b1cbbcdc316a2f70851e0d34bb9a6b710641` |
+| `NSE-CIRC-2012-56` | 2012-09-08 | <https://archives.nseindia.com/content/circulars/CMTR21547.pdf> | Direct, 2026-11-27 UTC | T1 | `acf95b5943bb5ad99dbad95df40bbd0df25a52edf6789baed6a5f7b95f38a25d` |
+| `NSE-CIRC-2013-33` | 2013-05-11 | <https://archives.nseindia.com/content/circulars/CMTR23302.pdf> | Direct, 2026-11-27 UTC | T1 | `71445678dd4452b8ef468b4585ae6e82aeb69f5fa81a2617059e0470264733f0` |
+| `NSE-CIRC-2014-11` | 2014-03-22 | <https://archives.nseindia.com/content/circulars/CMTR26045.pdf> | Direct, 2026-11-27 UTC | T1 | `29c0eb8dad67a30944b8df6d6124f679811d9864ca30dd468b3742bf1fa28ca4` |
+| `NSE-CIRC-2015-9` | 2015-02-28 | <https://archives.nseindia.com/content/circulars/CMTR28939.pdf> | Direct, 2026-11-27 UTC | T1 | `0ac90d2a3898d3df90160e5f0adf2413088a06aaeef2ebc627c4228fe8407d2c` |
+| `NSE-CIRC-2020-5` | 2020-02-01 | <https://archives.nseindia.com/content/circulars/CMTR43290.pdf> | Direct, 2026-11-27 UTC | T1 | `2f667503047c3399bc7c013271dd64b3119bc532b0cbb6d988d4d9a6998da4a9` |
 | `NSE-MSD-2024-05` | 2024-01-20 | <https://nsearchives.nseindia.com/content/circulars/MSD60340.pdf> | Direct, 2026-11-27 UTC | T1 | `6d165b8d132b7b430ae79032356ea331fab3d852192b74df4bc9e56722f54cdd` |
 | `NSE-CMTR-60338` | 2024-01-22 | <https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FEX31Xx9NZFHlRfi6I1mp%2Fuploads%2FTzQNBUZqvGZqGpGNsQau%2FCMTR60338.pdf?alt=media&token=cb2746f3-2e83-473c-bfdd-52a463ce5873> | Verbatim public mirror, 2026-11-27 UTC | T1 | `e848537f183da42ed5adf355b520e5cfbeaae8355ba5c3384d451f23be45548c` |
 | `NSE-MSD-2024-08` | 2024-03-02 | <https://nsearchives.nseindia.com/content/circulars/MSD60677.pdf> | Direct, 2026-11-27 UTC | T1 | `04b67f39314bae95672d86497c28cbed6cea698ad6f029ba47ef74feb9f6da91` |
@@ -509,7 +541,9 @@ extend trading.
 | `NSE-CIRC-2025-124` | 2025-10-21 | <https://web.archive.org/web/20251118042606id_/https://nsearchives.nseindia.com/content/circulars/CMTR70319.pdf> (circular 124/2025 dated 2025-09-22) | Wayback `id_` replay of capture `20251118042606`, retrieved 2026-10-06 UTC | T1 | `19b7d88003cb05eb8c6abdc8d1bfad5df821a17e4f9ae36f75e327a68a48d258` |
 | `NSE-CIRC-2026-149` | 2026-11-08 | <https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf> (circular 149/2026 dated 2026-10-19) | retrieved live 2026-10-31 22:06 UTC | T1 | `ce94ee1c54d98eccdf3c30fa0673ae2b6a49ea4ed4a72fb83d826f4359f71d58` |
 
-The weekend-session circulars, standing block-deal circular and January 22 closure notice are stored under `holidays/raw/equities/nse_india/cash-special-2026-11-27/` in the research store. The directory index records the exact UTC retrieval times and the public mirror used for the closure.
+The nine 2010–2020 live weekend circulars are stored under `holidays/raw/equities/nse_india/cash-special-history-2026-11-27/`.
+
+The later weekend-session circulars, standing block-deal circular and January 22 closure notice are stored under `holidays/raw/equities/nse_india/cash-special-2026-11-27/` in the research store. The directory index records the exact UTC retrieval times and the public mirror used for the closure.
 
 The direct circular bytes retrieved on 2026-11-27 UTC are saved under `holidays/raw/equities/nse_india/muhurat-2026-11-27/` in the research store.
 
@@ -538,7 +572,7 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. The five verified 2024–2026 weekend sessions above are encoded. Earlier candidate sessions and the ordinary-week block-deal coverage are tracked in [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
+- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. Fourteen verified live weekend sessions are encoded in addition to the weekend Muhurat rows. Ordinary-week block-deal coverage remains tracked in [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
 
 - **Historical recovery on 2026-11-27 UTC.** Direct operator downloads settled the six prior Muhurat withholdings, restored the 2021 replacement that the archived HTML list omitted, and supplied the 2018 annual list and Muhurat timings. Earlier archive searches below record the channels available at the time.
 - **The Muhurat circular hunt, recorded (2026-10-06 UTC; artifacts under `holidays/raw/equities/nse_india/domain-lineage-2026-10-06/` and `muhurat-recovery-2026-10-06/` in the research store).** The first pass recovered the 2020, 2022, 2023, 2024 and 2025 circulars through the operator's own index pages and the archive: the 2020 one through the operator's own `muhurat-trading-session` page (capture 2020-11-20), which names `archives.nseindia.com/content/circulars/CMTR46230.pdf`; the 2022, 2023 and 2024 ones by their `nsearchives`/`www1` filenames against the Wayback CDX; the 2025 one the same way. The second pass the same UTC day swept the whole captured `CMTR`/`cmtr` circular series on all four hosts (510 unique captured PDFs, `cdx_*_cmtr*.txt`), cross-referenced against the download-number range of every Muhurat issuance window anchored by the dated circulars the recovered bytes themselves state, and recovered the 2010 (CMTR16062, capture 20101122005959), 2015 (CMTR31047, capture 20160216033210) and 2016 (CMTR33424, capture 20170224214712) circulars plus the 2012 annual list (CMTR19539, capture 20131001001639). The remaining years closed negative on the same channel family, two angles each:

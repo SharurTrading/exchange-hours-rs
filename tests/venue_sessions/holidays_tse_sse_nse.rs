@@ -1709,6 +1709,100 @@ fn nse_live_recovery_sessions_preserve_the_site_switch_gap() {
     }
 }
 
+/// Exercise the dated cash phases from the historical weekend notices.
+#[test]
+fn nse_historical_weekend_sessions_apply_their_published_bounds() {
+    let calendar = calendar_for_exchange(Exchange::NseIndia);
+    assert_nse_weekend_phases(
+        calendar,
+        (2010, 2, 6),
+        "NSE-CMTR-14051",
+        &[
+            ((10, 59, 59), (false, false, false)),
+            ((11, 0, 0), (true, true, false)),
+            ((12, 30, 0), (false, false, false)),
+            ((12, 50, 0), (true, false, false)),
+            ((13, 0, 0), (false, false, false)),
+        ],
+    );
+    for (date, document, block, phases) in [
+        (
+            (2012, 1, 7),
+            "NSE-CMTR-19734",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (12, 55), (13, 5)],
+        ),
+        (
+            (2012, 3, 3),
+            "NSE-CMTR-20063",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (12, 55), (13, 5)],
+        ),
+        (
+            (2012, 4, 28),
+            "NSE-CMTR-20561",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (12, 55), (13, 5)],
+        ),
+        (
+            (2012, 9, 8),
+            "NSE-CIRC-2012-56",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (13, 5), (13, 15)],
+        ),
+        (
+            (2013, 5, 11),
+            "NSE-CIRC-2013-33",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (13, 5), (13, 15)],
+        ),
+        (
+            (2014, 3, 22),
+            "NSE-CIRC-2014-11",
+            None,
+            [(11, 0), (11, 7), (11, 15), (12, 45), (13, 5), (13, 15)],
+        ),
+        (
+            (2015, 2, 28),
+            "NSE-CIRC-2015-9",
+            None,
+            [(9, 0), (9, 7), (9, 15), (15, 30), (15, 40), (16, 0)],
+        ),
+        (
+            (2020, 2, 1),
+            "NSE-CIRC-2020-5",
+            Some((8, 45)),
+            [(9, 0), (9, 7), (9, 15), (15, 30), (15, 40), (16, 0)],
+        ),
+    ] {
+        let [queue, auction, regular, gap, closing, close] = phases;
+        let (start_hour, start_minute) = block.unwrap_or(queue);
+        let (hour, minute, second) = if start_minute == 0 {
+            (start_hour - 1, 59, 59)
+        } else {
+            (start_hour, start_minute - 1, 59)
+        };
+        let before = zoned(&KOLKATA, date, (hour, minute, second));
+        assert_eq!(calendar.is_accepting_orders(before), Ok(false));
+        if let Some((hour, minute)) = block {
+            assert_eq!(
+                calendar.is_open(zoned(&KOLKATA, date, (hour, minute, 0))),
+                Ok(true)
+            );
+        }
+        let probes = [
+            (queue, (false, false, true)),
+            (auction, (true, false, false)),
+            (regular, (true, true, false)),
+            (gap, (false, false, false)),
+            (closing, (true, false, false)),
+            (close, (false, false, false)),
+        ]
+        .map(|((hour, minute), phase)| ((hour, minute, 0), phase));
+        assert_nse_weekend_phases(calendar, date, document, &probes);
+    }
+}
+
 type NsePhaseProbe = ((u32, u32, u32), (bool, bool, bool));
 
 fn assert_nse_weekend_phases(
@@ -2028,17 +2122,17 @@ fn the_window_counts_are_the_printed_lists_counts() {
         count_by_year(calendar_for_exchange(Exchange::NseIndia)),
         [
             // The recovered 2018 annual circular supplies fifteen closures.
-            (2010, 10, 0, 1),
+            (2010, 10, 0, 2),
             (2011, 13, 0, 1),
-            (2012, 14, 0, 1),
-            (2013, 13, 0, 1),
-            (2014, 18, 0, 1),
-            (2015, 14, 0, 1),
+            (2012, 14, 0, 5),
+            (2013, 13, 0, 2),
+            (2014, 18, 0, 2),
+            (2015, 14, 0, 2),
             (2016, 15, 0, 1),
             (2017, 12, 0, 1),
             (2018, 15, 0, 1),
             (2019, 16, 0, 1),
-            (2020, 12, 0, 1),
+            (2020, 12, 0, 2),
             (2021, 13, 0, 1),
             (2022, 12, 0, 1),
             (2023, 15, 0, 1),

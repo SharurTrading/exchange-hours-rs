@@ -4,36 +4,32 @@
 
 ## [Unreleased]
 
-- Add Nasdaq’s 2027 U.S. cash holiday calendar and restore the extended
-  session through 17:00 New York time on Thanksgiving Friday 2026. Two
-  abbreviated dates await their complete operating schedules (#418).
-- Extend CME Globex cryptocurrency maintenance on December 12, 2026, with
-  pre-open at 07:45 and matching at 08:00 Chicago time for the December 14
-  trade date.
-
-- Assign Cboe Futures Exchange VIX futures Thanksgiving 2026 and the 2027
-  abbreviated holiday sessions to the applicable next business day.
 ### Added
 
-- Extend the BME principal-share and MEFF IBEX futures holiday calendars through
-  2027. MEFF closes at 14:00 Madrid time on December 24 and 31. BME cash half-day
-  phases on those dates await the detailed instruction.
+- Extend the Nasdaq U.S. cash, BME principal-share and MEFF IBEX futures
+  holiday calendars through 2027. Two abbreviated Nasdaq dates and two
+  BME cash half days await their complete phase timetables.
 
 ### Fixed
 
-- Apply BME’s published 2026 cash-market half-day phases on December 24 and 31,
-  including Trading-at-Last until 14:10 Madrid time.
-
-- Keep ASX cash closing auctions and post-close matching on the 2026
+- Restore Nasdaq extended matching through 17:00 New York time on
+  Thanksgiving Friday 2026.
+- Extend CME Globex cryptocurrency maintenance on December 12, 2026, with
+  pre-open at 07:45 and matching at 08:00 Chicago time for the December 14
+  trade date.
+- Assign Cboe Futures Exchange VIX futures Thanksgiving 2026 and the 2027
+  abbreviated holiday sessions to the applicable next business day.
+- Apply BME's 2026 cash half-day phases on December 24 and 31, including
+  Trading-at-Last to 14:10 Madrid time. MEFF closes at 14:00 on both 2027
+  year-end half days.
+- Preserve ASX cash closing auctions and post-close matching on the 2026
   year-end half days. ASX SPI 200 reopens with its day session on
   trade date 2027-01-04.
-
 - Apply the revised NSE India cash closing auction from 2026-12-07,
-  including the order-entry phase and the later matching window.
-
-- Model the London Stock Exchange SETS half-day auction and closing-price
+  including the order-entry and matching windows.
+- Model London Stock Exchange SETS half-day auction and closing-price
   crossing phases through 12:40 London time on six published year-end dates.
-- End the ordinary LSE SETS noon auction from its operator-dated withdrawal
+- Remove the ordinary LSE SETS noon auction from its withdrawal
   on 2020-09-21.
 
 ## [2.0.0] - 2026-11-27

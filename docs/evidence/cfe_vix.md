@@ -237,7 +237,7 @@ The 2017 rows are read from the operator's own `CFE Holiday Schedule` page, whos
 | 2025-12-24 | early close | `WEDNESDAY DECEMBER 24, 2025` `RTH Start 8:30 AM`, `RTH Close 12:15 PM`; `Trade Date Wednesday, December 24, 2025 … Friday, December 26, 2025` — 12:15 CT | `CBOE-SU-2025-CHRISTMAS` | T1 | Cboe trade date named verbatim; no ETH close is printed for that column |
 | 2025-12-25 | closed | `THURSDAY DECEMBER 25, 2025` `ETH Start`, `ETH Close`, `RTH Start`, `RTH Close` all empty; `FRIDAY DECEMBER 26, 2025` `ETH Start 5:00 PM` | `CBOE-SU-2025-CHRISTMAS` | T1 | Cboe event date 2025-12-25; every cell under the holiday column is empty and the Trade Date row skips it |
 
-**Gaps, 2025:** none in this window. Every date Cboe's 2025 notices modify ships a row, and every other 2025 trade date is audited normal. No 2025 row is a late open.
+**Historical trade-date discrepancy.** The retained 2023–2025 Thanksgiving tables key the first overnight leg to Thursday. The dated operator notices use a sole Friday trade date, and the historical repair is tracked in [#420](https://github.com/SharurTrading/exchange-hours-rs/issues/420). Every date Cboe's 2025 notices modify ships a row, and every other 2025 trade date is audited normal. No 2025 row is a late open.
 
 ### Documents
 

@@ -166,6 +166,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, TimeZone)] = &[
     (Exchange::NseIndia, (2010, 1, 4), KOLKATA),
     (Exchange::NseIndia, (2010, 10, 18), KOLKATA),
     (Exchange::NseIndia, (2011, 10, 3), KOLKATA),
+    (Exchange::NseIndia, (2018, 1, 1), KOLKATA),
     (Exchange::NseIndia, (2026, 8, 3), KOLKATA),
     (Exchange::BseIndia, (2010, 1, 4), KOLKATA),
     (Exchange::BseIndia, (2010, 10, 18), KOLKATA),

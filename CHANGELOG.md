@@ -47,7 +47,8 @@
   sessions and correct the two 2014 election closures from NSE circulars.
 - Restore fourteen NSE cash-market weekend sessions from 2010–2026 and the
   January 22, 2024 closure. Preserve the gap during the disaster-recovery
-  site switch on both live recovery days. Part of #410.
+  site switch on both live recovery days. Add the 08:45 IST weekday block-deal
+  phase effective January 1, 2018. [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410)
 - A published full closure answers the trade-date closure query even when
   the adjacent day has unpublished hours. An explicit caller replacement
   still takes precedence.

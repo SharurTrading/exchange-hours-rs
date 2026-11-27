@@ -16,7 +16,15 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 - 2010-01-04 — T1 — NSE press release 17122009 — continuous open moves 09:55 → 09:00.
 - 2010-10-18 — T1 — NSE circular NSE/CMTR/15981 — pre-open call auction 09:00–09:15 introduced; continuous trading starts 09:15.
 - 2011-10-03 — T1 — NSE circular NSE/CMTR/19013 — post-close start moves 15:50 → 15:40.
+- 2018-01-01 — T1 — NSE-CIRC-2017-77 — the new morning block-deal trading window is 08:45–09:00 IST.
 - 2026-08-03 — T1 — SEBI circular 99122 — Closing Auction Session: CAS-eligible stocks enter CAS at 15:15 and it ends 15:35, transition runs to 15:50, post-close ends 16:00.
+
+The NSE Capital Market circular CMTR36573 sets its revised block-deal
+mechanism effective January 1, 2018. The 08:45–09:00 IST morning window
+executes trades, so it adds an extended phase before the 09:00 order-entry
+queue. The 14:05–14:20 IST window falls inside regular trading. NSE's
+[current market timings](https://www.nseindia.com/static/market-data/market-timings)
+continue to list the morning window after the 2026 CAS change.
 
 ## Holidays
 
@@ -572,7 +580,7 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. Fourteen verified live weekend sessions are encoded in addition to the weekend Muhurat rows. Ordinary-week block-deal coverage remains tracked in [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
+- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. Fourteen verified live weekend sessions are encoded in addition to the weekend Muhurat rows. The dated ordinary-week block-deal phase is likewise encoded under [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
 
 - **Historical recovery on 2026-11-27 UTC.** Direct operator downloads settled the six prior Muhurat withholdings, restored the 2021 replacement that the archived HTML list omitted, and supplied the 2018 annual list and Muhurat timings. Earlier archive searches below record the channels available at the time.
 - **The Muhurat circular hunt, recorded (2026-10-06 UTC; artifacts under `holidays/raw/equities/nse_india/domain-lineage-2026-10-06/` and `muhurat-recovery-2026-10-06/` in the research store).** The first pass recovered the 2020, 2022, 2023, 2024 and 2025 circulars through the operator's own index pages and the archive: the 2020 one through the operator's own `muhurat-trading-session` page (capture 2020-11-20), which names `archives.nseindia.com/content/circulars/CMTR46230.pdf`; the 2022, 2023 and 2024 ones by their `nsearchives`/`www1` filenames against the Wayback CDX; the 2025 one the same way. The second pass the same UTC day swept the whole captured `CMTR`/`cmtr` circular series on all four hosts (510 unique captured PDFs, `cdx_*_cmtr*.txt`), cross-referenced against the download-number range of every Muhurat issuance window anchored by the dated circulars the recovered bytes themselves state, and recovered the 2010 (CMTR16062, capture 20101122005959), 2015 (CMTR31047, capture 20160216033210) and 2016 (CMTR33424, capture 20170224214712) circulars plus the 2012 annual list (CMTR19539, capture 20131001001639). The remaining years closed negative on the same channel family, two angles each:

@@ -1,83 +1,11 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Cboe Futures Exchange holiday rows over three audited windows:
-//! 2014-12-24..2015-01-02, 2015-02-15..2016-01-20 and 2017-04-10..2027.
+//! Cboe Futures Exchange holiday rows shared by the CFE venue and VIX futures.
+//! Audited windows: 2014-12-24..2015-01-02, 2015-02-15..2016-01-20, and
+//! 2017-04-10..2027-12-31.
 //!
-//! Keyed by the crate's own venue-local trade date in `US/Central` (design
-//! memo D1). CFE's trading day wraps: the session for trade date `D` opens on
-//! `D-1` (17:00 CT Sunday for Mondays, and — on the pre-migration grid in
-//! force 2014-06-22..2018-02-24 — 15:30 CT Monday-Thursday), runs through the
-//! regular session and ends with the extended window on `D`. Cboe's holiday
-//! tables are keyed by civil date and print two cells per row, `Regular
-//! Trading Hours` and `Extended Trading Hours`, so a row whose regular cell
-//! reads `None` and whose extended cell still names a block is the overnight
-//! leg of that trade date stopping early — an **early close**, not a closure.
-//!
-//! The whole block is **T1**. Four document families key the windows: the
-//! operator's own `CFE Holiday Schedule` page on `cfe.cboe.com` (Wayback `id_`
-//! captures 2017-04-10 through 2019-12-15), which prints the complete 2017
-//! holiday calendar and the per-holiday-type hours tables; the per-holiday CFE
-//! notices under `cdn.cboe.com/resources/schedule_update/<publication
-//! year>/`, which state each 2018-2025 holiday's session instants but the 2018 New Year
-//! pair's (no notice for those dates survives; the rules page keys both rows) and carry
-//! the observed-day arrangements the page's default rules only describe; the
-//! operator's own Cboe US-futures hours page and its CSV twin
-//! (`CBOE-HOURS-USFUT-2026` retrieved 2026-09-12, `CBOE-HOURS-USFUT-2027`
-//! retrieved 2026-11-03 UTC), which print the full year's two-column holiday
-//! table and key the 2026 and 2027 rows; and —
-//! recovered 2026-10-06 UTC from `ir.cboe.com` and the operator's own circular
-//! series — the CBOE Holdings holiday press releases of 2014-2017 (each
-//! printing a `CBOE, C2 and CFE Trading Schedule` table) and the CFE
-//! information circulars IC15-011, IC15-023, IC15-028 and IC15-039, which
-//! state the 2014 Christmas and 2015 arrangements the same way. Coverage stops
-//! at 2027-12-31; the remaining
-//! unaudited spans (2010-01-01..2014-12-23, 2015-01-03..2015-02-14 and
-//! 2016-01-21..2017-04-09) are recorded in
-//! [`docs/evidence/cfe.md`](../../../../../docs/evidence/cfe.md) and
-//! [`docs/evidence/cfe_vix.md`](../../../../../docs/evidence/cfe_vix.md).
-//!
-//! Era shapes the per-date reader should know. The Monday/Thursday and mid-week
-//! floating holidays keep the overnight leg running to 10:30 CT with no regular
-//! session (`early close 10:30`), 2015 and 2017 through 2027 alike. Good Friday
-//! is a closure in 2017-2018-2019-2020-2022-2024-2025-2027 and an early close at
-//! the regular open in 2021-2023-2026 — each year's own document states which;
-//! 2015-04-03 is the one pre-2017 early close, at the operator's own printed
-//! 08:15 CT. Independence Day and Christmas eves close at 12:15 CT where the
-//! operator's notice says so (2014-12-24, 2015-12-24, 2019-07-03, 2023-07-03,
-//! 2024-07-03, the December eves of 2018-2020 and 2024) and trade normally
-//! where it does not (2018-07-03, whose notice's holiday leg opens 5:00 p.m.
-//! Tuesday, and 2022-12-23, whose notice prints the normal 3:00/4:00 PM
-//! closes). New Year's Day and Christmas Monday-Thursday print no holiday-day
-//! session at all and reopen at 17:00 CT on the holiday, so the trade date is
-//! `Closed` and the prior-evening leg is deleted. 2021-12-24 (Christmas
-//! observed Friday) is a full closure with the Thursday-evening leg deleted.
-//! Juneteenth enters the set in 2022; the operator's own 2021 notice states
-//! CFE traded unadjusted hours that year.
-//!
-//! **The pre-migration next-day legs.** On the 2014-06-22 grid the next
-//! business day's session begins 15:30 CT the previous afternoon, but every
-//! pre-migration holiday chart and notice prints the day-after column as
-//! beginning **5:00 p.m. on the holiday** (`Tuesday: Extended 5:00 p.m.
-//! (Monday) to 8:30 a.m.`) — the holiday's own 15:30-17:00 stretch did not
-//! trade. Each such day-after trade date therefore ships a `LateOpen` (or,
-//! where the day after is itself a half day, a `LateOpenAndEarlyClose`) row
-//! keyed to the same document that keys the holiday, and without it the table
-//! would claim trading the operator's own bytes deny. After the 2018-02-25
-//! migration the native evening open is 17:00 CT, so no post-migration row
-//! needs the companion.
-//!
-//! One table serves both the `cfe` venue and the `cfe_vix` key: Cboe publishes
-//! one schedule for all CFE futures, and VIX futures are the only family the
-//! crate routes to the venue, so the design memo's venue intersection (D17) is
-//! that one family's own table.
-//!
-//! Two 2025 rows are not the 2026 shapes. Good Friday 2025-04-18 prints no
-//! Friday close and no Friday trade date, so it is a **closure** where the 2026
-//! date is an early close at the regular open. The National Day of Mourning
-//! 2025-01-09 is a **trading day with no regular hours at all**: the only
-//! session is extended trading from 17:00 CT on 2025-01-08 to 08:30 CT on
-//! 2025-01-09, which no scalar clip can state, so it ships as a
-//! `ReplacementBlocks` row.
+//! Evidence: [CFE](../../../../../docs/evidence/cfe.md) and
+//! [CFE VIX](../../../../../docs/evidence/cfe_vix.md) (LAW-EVIDENCE-FILES).
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, ReplacementBlocks};
@@ -85,40 +13,21 @@ use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{HolidayTable, holidays};
 use crate::calendar::exceptions::ExceptionBlock;
 
-/// The complete 2025-01-09 trading day, relative to that trade date.
-///
-/// Cboe states it as one extended session — `5:00 p.m. (Wednesday, January 8,
-/// 2025) to 8:30 a.m. (Extended Trading Hours) for VX, VXM, VXT, and VXMT` —
-/// and `No Regular Trading Hours for VX, VXM, VXT, and VXMT`. So the day is one
-/// wrapping extended block and nothing else: no regular block, and no
-/// 15:00-16:00 CT extended window, because the session has already ended.
-///
-/// Cboe also states that `The Thursday, January 9, 2025, business day will end
-/// at 8:30 a.m. CT on January 9, 2025, and the daily settlement prices of VX,
-/// VXM, IBHY, IBIG, and IEMD futures will be determined at that time.` That
-/// settlement instant coincides with the close and is therefore **not** a
-/// boundary of its own (LAW-SESSION-NOT-EXPIRY); nothing is modelled for it.
-///
-/// Evidence: `docs/evidence/cfe.md`, `docs/evidence/cfe_vix.md`.
-// The row's bounds are read from this declaration by
-// `a_replacement_rows_printed_instants_are_the_block_bounds_it_ships`, which
-// parses one `ExceptionBlock::<kind>(offset, open, close)` call per line, so the
-// constructor stays on one line.
+// Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 #[rustfmt::skip]
 static MOURNING_2025_01_09_BLOCKS: [ExceptionBlock; 1] =
     [ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60)];
 
-/// CFE's built-in holiday rows and the window they were audited over.
-///
-/// Every row is one line of a Cboe CFE holiday notice, of the operator's own
-/// `CFE Holiday Schedule` page as captured by the Wayback mirror, of a CBOE
-/// Holdings holiday press release, or of a CFE information circular. A date
-/// inside a window with no row is audited normal. 2017-07-03 was the one
-/// `Unsourced` date until 2026-10-10 UTC, when the controlling circular
-/// CFEIC17-022 (recovered from Common Crawl CC-MAIN-2017-34) stated the
-/// 12:15 p.m. CT eve close in session language; the late November and
-/// Christmas-eve rows carry rows because Cboe prints them as half days, not
-/// because they are holidays.
+// Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
+#[rustfmt::skip]
+static THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 5] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 10 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(-1, 16 * 3_600 + 45 * 60 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
+];
+
 // Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
@@ -551,10 +460,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 7, 3, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2026"),
         // 2026-09-07 - T1 - CBOE-HOURS-USFUT-2026 - Labor Day, 10:30 CT.
         (2026, 9, 7, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2026"),
-        // 2026-11-26 - T1 - CBOE-HOURS-USFUT-2026 - Thanksgiving Day, 10:30 CT.
-        (2026, 11, 26, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2026"),
-        // 2026-11-27 - T1 - CBOE-HOURS-USFUT-2026 - Thanksgiving half day, 12:15 CT.
-        (2026, 11, 27, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-HOURS-USFUT-2026"),
+        // 2026-11-26 - T1 - CBOE-SU-2026-THANKSGIVING - no November 26 trade date.
+        (2026, 11, 26, Closed, T1, "CBOE-SU-2026-THANKSGIVING"),
+        // 2026-11-27 - T1 - CBOE-SU-2026-THANKSGIVING - both overnight legs belong to Friday.
+        (2026, 11, 27, ReplacementBlocks(&THANKSGIVING_FRIDAY_BLOCKS), T1, "CBOE-SU-2026-THANKSGIVING"),
         // 2026-12-24 - T1 - CBOE-HOURS-USFUT-2026 - Christmas Eve, 12:15 CT;
         // the missing Thursday-evening leg belongs to the 2026-12-25 row.
         (2026, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-HOURS-USFUT-2026"),
@@ -577,10 +486,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 7, 5, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
         // 2027-09-06 - T1 - CBOE-HOURS-USFUT-2027 - Labor Day, 10:30 CT.
         (2027, 9, 6, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-11-25 - T1 - CBOE-HOURS-USFUT-2027 - Thanksgiving Day, 10:30 CT.
-        (2027, 11, 25, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-11-26 - T1 - CBOE-HOURS-USFUT-2027 - Thanksgiving half day, 12:15 CT.
-        (2027, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-11-25 - T1 - CBOE-HOURS-USFUT-2027 - no Thursday trade date under Rule 1202.
+        (2027, 11, 25, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-11-26 - T1 - CBOE-HOURS-USFUT-2027 - both ETH legs on Friday's trade date.
+        (2027, 11, 26, ReplacementBlocks(&THANKSGIVING_FRIDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
         // 2027-12-24 - T1 - CBOE-HOURS-USFUT-2027 - Christmas Day observed, both
         // cells `None`.
         (2027, 12, 24, Closed, T1, "CBOE-HOURS-USFUT-2027"),

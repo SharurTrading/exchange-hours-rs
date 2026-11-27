@@ -11,6 +11,9 @@
   pre-open at 07:45 and matching at 08:00 Chicago time for the December 14
   trade date.
 
+- Assign both Cboe Futures Exchange VIX futures Thanksgiving 2026 and 2027
+  overnight sessions to the Friday trade date.
+
 ## [2.0.0] - 2026-11-27
 
 ### Changed

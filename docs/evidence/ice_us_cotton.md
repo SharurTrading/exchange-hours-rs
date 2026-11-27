@@ -195,6 +195,14 @@ ICE’s 20 September 2018 PCPO notice puts the post-close queue on the prior Exc
 
 For the holiday rows, the trade-date assignment is derived from that standing rule and the cited Cotton holiday schedule. After a normal Thursday followed by a closed Friday, Thursday’s queue feeds Monday. Before a closed Monday, the ordinary Friday queue feeds Tuesday; that Monday evening can still open Tuesday’s session. Source times for a shortened post-close queue take precedence. Each replacement states the complete matching session and its queues. The 2027 annual calendar explicitly closes the named Cotton trade dates, and its softs column does not carry the financial groups’ `open1` qualification. Unlisted adjacent trade dates use the published ordinary clock within the audited window, subject to later date-specific notices. The 2027 Thanksgiving Friday and observed Boxing Day arrangements need those notices. The annual does not give the changed matching or queue clocks. The receiving trade dates 2027-11-26 and 2027-12-27, and the 2027-11-24 and 2027-12-23 lead-in dates whose post-close queues cannot yet be attached to complete sessions, are withheld as whole dates until ICE publishes the holiday hours. The following trade dates, 2027-11-29 and 2027-12-28, also own a queue with unpublished boundaries. The holiday table withholds the complete trade date even when its overnight matching window would otherwise follow the ordinary grid. The explicit last-known-week policy can provide that grid. The intervening holiday closures remain in the table.
 
+For example, the strict calendar refuses an order-entry query at 14:50 New York
+time on November 25, 2027, because it needs the unpublished queue arrangement.
+A caller selecting `with_last_known_week()` can see the ordinary Thursday
+queue at that instant, assigned to November 26. The same selection can place
+a Friday queue on December 24 for December 27. These times come from the
+caller-selected weekly profile. ICE’s annual calendar establishes that the
+November 25 and December 24 trade dates are closed.
+
 ## Gaps and residual risks
 
 The August 2011 master is month-dated, so 2011-08-01 identifies the month of the earlier audited normal week. No exchange cutover is inferred on that day. The 2009 notice also witnesses this Sunday opening clock, but complete continuity from the 2010 floor to August 2011 remains unverified. A period-specific schedule or the intervening amendments would close that historical gap. ICE sets hours administratively; the contemporary Cotton rulebook and Chapter 4 do not supply a trading-hours table. Holiday classification before 2025 remains unaudited.

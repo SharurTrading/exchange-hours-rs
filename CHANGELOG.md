@@ -45,6 +45,14 @@
 
 - Fill NSE's 2018 cash holiday calendar, restore eight historical Muhurat
   sessions and correct the two 2014 election closures from NSE circulars.
+- Source the ICE Futures Europe Long and Medium Gilt futures early closes for
+  both 2021 and 2024 eves and add the exchange's December 2023 holiday span
+  ([#332](https://github.com/SharurTrading/exchange-hours-rs/issues/332)).
+- Classify eleven 2012 and 2013 holiday dates as full closures in the Euronext CAC 40 and AEX index-futures holiday table.
+- Restore fourteen NSE cash-market weekend sessions from 2010–2026 and the
+  January 22, 2024 closure. Preserve the gap during the disaster-recovery
+  site switch on both live recovery days. Add the 08:45 IST weekday block-deal
+  phase effective January 1, 2018. [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410)
 - A published full closure answers the trade-date closure query even when
   the adjacent day has unpublished hours. An explicit caller replacement
   still takes precedence.

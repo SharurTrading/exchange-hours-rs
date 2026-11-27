@@ -16,7 +16,15 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 - 2010-01-04 — T1 — NSE press release 17122009 — continuous open moves 09:55 → 09:00.
 - 2010-10-18 — T1 — NSE circular NSE/CMTR/15981 — pre-open call auction 09:00–09:15 introduced; continuous trading starts 09:15.
 - 2011-10-03 — T1 — NSE circular NSE/CMTR/19013 — post-close start moves 15:50 → 15:40.
+- 2018-01-01 — T1 — NSE-CIRC-2017-77 — the new morning block-deal trading window is 08:45–09:00 IST.
 - 2026-08-03 — T1 — SEBI circular 99122 — Closing Auction Session: CAS-eligible stocks enter CAS at 15:15 and it ends 15:35, transition runs to 15:50, post-close ends 16:00.
+
+The NSE Capital Market circular CMTR36573 sets its revised block-deal
+mechanism effective January 1, 2018. The 08:45–09:00 IST morning window
+executes trades, so it adds an extended phase before the 09:00 order-entry
+queue. The 14:05–14:20 IST window falls inside regular trading. NSE's
+[current market timings](https://www.nseindia.com/static/market-data/market-timings)
+continue to list the morning window after the 2026 CAS change.
 
 ## Holidays
 
@@ -38,6 +46,7 @@ The operator's Capital Market circulars supply the exact Muhurat phases for all 
 |---|---|---|---|---|---|
 | 2010-01-01 | closed | `01-Jan-10 Friday New Year` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-01-01, a Friday |
 | 2010-01-26 | closed | `26-Jan-10 Tuesday Republic Day` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-01-26, a Tuesday |
+| 2010-02-06 | replacement blocks | Normal Market 11:00–12:30, Closing Session 12:50–13:00 IST. | `NSE-CMTR-14051` | T1 | No pre-open is listed. The block deal window lies inside the Normal Market. |
 | 2010-02-12 | closed | `12-Feb-10 Friday Mahashivratri` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-02-12, a Friday |
 | 2010-03-01 | closed | `01-Mar-10 Monday Holi` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-03-01, a Monday |
 | 2010-03-24 | closed | `24-Mar-10 Wednesday Ram Navmi` | `NSE-CIRC-2010-61` | T1 | Printed date 2010-03-24, a Wednesday |
@@ -73,14 +82,18 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2012-01-07 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-19734` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-01-26 | closed | `26-Jan-12 Thursday Republic Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-01-26, a Thursday |
 | 2012-02-20 | closed | `20-Feb-12 Monday Mahashivratri` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-02-20, a Monday |
+| 2012-03-03 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-20063` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-03-08 | closed | `08-Mar-12 Thursday Holi` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-03-08, a Thursday |
 | 2012-04-05 | closed | `05-Apr-12 Thursday Mahavir Jayanti` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-04-05, a Thursday |
 | 2012-04-06 | closed | `06-Apr-12 Friday Good Friday` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-04-06, a Friday |
+| 2012-04-28 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 12:55–13:05 IST. | `NSE-CMTR-20561` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-05-01 | closed | `01-May-12 Tuesday May Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-05-01, a Tuesday |
 | 2012-08-15 | closed | `15-Aug-12 Wednesday Independence Day` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-08-15, a Wednesday |
 | 2012-08-20 | closed | `20-Aug-12 Monday Ramzan ID` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-08-20, a Monday |
+| 2012-09-08 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2012-56` | T1 | Live trading circular. The block deal window lies inside the Normal Market. |
 | 2012-09-19 | closed | `19-Sep-12 Wednesday Ganesh Chaturthi` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-09-19, a Wednesday |
 | 2012-10-02 | closed | `02-Oct-12 Tuesday Gandhi Jayanti` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-10-02, a Tuesday |
 | 2012-10-24 | closed | `24-Oct-12 Wednesday Dasera` | `NSE-CIRC-2011-66` | T1 | Printed date 2012-10-24, a Wednesday |
@@ -100,6 +113,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 | 2013-04-19 | closed | `19-Apr-13 Friday Ram Navmi` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-04-19, a Friday |
 | 2013-04-24 | closed | `24-Apr-13 Wednesday Mahavir Jayanti` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-04-24, a Wednesday |
 | 2013-05-01 | closed | `01-May-13 Wednesday May Day` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-05-01, a Wednesday |
+| 2013-05-11 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2013-33` | T1 | The block deal, illiquid and SME call auction windows lie inside the Normal Market. |
 | 2013-08-09 | closed | `09-Aug-13 Friday Ramzan ID` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-08-09, a Friday |
 | 2013-08-15 | closed | `15-Aug-13 Thursday Independence Day` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-08-15, a Thursday |
 | 2013-09-09 | closed | `09-Sep-13 Monday Ganesh Chaturthi` | `NSE-CIRC-2012-79` | T1 | Printed date 2013-09-09, a Monday |
@@ -116,6 +130,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 |---|---|---|---|---|---|
 | 2014-02-27 | closed | `27-Feb-2014 Thursday Mahashivratri` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-02-27, a Thursday |
 | 2014-03-17 | closed | `17-Mar-2014 Monday Holi` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-03-17, a Monday |
+| 2014-03-22 | replacement blocks | Order entry 11:00–11:07, auction tail 11:07–11:15, Normal Market 11:15–12:45, Closing Session 13:05–13:15 IST. | `NSE-CIRC-2014-11` | T1 | Live BCP-site session. The evening re-login is administrative, and the call auction and block deal windows lie inside the Normal Market. |
 | 2014-04-08 | closed | `08-Apr-2014 Tuesday Ram Navmi` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-08, a Tuesday |
 | 2014-04-14 | closed | `14-Apr-2014 Monday Dr. Babasaheb Ambedkar Jayanti` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-14, a Monday |
 | 2014-04-18 | closed | `18-Apr-2014 Friday Good Friday` | `NSE-HOL-PAGE-2014` | T1 | Printed date 2014-04-18, a Friday |
@@ -140,6 +155,7 @@ The 2012 list is the operator's own annual circular 66/2011, recovered 2026-10-0
 |---|---|---|---|---|---|
 | 2015-01-26 | closed | `26-Jan-2015 Monday Republic Day` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-01-26, a Monday |
 | 2015-02-17 | closed | `17-Feb-2015 Tuesday Mahashivratri` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-02-17, a Tuesday |
+| 2015-02-28 | replacement blocks | Order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2015-9` | T1 | Union Budget session. The block deal and illiquid call auction windows lie inside the Normal Market. |
 | 2015-03-06 | closed | `06-Mar-2015 Friday Holi` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-03-06, a Friday |
 | 2015-04-02 | closed | `02-Apr-2015 Thursday Mahavir Jayanti` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-04-02, a Thursday |
 | 2015-04-03 | closed | `03-Apr-2015 Friday Good Friday` | `NSE-HOL-PAGE-2015` | T1 | Printed date 2015-04-03, a Friday |
@@ -244,6 +260,7 @@ NSE's [2017–18 annual report](https://nsearchives.nseindia.com/global/content/
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2020-02-01 | replacement blocks | Block deal 08:45–09:00, Order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2020-5` | T1 | Union Budget session. The block deal before pre-open adds an executable edge. The second block deal and the security-specific windows add none. |
 | 2020-02-21 | closed | `21-Feb-2020 Friday Mahashivratri` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-02-21, a Friday |
 | 2020-03-10 | closed | `10-Mar-2020 Tuesday Holi` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-03-10, a Tuesday |
 | 2020-04-02 | closed | `02-Apr-2020 Thursday Ram Navami` | `NSE-HOL-PAGE-2020` | T1 | Printed date 2020-04-02, a Thursday |
@@ -320,13 +337,17 @@ NSE's [2017–18 annual report](https://nsearchives.nseindia.com/global/content/
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2024-01-20 | replacement blocks | Block deal 08:45–09:00, order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-MSD-2024-05` | T1 | Final NSE circular expressly withdraws the split-site timetable and invokes regular market timings; the standing cash-market block window is in CMTR36573. |
+| 2024-01-22 | closed | Maharashtra public holiday. | `NSE-CMTR-60338` | T1 | Capital Market circular declares the full trading holiday. |
 | 2024-01-26 | closed | `26-Jan-2024 Friday Republic Day` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-01-26, a Friday |
+| 2024-03-02 | replacement blocks | Block deal 08:45–09:00, order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–10:00; order entry 11:15–11:22, auction tail 11:22–11:30, Normal Market 11:30–12:30, Closing Session 12:40–12:50 IST. | `NSE-MSD-2024-08` | T1 | Capital Market session table; MSD60942 reiterates the live session. |
 | 2024-03-08 | closed | `08-Mar-2024 Friday Mahashivratri` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-03-08, a Friday |
 | 2024-03-25 | closed | `25-Mar-2024 Monday Holi` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-03-25, a Monday |
 | 2024-03-29 | closed | `29-Mar-2024 Friday Good Friday` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-03-29, a Friday |
 | 2024-04-11 | closed | `11-Apr-2024 Thursday Id-Ul-Fitr (Ramadan Eid)` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-04-11, a Thursday |
 | 2024-04-17 | closed | `17-Apr-2024 Wednesday Shri Ram Navmi` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-04-17, a Wednesday |
 | 2024-05-01 | closed | `01-May-2024 Wednesday Maharashtra Day` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-05-01, a Wednesday |
+| 2024-05-18 | replacement blocks | Block deal 08:45–09:00, order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–10:00; order entry 11:15–11:22, auction tail 11:22–11:30, Normal Market 11:30–12:30, Closing Session 12:40–12:50 IST. | `NSE-MSD-2024-40` | T1 | Capital Market session table. |
 | 2024-06-17 | closed | `17-Jun-2024 Monday Bakri Id` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-06-17, a Monday |
 | 2024-07-17 | closed | `17-Jul-2024 Wednesday Moharram` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-07-17, a Wednesday |
 | 2024-08-15 | closed | `15-Aug-2024 Thursday Independence Day` | `NSE-HOLMASTER-2024` | T2 | Printed date 2024-08-15, a Thursday |
@@ -339,6 +360,7 @@ NSE's [2017–18 annual report](https://nsearchives.nseindia.com/global/content/
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2025-02-01 | replacement blocks | Block deal 08:45–09:00, order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2024-172` | T1 | Capital Market Union Budget circular. |
 | 2025-02-26 | closed | `26 Feb Wednesday Mahashivratri` | `NSE-HOL-2025` | T1 | Printed date 2025-02-26, a Wednesday |
 | 2025-03-14 | closed | `14 Mar Friday Holi` | `NSE-HOL-2025` | T1 | Printed date 2025-03-14, a Friday |
 | 2025-03-31 | closed | `31 Mar Monday Eid-ul-Fitr (Ramadan Eid)` | `NSE-HOL-2025` | T1 | Printed date 2025-03-31, a Monday |
@@ -360,6 +382,7 @@ NSE's [2017–18 annual report](https://nsearchives.nseindia.com/global/content/
 |---|---|---|---|---|---|
 | 2026-01-15 | closed | `15-Jan-2026 Thursday Municipal Corporation Election - Maharashtra` | `NSE-HOLMASTER-2026` | T2 | the feed's CM segment, capture `20260226045622`; the 2025-12-18 banner predates the announcement |
 | 2026-01-26 | closed | `26th JAN MONDAY Republic Day` | `NSE-HOL-2026` | T1 | Printed date 2026-01-26, a Monday |
+| 2026-02-01 | replacement blocks | Block deal 08:45–09:00, order entry 09:00–09:07, auction tail 09:07–09:15, Normal Market 09:15–15:30, Closing Session 15:40–16:00 IST. | `NSE-CIRC-2026-11` | T1 | Capital Market Union Budget circular. |
 | 2026-03-03 | closed | `03rd MAR TUESDAY Holi` | `NSE-HOL-2026` | T1 | Printed date 2026-03-03, a Tuesday |
 | 2026-03-26 | closed | `26th MAR THURSDAY Shri Ram Navami` | `NSE-HOL-2026` | T1 | Printed date 2026-03-26, a Thursday |
 | 2026-03-31 | closed | `31st MAR TUESDAY Shri Mahavir Jayanti` | `NSE-HOL-2026` | T1 | Printed date 2026-03-31, a Tuesday |
@@ -417,10 +440,63 @@ The original PDF and retrieval/digest manifest remain at
 retrieval times, the circular-channel response, amendment-search scope and
 checksums are at `reviews/2026-10-31-confirm-374/nse/` in the evidence checkout.
 
+### Weekend-session interpretation
+
+The historical live special-session circulars give the phases in the dated
+rows above. The February 2010 timetable starts directly in the Normal
+Market. The later short sessions use an 11:00 pre-open, with random closure
+in the final minute of the published order-entry window. The first three
+2012 sessions trade at the closing price from 12:55–13:05. The September
+2012, May 2013 and March 2014 closing sessions run 13:05–13:15. The 2015
+Budget notice has no separately timed morning block deal. The 2020 Budget
+notice expressly gives the 08:45 morning block deal.
+
+The operator's historical circular catalogue was checked within the relevant
+issuance intervals. The dated Capital Market notices state live trading.
+Related settlement circulars corroborate the date and are not used to
+establish session boundaries.
+
+NSE's final January 20 notice withdrew MSD59999, MSD60300 and MSD60318. It
+called for regular market timings from the primary site. The dated standing
+CMTR36573 circular supplies the morning 08:45 block deal and the 14:05
+block deal falls within the Normal Market. The January 22 Capital Market
+circular separately declares that Monday closed.
+
+The March 2 and May 18 notices each print two live Capital Market legs.
+During the 10:00–11:15 site switch no phase is available. The 12:30–12:40
+break precedes the closing session. Both legs use the same local trade date.
+The March 2 reminder reiterates live trading. Its absence from the NIFTY 50
+daily index export does not override the operator's session notices.
+
+The two Budget circulars print the same venue envelope. The opening block
+deal can execute, so its phase is extended. The 09:00–09:07 pre-open accepts
+orders until the earliest random closure. Its auction tail can match.
+IPO and relisted-security pre-open, illiquid call auctions and the second
+block deal create no further edges. The trade-modification cutoff does not
+extend trading.
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `NSE-CAS-CASH-TIMINGS` | Current equity cash CAS and non-CAS phases | <https://www.nseindia.in/static/products-services/closing-auction-session> | Direct, 2026-11-27 UTC | T1 | `a27caf462376d6a93bc473af3d852526b16869592b7a06572b7b5c54b28aedaf` |
+| `NSE-CMTR-14051` | 2010-02-06 | <https://archives.nseindia.com/content/circulars/cmtr14051.pdf> | Direct, 2026-11-27 UTC | T1 | `c0e9c226dd1c37636b82404285fc3e9d3b897006e570842c5495db9803227374` |
+| `NSE-CMTR-19734` | 2012-01-07 | <https://archives.nseindia.com/content/circulars/CMTR19734.pdf> | Direct, 2026-11-27 UTC | T1 | `a8161ca8cb3c350de045b4ee234ebaec09573aa2232630a54792354184cd14a2` |
+| `NSE-CMTR-20063` | 2012-03-03 | <https://archives.nseindia.com/content/circulars/CMTR20063.pdf> | Direct, 2026-11-27 UTC | T1 | `c7e20a561de073efb56f0dfd7a2274460e02f5d4ca424540a41b2bcc93921f2a` |
+| `NSE-CMTR-20561` | 2012-04-28 | <https://archives.nseindia.com/content/circulars/CMTR20561.pdf> | Direct, 2026-11-27 UTC | T1 | `acd086a1d5eeecb7b3061d03b363b1cbbcdc316a2f70851e0d34bb9a6b710641` |
+| `NSE-CIRC-2012-56` | 2012-09-08 | <https://archives.nseindia.com/content/circulars/CMTR21547.pdf> | Direct, 2026-11-27 UTC | T1 | `acf95b5943bb5ad99dbad95df40bbd0df25a52edf6789baed6a5f7b95f38a25d` |
+| `NSE-CIRC-2013-33` | 2013-05-11 | <https://archives.nseindia.com/content/circulars/CMTR23302.pdf> | Direct, 2026-11-27 UTC | T1 | `71445678dd4452b8ef468b4585ae6e82aeb69f5fa81a2617059e0470264733f0` |
+| `NSE-CIRC-2014-11` | 2014-03-22 | <https://archives.nseindia.com/content/circulars/CMTR26045.pdf> | Direct, 2026-11-27 UTC | T1 | `29c0eb8dad67a30944b8df6d6124f679811d9864ca30dd468b3742bf1fa28ca4` |
+| `NSE-CIRC-2015-9` | 2015-02-28 | <https://archives.nseindia.com/content/circulars/CMTR28939.pdf> | Direct, 2026-11-27 UTC | T1 | `0ac90d2a3898d3df90160e5f0adf2413088a06aaeef2ebc627c4228fe8407d2c` |
+| `NSE-CIRC-2020-5` | 2020-02-01 | <https://archives.nseindia.com/content/circulars/CMTR43290.pdf> | Direct, 2026-11-27 UTC | T1 | `2f667503047c3399bc7c013271dd64b3119bc532b0cbb6d988d4d9a6998da4a9` |
+| `NSE-MSD-2024-05` | 2024-01-20 | <https://nsearchives.nseindia.com/content/circulars/MSD60340.pdf> | Direct, 2026-11-27 UTC | T1 | `6d165b8d132b7b430ae79032356ea331fab3d852192b74df4bc9e56722f54cdd` |
+| `NSE-CMTR-60338` | 2024-01-22 | <https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FEX31Xx9NZFHlRfi6I1mp%2Fuploads%2FTzQNBUZqvGZqGpGNsQau%2FCMTR60338.pdf?alt=media&token=cb2746f3-2e83-473c-bfdd-52a463ce5873> | Verbatim public mirror, 2026-11-27 UTC | T1 | `e848537f183da42ed5adf355b520e5cfbeaae8355ba5c3384d451f23be45548c` |
+| `NSE-MSD-2024-08` | 2024-03-02 | <https://nsearchives.nseindia.com/content/circulars/MSD60677.pdf> | Direct, 2026-11-27 UTC | T1 | `04b67f39314bae95672d86497c28cbed6cea698ad6f029ba47ef74feb9f6da91` |
+| `NSE-MSD-2024-REMINDER` | 2024-03-02 (reminder) | <https://nsearchives.nseindia.com/content/circulars/MSD60942.pdf> | Direct, 2026-11-27 UTC | T1 | `9129c15ab9fd56e48de9ed1bc84f5ba9245b6be409c36ab22db5b1e444ee975d` |
+| `NSE-MSD-2024-40` | 2024-05-18 | <https://nsearchives.nseindia.com/content/circulars/MSD61893.pdf> | Direct, 2026-11-27 UTC | T1 | `2483f60d67c34231d6fd25024cf5767c031b234196a7a475535d434cd4e758c8` |
+| `NSE-CIRC-2024-172` | 2025-02-01 | <https://nsearchives.nseindia.com/content/circulars/CMTR65729.pdf> | Direct, 2026-11-27 UTC | T1 | `84d12e29654e75f77baa0b9064a26f6d0e4c3ff58e64df14e01247a0c15a91be` |
+| `NSE-CIRC-2026-11` | 2026-02-01 | <https://nsearchives.nseindia.com/content/circulars/CMTR72349.pdf> | Direct, 2026-11-27 UTC | T1 | `70458f7b8126f47584d4bc402a78dde357e42dbebaa5d53cfce0c70c82dabfc3` |
+| `NSE-CIRC-2017-77` | 2018-01-01 onward (block-deal timetable) | <https://nsearchives.nseindia.com/content/circulars/CMTR36573.pdf> | Direct, 2026-11-27 UTC | T1 | `d29dcc88a2b968f0738e29feccbb08b1c36d1068f8883e38b889ef8db83e4a1a` |
 | `NSE-CIRC-2014-21` | 2014-04-24 | <https://nsearchives.nseindia.com/content/circulars/CMTR26360.pdf> | Direct, 2026-11-27 UTC | T1 | `dcc7ba7d2b626494189065569732fc27f5a13945c707d5a9be62474ddb0331a5` |
 | `NSE-CMTR-37495` | 2018-04-18 (gold-product scope only) | <https://archives.nseindia.com/content/circulars/CMTR37495.pdf> | Direct, 2026-11-27 UTC | T1 | `69adf6cca05f63031720b4e85270c64600d11f8d69315447cb87f203a919f75f` |
 | `NSE-CMTR-39215` | 2018-11-05 (gold-product scope only) | <https://archives.nseindia.com/content/circulars/CMTR39215.pdf> | Direct, 2026-11-27 UTC | T1 | `f86bddc55b3054895cec6151464e6aba17a08bd07f78c0b2d7a46e42d5161b37` |
@@ -474,6 +550,10 @@ checksums are at `reviews/2026-10-31-confirm-374/nse/` in the evidence checkout.
 | `NSE-CIRC-2025-124` | 2025-10-21 | <https://web.archive.org/web/20251118042606id_/https://nsearchives.nseindia.com/content/circulars/CMTR70319.pdf> (circular 124/2025 dated 2025-09-22) | Wayback `id_` replay of capture `20251118042606`, retrieved 2026-10-06 UTC | T1 | `19b7d88003cb05eb8c6abdc8d1bfad5df821a17e4f9ae36f75e327a68a48d258` |
 | `NSE-CIRC-2026-149` | 2026-11-08 | <https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf> (circular 149/2026 dated 2026-10-19) | retrieved live 2026-10-31 22:06 UTC | T1 | `ce94ee1c54d98eccdf3c30fa0673ae2b6a49ea4ed4a72fb83d826f4359f71d58` |
 
+The nine 2010–2020 live weekend circulars are stored under `holidays/raw/equities/nse_india/cash-special-history-2026-11-27/`.
+
+The later weekend-session circulars, standing block-deal circular and January 22 closure notice are stored under `holidays/raw/equities/nse_india/cash-special-2026-11-27/` in the research store. The directory index records the exact UTC retrieval times and the public mirror used for the closure.
+
 The direct circular bytes retrieved on 2026-11-27 UTC are saved under `holidays/raw/equities/nse_india/muhurat-2026-11-27/` in the research store.
 
 The earlier 2010-2024 rows were keyed on 2026-09-29 UTC from the fifteen artifacts in `holidays/raw/equities/nse_india/2010-2024/` (one Wayback `id_` replay per year, plus one corroborating circular), each directory with an `INDEX.md` carrying the same digests; all nineteen artifacts of the block live in the research store under the `2010-2024/` and `2025-2027/` directories. The circular PDFs' text layer spaces every glyph, so quotations from them below are extracted with the spacing normalized; the HTML pages quote directly. The four current artifacts are saved under `holidays/raw/equities/nse_india/2025-2027/` with an `INDEX.md` carrying the same digests. The two `NSE-TIMINGS` captures are the operator's own machine channel stating the market-timings grid, not the holiday dates; they corroborate that the session grid inside this window is the one the normal-week profile already models (pre-open 09:00, continuous 09:15–15:30, post-close to 16:00, with the CAS phases from the 2026 capture) and key no holiday row. Both are stored gzip-compressed exactly as replayed. The 2020-2025 Muhurat circulars and the corroboration page of 2026-10-06 UTC are saved under `holidays/raw/equities/nse_india/domain-lineage-2026-10-06/`, whose `INDEX.md` and `SHA256SUMS.txt` carry the same digests; the 2022, 2023, 2024 and 2025 PDFs are byte-identical to the working copies a 2026-10-05/06 session had already gathered under the store's `nse-muhurat/` directory, and their `id_`-replay digests above are the citable provenance. The 2010, 2015 and 2016 Muhurat circulars and the 2012 annual list — the second pass the same UTC day — are saved under `holidays/raw/equities/nse_india/muhurat-recovery-2026-10-06/` (`pdf/` subdirectory), whose `INDEX.md` and `SHA256SUMS.txt` carry the same digests, re-verified against the saved bytes on 2026-10-06 UTC; that `INDEX.md` also records the sweep method and the issuance-window negatives it closed.
@@ -501,7 +581,7 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. The historical recovery above leaves those arrangements in their existing state. The affected dates, primary circulars and follow-up are recorded in [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
+- **Published Saturday sessions.** NSE announced cash-equity Budget and live disaster-recovery sessions separate from its annual holiday lists. Fourteen verified live weekend sessions are encoded in addition to the weekend Muhurat rows. The dated ordinary-week block-deal phase is likewise encoded under [#410](https://github.com/SharurTrading/exchange-hours-rs/issues/410).
 
 - **Historical recovery on 2026-11-27 UTC.** Direct operator downloads settled the six prior Muhurat withholdings, restored the 2021 replacement that the archived HTML list omitted, and supplied the 2018 annual list and Muhurat timings. Earlier archive searches below record the channels available at the time.
 - **The Muhurat circular hunt, recorded (2026-10-06 UTC; artifacts under `holidays/raw/equities/nse_india/domain-lineage-2026-10-06/` and `muhurat-recovery-2026-10-06/` in the research store).** The first pass recovered the 2020, 2022, 2023, 2024 and 2025 circulars through the operator's own index pages and the archive: the 2020 one through the operator's own `muhurat-trading-session` page (capture 2020-11-20), which names `archives.nseindia.com/content/circulars/CMTR46230.pdf`; the 2022, 2023 and 2024 ones by their `nsearchives`/`www1` filenames against the Wayback CDX; the 2025 one the same way. The second pass the same UTC day swept the whole captured `CMTR`/`cmtr` circular series on all four hosts (510 unique captured PDFs, `cdx_*_cmtr*.txt`), cross-referenced against the download-number range of every Muhurat issuance window anchored by the dated circulars the recovered bytes themselves state, and recovered the 2010 (CMTR16062, capture 20101122005959), 2015 (CMTR31047, capture 20160216033210) and 2016 (CMTR33424, capture 20170224214712) circulars plus the 2012 annual list (CMTR19539, capture 20131001001639). The remaining years closed negative on the same channel family, two angles each:
@@ -517,10 +597,10 @@ as each source is re-verified.
 - **2021 list lineage.** The archived holiday HTML omitted November 4 from the trading list. The underlying Capital Market circular CMTR46623 gives the day explicitly, and CMTR50050 gives its replacement session.
 - **Retrieval channels.** The live `nseindia.com` channel refused both its HTML pages (HTTP 403) and the `holiday-master` API (empty bodies) twice on 2026-09-28; the citations above are Wayback `id_` replays of the operator's own artifacts, and the `archives.nseindia.com` host no longer serves the legacy holiday pages (404). A future review with browser-grade retrieval should prefer the live pages and re-verify the digests there.
 - **The 2025 banner's scope sentence differs from the 2026 one.** The 2026 banner is headed "Trading Holiday List for Equity & Equity Derivatives"; the 2025 banner is headed "NSE Holiday List 2025" without the segment line. Both are the exchange's single published trading-holiday list for the year and no date in either is stated to differ between the cash and derivatives segments; if NSE resumes publishing separate per-segment lists, the cash list replaces this table's basis.
-- **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the NSE-wide 15:15–15:35 classification rests on a BSE statement.** The bullet above keeps the venue-wide 15:15–15:35 CAS window `extended` on the ground that non-CAS-eligible stocks keep trading continuously through it. The artifact that states that is BSE's, not NSE's: BSE's detailed operating guidelines of 2026-06-10 say securities not eligible for CAS "shall continue to be available for continuous trading till 3:30pm". SEBI circular 99122 introduces CAS for the cash segment but the reviewed set holds no NSE or SEBI text stating, for **NSE** securities outside CAS, that continuous trading runs through 15:15–15:35. The classification is therefore read across from a sibling venue's notice. The reshape PR moved this text out of the owner module and changed no schedule rule, revision row, profile or routing; the NSE window is served exactly as before. Closing condition: an NSE circular or SEBI text covering non-CAS-eligible **NSE** securities in that window, which would either confirm the `extended` classification or turn the window into an `order_entry` phase for this venue. Dormant identity, so recorded here rather than opened as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **NSE closing-auction scope.** The operator’s current cash-market page (`NSE-CAS-CASH-TIMINGS`) confirms continuous trading for non-CAS securities with “Session timings are 9:15 am to 3:30 pm.” Its matching row covers 15:30–15:35 for CAS securities. Together they support the executable venue envelope through 15:35. This resolves the source-scope question recorded in #87.
 - The 2026-08-03 CAS row is keyed to a SEBI circular, the regulator's own binding instrument, rather than to an NSE circular. The NSE Closing Auction Session page restates it. Recorded here because the tier of a regulator instrument is not the venue's own statement in the strict reading of LAW-PRIMARY-SOURCES.
 - The pre-open order-entry boundary is set at 09:07, the earliest second a trade could print under the random closure between the 7th and 8th minute, never later; 09:07–09:15 stays `extended` so the auction match, its trade confirmations and the transition buffer remain tradeable.
-- CAS 15:15–15:35 contains order-entry-only sub-phases for CAS-eligible stocks, but the venue-wide window stays `extended` because non-eligible stocks continue continuous trading through it.
+- CAS 15:15–15:35 contains order-entry-only sub-phases for CAS-eligible stocks. Ordinary matching for non-CAS securities through 15:30 and CAS matching through 15:35 make this span executable at venue scope.
 - The 09:55 grid below 2010-01-04 is sourced by the December-2009 artifacts; nothing below the January-2010 floor is reviewed.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/nse.rs on 2026-10-02 UTC)

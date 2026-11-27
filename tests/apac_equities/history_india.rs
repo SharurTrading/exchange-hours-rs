@@ -33,3 +33,26 @@ fn india_cutovers() {
     assert!(!pre.is_open(at_1545));
     assert!(post.is_open_extended(at_1545));
 }
+
+#[test]
+fn nse_weekday_morning_block_deal_begins_on_the_published_cutover() {
+    let calendar = exchange_hours::calendar_for_exchange(Exchange::NseIndia);
+    let tz = KOLKATA;
+    let before = local(&tz, (2017, 12, 29), (8, 45, 0));
+    let first_day = (2018, 1, 1);
+    assert_eq!(calendar.is_open(before), Ok(false));
+    for date in [first_day, (2026, 8, 19)] {
+        let just_before = local(&tz, date, (8, 44, 59));
+        let open = local(&tz, date, (8, 45, 0));
+        let close = local(&tz, date, (9, 0, 0));
+        assert_eq!(calendar.is_accepting_orders(just_before), Ok(false));
+        assert_eq!(calendar.is_open_extended(open), Ok(true));
+        assert_eq!(calendar.is_open_regular(open), Ok(false));
+        assert_eq!(
+            calendar.trade_date(open),
+            Ok(Some(jiff::civil::date(date.0, date.1, date.2)))
+        );
+        assert_eq!(calendar.is_open(close), Ok(false));
+        assert_eq!(calendar.is_order_entry_only(close), Ok(true));
+    }
+}

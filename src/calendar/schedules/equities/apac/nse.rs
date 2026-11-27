@@ -30,8 +30,6 @@ static NSE_EXTENDED_PRE_2010_10_18: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600,
 }];
 
-// The 09:00–09:15 pre-open is two phases, not one. Narrative:
-// docs/evidence/nse_india.md.
 static INDIA_ORDER_ENTRY_PREOPEN: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600,
@@ -51,15 +49,24 @@ static NSE_EXTENDED_POST_2010_10_18: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-static INDIA_EXTENDED_PRE_CAS: &[SessionRule] = &[
+static NSE_POST_CLOSE_PRE_CAS: SessionRule = SessionRule {
+    days: MON_FRI,
+    open_ssm: 15 * 3600 + 40 * 60,
+    close_ssm: 16 * 3600,
+};
+static INDIA_EXTENDED_PRE_CAS: &[SessionRule] = &[INDIA_PREOPEN_MATCH, NSE_POST_CLOSE_PRE_CAS];
+static NSE_MORNING_BLOCK_DEAL: SessionRule = SessionRule {
+    days: MON_FRI,
+    open_ssm: 8 * 3600 + 45 * 60,
+    close_ssm: 9 * 3600,
+};
+static NSE_EXTENDED_POST_2018_01_01: &[SessionRule] = &[
+    NSE_MORNING_BLOCK_DEAL,
     INDIA_PREOPEN_MATCH,
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 15 * 3600 + 40 * 60,
-        close_ssm: 16 * 3600,
-    },
+    NSE_POST_CLOSE_PRE_CAS,
 ];
 static INDIA_EXTENDED_CURRENT: &[SessionRule] = &[
+    NSE_MORNING_BLOCK_DEAL,
     INDIA_PREOPEN_MATCH,
     SessionRule {
         days: MON_FRI,
@@ -72,8 +79,7 @@ static INDIA_EXTENDED_CURRENT: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-// Current NSE/BSE venue envelope. Narrative:
-// docs/evidence/nse_india.md.
+// Evidence: docs/evidence/nse_india.md.
 pub(crate) static NSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
@@ -82,11 +88,10 @@ pub(crate) static NSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_daily_close: true,
     has_weekend_close: true,
 };
-// NSE introduced pre-open 09:00–09:15 on 2010-10-18, then moved its
-// post-close start from 15:50 to 15:40 on 2011-10-03.
-// Sources: NSE circular NSE/CMTR/15981 and NSE/CMTR/19013.
-// https://nsearchives.nseindia.com/global/content/about_us/NSEIL_Annual_Report_2011.pdf
-// https://nsearchives.nseindia.com/content/circulars/cmtr19013.pdf
+static NSE_PROFILE_POST_2018_01_01: StaticHoursProfile = StaticHoursProfile {
+    extended: NSE_EXTENDED_POST_2018_01_01,
+    ..NSE_PROFILE_POST_2011_10_03
+};
 pub(crate) static NSE_PROFILE_POST_2011_10_03: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
@@ -104,8 +109,6 @@ pub(crate) static NSE_PROFILE_POST_2010_10_18: StaticHoursProfile = StaticHoursP
     has_weekend_close: true,
 };
 
-// NSE and BSE jointly moved the continuous open 09:55 -> 09:00 on 2010-01-04. Narrative:
-// docs/evidence/nse_india.md.
 pub(crate) static NSE_PROFILE_POST_2010_01_04: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0900_1530,
@@ -150,6 +153,7 @@ static REVISIONS: &[Revision] = revisions![
         &NSE_PROFILE_POST_2011_10_03,
         "NSE circular NSE/CMTR/19013"
     ),
+    (2018, 1, 1, &NSE_PROFILE_POST_2018_01_01, "NSE-CIRC-2017-77"),
     (2026, 8, 3, &NSE_PROFILE_CURRENT, "SEBI circular 99122"),
 ];
 

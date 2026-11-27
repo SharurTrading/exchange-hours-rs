@@ -75,7 +75,10 @@ fn india_current_baselines() {
     let tz = KOLKATA;
     for exchange in [Exchange::NseIndia, Exchange::BseIndia] {
         let h = hours_for_exchange(exchange, PROFILE_INSTANT);
-        assert!(!h.is_open(local(&tz, (2026, 8, 19), (8, 59, 0))));
+        assert_eq!(
+            h.is_open_extended(local(&tz, (2026, 8, 19), (8, 59, 0))),
+            exchange == Exchange::NseIndia
+        );
         // India pre-open order-collection sub-window; the matching
         // sub-window that follows it stays tradeable.
         assert!(h.is_order_entry_only(local(&tz, (2026, 8, 19), (9, 0, 0))));

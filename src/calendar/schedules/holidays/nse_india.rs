@@ -126,6 +126,69 @@ static MUHURAT_2018_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 18 * 3_600 + 40 * 60, 18 * 3_600 + 50 * 60),
 ];
 
+/// Full-hours weekend cash sessions on 2020-02-01, 2024-01-20, 2025-02-01 and 2026-02-01.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static FULL_HOURS_WEEKEND_BLOCKS: [ExceptionBlock; 5] = [
+    ExceptionBlock::extended(0, 8 * 3_600 + 45 * 60, 9 * 3_600),
+    ExceptionBlock::order_entry(0, 9 * 3_600, 9 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 40 * 60, 16 * 3_600),
+];
+
+/// Cash-market disaster-recovery sessions on 2024-03-02 and 2024-05-18.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static DISASTER_RECOVERY_2024_BLOCKS: [ExceptionBlock; 8] = [
+    ExceptionBlock::extended(0, 8 * 3_600 + 45 * 60, 9 * 3_600),
+    ExceptionBlock::order_entry(0, 9 * 3_600, 9 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 15 * 60, 10 * 3_600),
+    ExceptionBlock::order_entry(0, 11 * 3_600 + 15 * 60, 11 * 3_600 + 22 * 60),
+    ExceptionBlock::extended(0, 11 * 3_600 + 22 * 60, 11 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 11 * 3_600 + 30 * 60, 12 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 12 * 3_600 + 40 * 60, 12 * 3_600 + 50 * 60),
+];
+
+/// January, March and April 2012 live cash-market sessions.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static WEEKEND_2012_SHORT_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 11 * 3_600, 11 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 11 * 3_600 + 7 * 60, 11 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 11 * 3_600 + 15 * 60, 12 * 3_600 + 45 * 60),
+    ExceptionBlock::extended(0, 12 * 3_600 + 55 * 60, 13 * 3_600 + 5 * 60),
+];
+
+/// September 2012, May 2013 and March 2014 live cash-market sessions.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static WEEKEND_1305_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 11 * 3_600, 11 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 11 * 3_600 + 7 * 60, 11 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 11 * 3_600 + 15 * 60, 12 * 3_600 + 45 * 60),
+    ExceptionBlock::extended(0, 13 * 3_600 + 5 * 60, 13 * 3_600 + 15 * 60),
+];
+
+/// February 2015 Union Budget cash-market session.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static WEEKEND_2015_BUDGET_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 9 * 3_600, 9 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 40 * 60, 16 * 3_600),
+];
+
+/// February 2010 live cash-market session.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static WEEKEND_2010_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 11 * 3_600, 12 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 12 * 3_600 + 50 * 60, 13 * 3_600),
+];
+
 /// NSE trading holidays and complete Muhurat replacement sessions.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
@@ -139,6 +202,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2010, 1, 1, Closed, T1, "NSE-CIRC-2010-61"),
         // 2010-01-26 - T1 - NSE-CIRC-2010-61 - Republic Day, Tuesday.
         (2010, 1, 26, Closed, T1, "NSE-CIRC-2010-61"),
+        // 2010-02-06 - T1 - NSE-CMTR-14051 - Published live weekend session.
+        (2010, 2, 6, ReplacementBlocks(&WEEKEND_2010_BLOCKS), T1, "NSE-CMTR-14051"),
         // 2010-02-12 - T1 - NSE-CIRC-2010-61 - Mahashivratri, Friday.
         (2010, 2, 12, Closed, T1, "NSE-CIRC-2010-61"),
         // 2010-03-01 - T1 - NSE-CIRC-2010-61 - Holi, Monday.
@@ -190,22 +255,30 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2012, from the operator's circular 66/2011 dated 2011-12-09
         // ("Trading holidays for the calendar year 2012"), recovered
         // 2026-10-06 UTC.
+        // 2012-01-07 - T1 - NSE-CMTR-19734 - Published live weekend session.
+        (2012, 1, 7, ReplacementBlocks(&WEEKEND_2012_SHORT_BLOCKS), T1, "NSE-CMTR-19734"),
         // 2012-01-26 - T1 - NSE-CIRC-2011-66 - Republic Day, Thursday.
         (2012, 1, 26, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-02-20 - T1 - NSE-CIRC-2011-66 - Mahashivratri, Monday.
         (2012, 2, 20, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-03-03 - T1 - NSE-CMTR-20063 - Published live weekend session.
+        (2012, 3, 3, ReplacementBlocks(&WEEKEND_2012_SHORT_BLOCKS), T1, "NSE-CMTR-20063"),
         // 2012-03-08 - T1 - NSE-CIRC-2011-66 - Holi, Thursday.
         (2012, 3, 8, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-04-05 - T1 - NSE-CIRC-2011-66 - Mahavir Jayanti, Thursday.
         (2012, 4, 5, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-04-06 - T1 - NSE-CIRC-2011-66 - Good Friday.
         (2012, 4, 6, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-04-28 - T1 - NSE-CMTR-20561 - Published live weekend session.
+        (2012, 4, 28, ReplacementBlocks(&WEEKEND_2012_SHORT_BLOCKS), T1, "NSE-CMTR-20561"),
         // 2012-05-01 - T1 - NSE-CIRC-2011-66 - May Day, Tuesday.
         (2012, 5, 1, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-08-15 - T1 - NSE-CIRC-2011-66 - Independence Day, Wednesday.
         (2012, 8, 15, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-08-20 - T1 - NSE-CIRC-2011-66 - Ramzan ID, Monday.
         (2012, 8, 20, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-09-08 - T1 - NSE-CIRC-2012-56 - Published live weekend session.
+        (2012, 9, 8, ReplacementBlocks(&WEEKEND_1305_CLOSE_BLOCKS), T1, "NSE-CIRC-2012-56"),
         // 2012-09-19 - T1 - NSE-CIRC-2011-66 - Ganesh Chaturthi, Wednesday.
         (2012, 9, 19, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-10-02 - T1 - NSE-CIRC-2011-66 - Gandhi Jayanti, Tuesday.
@@ -231,6 +304,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2013, 4, 24, Closed, T1, "NSE-CIRC-2012-79"),
         // 2013-05-01 - T1 - NSE-CIRC-2012-79 - May Day, Wednesday.
         (2013, 5, 1, Closed, T1, "NSE-CIRC-2012-79"),
+        // 2013-05-11 - T1 - NSE-CIRC-2013-33 - Published live weekend session.
+        (2013, 5, 11, ReplacementBlocks(&WEEKEND_1305_CLOSE_BLOCKS), T1, "NSE-CIRC-2013-33"),
         // 2013-08-09 - T1 - NSE-CIRC-2012-79 - Ramzan ID, Friday.
         (2013, 8, 9, Closed, T1, "NSE-CIRC-2012-79"),
         // 2013-08-15 - T1 - NSE-CIRC-2012-79 - Independence Day, Thursday.
@@ -254,6 +329,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 2, 27, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-03-17 - T1 - NSE-HOL-PAGE-2014 - Holi, Monday.
         (2014, 3, 17, Closed, T1, "NSE-HOL-PAGE-2014"),
+        // 2014-03-22 - T1 - NSE-CIRC-2014-11 - Published live weekend session.
+        (2014, 3, 22, ReplacementBlocks(&WEEKEND_1305_CLOSE_BLOCKS), T1, "NSE-CIRC-2014-11"),
         // 2014-04-08 - T1 - NSE-HOL-PAGE-2014 - Ram Navmi, Tuesday.
         (2014, 4, 8, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-04-14 - T1 - NSE-HOL-PAGE-2014 - Dr. Babasaheb Ambedkar Jayanti, Monday.
@@ -293,6 +370,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 1, 26, Closed, T1, "NSE-HOL-PAGE-2015"),
         // 2015-02-17 - T1 - NSE-HOL-PAGE-2015 - Mahashivratri, Tuesday.
         (2015, 2, 17, Closed, T1, "NSE-HOL-PAGE-2015"),
+        // 2015-02-28 - T1 - NSE-CIRC-2015-9 - Published live weekend session.
+        (2015, 2, 28, ReplacementBlocks(&WEEKEND_2015_BUDGET_BLOCKS), T1, "NSE-CIRC-2015-9"),
         // 2015-03-06 - T1 - NSE-HOL-PAGE-2015 - Holi, Friday.
         (2015, 3, 6, Closed, T1, "NSE-HOL-PAGE-2015"),
         // 2015-04-02 - T1 - NSE-HOL-PAGE-2015 - Mahavir Jayanti, Thursday.
@@ -448,6 +527,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2019-12-25 - T1 - NSE-HOL-PAGE-2019 - Christmas, Wednesday.
         (2019, 12, 25, Closed, T1, "NSE-HOL-PAGE-2019"),
         // 2020, from the operator's 2020 equities holiday page.
+        // 2020-02-01 - T1 - NSE-CIRC-2020-5 - Published live weekend session.
+        (2020, 2, 1, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-CIRC-2020-5"),
         // 2020-02-21 - T1 - NSE-HOL-PAGE-2020 - Mahashivratri, Friday.
         (2020, 2, 21, Closed, T1, "NSE-HOL-PAGE-2020"),
         // 2020-03-10 - T1 - NSE-HOL-PAGE-2020 - Holi, Tuesday.
@@ -572,8 +653,14 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2023-12-25 - T2 - NSE-HOLMASTER-2023 - Christmas, Monday.
         (2023, 12, 25, Closed, T2, "NSE-HOLMASTER-2023"),
         // 2024, from the operator's holiday-master T2 feed (CM segment).
+        // 2024-01-20 - T1 - NSE-MSD-2024-05 - Full-hours primary-site session.
+        (2024, 1, 20, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-MSD-2024-05"),
+        // 2024-01-22 - T1 - NSE-CMTR-60338 - Maharashtra public holiday.
+        (2024, 1, 22, Closed, T1, "NSE-CMTR-60338"),
         // 2024-01-26 - T2 - NSE-HOLMASTER-2024 - Republic Day, Friday.
         (2024, 1, 26, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2024-03-02 - T1 - NSE-MSD-2024-08 - Live disaster-recovery session.
+        (2024, 3, 2, ReplacementBlocks(&DISASTER_RECOVERY_2024_BLOCKS), T1, "NSE-MSD-2024-08"),
         // 2024-03-08 - T2 - NSE-HOLMASTER-2024 - Mahashivratri, Friday.
         (2024, 3, 8, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-03-25 - T2 - NSE-HOLMASTER-2024 - Holi, Monday.
@@ -586,6 +673,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 4, 17, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-05-01 - T2 - NSE-HOLMASTER-2024 - Maharashtra Day, Wednesday.
         (2024, 5, 1, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2024-05-18 - T1 - NSE-MSD-2024-40 - Live disaster-recovery session.
+        (2024, 5, 18, ReplacementBlocks(&DISASTER_RECOVERY_2024_BLOCKS), T1, "NSE-MSD-2024-40"),
         // 2024-06-17 - T2 - NSE-HOLMASTER-2024 - Bakri Id, Monday.
         (2024, 6, 17, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-07-17 - T2 - NSE-HOLMASTER-2024 - Moharram, Wednesday.
@@ -603,6 +692,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 11, 15, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-12-25 - T2 - NSE-HOLMASTER-2024 - Christmas, Wednesday.
         (2024, 12, 25, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2025-02-01 - T1 - NSE-CIRC-2024-172 - Union Budget session.
+        (2025, 2, 1, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-CIRC-2024-172"),
         // 2025-02-26 - T1 - NSE-HOL-2025 - Mahashivratri, Wednesday.
         (2025, 2, 26, Closed, T1, "NSE-HOL-2025"),
         // 2025-03-14 - T1 - NSE-HOL-2025 - Holi, Friday.
@@ -644,6 +735,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 1, 15, Closed, T2, "NSE-HOLMASTER-2026"),
         // 2026-01-26 - T1 - NSE-HOL-2026 - Republic Day, Monday.
         (2026, 1, 26, Closed, T1, "NSE-HOL-2026"),
+        // 2026-02-01 - T1 - NSE-CIRC-2026-11 - Union Budget session.
+        (2026, 2, 1, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-CIRC-2026-11"),
         // 2026-03-03 - T1 - NSE-HOL-2026 - Holi, Tuesday.
         (2026, 3, 3, Closed, T1, "NSE-HOL-2026"),
         // 2026-03-26 - T1 - NSE-HOL-2026 - Shri Ram Navami, Thursday.

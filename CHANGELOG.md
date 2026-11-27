@@ -43,6 +43,9 @@
 
 ### Fixed
 
+- Source the ICE Futures Europe Long and Medium Gilt futures early closes for
+  both 2021 and 2024 eves and add the exchange's December 2023 holiday span
+  ([#332](https://github.com/SharurTrading/exchange-hours-rs/issues/332)).
 - A published full closure answers the trade-date closure query even when
   the adjacent day has unpublished hours. An explicit caller replacement
   still takes precedence.

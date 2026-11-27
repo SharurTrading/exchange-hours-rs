@@ -811,8 +811,8 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
     let outside = cme
         .is_open("2099-06-02T18:00:00Z".parse().unwrap())
         .unwrap_err();
-    let withheld = calendar_for_exchange(Exchange::NseIndia)
-        .is_closed_trade_date(date(2014, 10, 23), exchange_hours::SessionKind::Both)
+    let withheld = calendar_for_market_hours_key(MarketHoursKey::OandaBrent)
+        .is_closed_trade_date(date(2025, 7, 3), exchange_hours::SessionKind::Both)
         .unwrap_err();
     let exhausted = calendar_for_market_hours_key(MarketHoursKey::AlwaysOpen)
         .trade_date("2026-04-20T18:00:00Z".parse().unwrap())

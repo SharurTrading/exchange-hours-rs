@@ -229,13 +229,13 @@ fn bundled_tzif_and_precompiled_rules_agree_across_every_identity() {
 #[test]
 fn withdrawn_holiday_and_exhausted_search_keep_their_clocks() {
     let supplied = snapshot(2);
-    let nse = ExchangeCalendar::new(Exchange::NseIndia);
-    let date = jiff::civil::date(2014, 10, 23);
-    let refused = nse
+    let brent = ExchangeCalendar::for_market_hours_key(MarketHoursKey::OandaBrent);
+    let date = jiff::civil::date(2025, 7, 3);
+    let refused = brent
         .with_time_zone_snapshot(&supplied)
         .is_closed_trade_date(date, SessionKind::Both)
         .unwrap_err();
-    let embedded = nse
+    let embedded = brent
         .is_closed_trade_date(date, SessionKind::Both)
         .unwrap_err();
     let exhausted = ExchangeCalendar::for_market_hours_key(MarketHoursKey::AlwaysOpen)
@@ -252,7 +252,7 @@ fn withdrawn_holiday_and_exhausted_search_keep_their_clocks() {
     assert!(refused.to_string().contains("[tzdb test]"));
     assert!(refused.to_string().contains("normal week Thursday"));
     assert!(embedded.to_string().contains("[embedded tzdb "));
-    let instant = at("2014-10-23T12:00Z");
+    let instant = at("2025-07-03T12:00Z");
     assert_ne!(
         refused
             .normal_week_baseline()

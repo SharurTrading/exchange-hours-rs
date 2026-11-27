@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT-0
 
 //! National Stock Exchange of India holiday and special-session rows.
-//! Audited windows: 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31.
+//! Audited windows: 2010-01-01..2026-12-31.
 //! Evidence: `docs/evidence/nse_india.md`.
 
 use crate::calendar::exceptions::ExceptionBlock;
 
 use super::EvidenceTier::{T1, T2};
-use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::{HolidayTable, holidays};
 
-/// Muhurat replacement phases for 2020, 2022 and 2023.
+/// Muhurat replacement phases for 2019, 2020, 2021, 2022 and 2023.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_EVENING_BLOCKS: [ExceptionBlock; 5] = [
@@ -75,7 +75,7 @@ static MUHURAT_2015_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(0, 18 * 3_600 + 55 * 60, 19 * 3_600 + 5 * 60),
 ];
 
-/// Muhurat replacement phases for 2016-10-30.
+/// Muhurat replacement phases for 2014-10-23, 2016-10-30 and 2017-10-19.
 /// Evidence: `docs/evidence/nse_india.md`.
 #[rustfmt::skip]
 static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
@@ -85,12 +85,52 @@ static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(0, 19 * 3_600 + 40 * 60, 19 * 3_600 + 50 * 60),
 ];
 
+/// Muhurat replacement phases for 2011.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2011_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 16 * 3_600 + 30 * 60, 16 * 3_600 + 37 * 60),
+    ExceptionBlock::extended(0, 16 * 3_600 + 37 * 60, 16 * 3_600 + 45 * 60),
+    ExceptionBlock::regular(0, 16 * 3_600 + 45 * 60, 18 * 3_600),
+    ExceptionBlock::extended(0, 18 * 3_600 + 10 * 60, 18 * 3_600 + 20 * 60),
+];
+
+/// Muhurat replacement phases for 2012.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2012_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 15 * 3_600 + 30 * 60, 15 * 3_600 + 37 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 37 * 60, 15 * 3_600 + 45 * 60),
+    ExceptionBlock::regular(0, 15 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(0, 17 * 3_600 + 10 * 60, 17 * 3_600 + 20 * 60),
+];
+
+/// Muhurat replacement phases for 2013.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2013_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 18 * 3_600, 18 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 18 * 3_600 + 7 * 60, 18 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 18 * 3_600 + 15 * 60, 19 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 19 * 3_600 + 40 * 60, 19 * 3_600 + 50 * 60),
+];
+
+/// Muhurat replacement phases for 2018-11-07.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2018_BLOCKS: [ExceptionBlock; 5] = [
+    ExceptionBlock::extended(0, 17 * 3_600, 17 * 3_600 + 15 * 60),
+    ExceptionBlock::order_entry(0, 17 * 3_600 + 15 * 60, 17 * 3_600 + 22 * 60),
+    ExceptionBlock::extended(0, 17 * 3_600 + 22 * 60, 17 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 17 * 3_600 + 30 * 60, 18 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 18 * 3_600 + 40 * 60, 18 * 3_600 + 50 * 60),
+];
+
 /// NSE trading holidays and complete Muhurat replacement sessions.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
-        (2010, 1, 1) ..= (2017, 12, 31),
-        (2019, 1, 1) ..= (2026, 12, 31),
+        (2010, 1, 1) ..= (2026, 12, 31),
     ],
     rows: [
         // 2010, from the operator's circular 061 ("Trading holidays for the
@@ -111,10 +151,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2010, 4, 14, Closed, T1, "NSE-CIRC-2010-61"),
         // 2010-09-10 - T1 - NSE-CIRC-2010-61 - Ramzan ID, Friday.
         (2010, 9, 10, Closed, T1, "NSE-CIRC-2010-61"),
-        // 2010-11-05 - T1 - NSE-CIRC-2010-121 - Diwali Muhurat Trading: the
-        // operator's circular 121/2010 (2010-10-20) states the Friday special
-        // session's complete schedule; the row restates it as one replacement
-        // day.
+        // 2010-11-05 - T1 - NSE-CIRC-2010-121 - Muhurat Trading.
         (2010, 11, 5, ReplacementBlocks(&MUHURAT_2010_BLOCKS), T1, "NSE-CIRC-2010-121"),
         // 2010-11-17 - T1 - NSE-CIRC-2010-61 - Bakri Id, Wednesday.
         (2010, 11, 17, Closed, T1, "NSE-CIRC-2010-61"),
@@ -140,9 +177,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2011, 9, 1, Closed, T1, "NSE-HOL-PAGE-2011"),
         // 2011-10-06 - T1 - NSE-HOL-PAGE-2011 - Dasara, Thursday.
         (2011, 10, 6, Closed, T1, "NSE-HOL-PAGE-2011"),
-        // 2011-10-26 - T1 - NSE-HOL-PAGE-2011 - Laxmi Puja*: the list footnotes
-        // Muhurat Trading with timings "shall be notified subsequently".
-        (2011, 10, 26, Unsourced, T1, "NSE-HOL-PAGE-2011"),
+        // 2011-10-26 - T1 - NSE-CIRC-2011-57 - Muhurat Trading.
+        (2011, 10, 26, ReplacementBlocks(&MUHURAT_2011_BLOCKS), T1, "NSE-CIRC-2011-57"),
         // 2011-10-27 - T1 - NSE-HOL-PAGE-2011 - Diwali-Balipratipada, Thursday.
         (2011, 10, 27, Closed, T1, "NSE-HOL-PAGE-2011"),
         // 2011-11-07 - T1 - NSE-HOL-PAGE-2011 - Bakri Id, Monday.
@@ -176,11 +212,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 10, 2, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-10-24 - T1 - NSE-CIRC-2011-66 - Dasera, Wednesday.
         (2012, 10, 24, Closed, T1, "NSE-CIRC-2011-66"),
-        // 2012-11-13 - T1 - NSE-CIRC-2011-66 - Diwali – Laxmi Puja*: the
-        // circular footnotes Muhurat Trading with timings "shall be notified
-        // subsequently", so the printed holiday's special session has no
-        // published instants and the date is withheld rather than closed.
-        (2012, 11, 13, Unsourced, T1, "NSE-CIRC-2011-66"),
+        // 2012-11-13 - T1 - NSE-CIRC-2012-71 - Muhurat Trading.
+        (2012, 11, 13, ReplacementBlocks(&MUHURAT_2012_BLOCKS), T1, "NSE-CIRC-2012-71"),
         // 2012-11-14 - T1 - NSE-CIRC-2011-66 - Diwali - Balipratipada, Wednesday.
         (2012, 11, 14, Closed, T1, "NSE-CIRC-2011-66"),
         // 2012-11-28 - T1 - NSE-CIRC-2011-66 - Gurunanak Jayanti, Wednesday.
@@ -208,11 +241,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2013, 10, 2, Closed, T1, "NSE-CIRC-2012-79"),
         // 2013-10-16 - T1 - NSE-CIRC-2012-79 - Bakri ID, Wednesday.
         (2013, 10, 16, Closed, T1, "NSE-CIRC-2012-79"),
-        // 2013-11-03 - T1 - NSE-CIRC-2012-79 - Diwali-Laxmi Puja: a Sunday the
-        // circular footnotes "Muhurat Trading will be conducted on Sunday,
-        // November 03, 2013" without instants, so the normal week alone would
-        // claim an audited-normal weekend the operator contradicts.
-        (2013, 11, 3, Unsourced, T1, "NSE-CIRC-2012-79"),
+        // 2013-11-03 - T1 - NSE-CIRC-2013-86 - Muhurat Trading.
+        (2013, 11, 3, ReplacementBlocks(&MUHURAT_2013_BLOCKS), T1, "NSE-CIRC-2013-86"),
         // 2013-11-04 - T1 - NSE-CIRC-2012-79 - Diwali-Balipratipada, Monday.
         (2013, 11, 4, Closed, T1, "NSE-CIRC-2012-79"),
         // 2013-11-14 - T1 - NSE-CIRC-2012-79 - Moharram, Thursday.
@@ -230,6 +260,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 4, 14, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-04-18 - T1 - NSE-HOL-PAGE-2014 - Good Friday.
         (2014, 4, 18, Closed, T1, "NSE-HOL-PAGE-2014"),
+        // 2014-04-24 - T1 - NSE-CIRC-2014-21 - parliamentary election in Mumbai.
+        (2014, 4, 24, Closed, T1, "NSE-CIRC-2014-21"),
         // 2014-05-01 - T1 - NSE-HOL-PAGE-2014 - May Day, Thursday.
         (2014, 5, 1, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-07-29 - T1 - NSE-HOL-PAGE-2014 - Ramzan ID, Tuesday.
@@ -244,9 +276,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 10, 3, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-10-06 - T1 - NSE-HOL-PAGE-2014 - Bakri ID, Monday.
         (2014, 10, 6, Closed, T1, "NSE-HOL-PAGE-2014"),
-        // 2014-10-23 - T1 - NSE-HOL-PAGE-2014 - Diwali-Laxmi Pujan*: Muhurat
-        // timings "shall be notified subsequently".
-        (2014, 10, 23, Unsourced, T1, "NSE-HOL-PAGE-2014"),
+        // 2014-10-15 - T1 - NSE-CIRC-2014-52 - Maharashtra Assembly election.
+        (2014, 10, 15, Closed, T1, "NSE-CIRC-2014-52"),
+        // 2014-10-23 - T1 - NSE-CIRC-2014-50 - Muhurat Trading.
+        (2014, 10, 23, ReplacementBlocks(&MUHURAT_2016_BLOCKS), T1, "NSE-CIRC-2014-50"),
         // 2014-10-24 - T1 - NSE-HOL-PAGE-2014 - Diwali-Balipratipada, Friday.
         (2014, 10, 24, Closed, T1, "NSE-HOL-PAGE-2014"),
         // 2014-11-04 - T1 - NSE-HOL-PAGE-2014 - Moharram, Tuesday.
@@ -278,10 +311,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 10, 2, Closed, T1, "NSE-HOL-PAGE-2015"),
         // 2015-10-22 - T1 - NSE-HOL-PAGE-2015 - Dussehra, Thursday.
         (2015, 10, 22, Closed, T1, "NSE-HOL-PAGE-2015"),
-        // 2015-11-11 - T1 - NSE-CIRC-2015-65 - Diwali Muhurat Trading: the
-        // operator's circular 65/2015 (2015-10-30) states the Wednesday
-        // special session's complete schedule; the row restates it as one
-        // replacement day.
+        // 2015-11-11 - T1 - NSE-CIRC-2015-65 - Muhurat Trading.
         (2015, 11, 11, ReplacementBlocks(&MUHURAT_2015_BLOCKS), T1, "NSE-CIRC-2015-65"),
         // 2015-11-12 - T1 - NSE-HOL-PAGE-2015 - Diwali-Balipratipada, Thursday.
         (2015, 11, 12, Closed, T1, "NSE-HOL-PAGE-2015"),
@@ -316,10 +346,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2016, 10, 11, Closed, T1, "NSE-HOL-PAGE-2016"),
         // 2016-10-12 - T1 - NSE-HOL-PAGE-2016 - Moharram, Wednesday.
         (2016, 10, 12, Closed, T1, "NSE-HOL-PAGE-2016"),
-        // 2016-10-30 - T1 - NSE-CIRC-2016-56 - Diwali Muhurat Trading: the
-        // operator's circular 56/2016 (2016-10-17) states the Sunday special
-        // session's complete schedule; the row restates it as one replacement
-        // day.
+        // 2016-10-30 - T1 - NSE-CIRC-2016-56 - Muhurat Trading.
         (2016, 10, 30, ReplacementBlocks(&MUHURAT_2016_BLOCKS), T1, "NSE-CIRC-2016-56"),
         // 2016-10-31 - T1 - NSE-HOL-PAGE-2016 - Diwali-Balipratipada, Monday.
         (2016, 10, 31, Closed, T1, "NSE-HOL-PAGE-2016"),
@@ -347,13 +374,44 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2017, 8, 25, Closed, T1, "NSE-HOL-PAGE-2017"),
         // 2017-10-02 - T1 - NSE-HOL-PAGE-2017 - Mahatama Gandhi Jayanti, Monday.
         (2017, 10, 2, Closed, T1, "NSE-HOL-PAGE-2017"),
-        // 2017-10-19 - T1 - NSE-HOL-PAGE-2017 - Diwali-Laxmi Pujan*: Muhurat
-        // timings "shall be notified subsequently".
-        (2017, 10, 19, Unsourced, T1, "NSE-HOL-PAGE-2017"),
+        // 2017-10-19 - T1 - NSE-CIRC-2017-60 - Muhurat Trading.
+        (2017, 10, 19, ReplacementBlocks(&MUHURAT_2016_BLOCKS), T1, "NSE-CIRC-2017-60"),
         // 2017-10-20 - T1 - NSE-HOL-PAGE-2017 - Diwali-Balipratipada, Friday.
         (2017, 10, 20, Closed, T1, "NSE-HOL-PAGE-2017"),
         // 2017-12-25 - T1 - NSE-HOL-PAGE-2017 - Christmas, Monday.
         (2017, 12, 25, Closed, T1, "NSE-HOL-PAGE-2017"),
+        // 2018-01-26 - T1 - NSE-CIRC-2017-71 - Republic Day.
+        (2018, 1, 26, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-02-13 - T1 - NSE-CIRC-2017-71 - Mahashivratri.
+        (2018, 2, 13, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-03-02 - T1 - NSE-CIRC-2017-71 - Holi.
+        (2018, 3, 2, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-03-29 - T1 - NSE-CIRC-2017-71 - Mahavir Jayanti.
+        (2018, 3, 29, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-03-30 - T1 - NSE-CIRC-2017-71 - Good Friday.
+        (2018, 3, 30, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-05-01 - T1 - NSE-CIRC-2017-71 - Maharashtra Day.
+        (2018, 5, 1, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-08-15 - T1 - NSE-CIRC-2017-71 - Independence Day.
+        (2018, 8, 15, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-08-22 - T1 - NSE-CIRC-2017-71 - Bakri ID.
+        (2018, 8, 22, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-09-13 - T1 - NSE-CIRC-2017-71 - Ganesh Chaturthi.
+        (2018, 9, 13, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-09-20 - T1 - NSE-CIRC-2017-71 - Moharram.
+        (2018, 9, 20, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-10-02 - T1 - NSE-CIRC-2017-71 - Mahatma Gandhi Jayanti.
+        (2018, 10, 2, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-10-18 - T1 - NSE-CIRC-2017-71 - Dasera.
+        (2018, 10, 18, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-11-07 - T1 - NSE-CIRC-2018-93 - Muhurat Trading.
+        (2018, 11, 7, ReplacementBlocks(&MUHURAT_2018_BLOCKS), T1, "NSE-CIRC-2018-93"),
+        // 2018-11-08 - T1 - NSE-CIRC-2017-71 - Diwali-Balipratipada.
+        (2018, 11, 8, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-11-23 - T1 - NSE-CIRC-2017-71 - Gurunanak Jayanti.
+        (2018, 11, 23, Closed, T1, "NSE-CIRC-2017-71"),
+        // 2018-12-25 - T1 - NSE-CIRC-2017-71 - Christmas.
+        (2018, 12, 25, Closed, T1, "NSE-CIRC-2017-71"),
         // 2019, from the operator's 2019 trading-holiday page.
         // 2019-03-04 - T1 - NSE-HOL-PAGE-2019 - Mahashivratri, Monday.
         (2019, 3, 4, Closed, T1, "NSE-HOL-PAGE-2019"),
@@ -381,10 +439,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2019, 10, 2, Closed, T1, "NSE-HOL-PAGE-2019"),
         // 2019-10-08 - T1 - NSE-HOL-PAGE-2019 - Dasera, Tuesday.
         (2019, 10, 8, Closed, T1, "NSE-HOL-PAGE-2019"),
-        // 2019-10-27 - T1 - NSE-HOL-PAGE-2019 - Diwali-Laxmi Pujan*: a Sunday the
-        // list footnotes Muhurat Trading with timings "shall be notified
-        // subsequently".
-        (2019, 10, 27, Unsourced, T1, "NSE-HOL-PAGE-2019"),
+        // 2019-10-27 - T1 - NSE-CIRC-2019-131 - Muhurat Trading.
+        (2019, 10, 27, ReplacementBlocks(&MUHURAT_EVENING_BLOCKS), T1, "NSE-CIRC-2019-131"),
         // 2019-10-28 - T1 - NSE-HOL-PAGE-2019 - Diwali-Balipratipada, Monday.
         (2019, 10, 28, Closed, T1, "NSE-HOL-PAGE-2019"),
         // 2019-11-12 - T1 - NSE-HOL-PAGE-2019 - Gurunanak Jayanti, Tuesday.
@@ -410,10 +466,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2020, 5, 25, Closed, T1, "NSE-HOL-PAGE-2020"),
         // 2020-10-02 - T1 - NSE-HOL-PAGE-2020 - Mahatma Gandhi Jayanti, Friday.
         (2020, 10, 2, Closed, T1, "NSE-HOL-PAGE-2020"),
-        // 2020-11-14 - T1 - NSE-CIRC-2020-98 - Diwali Muhurat Trading: the
-        // operator's circular 98/2020 (2020-11-02) states the Saturday
-        // special session's complete schedule; the row restates it as one
-        // replacement day.
+        // 2020-11-14 - T1 - NSE-CIRC-2020-98 - Muhurat Trading.
         (2020, 11, 14, ReplacementBlocks(&MUHURAT_EVENING_BLOCKS), T1, "NSE-CIRC-2020-98"),
         // 2020-11-16 - T1 - NSE-HOL-PAGE-2020 - Diwali-Balipratipada, Monday.
         (2020, 11, 16, Closed, T1, "NSE-HOL-PAGE-2020"),
@@ -421,9 +474,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2020, 11, 30, Closed, T1, "NSE-HOL-PAGE-2020"),
         // 2020-12-25 - T1 - NSE-HOL-PAGE-2020 - Christmas, Friday.
         (2020, 12, 25, Closed, T1, "NSE-HOL-PAGE-2020"),
-        // 2021, from the operator's 2021 trading-holiday page; the page prints
-        // its Muhurat footnote against no date, so nothing is withheld here
-        // (the residual risk is recorded in the evidence file).
+        // 2021, from the annual holiday page and Muhurat circular.
         // 2021-01-26 - T1 - NSE-HOL-PAGE-2021 - Republic Day, Tuesday.
         (2021, 1, 26, Closed, T1, "NSE-HOL-PAGE-2021"),
         // 2021-03-11 - T1 - NSE-HOL-PAGE-2021 - Mahashivratri, Thursday.
@@ -446,6 +497,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2021, 9, 10, Closed, T1, "NSE-HOL-PAGE-2021"),
         // 2021-10-15 - T1 - NSE-HOL-PAGE-2021 - Dussehra, Friday.
         (2021, 10, 15, Closed, T1, "NSE-HOL-PAGE-2021"),
+        // 2021-11-04 - T1 - NSE-CIRC-2021-109 - Muhurat Trading.
+        (2021, 11, 4, ReplacementBlocks(&MUHURAT_EVENING_BLOCKS), T1, "NSE-CIRC-2021-109"),
         // 2021-11-05 - T1 - NSE-HOL-PAGE-2021 - Diwali-Balipratipada, Friday.
         (2021, 11, 5, Closed, T1, "NSE-HOL-PAGE-2021"),
         // 2021-11-19 - T1 - NSE-HOL-PAGE-2021 - Gurunanak Jayanti, Friday.

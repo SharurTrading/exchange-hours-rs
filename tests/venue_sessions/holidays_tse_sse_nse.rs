@@ -8,14 +8,8 @@
 //! spelled out here independently, so a mutation of any shipped row fails on
 //! the row it moves rather than on a count that copied the module.
 //!
-//! The three tables are closures only, plus NSE's Muhurat-Trading dates: the
-//! nine whose circulars the operator published ship `ReplacementBlocks`
-//! restating the printed special-session schedules, and the six whose
-//! instants it has not published are `Unsourced`; the fence pins both the
-//! withheld shape (the date refuses rather than answers) and the replacement
-//! shape (the day trades exactly inside the printed blocks), alongside the
-//! closure shape (the day answers shut, end-exclusively around the sessions
-//! that do run).
+//! The three tables contain closures and NSE's Muhurat replacement sessions.
+//! The fences pin the published phase boundaries and end-exclusive closes.
 //!
 //! Coverage horizons are the operators' own: JPX publishes the current and
 //! next year (2025-2027 audited), SSE its annual December notice (2025-2026),
@@ -25,8 +19,8 @@
 //! the session layer answers from the sourced normal week, the holiday layer
 //! stays absent, and the metadata reports the residual.
 
+use crate::support::date_opt;
 use crate::support::zones::{KOLKATA, SHANGHAI, TOKYO};
-use crate::support::{date_opt, elapsed_days};
 use exchange_hours::{
     CalendarCoverage, CalendarQueryErrorKind, CoverageGapReason, DateCoverage, EvidenceTier,
     Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
@@ -134,53 +128,6 @@ fn assert_closure_at(
              got {other:?}"
         ),
     }
-}
-
-/// Asserts the date refuses as an `Unsourced` gap: the row exists, the metadata
-/// names the date unresolved, and the date-aware queries refuse rather than
-/// answer from the normal week.
-fn assert_unsourced(calendar: ExchangeCalendar, date: (i16, i8, i8), document: &str, label: &str) {
-    assert_unsourced_at(calendar, date, document, EvidenceTier::T1, label);
-}
-
-/// The same withholding fence at an explicit tier (the NSE 2023-2024 rows are T2).
-fn assert_unsourced_at(
-    calendar: ExchangeCalendar,
-    date: (i16, i8, i8),
-    document: &str,
-    tier: EvidenceTier,
-    label: &str,
-) {
-    let (year, month, day_of_month) = date;
-    let trade_date = day(year, month, day_of_month);
-    let row = calendar
-        .holiday_on(trade_date)
-        .unwrap_or_else(|| panic!("{label}: {trade_date} must ship a row"));
-    assert_eq!(
-        row.kind(),
-        HolidayKind::Unsourced,
-        "{label}: {trade_date} kind"
-    );
-    assert_eq!(row.tier(), tier, "{label}: {trade_date} tier");
-    assert_eq!(
-        row.document_id(),
-        document,
-        "{label}: {trade_date} document id"
-    );
-    assert_eq!(
-        calendar.coverage().coverage_on(trade_date),
-        DateCoverage::UnresolvedGap,
-        "{label}: {trade_date} metadata verdict"
-    );
-    assert!(
-        matches!(
-            calendar
-                .is_closed_trade_date(trade_date, SessionKind::Both)
-                .map_err(|error| error.kind()),
-            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
-        ),
-        "{label}: {trade_date} must refuse, never answer a closure or an open day"
-    );
 }
 
 /// Asserts one ordinary weekday trades: open mid-morning, open the nanosecond
@@ -1069,6 +1016,11 @@ fn nse_printed_closures_2010_2017_ship_a_row_per_year() {
         ((2014, 4, 8), "NSE-HOL-PAGE-2014", "NSE Ram Navmi"),
         ((2014, 4, 14), "NSE-HOL-PAGE-2014", "NSE Ambedkar Jayanti"),
         ((2014, 4, 18), "NSE-HOL-PAGE-2014", "NSE Good Friday"),
+        (
+            (2014, 4, 24),
+            "NSE-CIRC-2014-21",
+            "NSE parliamentary election",
+        ),
         ((2014, 5, 1), "NSE-HOL-PAGE-2014", "NSE May Day"),
         ((2014, 7, 29), "NSE-HOL-PAGE-2014", "NSE Ramzan ID"),
         ((2014, 8, 15), "NSE-HOL-PAGE-2014", "NSE Independence Day"),
@@ -1076,6 +1028,11 @@ fn nse_printed_closures_2010_2017_ship_a_row_per_year() {
         ((2014, 10, 2), "NSE-HOL-PAGE-2014", "NSE Gandhi Jayanti"),
         ((2014, 10, 3), "NSE-HOL-PAGE-2014", "NSE Dasera"),
         ((2014, 10, 6), "NSE-HOL-PAGE-2014", "NSE Bakri ID"),
+        (
+            (2014, 10, 15),
+            "NSE-CIRC-2014-52",
+            "NSE Maharashtra election",
+        ),
         (
             (2014, 10, 24),
             "NSE-HOL-PAGE-2014",
@@ -1160,9 +1117,24 @@ fn nse_printed_closures_2010_2017_ship_a_row_per_year() {
 /// module: a row that moves, loses its clip or changes its citation fails
 /// here. 2018 is unrecovered and ships no rows (see the refusal fence below).
 #[test]
-fn nse_printed_closures_2019_2022_ship_a_row_per_year() {
+fn nse_printed_closures_2018_2022_ship_a_row_per_year() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
     for (date, document, label) in [
+        ((2018, 1, 26), "NSE-CIRC-2017-71", "Republic Day"),
+        ((2018, 2, 13), "NSE-CIRC-2017-71", "Mahashivratri"),
+        ((2018, 3, 2), "NSE-CIRC-2017-71", "Holi"),
+        ((2018, 3, 29), "NSE-CIRC-2017-71", "Mahavir Jayanti"),
+        ((2018, 3, 30), "NSE-CIRC-2017-71", "Good Friday"),
+        ((2018, 5, 1), "NSE-CIRC-2017-71", "Maharashtra Day"),
+        ((2018, 8, 15), "NSE-CIRC-2017-71", "Independence Day"),
+        ((2018, 8, 22), "NSE-CIRC-2017-71", "Bakri ID"),
+        ((2018, 9, 13), "NSE-CIRC-2017-71", "Ganesh Chaturthi"),
+        ((2018, 9, 20), "NSE-CIRC-2017-71", "Moharram"),
+        ((2018, 10, 2), "NSE-CIRC-2017-71", "Mahatma Gandhi Jayanti"),
+        ((2018, 10, 18), "NSE-CIRC-2017-71", "Dasera"),
+        ((2018, 11, 8), "NSE-CIRC-2017-71", "Diwali-Balipratipada"),
+        ((2018, 11, 23), "NSE-CIRC-2017-71", "Gurunanak Jayanti"),
+        ((2018, 12, 25), "NSE-CIRC-2017-71", "Christmas"),
         // 2019, from NSE-HOL-PAGE-2019.
         ((2019, 3, 4), "NSE-HOL-PAGE-2019", "NSE Mahashivratri"),
         ((2019, 3, 21), "NSE-HOL-PAGE-2019", "NSE Holi"),
@@ -1316,95 +1288,30 @@ fn nse_printed_closures_2023_2024_ship_a_row_per_year() {
     }
 }
 
-/// The unrecovered 2018 year is a **bridged residual** (issue #296; the
-/// charter's 2026-10-06 convention): the span sits between two audited
-/// windows, so the session layer answers from the sourced normal week while
-/// the holiday layer stays honestly absent — no row, no audited normal, a
-/// metadata verdict that withholds the complete claim, and the span reported
-/// as `HolidayWindowsBridged` rather than refused. No closure is asserted
-/// that no operator statement witnesses. 2012 sat in the same state until
-/// 2026-10-06 UTC, when the 2012 list's own annual circular
-/// (`NSE-CIRC-2011-66`, dated 2011-12-09) surfaced and the window merged:
-/// today 2012 answers inside its audited window like every sourced year.
+/// Published 2018 dates merge the previously split holiday windows.
 #[test]
-fn the_unrecovered_2018_year_is_a_bridged_residual_and_2012_was_recovered() {
+fn recovered_annual_lists_cover_ordinary_days_and_closures() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
-    for date in [(2018, 3, 12), (2018, 11, 20)] {
-        let trade_date = day(date.0, date.1, date.2);
-        assert_eq!(
-            nse.holiday_on(trade_date),
-            None,
-            "{trade_date} is inside no audited window, so the table ships no row"
-        );
-        assert_eq!(
-            nse.coverage().coverage_on(trade_date),
-            DateCoverage::OutsideCoveredRange,
-            "{trade_date} withholds the complete-calendar claim: the holiday \
-             layer is the bridged residual, not an audited normal"
-        );
-        assert_eq!(
-            gap_reason_on(nse.coverage(), trade_date),
-            Some(CoverageGapReason::HolidayWindowsBridged),
-            "{trade_date} reports the bridged residual, not a one-flank gap"
-        );
-        // The session layer answers from the sourced normal week — the
-        // disclosure lives in the metadata above, never in a fabricated
-        // closure or a fabricated audited normal.
+    for trade_date in [day(2018, 3, 12), day(2018, 11, 20), day(2012, 6, 15)] {
+        assert_eq!(nse.holiday_on(trade_date), None);
+        assert!(nse.coverage().is_complete_on(trade_date));
+        assert_eq!(gap_reason_on(nse.coverage(), trade_date), None);
         assert_eq!(
             nse.is_closed_trade_date(trade_date, SessionKind::Both),
-            Ok(false),
-            "{trade_date} answers its normal-week session state beside the \
-             disclosed residual"
+            Ok(false)
         );
     }
-    // The residual span is exactly the unrecovered year, and the one-flank
-    // spans beside it are not bridged.
-    assert_eq!(
-        bridged_spans(nse.coverage()),
-        vec![(day(2018, 1, 1), day(2018, 12, 31))],
-        "the bridged residual is reported over the unrecovered year"
+    assert!(
+        nse.coverage()
+            .gaps()
+            .all(|gap| gap.reason() != CoverageGapReason::HolidayWindowsBridged)
     );
-    // 2012 was recovered the same day: its rows answer inside the merged
-    // window (the printed closures of the annual circular), a date with no row
-    // is audited complete there, and nothing reports a residual for it.
-    assert_eq!(
-        gap_reason_on(nse.coverage(), day(2012, 6, 15)),
-        None,
-        "recovered 2012 reports no residual"
-    );
-    assert!(nse.coverage().is_complete_on(day(2012, 6, 15)));
     assert_closure(
         nse,
         (2012, 8, 15),
         "NSE-CIRC-2011-66",
         "NSE 2012 Independence Day",
     );
-}
-
-/// Returns the **union** of the spans an identity's metadata reports as
-/// `HolidayWindowsBridged`, merged where records abut.
-///
-/// The walk reports the residual over maximal verdict runs, and the static
-/// boundary candidates may split one residual span into adjacent runs of the
-/// same verdict; the union is the span the charter's convention names. The
-/// per-date partition fence in `coverage_metadata.rs` holds every record to
-/// the per-date accessor, so merging equal-verdict neighbours here cannot
-/// hide a verdict change.
-fn bridged_spans(coverage: CalendarCoverage) -> Vec<(jiff::civil::Date, jiff::civil::Date)> {
-    let mut records: Vec<(jiff::civil::Date, jiff::civil::Date)> = coverage
-        .gaps()
-        .filter(|gap| gap.reason() == CoverageGapReason::HolidayWindowsBridged)
-        .map(|gap| (gap.range().first(), gap.range().last()))
-        .collect();
-    records.sort();
-    let mut merged: Vec<(jiff::civil::Date, jiff::civil::Date)> = Vec::new();
-    for (first, last) in records {
-        match merged.last_mut() {
-            Some((_, open_last)) if first.yesterday().ok() == Some(*open_last) => *open_last = last,
-            _ => merged.push((first, last)),
-        }
-    }
-    merged
 }
 
 /// Asserts every NSE closure row, per year, against the operator's printed
@@ -1449,22 +1356,9 @@ fn nse_printed_closures_ship_a_row_per_year() {
     }
 }
 
-/// The remaining Muhurat-Trading dates are withheld, not closed: the operator
-/// announces a session there whose instants it has not published. The nine
-/// dates whose circulars were recovered ship replacement blocks and are
-/// fenced by `the_published_muhurat_sessions_ship_as_replacement_blocks`
-/// below.
 #[test]
-fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
+fn adjacent_dates_keep_their_published_sessions() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
-    // The same withholding across the backfilled years: an asterisked holiday
-    // the operator footnotes a Muhurat session onto (T1 pages and circulars).
-    // The 2012 footnote came with the recovered 2012 list itself
-    // (`NSE-CIRC-2011-66`), so recovering that year reopened its window with
-    // its own Muhurat date withheld like its sibling years'.
-    assert_unsourced(nse, (2012, 11, 13), "NSE-CIRC-2011-66", "2012 Muhurat");
-    assert_unsourced(nse, (2014, 10, 23), "NSE-HOL-PAGE-2014", "2014 Muhurat");
-
     // The published 2026 special Sunday does not change adjacent normal days.
     assert!(
         nse.is_open(zoned(&KOLKATA, (2026, 11, 9), (10, 0, 0)))
@@ -1492,7 +1386,7 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
     );
 }
 
-/// The nine Muhurat dates whose instants the operator published ship as
+/// The seventeen Muhurat dates ship as
 /// replacement-block days restating the printed schedule: the row exists, is
 /// keyed to the circular, the day trades exactly inside the printed blocks —
 /// including the 2020 Saturday special session that has no normal-week
@@ -1504,9 +1398,17 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
     // The row itself: kind, tier and the circular it keys to.
     for (date, document) in [
         ((2010, 11, 5), "NSE-CIRC-2010-121"),
+        ((2011, 10, 26), "NSE-CIRC-2011-57"),
+        ((2012, 11, 13), "NSE-CIRC-2012-71"),
+        ((2013, 11, 3), "NSE-CIRC-2013-86"),
+        ((2014, 10, 23), "NSE-CIRC-2014-50"),
         ((2015, 11, 11), "NSE-CIRC-2015-65"),
         ((2016, 10, 30), "NSE-CIRC-2016-56"),
+        ((2017, 10, 19), "NSE-CIRC-2017-60"),
+        ((2018, 11, 7), "NSE-CIRC-2018-93"),
+        ((2019, 10, 27), "NSE-CIRC-2019-131"),
         ((2020, 11, 14), "NSE-CIRC-2020-98"),
+        ((2021, 11, 4), "NSE-CIRC-2021-109"),
         ((2022, 10, 24), "NSE-CIRC-2022-124"),
         ((2023, 11, 12), "NSE-CIRC-2023-139"),
         ((2024, 11, 1), "NSE-CIRC-2024-147"),
@@ -1652,6 +1554,92 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
             .expect("the Normal Market answers its state"),
         "inside the Muhurat Normal Market is a session, not maintenance"
     );
+}
+
+#[test]
+fn recovered_muhurat_sessions_preserve_their_published_phase_boundaries() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    for (date, block_deal, phases) in [
+        (
+            (2011, 10, 26),
+            None,
+            [(16, 30), (16, 37), (16, 45), (18, 0), (18, 10), (18, 20)],
+        ),
+        (
+            (2012, 11, 13),
+            None,
+            [(15, 30), (15, 37), (15, 45), (17, 0), (17, 10), (17, 20)],
+        ),
+        (
+            (2013, 11, 3),
+            None,
+            [(18, 0), (18, 7), (18, 15), (19, 30), (19, 40), (19, 50)],
+        ),
+        (
+            (2014, 10, 23),
+            None,
+            [(18, 15), (18, 22), (18, 30), (19, 30), (19, 40), (19, 50)],
+        ),
+        (
+            (2017, 10, 19),
+            None,
+            [(18, 15), (18, 22), (18, 30), (19, 30), (19, 40), (19, 50)],
+        ),
+        (
+            (2018, 11, 7),
+            Some((17, 0)),
+            [(17, 15), (17, 22), (17, 30), (18, 30), (18, 40), (18, 50)],
+        ),
+        (
+            (2019, 10, 27),
+            Some((17, 45)),
+            [(18, 0), (18, 7), (18, 15), (19, 15), (19, 25), (19, 35)],
+        ),
+        (
+            (2021, 11, 4),
+            Some((17, 45)),
+            [(18, 0), (18, 7), (18, 15), (19, 15), (19, 25), (19, 35)],
+        ),
+    ] {
+        let trade_date = day(date.0, date.1, date.2);
+        let [queue, auction, regular, gap, closing, close] = phases;
+        if let Some((hour, minute)) = block_deal {
+            let start = zoned(&KOLKATA, date, (hour, minute, 0));
+            assert_eq!(nse.is_open(start), Ok(true));
+            assert_eq!(nse.is_open_regular(start), Ok(false));
+            assert_eq!(nse.trade_date(start), Ok(Some(trade_date)));
+        }
+        for ((hour, minute), (open, regular, order_entry)) in [
+            ((10, 0), (false, false, false)),
+            (queue, (false, false, true)),
+            (auction, (true, false, false)),
+            (regular, (true, true, false)),
+            (gap, (false, false, false)),
+            (closing, (true, false, false)),
+            (close, (false, false, false)),
+        ] {
+            let at = zoned(&KOLKATA, date, (hour, minute, 0));
+            assert_eq!(nse.is_open(at), Ok(open), "{date:?} {hour}:{minute}");
+            assert_eq!(
+                nse.is_open_regular(at),
+                Ok(regular),
+                "{date:?} {hour}:{minute}"
+            );
+            assert_eq!(
+                nse.is_order_entry_only(at),
+                Ok(order_entry),
+                "{date:?} {hour}:{minute}"
+            );
+        }
+        assert_eq!(
+            nse.is_closed_trade_date(trade_date, SessionKind::Both),
+            Ok(false)
+        );
+        assert_eq!(
+            nse.coverage().coverage_on(trade_date),
+            DateCoverage::Covered
+        );
+    }
 }
 
 /// Circular NSE/CMTR/76941's Sunday session, including both CAS and non-CAS
@@ -1930,26 +1918,19 @@ fn the_window_counts_are_the_printed_lists_counts() {
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::NseIndia)),
         [
-            // 2018 is unrecovered (no operator artifact in the archive), so it
-            // ships no rows and sits inside no window; every other year
-            // carries its list's weekday legs — 2012's from the recovered
-            // annual circular `NSE-CIRC-2011-66` (fourteen closures plus its
-            // own withheld Muhurat date); the Muhurat dates whose circulars
-            // were recovered ship replacement blocks (2010, 2015, 2016, 2020,
-            // 2022, 2023, 2024, 2025 and 2026), the rest are withheld (2021's list
-            // names no Muhurat date, so nothing is withheld there).
+            // The recovered 2018 annual circular supplies fifteen closures.
             (2010, 10, 0, 1),
-            (2011, 13, 1, 0),
-            (2012, 14, 1, 0),
-            (2013, 13, 1, 0),
-            (2014, 16, 1, 0),
+            (2011, 13, 0, 1),
+            (2012, 14, 0, 1),
+            (2013, 13, 0, 1),
+            (2014, 18, 0, 1),
             (2015, 14, 0, 1),
             (2016, 15, 0, 1),
-            (2017, 12, 1, 0),
-            (2018, 0, 0, 0),
-            (2019, 16, 1, 0),
+            (2017, 12, 0, 1),
+            (2018, 15, 0, 1),
+            (2019, 16, 0, 1),
             (2020, 12, 0, 1),
-            (2021, 13, 0, 0),
+            (2021, 13, 0, 1),
             (2022, 12, 0, 1),
             (2023, 15, 0, 1),
             (2024, 13, 0, 1),
@@ -2063,22 +2044,15 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "the 2010 classification refuses: no audited window brackets the date"
     );
 
-    // NSE: 2010-01-01 .. 2026-12-31 over two audited windows; 2018 is
-    // unrecovered (no operator artifact in the archive) and the 2027 list is
-    // not published. 2012 was unrecovered until 2026-10-06 UTC, when the
-    // 2012 list's own annual circular (`NSE-CIRC-2011-66`, dated 2011-12-09)
-    // surfaced and the window merged.
+    // NSE has one audited window from 2010 through 2026.
     let nse = calendar_for_exchange(Exchange::NseIndia);
     let nse_coverage = nse.holiday_coverage().expect("NSE ships a table");
     assert_eq!(nse_coverage.first(), day(2010, 1, 1));
     assert_eq!(nse_coverage.last(), day(2026, 12, 31));
     assert_eq!(
         nse_coverage.windows(),
-        vec![
-            (day(2010, 1, 1), day(2017, 12, 31)),
-            (day(2019, 1, 1), day(2026, 12, 31)),
-        ],
-        "the two audited windows stop at the unrecovered year's edges"
+        vec![(day(2010, 1, 1), day(2026, 12, 31))],
+        "the annual circular closes the 2018 window gap"
     );
     assert!(
         matches!(
@@ -2088,28 +2062,6 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         ),
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
-    // The unrecovered year sits between two audited windows, so the bridged
-    // residual (#296) answers the session question from the sourced normal
-    // week while the metadata reports the span as `HolidayWindowsBridged` —
-    // never an audited normal, never a fabricated closure. The recovered 2012
-    // beside it answers inside its own window.
-    assert_eq!(
-        nse.is_open(zoned(&KOLKATA, (2018, 6, 15), (10, 0, 0))),
-        Ok(true),
-        "2018-06-15 answers its normal-week session state beside the disclosed \
-         bridged residual"
-    );
-    assert_eq!(
-        gap_reason_on(nse.coverage(), day(2018, 6, 15)),
-        Some(CoverageGapReason::HolidayWindowsBridged),
-        "the unrecovered year reports the bridged residual"
-    );
-    assert_eq!(
-        gap_reason_on(nse.coverage(), day(2012, 6, 15)),
-        None,
-        "the recovered 2012 reports no residual"
-    );
-
     // Pre-floor instants refuse naming their venue-local pre-2010 day, on all
     // three, whatever the window does.
     for (calendar, tz) in [(&tse, TOKYO), (&sse, SHANGHAI), (&nse, KOLKATA)] {
@@ -2128,10 +2080,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
 
 /// The weekend shape survives inside the audited window: a Saturday or Sunday
 /// that the normal week closes but no printed holiday touches answers shut as
-/// an ordinary weekend, and NSE's Sunday Muhurat date is the one weekend the
-/// table withholds.
+/// an ordinary weekend.
 #[test]
-fn weekends_inside_the_window_stay_weekends_except_where_withheld() {
+fn weekends_inside_the_window_stay_weekends() {
     let sse = calendar_for_exchange(Exchange::Sse);
     let saturday = zoned(&SHANGHAI, (2025, 10, 4), (10, 0, 0));
     assert!(
@@ -2174,45 +2125,6 @@ fn detaching_the_table_restores_the_normal_week() {
             DateCoverage::NormalWeekOnly,
             "the detached verdict is the normal-week-only one"
         );
-    }
-}
-
-/// The per-year counts fence above is a mutation fence only together with a
-/// check that no row changed its *kind* within its year: a `Closed` flipped to
-/// `Unsourced` (or back) keeps the totals and must fail here. Walk the tables
-/// and assert the exact dates that carry the withheld kind.
-#[test]
-fn the_only_unsourced_rows_are_the_muhurat_dates() {
-    const MUHURAT: [(i16, i8, i8); 6] = [
-        (2011, 10, 26),
-        (2012, 11, 13),
-        (2013, 11, 3),
-        (2014, 10, 23),
-        (2017, 10, 19),
-        (2019, 10, 27),
-    ];
-    for exchange in [Exchange::Tse, Exchange::Sse, Exchange::NseIndia] {
-        let calendar = calendar_for_exchange(exchange);
-        let coverage = calendar.holiday_coverage().expect("each ships a table");
-        let mut date = coverage.first();
-        while date <= coverage.last() {
-            if let Some(row) = calendar.holiday_on(date)
-                && row.kind() == HolidayKind::Unsourced
-            {
-                assert_eq!(
-                    exchange,
-                    Exchange::NseIndia,
-                    "{date}: only NSE ships withheld rows"
-                );
-                assert!(
-                    MUHURAT.contains(&(date.year(), date.month(), date.day())),
-                    "{date}: the only withheld dates are the Muhurat dates"
-                );
-            }
-            date = date
-                .checked_add(elapsed_days(1))
-                .expect("the window stays inside the representable calendar");
-        }
     }
 }
 

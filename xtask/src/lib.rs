@@ -25,6 +25,8 @@
 //! what it asserts: a row whose digest is no store file's bytes fails,
 //! whatever prose surrounds it.
 
+mod tzdb;
+
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
@@ -594,7 +596,7 @@ where
         .collect();
     let args: Vec<&str> = args.iter().map(String::as_str).collect();
     match args.as_slice() {
-        ["verify-embedded-tzdb"] => match exchange_hours_tzdb::IanaSource::latest_release() {
+        ["verify-embedded-tzdb"] => match tzdb::latest_release() {
             Ok(latest) if latest == exchange_hours::EMBEDDED_TZDB_VERSION => Outcome::Success(
                 format!("Embedded time zones match IANA's latest stable release {latest}."),
             ),

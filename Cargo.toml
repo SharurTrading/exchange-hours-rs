@@ -36,8 +36,7 @@ exclude = [
 name = "exchange_hours"
 
 [features]
-# Parse caller-supplied TZif bytes. Network and filesystem access belong to
-# the optional exchange-hours-tzdb companion.
+# Parse caller-supplied TZif bytes for applications with their own archived rules.
 runtime-tzdb = ["jiff/alloc"]
 
 # Gates, in the same shape the consuming platform uses. CI promotes every
@@ -96,7 +95,7 @@ name = "session_invariants"
 path = "tests/contract/session_invariants.rs"
 
 [workspace]
-members = ["xtask", "tzdb-runtime"]
+members = ["xtask"]
 
 [workspace.dependencies]
 exchange-hours = { path = ".", version = "2.0.0" }

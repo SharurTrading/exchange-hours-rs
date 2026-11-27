@@ -134,10 +134,9 @@ snapshot, including markets whose schedules depend on a second country's
 clock. Calendar handles remain copyable and share the same query engine.
 A detached `MarketHours` owns its resolved Jiff zone.
 
-The `exchange-hours-tzdb` companion checks the official stable release at
-startup and hourly. It verifies and compiles the release before making the
-complete snapshot available to new runs. A calendar already in use keeps its
-borrowed snapshot. The updater reports the outcome of its last check.
+Live trading and backtests both use the compiled zones. The repository's CI
+compares the embedded version with IANA's stable release. A new calendar
+release delivers updated rules when the application rebuilds and redeploys.
 
 The shared engine must preserve:
 

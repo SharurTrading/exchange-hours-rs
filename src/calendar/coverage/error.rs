@@ -133,7 +133,7 @@ impl CalendarQueryErrorKind {
 ///
 /// Match [`Self::kind`] to distinguish a coverage refusal from a bounded search
 /// that ran out of room. [`Self::normal_week_baseline`] derives the available
-/// context from those same rules even after a live updater replaces its snapshot.
+/// context from those same rules for the lifetime of the error.
 /// Embedded refusals carry the precompiled clock. A runtime refusal retains a
 /// shared handle to the immutable snapshot only when the query fails.
 ///

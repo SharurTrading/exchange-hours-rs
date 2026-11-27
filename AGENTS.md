@@ -123,8 +123,9 @@ required. Historical completion remains the target tracked in #332.
   randomness. Same inputs, same answer, forever. Enforced structurally where
   possible. Jiff is built with `default-features = false`. A calendar uses
   embedded zones by default. A caller may supply one immutable, versioned
-  snapshot for all venue and reference zones in a run. The separate
-  `exchange-hours-tzdb` companion owns release discovery, I/O and polling.
+  snapshot for all venue and reference zones in a run. Live trading and
+  backtests use the compiled zones by default. Repository tooling checks
+  IANA for new releases during CI.
   The calendar crate's lint configuration disallows time reads and ambient
   database lookups when dependency feature unification makes them available.
 - **LAW-PANIC** — production queries are total: they do not panic, hang, or use
@@ -762,7 +763,6 @@ embedded database check contacts IANA and fails if freshness cannot be verified.
 ```bash
 cargo fmt --all --check
 cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
-cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
 cargo check --locked --package exchange-hours --no-default-features
 cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
 cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast

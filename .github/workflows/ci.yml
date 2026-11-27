@@ -71,9 +71,6 @@ jobs:
       - name: Embedded time zones match the latest stable IANA release
         run: cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
 
-      - name: Load the signed IANA release through the live updater
-        run: cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
-
       - name: Check the standalone precompiled calendar
         run: cargo check --locked --package exchange-hours --no-default-features
 

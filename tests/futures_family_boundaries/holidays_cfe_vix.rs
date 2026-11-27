@@ -1630,7 +1630,7 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
 /// closures, early closes, late opens and two replacement days, with no
 /// withheld date.
 ///
-/// The counts are per date, read back from the shipped table: 151 rows in all,
+/// The counts are per date, read back from the shipped table: 157 rows in all,
 /// thirty-five closures, seventy-three 10:30 CT early closes, twenty-two 12:15 CT
 /// ones, three 08:30 CT ones, the single pre-migration 08:15 CT Good Friday,
 /// thirteen 17:00 CT late opens, two combined late-open-and-early-close half
@@ -1701,9 +1701,9 @@ fn the_window_ships_only_sourced_holiday_kinds() {
             replacements,
             unsourced
         ),
-        (36, 72, 21, 3, 1, 13, 2, 3, 0),
+        (42, 66, 21, 3, 1, 13, 2, 9, 0),
         "closures, 10:30/12:15/08:30/08:15 CT early closes, 17:00 late opens, combined \
-         half-day rows, three replacements and zero withheld dates (2017-07-03 is \
+         half-day rows, nine replacements and zero withheld dates (2017-07-03 is \
          CFEIC17-022's own 12:15 row since 2026-10-10 UTC), across the three windows"
     );
 }
@@ -1711,34 +1711,48 @@ fn the_window_ships_only_sourced_holiday_kinds() {
 #[test]
 fn the_2027_schedule_answers_with_its_own_shapes() {
     let calendar = cfe();
-    // CBOE-HOURS-USFUT-2027 (retrieved 2026-11-03 UTC): three closures whose
-    // cells both read `None`, six 10:30 CT early closes and the Thanksgiving
-    // Friday trade date with two extended legs. Good Friday 2027-03-26 is a closure, unlike
-    // 2026-04-03's early close at the regular open.
     for date in [(2027, 1, 1), (2027, 3, 26), (2027, 12, 24)] {
         assert_eq!(
-            calendar
-                .holiday_on(day(date.0, date.1, date.2))
-                .map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "cfe {date:?} is closed"
+            calendar.holiday_on(date_of(date)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
         );
     }
-    for date in [
-        (2027, 1, 18),
-        (2027, 2, 15),
-        (2027, 5, 31),
-        (2027, 6, 18),
-        (2027, 7, 5),
-        (2027, 9, 6),
+    for (holiday, following) in [
+        ((2027, 1, 18), (2027, 1, 19)),
+        ((2027, 2, 15), (2027, 2, 16)),
+        ((2027, 5, 31), (2027, 6, 1)),
+        ((2027, 6, 18), (2027, 6, 21)),
+        ((2027, 7, 5), (2027, 7, 6)),
+        ((2027, 9, 6), (2027, 9, 7)),
     ] {
+        let trade_date = date_of(following);
         assert_eq!(
-            calendar
-                .holiday_on(day(date.0, date.1, date.2))
-                .map(Holiday::kind),
-            Some(early_close_at(10 * 60 + 30)),
-            "cfe {date:?} early-closes at 10:30 CT"
+            calendar.holiday_on(date_of(holiday)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
         );
+        let holiday_end = ct(holiday, (10, 30, 0));
+        let tick = SignedDuration::from_nanos(1);
+        assert_eq!(
+            calendar.trade_date(holiday_end - tick),
+            Ok(Some(trade_date))
+        );
+        assert_eq!(calendar.is_open(holiday_end - tick), Ok(true));
+        assert_eq!(calendar.is_open(holiday_end), Ok(false));
+        let reopen = if holiday == (2027, 6, 18) {
+            (2027, 6, 20)
+        } else {
+            holiday
+        };
+        assert_eq!(
+            calendar.next_session_open_after(holiday_end),
+            Ok(Some(ct(reopen, (17, 0, 0))))
+        );
+        assert_eq!(
+            calendar.trade_date(ct(reopen, (17, 0, 0))),
+            Ok(Some(trade_date))
+        );
+        assert_eq!(calendar.is_open(ct(following, (16, 0, 0)) - tick), Ok(true));
+        assert_eq!(calendar.is_open(ct(following, (16, 0, 0))), Ok(false));
     }
     assert!(
         !calendar

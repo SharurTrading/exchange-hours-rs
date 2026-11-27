@@ -28,6 +28,25 @@ static THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
 ];
 
+// Evidence: docs/evidence/cfe.md, Rule 1202 and the 2027 annual schedule.
+static MONDAY_HOLIDAY_TUESDAY_BLOCKS: [ExceptionBlock; 6] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 10 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(-1, 16 * 3_600 + 45 * 60 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 15 * 3_600),
+    ExceptionBlock::extended(0, 15 * 3_600, 16 * 3_600),
+];
+
+static FRIDAY_HOLIDAY_MONDAY_BLOCKS: [ExceptionBlock; 6] = [
+    ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-4, 17 * 3_600, 10 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(-1, 16 * 3_600 + 6, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 15 * 3_600),
+    ExceptionBlock::extended(0, 15 * 3_600, 16 * 3_600),
+];
+
 // Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
@@ -471,21 +490,33 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 12, 25, Closed, T1, "CBOE-HOURS-USFUT-2026"),
         // 2027-01-01 - T1 - CBOE-HOURS-USFUT-2027 - New Year's Day, both cells `None`.
         (2027, 1, 1, Closed, T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-01-18 - T1 - CBOE-HOURS-USFUT-2027 - MLK Jr. Day, 10:30 CT.
-        (2027, 1, 18, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-02-15 - T1 - CBOE-HOURS-USFUT-2027 - Presidents' Day, 10:30 CT.
-        (2027, 2, 15, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-01-18 - T1 - CBOE-HOURS-USFUT-2027 - MLK Jr. Day, with ETH assigned to the next trade date.
+        (2027, 1, 18, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-01-19 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 1, 19, ReplacementBlocks(&MONDAY_HOLIDAY_TUESDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-02-15 - T1 - CBOE-HOURS-USFUT-2027 - Presidents' Day, with ETH assigned to the next trade date.
+        (2027, 2, 15, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-02-16 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 2, 16, ReplacementBlocks(&MONDAY_HOLIDAY_TUESDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
         // 2027-03-26 - T1 - CBOE-HOURS-USFUT-2027 - Good Friday, both cells
         // `None` (a closure, unlike the 2026 early close at the regular open).
         (2027, 3, 26, Closed, T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-05-31 - T1 - CBOE-HOURS-USFUT-2027 - Memorial Day, 10:30 CT.
-        (2027, 5, 31, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-06-18 - T1 - CBOE-HOURS-USFUT-2027 - Juneteenth observed, 10:30 CT.
-        (2027, 6, 18, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-07-05 - T1 - CBOE-HOURS-USFUT-2027 - Independence Day observed, 10:30 CT.
-        (2027, 7, 5, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
-        // 2027-09-06 - T1 - CBOE-HOURS-USFUT-2027 - Labor Day, 10:30 CT.
-        (2027, 9, 6, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-05-31 - T1 - CBOE-HOURS-USFUT-2027 - Memorial Day, with ETH assigned to the next trade date.
+        (2027, 5, 31, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-06-01 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 6, 1, ReplacementBlocks(&MONDAY_HOLIDAY_TUESDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-06-18 - T1 - CBOE-HOURS-USFUT-2027 - Juneteenth observed, with ETH assigned to the next trade date.
+        (2027, 6, 18, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-06-21 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 6, 21, ReplacementBlocks(&FRIDAY_HOLIDAY_MONDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-07-05 - T1 - CBOE-HOURS-USFUT-2027 - Independence Day observed, with ETH assigned to the next trade date.
+        (2027, 7, 5, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-07-06 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 7, 6, ReplacementBlocks(&MONDAY_HOLIDAY_TUESDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-09-06 - T1 - CBOE-HOURS-USFUT-2027 - Labor Day, with ETH assigned to the next trade date.
+        (2027, 9, 6, Closed, T1, "CBOE-HOURS-USFUT-2027"),
+        // 2027-09-07 - T1 - CBOE-HOURS-USFUT-2027 - next business day under Rule 1202.
+        (2027, 9, 7, ReplacementBlocks(&MONDAY_HOLIDAY_TUESDAY_BLOCKS), T1, "CBOE-HOURS-USFUT-2027"),
         // 2027-11-25 - T1 - CBOE-HOURS-USFUT-2027 - no Thursday trade date under Rule 1202.
         (2027, 11, 25, Closed, T1, "CBOE-HOURS-USFUT-2027"),
         // 2027-11-26 - T1 - CBOE-HOURS-USFUT-2027 - both ETH legs on Friday's trade date.

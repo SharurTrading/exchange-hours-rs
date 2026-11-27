@@ -16,7 +16,7 @@
 //! observable consequence over **every shipped identity**:
 //!
 //! 1. at an instant below the support floor the date-aware calendar refuses
-//!    with [`CalendarQueryError::BeforeSupportFloor`] — that gate is exactly
+//!    with [`CalendarQueryErrorKind::BeforeSupportFloor`] — that gate is exactly
 //!    what the fixed path deliberately lacks; and
 //! 2. the fixed snapshot selected at that pre-floor instant answers its own
 //!    normal-week grid identically at the pre-floor samples and at twin
@@ -48,8 +48,8 @@ mod support;
 
 use crate::support::elapsed_days;
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, Exchange, MarketHours, MarketHoursKey, SUPPORT_FLOOR,
-    SessionKind, calendar_for_exchange, calendar_for_market_hours_key, candle_end,
+    CalendarQueryErrorKind, CalendarResolution, Exchange, MarketHours, MarketHoursKey,
+    SUPPORT_FLOOR, SessionKind, calendar_for_exchange, calendar_for_market_hours_key, candle_end,
     hours_for_exchange, hours_for_market_hours_key, session_bounds,
 };
 use jiff::tz::TimeZone;
@@ -177,8 +177,8 @@ fn assert_date_aware_refuses(exchange: Exchange, identity: &str) {
     for sample in sample_instants(PRE_ANCHOR) {
         assert!(
             matches!(
-                calendar.is_open(sample),
-                Err(CalendarQueryError::BeforeSupportFloor { .. })
+                calendar.is_open(sample).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
             ),
             "{identity}: the date-aware calendar must refuse a pre-floor instant"
         );
@@ -216,8 +216,8 @@ fn every_market_hours_key_refuses_pre_floor_while_its_fixed_snapshot_answers_par
         for sample in sample_instants(PRE_ANCHOR) {
             assert!(
                 matches!(
-                    calendar.is_open(sample),
-                    Err(CalendarQueryError::BeforeSupportFloor { .. })
+                    calendar.is_open(sample).map_err(|error| error.kind()),
+                    Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
                 ),
                 "{identity}: the key-backed calendar must refuse a pre-floor instant"
             );

@@ -22,7 +22,7 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
+    CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
     SessionKind, calendar_for_exchange,
 };
 use jiff::civil::Date;
@@ -180,8 +180,10 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2021, 6, 27), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_closed_trade_date(day(2021, 6, 27), SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ),
         "the pre-launch classification refuses: nothing witnesses the holiday layer"
     );

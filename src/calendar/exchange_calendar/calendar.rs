@@ -158,13 +158,13 @@ impl<'z> ZonedExchangeCalendar<'z> {
     ///
     /// ```
     /// use jiff::Timestamp;
-    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    /// use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar};
     ///
     /// let thursday: Timestamp = "2029-03-01T15:00:00Z".parse().unwrap();
     /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
     /// assert!(matches!(
-    ///     nyse.is_open(thursday),
-    ///     Err(CalendarQueryError::OutsideCoveredRange { .. })
+    ///     nyse.is_open(thursday).map_err(|e| e.kind()),
+    ///     Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     /// ));
     ///
     /// let view = nyse.with_last_known_week();
@@ -207,13 +207,13 @@ impl<'z> ZonedExchangeCalendar<'z> {
     ///
     /// ```
     /// use jiff::Timestamp;
-    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    /// use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar};
     ///
     /// let tuesday: Timestamp = "2005-03-01T16:00:00Z".parse().unwrap();
     /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
     /// assert!(matches!(
-    ///     nyse.is_open(tuesday),
-    ///     Err(CalendarQueryError::BeforeSupportFloor { .. })
+    ///     nyse.is_open(tuesday).map_err(|e| e.kind()),
+    ///     Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     /// ));
     ///
     /// let view = nyse.with_next_known_week();

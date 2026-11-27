@@ -27,7 +27,7 @@ use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::local_time::mk_local_open;
 use crate::calendar::schedules::sourcing;
 use crate::calendar::time_zones::ZoneSelection;
-use crate::calendar::{CalendarQueryError, CalendarSource, MarketHours, SessionRule};
+use crate::calendar::{CalendarQueryErrorKind, CalendarSource, MarketHours, SessionRule};
 
 /// The last second of a venue-local day, the anchor the query gate uses to
 /// select the profile governing the sessions opening on that day.
@@ -194,7 +194,7 @@ fn weekday_name(weekday: Weekday) -> &'static str {
 /// gate performs — so the context a caller reads beside the refusal is the
 /// week the crate's answers actually come from.
 pub(crate) fn for_error(
-    error: CalendarQueryError,
+    error: CalendarQueryErrorKind,
     zones: ZoneSelection<'_>,
 ) -> Option<NormalWeekBaseline> {
     let source = error.source();

@@ -30,10 +30,10 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
-    EvidenceTier, ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
-    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
-    hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource,
+    CoverageGapReason, DateCoverage, EvidenceTier, ExceptionBlockKind, ExchangeCalendar, Holiday,
+    HolidayKind, MarketHoursKey, SessionKind, SessionState, calendar_for_exchange,
+    calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 use jiff::civil::{Date, Weekday};
 use jiff::{SignedDuration, Timestamp};
@@ -97,16 +97,16 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
     // (#172), so the withheld-row fallback this assertion used to accept
     // beside the verdict is gone and the match is exact.
     let states_verdict = matches!(
-        (verdict, error),
+        (verdict, error.kind()),
         (
             DateCoverage::BeforeSupportFloor,
-            CalendarQueryError::BeforeSupportFloor { .. }
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
         ) | (
             DateCoverage::OutsideCoveredRange,
-            CalendarQueryError::OutsideCoveredRange { .. }
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
         ) | (
             DateCoverage::UnresolvedGap,
-            CalendarQueryError::UnresolvedGap { .. }
+            CalendarQueryErrorKind::UnresolvedGap { .. }
         )
     );
     assert!(
@@ -1938,7 +1938,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is refused, never reported closed"
         );
         assert!(
@@ -1977,9 +1980,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
             );
         }
         assert!(
-            calendar
-                .session_bounds(probe)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            calendar.session_bounds(probe).is_err_and(|error| matches!(
+                error.kind(),
+                CalendarQueryErrorKind::UnresolvedGap { .. }
+            )),
             "{probe}: the bounds must not claim a session across the withheld date"
         );
     }

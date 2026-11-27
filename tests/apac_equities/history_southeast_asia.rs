@@ -5,6 +5,7 @@
 use super::prelude::*;
 use crate::support::date_opt;
 use crate::support::zones::{BANGKOK, HO_CHI_MINH, JAKARTA, KUALA_LUMPUR, MANILA};
+use exchange_hours::CalendarQueryErrorKind;
 use jiff::civil::Date;
 
 /// Asserts an identity-backed query returns exactly `expected`, the coverage
@@ -13,11 +14,11 @@ use jiff::civil::Date;
 /// answer.
 fn assert_refusal<T>(
     answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
+    expected: exchange_hours::CalendarQueryErrorKind,
     label: &str,
 ) {
     assert_eq!(
-        answer.err(),
+        answer.err().map(|error| error.kind()),
         Some(expected),
         "{label}: the query must state the refusal its identity declares"
     );
@@ -33,7 +34,7 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
 ) {
     assert_refusal(
         answer,
-        CalendarQueryError::OutsideCoveredRange { source, date },
+        CalendarQueryErrorKind::OutsideCoveredRange { source, date },
         label,
     );
 }

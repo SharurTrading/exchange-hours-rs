@@ -2,11 +2,7 @@
 
 //! Integration tests for signed release discovery and worker snapshot activation.
 
-use std::{
-    io,
-    sync::{Arc, mpsc},
-    time::Duration,
-};
+use std::{io, sync::mpsc, time::Duration};
 
 use exchange_hours::{Exchange, ExchangeCalendar, TimeZoneSnapshot, TimeZoneSnapshotError};
 use exchange_hours_tzdb::{ReleaseSource, SourceError, TimeZoneUpdater, UpdateError};
@@ -53,6 +49,10 @@ fn automatic_refresh_retains_complete_snapshot_across_failures() {
     );
     let initial = updater.status().unwrap();
     let pinned = updater.snapshot().unwrap();
+    let refusal = ExchangeCalendar::new(Exchange::Nyse)
+        .with_time_zone_snapshot(&pinned)
+        .is_open("2029-03-07T15:00Z".parse().unwrap())
+        .unwrap_err();
     assert!(initial.last_error.is_none());
 
     let invalid = TimeZoneSnapshot::from_tzif("2090za", |_| Ok::<_, io::Error>(b"invalid"));
@@ -61,7 +61,7 @@ fn automatic_refresh_retains_complete_snapshot_across_failures() {
         checks.recv_timeout(DEADLINE).unwrap().as_deref(),
         Some("2090z")
     );
-    assert!(Arc::ptr_eq(&pinned, &updater.snapshot().unwrap()));
+    assert_eq!(pinned, updater.snapshot().unwrap());
     let rejected = updater.status().unwrap();
     assert!(matches!(
         rejected.last_error.as_deref(),
@@ -76,6 +76,9 @@ fn automatic_refresh_retains_complete_snapshot_across_failures() {
     );
     assert_eq!(updater.snapshot().unwrap().release(), "2090za");
     assert_eq!(pinned.release(), "2090z");
+    drop(pinned);
+    assert_eq!(refusal.tzdb_release(), "2090z");
+    assert!(refusal.normal_week_baseline().is_some());
     assert!(updater.status().unwrap().last_error.is_none());
 
     steps.send(Ok(Some(snapshot("2090z").unwrap()))).unwrap();

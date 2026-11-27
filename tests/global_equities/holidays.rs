@@ -50,7 +50,7 @@ use jiff::civil::Date;
 use jiff::tz::TimeZone;
 
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
+    CalendarQueryErrorKind, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
     ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
 
@@ -106,8 +106,8 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str, a
             calendar
                 .is_closed_trade_date(covered, SessionKind::Both)
                 .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 )),
             "{label}: the derivation behind {date:?} reads outside the audited windows"
         );
@@ -115,8 +115,8 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str, a
             calendar
                 .is_open(at(date, (11, 0, 0)))
                 .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 )),
             "{label}: probes on {date:?} refuse while the derivation reaches behind the window"
         );
@@ -806,8 +806,8 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2010, 6, 2), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 6, 2)
+            calendar.is_closed_trade_date(day(2010, 6, 2), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2010, 6, 2)
         ),
         "the 2010 classification refuses: no audited window brackets the date"
     );
@@ -815,14 +815,14 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
     // refuses the date rather than claiming a normal Monday.
     let outside = sao_paulo((2027, 1, 5), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 5)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 5)
     ));
     // Pre-floor refusal.
     let ancient = sao_paulo((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -1181,16 +1181,16 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2020, 12, 15), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2020, 12, 15)
+            calendar.is_closed_trade_date(day(2020, 12, 15), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2020, 12, 15)
         ),
         "the 2020 classification refuses: no audited window brackets the date"
     );
     // Pre-floor refusal.
     let ancient = riyadh((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -1236,13 +1236,19 @@ fn tadawul_page_gap_dates_refuse_rather_than_claim() {
         assert!(
             calendar
                 .is_open(riyadh(date, (11, 0, 0)))
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "tadawul {date:?}: is_open must refuse rather than claim"
         );
         assert!(
             calendar
                 .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "tadawul {date:?}: the closure question must refuse"
         );
     }
@@ -1708,22 +1714,22 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2012, 2, 20), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2012, 2, 20)
+            calendar.is_closed_trade_date(day(2012, 2, 20), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2012, 2, 20)
         ),
         "the 2012 classification refuses: no audited window brackets the date"
     );
     // 2027-01-02 is inside 2027 and outside the audited window.
     let outside = istanbul((2027, 1, 4), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
     ));
     // Pre-floor refusal.
     let ancient = istanbul((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -2165,14 +2171,18 @@ mod nzx {
         );
         // Before the support floor.
         assert!(matches!(
-            calendar.is_open(akl((2009, 12, 31), (11, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(akl((2009, 12, 31), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // Past the operator's horizon: 2027-01-05 is a Tuesday NZX has not
         // published, so the identity refuses rather than claiming normal.
         assert!(matches!(
-            calendar.is_open(akl((2027, 1, 5), (11, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_open(akl((2027, 1, 5), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         // 2027-01-04 itself is the horizon day and is a printed closure.
         assert!(
@@ -2433,8 +2443,10 @@ mod asx {
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 12, 31));
         assert!(matches!(
-            calendar.is_open(syd((2009, 12, 31), (11, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(syd((2009, 12, 31), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // ASX publishes the full 2027 sheet, so the last trading day of the
         // window — a half day, `CLOSE EARLY` — answers rather than refuses.
@@ -2799,8 +2811,10 @@ mod sgx_securities {
         assert_eq!(coverage.first(), day(2014, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
         assert!(matches!(
-            calendar.is_open(sgt((2009, 12, 31), (10, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(sgt((2009, 12, 31), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // The 2020-2024 capture gap sits between two audited windows, so the
         // charter's bridged residual (#296) answers the session question from
@@ -2838,8 +2852,8 @@ mod sgx_securities {
         // audited. The detached snapshot still answers the pure normal week.
         let outside = sgt((2027, 1, 4), (10, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar
@@ -3373,8 +3387,10 @@ mod lse {
         );
         // Before the support floor.
         assert!(matches!(
-            calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(london((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // Past the audited window: 2029-01-02 is one day past the rolling
         // table's last print, so the identity refuses rather than answering
@@ -3382,8 +3398,8 @@ mod lse {
         // the pure normal week.
         let outside = london((2029, 1, 2), (12, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar
@@ -3566,7 +3582,10 @@ mod euronext_paris {
         assert!(
             calendar
                 .is_closed_trade_date(day(2027, 1, 1), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "the 2027-01-01 closure question must refuse on the unresolved 2026 eve"
         );
         assert!(
@@ -3893,7 +3912,10 @@ mod euronext_paris {
         assert!(
             calendar
                 .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "the 2026-12-25 closure question must refuse on the unresolved eve"
         );
         assert!(
@@ -3967,13 +3989,19 @@ mod euronext_paris {
             assert!(
                 calendar
                     .is_open(paris_time(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                    .is_err_and(|error| matches!(
+                        error.kind(),
+                        CalendarQueryErrorKind::UnresolvedGap { .. }
+                    )),
                 "paris {date:?}: is_open must refuse rather than claim"
             );
             assert!(
                 calendar
                     .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                    .is_err_and(|error| matches!(
+                        error.kind(),
+                        CalendarQueryErrorKind::UnresolvedGap { .. }
+                    )),
                 "paris {date:?}: the trade-date closure question must refuse"
             );
         }
@@ -4066,8 +4094,10 @@ mod euronext_paris {
             Some(HolidayKind::Closed)
         );
         assert!(matches!(
-            calendar.is_open(paris_time((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(paris_time((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // 2027 publishes with the 06 November 2026 notice, so the year is
         // covered; the New Year closure deletes the day. The detached snapshot
@@ -4632,15 +4662,17 @@ mod tsx {
             );
         }
         assert!(matches!(
-            calendar.is_open(toronto((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(toronto((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // 2028 is not published: TMX adds the next year in Q4, so queries past
         // 2027-12-31 refuse rather than answer from an unaudited normal week.
         let outside = toronto((2028, 1, 3), (12, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar

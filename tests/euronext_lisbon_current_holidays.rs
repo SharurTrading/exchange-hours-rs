@@ -3,7 +3,7 @@
 //! Lisbon cash-calendar arrangements published for 2026.
 
 use exchange_hours::{
-    CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
+    CalendarQueryErrorKind, CalendarSource, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -93,8 +93,10 @@ fn lisbon_unpublished_half_days_and_other_years_remain_typed() {
             Some(HolidayKind::Unsourced)
         );
         assert_eq!(
-            calendar.is_open(utc(&format!("{day}T12:00:00Z"))),
-            Err(CalendarQueryError::UnresolvedGap {
+            calendar
+                .is_open(utc(&format!("{day}T12:00:00Z")))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap {
                 source: CalendarSource::Exchange(Exchange::EuronextLisbon),
                 date: date(day)
             })

@@ -673,7 +673,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// previous-day wrapping rule past this day's midnight.
     pub(super) fn has_late_open_on(self, day: Date) -> bool {
         self.policy.is_some_and(|policy| {
-            policy.may_affect(day, day) && policy.late_open_ssm(day).is_some()
+            policy.may_affect(day, day) && policy.outcome_on(day).late_open_ssm().is_some()
         }) || self.holiday_on(day).is_some_and(|holiday| {
             matches!(
                 holiday.kind(),

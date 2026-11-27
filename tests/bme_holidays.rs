@@ -7,7 +7,7 @@ mod support;
 use crate::support::zones::MADRID;
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarQueryErrorKind, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
 };
 use jiff::SignedDuration;
 
@@ -161,13 +161,17 @@ fn cash_calendar_has_no_invented_substitutes_and_keeps_2026_unknown() {
             HolidayKind::Unsourced
         );
         assert!(matches!(
-            calendar.is_open(at(2026, 12, day, 12, 0, 0)),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_open(at(2026, 12, day, 12, 0, 0))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
     assert!(matches!(
-        calendar.is_open(at(2027, 1, 4, 12, 0, 0)),
-        Err(CalendarQueryError::OutsideCoveredRange { .. })
+        calendar
+            .is_open(at(2027, 1, 4, 12, 0, 0))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     ));
 }
 

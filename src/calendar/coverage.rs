@@ -106,7 +106,7 @@ mod error;
 mod ranges;
 
 pub use baseline::NormalWeekBaseline;
-pub use error::CalendarQueryError;
+pub use error::{CalendarQueryError, CalendarQueryErrorKind};
 pub use ranges::{CompleteRanges, CoverageGaps, ZonedCompleteRanges, ZonedCoverageGaps};
 
 use jiff::civil::Date;
@@ -204,7 +204,7 @@ impl DateRange {
 /// Stage 2B maps onto [`CalendarQueryError`]: [`Self::BeforeSupportFloor`],
 /// [`Self::OutsideCoveredRange`] and [`Self::UnresolvedGap`] each have exactly
 /// one error counterpart, and a bounded search that runs past the data reports
-/// [`CalendarQueryError::SearchExhausted`] instead.
+/// [`crate::CalendarQueryErrorKind::SearchExhausted`] instead.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DateCoverage {
@@ -308,7 +308,7 @@ pub enum CoverageGapReason {
     /// classification) answers `Ok(false)` beside the residual — on both
     /// flanks the sourced windows witness the ordinary layer. A one-flank
     /// date's classification refuses a typed
-    /// [`CalendarQueryError::UnresolvedGap`], enriched with the
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`], enriched with the
     /// [`NormalWeekBaseline`] the date sits inside,
     /// because nothing witnesses the holiday layer there and the crate's
     /// accuracy bar ("nothing answered where it cannot back") forbids a
@@ -966,6 +966,11 @@ impl<'z> ZonedCalendarCoverage<'z> {
         }
     }
 
+    /// Pins this coverage decision to the same clock as its query.
+    pub(in crate::calendar) fn refusal(self, kind: CalendarQueryErrorKind) -> CalendarQueryError {
+        CalendarQueryError::new(kind, self.zones)
+    }
+
     /// Returns the identity this metadata describes.
     #[must_use]
     pub const fn identity(self) -> CalendarSource {
@@ -1183,7 +1188,7 @@ impl<'z> ZonedCalendarCoverage<'z> {
     /// [`DateCoverage::OutsideCoveredRange`], not a new verdict: LAW-COVERAGE
     /// makes an unresolved normal-week or special-session gap the same
     /// "no sourced answer" case as a carried horizon, and Stage 2B maps it to
-    /// the same [`CalendarQueryError::OutsideCoveredRange`]. A declaration
+    /// the same [`crate::CalendarQueryErrorKind::OutsideCoveredRange`]. A declaration
     /// applies only where its own bounds and shape name the date
     /// ([`Self::phase_gap_on`]), so a Tuesday in the bracket era answers from
     /// the tables while the bracket-era Sunday beside it refuses, and a date at
@@ -1640,7 +1645,7 @@ impl<'z> ZonedCalendarCoverage<'z> {
     /// A date on a one-flank span below the identity's first audited window
     /// has no bracket: nothing witnesses the holiday layer there, so
     /// `is_closed_trade_date` refuses a typed
-    /// [`CalendarQueryError::UnresolvedGap`] — enriched, per Tier 3, with the
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] — enriched, per Tier 3, with the
     /// [`NormalWeekBaseline`] the date sits inside
     /// — instead of answering "not closed" from the normal week, while the
     /// same date's session questions answer from that week. A two-flank date

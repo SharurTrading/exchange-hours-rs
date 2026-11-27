@@ -4,8 +4,8 @@
 
 use crate::support::date_opt;
 pub(super) use exchange_hours::{
-    CalendarQueryError, EvidenceTier, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
-    calendar_for_exchange,
+    CalendarQueryError, CalendarQueryErrorKind, EvidenceTier, Exchange, ExchangeCalendar,
+    HolidayKind, SessionKind, calendar_for_exchange,
 };
 pub(super) use jiff::Timestamp;
 pub(super) use jiff::civil::Date;
@@ -39,7 +39,7 @@ pub(super) fn assert_closed(
         );
         assert_eq!(holiday.tier(), EvidenceTier::T1, "{label} on {date}");
         let noon = local(tz, (date.year(), date.month(), date.day()), (12, 0, 0));
-        match calendar.is_open(noon) {
+        match calendar.is_open(noon).map_err(|error| error.kind()) {
             Ok(open) => {
                 assert!(
                     !open,
@@ -47,8 +47,8 @@ pub(super) fn assert_closed(
                 );
             }
             Err(
-                CalendarQueryError::OutsideCoveredRange { .. }
-                | CalendarQueryError::UnresolvedGap { .. },
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
+                | CalendarQueryErrorKind::UnresolvedGap { .. },
             ) => {
                 // The session walk read the unaudited predecessor or a
                 // `Unsourced` row the table ships; the row itself is
@@ -58,13 +58,16 @@ pub(super) fn assert_closed(
                 panic!("{label} at {noon}: unexpected query error {error:?}");
             }
         }
-        match calendar.is_closed_trade_date(*date, SessionKind::Both) {
+        match calendar
+            .is_closed_trade_date(*date, SessionKind::Both)
+            .map_err(|error| error.kind())
+        {
             Ok(closed) => {
                 assert!(closed, "{label}: {date} must answer as a closed trade date");
             }
             Err(
-                CalendarQueryError::OutsideCoveredRange { .. }
-                | CalendarQueryError::UnresolvedGap { .. },
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
+                | CalendarQueryErrorKind::UnresolvedGap { .. },
             ) => {}
             Err(error) => {
                 panic!("{label} on {date}: unexpected trade-date error {error:?}");
@@ -99,14 +102,14 @@ pub(super) fn assert_early_close(
     let before = ssm_instant(tz, date, close_ssm - 1);
     let at = ssm_instant(tz, date, close_ssm);
     for (instant, expect_open) in [(before, true), (at, false)] {
-        match calendar.is_open(instant) {
+        match calendar.is_open(instant).map_err(|error| error.kind()) {
             Ok(open) => assert_eq!(
                 open, expect_open,
                 "{label} at {instant}: end-exclusive early close"
             ),
             Err(
-                CalendarQueryError::OutsideCoveredRange { .. }
-                | CalendarQueryError::UnresolvedGap { .. },
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
+                | CalendarQueryErrorKind::UnresolvedGap { .. },
             ) => {}
             Err(error) => panic!("{label} at {instant}: unexpected query error {error:?}"),
         }
@@ -140,5 +143,9 @@ fn ssm_instant(tz: &TimeZone, date: (i16, i8, i8), ssm: u32) -> Timestamp {
 }
 
 /// The refusal a pre-floor date must produce.
-pub(super) const PRE_FLOOR_REFUSAL: fn(&CalendarQueryError) -> bool =
-    |error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. });
+pub(super) const PRE_FLOOR_REFUSAL: fn(&CalendarQueryError) -> bool = |error| {
+    matches!(
+        error.kind(),
+        CalendarQueryErrorKind::BeforeSupportFloor { .. }
+    )
+};

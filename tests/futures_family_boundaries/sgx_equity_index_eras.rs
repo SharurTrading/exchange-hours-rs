@@ -22,8 +22,8 @@
 use crate::support::local_opt;
 use crate::support::zones::SINGAPORE as SINGAPORE_ZONE;
 use exchange_hours::{
-    CalendarQueryError, MarketHoursKey, SessionState, calendar_for_market_hours_key,
-    hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, MarketHoursKey, SessionState,
+    calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 use jiff::Timestamp;
 
@@ -72,7 +72,10 @@ fn accepts(key: MarketHoursKey, at: Timestamp) -> bool {
 fn assert_withheld_kind(key: MarketHoursKey, at: Timestamp, kind: SessionState, label: &str) {
     let answer = calendar_for_market_hours_key(key).session_state(at);
     assert!(
-        matches!(answer, Err(CalendarQueryError::OutsideCoveredRange { .. })),
+        matches!(
+            answer.as_ref().map_err(CalendarQueryError::kind),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
+        ),
         "{label}: an unaudited-era date must be refused by the identity surface, got {answer:?}"
     );
     assert_eq!(

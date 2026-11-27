@@ -13,9 +13,9 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlock, ExceptionBlockKind,
-    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState,
-    calendar_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, EvidenceTier, ExceptionBlock,
+    ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
+    SessionState, calendar_for_market_hours_key,
 };
 use jiff::civil::{Date, Weekday};
 use jiff::{SignedDuration, Timestamp};
@@ -48,8 +48,8 @@ fn assert_below_floor<T>(result: Result<T, CalendarQueryError>, date: Date) {
     let refused = result.err();
     assert!(
         matches!(
-            refused,
-            Some(CalendarQueryError::BeforeSupportFloor { date: named, .. }) if named == date
+            refused.as_ref().map(CalendarQueryError::kind),
+            Some(CalendarQueryErrorKind::BeforeSupportFloor { date: named, .. }) if named == date
         ),
         "{date} precedes the 2025-01-01 floor and its refusal must name it, got {refused:?}",
     );
@@ -562,8 +562,10 @@ fn the_coverage_window_bounds_what_the_table_answers() {
     // 2009-12-31 is below the permanent floor, so the refusal is the floor's:
     // what the table states about the date is the absent row above.
     assert_eq!(
-        calendar.is_open(ct((2009, 12, 31), (9, 0, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor {
+        calendar
+            .is_open(ct((2009, 12, 31), (9, 0, 0)))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date: day(2009, 12, 31)
         })
@@ -598,7 +600,10 @@ fn the_coverage_window_bounds_what_the_table_answers() {
     assert!(
         calendar
             .is_open(ct((2028, 4, 17), (9, 0, 0)))
-            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
+            .is_err_and(|error| matches!(
+                error.kind(),
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
+            )),
         "2028-04-17 is outside the audited window"
     );
 
@@ -2132,7 +2137,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is refused, never reported closed"
         );
         assert!(
@@ -2143,15 +2151,19 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         );
     } else {
         assert_eq!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap {
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap {
                 source: calendar.source(),
                 date
             })
         );
         assert_eq!(
-            calendar.is_closed_all_day_on(date, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap {
+            calendar
+                .is_closed_all_day_on(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap {
                 source: calendar.source(),
                 date
             })
@@ -2196,8 +2208,8 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         let probe_day_local = probe.to_zoned_datetime(US_CENTRAL).date();
         if probe_day_local == date || detached_open {
             assert_eq!(
-                calendar.is_open(probe),
-                Err(CalendarQueryError::UnresolvedGap {
+                calendar.is_open(probe).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::UnresolvedGap {
                     source: calendar.source(),
                     date
                 })
@@ -2212,18 +2224,19 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
             );
         }
         assert!(
-            calendar
-                .session_bounds(probe)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            calendar.session_bounds(probe).is_err_and(|error| matches!(
+                error.kind(),
+                CalendarQueryErrorKind::UnresolvedGap { .. }
+            )),
             "{probe}: the bounds must not claim a session across the withheld date"
         );
         assert!(
             calendar
                 .next_session_open_after(probe)
                 .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::UnresolvedGap { .. }
-                        | CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                        | CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 )),
             "{probe}: the walk must not claim a session across the withheld date"
         );

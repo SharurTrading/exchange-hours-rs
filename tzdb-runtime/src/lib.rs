@@ -116,7 +116,7 @@ pub struct UpdateStatus {
 
 #[derive(Debug)]
 struct ActiveRelease {
-    snapshot: Arc<TimeZoneSnapshot>,
+    snapshot: TimeZoneSnapshot,
     last_checked_at: SystemTime,
     last_success_at: SystemTime,
     last_error: Option<Arc<UpdateError>>,
@@ -162,7 +162,7 @@ impl TimeZoneUpdater {
         let snapshot = check(&mut source, None)?.ok_or(UpdateError::NoInitialRelease)?;
         let checked_at = check_completed_at();
         let state = Arc::new(RwLock::new(ActiveRelease {
-            snapshot: Arc::new(snapshot),
+            snapshot,
             last_checked_at: checked_at,
             last_success_at: checked_at,
             last_error: None,
@@ -181,12 +181,12 @@ impl TimeZoneUpdater {
     /// # Errors
     ///
     /// Returns an error if the updater's shared state is unavailable.
-    pub fn snapshot(&self) -> Result<Arc<TimeZoneSnapshot>, UpdateError> {
+    pub fn snapshot(&self) -> Result<TimeZoneSnapshot, UpdateError> {
         let state = self
             .state
             .read()
             .map_err(|_| UpdateError::StateUnavailable)?;
-        Ok(Arc::clone(&state.snapshot))
+        Ok(state.snapshot.clone())
     }
 
     /// Inspect the active release and outcome of the last completed check.
@@ -216,7 +216,7 @@ fn poll(
 ) {
     while stopped.recv_timeout(interval) == Err(mpsc::RecvTimeoutError::Timeout) {
         let active = match state.read() {
-            Ok(state) => Arc::clone(&state.snapshot),
+            Ok(state) => state.snapshot.clone(),
             Err(_) => break,
         };
         let checked = check(source, Some(active.release()));
@@ -226,7 +226,7 @@ fn poll(
         match checked {
             Ok(snapshot) => {
                 if let Some(snapshot) = snapshot {
-                    state.snapshot = Arc::new(snapshot);
+                    state.snapshot = snapshot;
                 }
                 state.last_success_at = checked_at;
                 state.last_error = None;

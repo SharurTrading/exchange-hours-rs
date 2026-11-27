@@ -16,14 +16,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -34,14 +34,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open_with(
@@ -56,14 +56,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open_regular(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -74,14 +74,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_open_extended(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -102,14 +102,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_accepting_orders(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -126,14 +126,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_order_entry_only(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -146,19 +146,19 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     ///
     /// This scan does **not** return
-    /// [`CalendarQueryError::SearchExhausted`]: exhausting its own 14-day horizon
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`]: exhausting its own 14-day horizon
     /// is reported as `Ok(None)`, because the horizon is the query's documented
     /// bound rather than a day it failed to establish. Only the period walks
     /// (`candle_end`, `candle_start` and `trade_date`) report `SearchExhausted`,
@@ -177,19 +177,19 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     ///
     /// This scan does **not** return
-    /// [`CalendarQueryError::SearchExhausted`]: exhausting its own 14-day horizon
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`]: exhausting its own 14-day horizon
     /// is reported as `Ok(None)`, because the horizon is the query's documented
     /// bound rather than a day it failed to establish. Only the period walks
     /// (`candle_end`, `candle_start` and `trade_date`) report `SearchExhausted`,
@@ -209,19 +209,19 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     ///
     /// This scan does **not** return
-    /// [`CalendarQueryError::SearchExhausted`]: exhausting its own 14-day horizon
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`]: exhausting its own 14-day horizon
     /// is reported as `Ok(None)`, because the horizon is the query's documented
     /// bound rather than a day it failed to establish. Only the period walks
     /// (`candle_end`, `candle_start` and `trade_date`) report `SearchExhausted`,
@@ -241,19 +241,19 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     ///
     /// This scan does **not** return
-    /// [`CalendarQueryError::SearchExhausted`]: exhausting its own 14-day horizon
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`]: exhausting its own 14-day horizon
     /// is reported as `Ok(None)`, because the horizon is the query's documented
     /// bound rather than a day it failed to establish. Only the period walks
     /// (`candle_end`, `candle_start` and `trade_date`) report `SearchExhausted`,
@@ -273,14 +273,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn next_session_open_after(
@@ -297,14 +297,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_maintenance(self, instant: Timestamp) -> Result<bool, CalendarQueryError> {
@@ -322,14 +322,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn session_state(self, instant: Timestamp) -> Result<SessionState, CalendarQueryError> {
@@ -349,14 +349,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn trade_date(self, instant: Timestamp) -> Result<Option<Date>, CalendarQueryError> {
@@ -372,14 +372,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_trade_date(
@@ -395,14 +395,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_in_calendar(
@@ -423,14 +423,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_on(
@@ -446,14 +446,14 @@ impl ZonedExchangeCalendar<'_> {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_at(

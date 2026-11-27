@@ -8,6 +8,7 @@ use crate::support::zones::{
     AMSTERDAM, BERLIN, BRUSSELS, COPENHAGEN, DUBLIN, HELSINKI, ISTANBUL, JOHANNESBURG, LISBON,
     LONDON, MADRID, PARIS, RIYADH, ROME, STOCKHOLM, VIENNA, ZURICH,
 };
+use exchange_hours::CalendarQueryErrorKind;
 use jiff::SignedDuration;
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
@@ -561,7 +562,7 @@ fn vienna_third_friday_settlement_grid_is_date_aware() {
     );
     assert_refusal(
         calendar.is_open_regular(legacy_ordinary),
-        CalendarQueryError::OutsideCoveredRange {
+        CalendarQueryErrorKind::OutsideCoveredRange {
             source: CalendarSource::Exchange(Exchange::Vienna),
             date: date_opt(2010, 1, 8).expect("fixture date"),
         },
@@ -575,11 +576,11 @@ fn vienna_third_friday_settlement_grid_is_date_aware() {
 /// answer.
 fn assert_refusal<T>(
     answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
+    expected: exchange_hours::CalendarQueryErrorKind,
     label: &str,
 ) {
     assert_eq!(
-        answer.err(),
+        answer.err().map(|error| error.kind()),
         Some(expected),
         "{label}: the query must state the refusal its identity declares"
     );
@@ -595,7 +596,7 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
 ) {
     assert_refusal(
         answer,
-        CalendarQueryError::OutsideCoveredRange { source, date },
+        CalendarQueryErrorKind::OutsideCoveredRange { source, date },
         label,
     );
 }

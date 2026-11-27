@@ -8,6 +8,7 @@
 use super::prelude::*;
 use crate::support::date_opt;
 use crate::support::zones::ZURICH;
+use exchange_hours::CalendarQueryErrorKind;
 use jiff::Timestamp;
 use jiff::civil::Date;
 
@@ -350,7 +351,10 @@ fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
         .is_open(ch((2028, 1, 3), (12, 0, 0)))
         .expect_err("a query beyond the 2027 schedule must refuse");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
+        ),
         "2028-01-03 must refuse with OutsideCoveredRange, got {error:?}"
     );
 }

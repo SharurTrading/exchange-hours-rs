@@ -4,6 +4,7 @@
 
 #![cfg(feature = "runtime-tzdb")]
 
+use exchange_hours::CalendarQueryErrorKind;
 use std::convert::Infallible;
 use std::io;
 
@@ -149,34 +150,27 @@ fn b3_uses_each_snapshots_new_york_rules_for_queries_and_refusal_context() {
     );
 
     let refused = at("2029-03-07T15:00Z");
-    let error = short.is_open(refused).unwrap_err();
+    let short_error = short.is_open(refused).unwrap_err();
+    let long_error = long.is_open(refused).unwrap_err();
+    let short_profile = short.hours_at(refused);
+    let long_profile = long.hours_at(refused);
+    drop((eastern_summer, eastern_winter));
+    // Even identical caller-supplied release labels cannot interchange the
+    // two clock sets. No calendar or caller-owned handle remains here.
+    assert_eq!(short_error.kind(), long_error.kind());
+    assert_ne!(short_error, long_error);
+    assert_eq!(short_error.tzdb_release(), "test");
+    assert!(!short_error.uses_embedded_tzdb());
     assert_eq!(
-        error
-            .normal_week_baseline_in(&eastern_summer)
-            .unwrap()
-            .profile(),
-        &short.hours_at(refused)
+        short_error.normal_week_baseline().unwrap().profile(),
+        &short_profile
     );
     assert_eq!(
-        error
-            .normal_week_baseline_in(&eastern_winter)
-            .unwrap()
-            .profile(),
-        &long.hours_at(refused)
+        long_error.normal_week_baseline().unwrap().profile(),
+        &long_profile
     );
-    let gap = exchange_hours::CalendarQueryError::UnresolvedGap {
-        source: b3.source(),
-        date: jiff::civil::date(2029, 3, 7),
-    };
-    let short_context = gap.display_in(&eastern_summer).to_string();
-    let long_context = gap.display_in(&eastern_winter).to_string();
-    assert!(short_context.contains("[tzdb test]"));
-    assert_ne!(short_context, long_context);
-    assert!(gap.to_string().contains("[embedded tzdb "));
-    assert_ne!(
-        short.hours_at(refused).regular,
-        long.hours_at(refused).regular
-    );
+    assert_ne!(short_profile.regular, long_profile.regular);
+    assert!(short_error.to_string().contains("[tzdb test]"));
 }
 
 #[test]
@@ -213,8 +207,10 @@ fn bundled_tzif_and_precompiled_rules_agree_across_every_identity() {
             assert_eq!(original.extended, selected.extended);
             assert_eq!(original.order_entry, selected.order_entry);
             assert_eq!(
-                embedded.session_bounds(instant),
-                loaded.session_bounds(instant),
+                embedded
+                    .session_bounds(instant)
+                    .map_err(|error| error.kind()),
+                loaded.session_bounds(instant).map_err(|error| error.kind()),
                 "{:?} at {instant}",
                 embedded.source()
             );
@@ -228,4 +224,51 @@ fn bundled_tzif_and_precompiled_rules_agree_across_every_identity() {
             );
         }
     }
+}
+
+#[test]
+fn withdrawn_holiday_and_exhausted_search_keep_their_clocks() {
+    let supplied = snapshot(2);
+    let nse = ExchangeCalendar::new(Exchange::NseIndia);
+    let date = jiff::civil::date(2014, 10, 23);
+    let refused = nse
+        .with_time_zone_snapshot(&supplied)
+        .is_closed_trade_date(date, SessionKind::Both)
+        .unwrap_err();
+    let embedded = nse
+        .is_closed_trade_date(date, SessionKind::Both)
+        .unwrap_err();
+    let exhausted = ExchangeCalendar::for_market_hours_key(MarketHoursKey::AlwaysOpen)
+        .with_time_zone_snapshot(&supplied)
+        .trade_date(at("2026-04-20T18:00Z"))
+        .unwrap_err();
+    drop(supplied);
+    assert_eq!(refused.kind(), embedded.kind());
+    assert!(embedded.uses_embedded_tzdb());
+    assert_eq!(
+        embedded.tzdb_release(),
+        exchange_hours::EMBEDDED_TZDB_VERSION
+    );
+    assert!(refused.to_string().contains("[tzdb test]"));
+    assert!(refused.to_string().contains("normal week Thursday"));
+    assert!(embedded.to_string().contains("[embedded tzdb "));
+    let instant = at("2014-10-23T12:00Z");
+    assert_ne!(
+        refused
+            .normal_week_baseline()
+            .unwrap()
+            .tz()
+            .to_offset(instant),
+        embedded
+            .normal_week_baseline()
+            .unwrap()
+            .tz()
+            .to_offset(instant)
+    );
+    assert!(
+        matches!(exhausted.kind(), CalendarQueryErrorKind::SearchExhausted { date, bound, .. } if date == bound)
+    );
+    assert!(!exhausted.uses_embedded_tzdb());
+    assert_eq!(exhausted.tzdb_release(), "test");
+    assert!(exhausted.normal_week_baseline().is_some());
 }

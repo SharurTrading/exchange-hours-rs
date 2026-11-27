@@ -14,7 +14,7 @@
 use crate::support::zones::NEW_YORK;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
     calendar_for_exchange,
 };
 use jiff::SignedDuration;
@@ -243,7 +243,10 @@ fn the_window_ends_where_the_operator_stops_publishing() {
         .is_open(et((2027, 1, 4), (10, 0, 0)))
         .expect_err("2027-01-04 is outside the audited window");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
+        ),
         "the horizon refusal is OutsideCoveredRange, got {error:?}"
     );
 }

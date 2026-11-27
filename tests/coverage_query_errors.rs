@@ -18,7 +18,7 @@ mod support;
 use crate::support::zones::{TOKYO, US_CENTRAL};
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
+    CalendarQueryErrorKind, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
     MarketHours, MarketHoursKey, SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, SessionState,
     StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
     hours_for_exchange, session_profile,
@@ -61,8 +61,8 @@ fn a_query_before_the_floor_refuses_the_local_date_it_needs() {
         .is_open(ct((2009, 12, 28), (10, 0)))
         .expect_err("a pre-floor instant must be refused, not answered");
 
-    match error {
-        CalendarQueryError::BeforeSupportFloor {
+    match error.kind() {
+        CalendarQueryErrorKind::BeforeSupportFloor {
             source,
             date: refused,
         } => {
@@ -103,8 +103,8 @@ fn the_floor_is_a_local_date_so_two_zones_refuse_at_different_utc_instants() {
     // refused with the floor error naming its local day.
     let chicago_calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     assert!(matches!(
-        chicago_calendar.is_open(ct((2009, 12, 28), (10, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor { date: named, .. })
+        chicago_calendar.is_open(ct((2009, 12, 28), (10, 0))).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date: named, .. })
             if named == date(2009, 12, 28)
     ));
 }
@@ -161,8 +161,10 @@ fn a_returned_session_is_never_truncated_at_a_date_boundary() {
     // distinguishes what the caller addressed, not the days the answer walks.
     assert!(
         matches!(
-            calendar.session_bounds(ct((2009, 12, 31), (12, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .session_bounds(ct((2009, 12, 31), (12, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ),
         "a query addressed before the floor still errors"
     );

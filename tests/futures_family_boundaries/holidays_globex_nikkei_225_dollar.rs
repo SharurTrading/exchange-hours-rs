@@ -18,7 +18,7 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlockKind, ExchangeCalendar,
+    CalendarQueryErrorKind, CalendarResolution, EvidenceTier, ExceptionBlockKind, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
 };
 use jiff::civil::{Date, Weekday};
@@ -515,14 +515,19 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
     // rather than answering it.
     let probe = ct(2009, 12, 31, 10, 0, 0);
     assert!(
-        nkd.is_open(probe)
-            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        nkd.is_open(probe).is_err_and(|error| matches!(
+            error.kind(),
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+        )),
         "{probe} is below the 2010 floor"
     );
     assert!(
         nkd.without_holidays()
             .is_open(probe)
-            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+            .is_err_and(|error| matches!(
+                error.kind(),
+                CalendarQueryErrorKind::BeforeSupportFloor { .. }
+            )),
         "{probe}: the detached snapshot is identity-backed and refuses the floor too"
     );
 }
@@ -1842,14 +1847,17 @@ fn era_2022_2024_window_sits_third_and_the_floor_era_answers() {
     );
     let probe = ct(2009, 12, 31, 18, 0, 0);
     assert!(
-        calendar
-            .is_open(probe)
-            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        calendar.is_open(probe).is_err_and(|error| matches!(
+            error.kind(),
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+        )),
         "{probe} is below the 2010 floor"
     );
     assert!(
-        bare.is_open(probe)
-            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        bare.is_open(probe).is_err_and(|error| matches!(
+            error.kind(),
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+        )),
         "{probe}: the detached snapshot refuses the floor too"
     );
 }

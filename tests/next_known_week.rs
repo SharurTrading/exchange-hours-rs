@@ -9,8 +9,8 @@ mod support;
 
 use crate::support::{date_opt, elapsed_days, utc_datetime};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar,
-    MarketHoursKey, SUPPORT_FLOOR, SessionKind,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, Exchange,
+    ExchangeCalendar, MarketHoursKey, SUPPORT_FLOOR, SessionKind,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -61,8 +61,10 @@ fn answers(calendar: ExchangeCalendar, at: Timestamp) -> [Result<String, Calenda
 #[test]
 fn the_default_calendar_keeps_refusing_before_the_floor() {
     assert_eq!(
-        nyse().is_open(utc("2005-03-01T16:00:00Z")),
-        Err(CalendarQueryError::BeforeSupportFloor {
+        nyse()
+            .is_open(utc("2005-03-01T16:00:00Z"))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor {
             source: nyse().source(),
             date: date(2005, 3, 1),
         })
@@ -179,8 +181,8 @@ fn with_the_last_known_week_no_date_refuses() {
             for answer in answers(view, at) {
                 assert!(
                     matches!(
-                        answer,
-                        Ok(_) | Err(CalendarQueryError::SearchExhausted { .. })
+                        answer.as_ref().map_err(CalendarQueryError::kind),
+                        Ok(_) | Err(CalendarQueryErrorKind::SearchExhausted { .. })
                     ),
                     "{:?} at {at}: {answer:?}",
                     view.source()

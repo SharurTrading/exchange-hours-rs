@@ -27,8 +27,8 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, ExceptionBlockKind, Exchange, ExchangeCalendar,
-    Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, ExceptionBlockKind, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
 use jiff::civil::Date;
@@ -851,8 +851,8 @@ fn the_2014_window_rows_answer_from_the_recovered_release() {
         "the 2014-12-23 Monday answers the sourced pre-migration grid"
     );
     assert!(matches!(
-        calendar.is_closed_trade_date(day(2014, 12, 23), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2014, 12, 23)
+        calendar.is_closed_trade_date(day(2014, 12, 23), SessionKind::Both).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2014, 12, 23)
     ));
     // Christmas Day 2014-12-25: no session belongs to the day; the
     // Wednesday-evening wrap is deleted with it. The closure's own query
@@ -1448,8 +1448,8 @@ fn coverage_runs_over_the_three_audited_windows() {
     let outside = ct((2028, 1, 3), (10, 0, 0));
     assert!(
         matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange {
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange {
                 date,
                 ..
             }) if date == day(2028, 1, 3)
@@ -1490,11 +1490,11 @@ fn detaching_the_table_restores_the_normal_week() {
 
 fn refusal_shape(error: &CalendarQueryError) -> (jiff::civil::Date, &'static str) {
     // `CalendarQueryError` is `#[non_exhaustive]`.
-    let kind = match error {
-        CalendarQueryError::BeforeSupportFloor { .. } => "before-floor",
-        CalendarQueryError::OutsideCoveredRange { .. } => "outside",
-        CalendarQueryError::UnresolvedGap { .. } => "unresolved",
-        CalendarQueryError::SearchExhausted { .. } => "exhausted",
+    let kind = match error.kind() {
+        CalendarQueryErrorKind::BeforeSupportFloor { .. } => "before-floor",
+        CalendarQueryErrorKind::OutsideCoveredRange { .. } => "outside",
+        CalendarQueryErrorKind::UnresolvedGap { .. } => "unresolved",
+        CalendarQueryErrorKind::SearchExhausted { .. } => "exhausted",
         _ => "other",
     };
     (error.date(), kind)

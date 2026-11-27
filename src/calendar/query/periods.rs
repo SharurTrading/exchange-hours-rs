@@ -127,8 +127,8 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
 /// identity's week is sourced and the date's session questions answer, but no
 /// audited window brackets the span from below, so nothing witnesses the
 /// holiday layer and a "not closed" answer would be fabricated from the
-/// normal week; the refusal is the enriched `CalendarQueryError::
-/// UnresolvedGap`, whose `normal_week_baseline()` names the sourced week the
+/// normal week; the refusal reports [`crate::CalendarQueryErrorKind::UnresolvedGap`] and
+/// its `normal_week_baseline()` names the sourced week the
 /// date sits inside. A two-flank bridged date keeps answering beside the
 /// disclosed residual — two flanks bracket the span, one does not.
 ///
@@ -168,7 +168,7 @@ pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
 /// `CLOSE_LOOKAHEAD_DAYS` days.
 ///
 /// Running out of window is
-/// [`CalendarQueryError::SearchExhausted`](crate::calendar::coverage::CalendarQueryError::SearchExhausted)
+/// [`crate::CalendarQueryErrorKind::SearchExhausted`]
 /// for an identity-backed source, reported against the day the walk stopped on: it is
 /// a different answer from a day the identity refuses, which the per-day gate
 /// below raises instead (LAW-COVERAGE). A **detached fixed snapshot** has no

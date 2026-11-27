@@ -18,7 +18,7 @@ pub(crate) struct SelectionInstant<'a> {
 pub(crate) enum ZoneSelection<'a> {
     Embedded(std::marker::PhantomData<&'a ()>),
     #[cfg(feature = "runtime-tzdb")]
-    Runtime(SnapshotRef<'a>),
+    Runtime(&'a TimeZoneSnapshot),
 }
 
 impl<'a> ZoneSelection<'a> {
@@ -28,29 +28,8 @@ impl<'a> ZoneSelection<'a> {
         match self {
             Self::Embedded(_) => zone.embedded(),
             #[cfg(feature = "runtime-tzdb")]
-            Self::Runtime(snapshot) => snapshot.0.zone(zone),
+            Self::Runtime(snapshot) => snapshot.zone(zone),
         }
-    }
-}
-
-#[cfg(feature = "runtime-tzdb")]
-#[derive(Clone, Copy, Debug)]
-pub(crate) struct SnapshotRef<'a>(pub(crate) &'a TimeZoneSnapshot);
-
-#[cfg(feature = "runtime-tzdb")]
-impl PartialEq for SnapshotRef<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        std::ptr::eq(self.0, other.0)
-    }
-}
-
-#[cfg(feature = "runtime-tzdb")]
-impl Eq for SnapshotRef<'_> {}
-
-#[cfg(feature = "runtime-tzdb")]
-impl std::hash::Hash for SnapshotRef<'_> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        std::ptr::hash(self.0, state);
     }
 }
 
@@ -85,11 +64,16 @@ macro_rules! time_zones {
 
         /// An immutable set of venue and reference clocks from one `TZif` release.
         ///
-        /// Construct it once and borrow it from any number of calendars using
+        /// Clones share the same validated rules. Two independently constructed snapshots
+        /// remain distinct even if their release labels match. Borrow a snapshot from calendars using
         /// [`crate::ExchangeCalendar::with_time_zone_snapshot`]. UTC is intrinsic.
         #[cfg(feature = "runtime-tzdb")]
+        #[derive(Clone)]
+        pub struct TimeZoneSnapshot(std::sync::Arc<SnapshotData>);
+
+        #[cfg(feature = "runtime-tzdb")]
         #[expect(non_snake_case, reason = "Fields are generated directly from IANA city names")]
-        pub struct TimeZoneSnapshot {
+        struct SnapshotData {
             release: String,
             $( $($city: TimeZone,)+ )+
         }
@@ -111,22 +95,22 @@ macro_rules! time_zones {
                     let bytes = load(name).map_err(|source| TimeZoneSnapshotError::Load { name, source })?;
                     TimeZone::tzif(name, bytes.as_ref()).map_err(|source| TimeZoneSnapshotError::Parse { name, source })
                 };
-                Ok(Self {
+                Ok(Self(std::sync::Arc::new(SnapshotData {
                     release: release.into(),
                     $( $($city: parse($name)?,)+ )+
-                })
+                })))
             }
 
             /// Returns the release label supplied at construction.
             #[must_use]
             pub fn release(&self) -> &str {
-                &self.release
+                &self.0.release
             }
 
             fn zone(&self, id: ZoneId) -> &TimeZone {
                 match id {
                     ZoneId::Utc => &UTC_ZONE,
-                    $( $(ZoneId::$city => &self.$city,)+ )+
+                    $( $(ZoneId::$city => &self.0.$city,)+ )+
                 }
             }
         }
@@ -193,8 +177,27 @@ time_zones! {
 impl std::fmt::Debug for TimeZoneSnapshot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TimeZoneSnapshot")
-            .field("release", &self.release)
+            .field("release", &self.release())
             .finish_non_exhaustive()
+    }
+}
+
+// A cloned handle names the same release *and the same parsed rules*. A
+// caller-supplied label alone cannot establish that two snapshots are equal.
+#[cfg(feature = "runtime-tzdb")]
+impl PartialEq for TimeZoneSnapshot {
+    fn eq(&self, other: &Self) -> bool {
+        std::sync::Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+
+#[cfg(feature = "runtime-tzdb")]
+impl Eq for TimeZoneSnapshot {}
+
+#[cfg(feature = "runtime-tzdb")]
+impl std::hash::Hash for TimeZoneSnapshot {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::ptr::hash(std::sync::Arc::as_ptr(&self.0), state);
     }
 }
 
@@ -242,7 +245,7 @@ impl<E: std::error::Error + 'static> std::error::Error for TimeZoneSnapshotError
 #[cfg(feature = "runtime-tzdb")]
 impl TimeZoneSnapshot {
     pub(crate) const fn selection(&self) -> ZoneSelection<'_> {
-        ZoneSelection::Runtime(SnapshotRef(self))
+        ZoneSelection::Runtime(self)
     }
 
     /// Resolves an exchange's fixed profile at the given instant.

@@ -4,6 +4,7 @@
 
 use crate::support::local_opt;
 use crate::support::zones::{BERLIN, LONDON, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
+use exchange_hours::CalendarQueryErrorKind;
 pub(super) use exchange_hours::*;
 pub(super) use jiff::Timestamp;
 use jiff::tz::TimeZone;
@@ -52,16 +53,21 @@ pub(super) fn assert_refused_variant(
     label: &str,
 ) {
     let refused = matches!(
-        (expected, answer),
+        (
+            expected,
+            answer
+                .as_ref()
+                .map_err(exchange_hours::CalendarQueryError::kind)
+        ),
         (
             DateCoverage::BeforeSupportFloor,
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ) | (
             DateCoverage::OutsideCoveredRange,
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ) | (
             DateCoverage::UnresolvedGap,
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         )
     );
     assert!(
@@ -136,11 +142,11 @@ pub(super) fn assert_refuses_before_floor<T: core::fmt::Debug>(
     // pre-launch closure) and a withheld row refuses as `UnresolvedGap`.
     let named = error.date();
     let named_verdict = calendar.coverage().coverage_on(named);
-    let variant = match &error {
-        CalendarQueryError::BeforeSupportFloor { .. } => "before",
-        CalendarQueryError::OutsideCoveredRange { .. } => "outside",
-        CalendarQueryError::UnresolvedGap { .. } => "unresolved",
-        CalendarQueryError::SearchExhausted { .. } => "exhausted",
+    let variant = match error.kind() {
+        CalendarQueryErrorKind::BeforeSupportFloor { .. } => "before",
+        CalendarQueryErrorKind::OutsideCoveredRange { .. } => "outside",
+        CalendarQueryErrorKind::UnresolvedGap { .. } => "unresolved",
+        CalendarQueryErrorKind::SearchExhausted { .. } => "exhausted",
         _ => "other",
     };
     let verdict_name = match named_verdict {
@@ -223,16 +229,21 @@ pub(super) fn assert_refused(
         calendar.source(),
     );
     let refused = matches!(
-        (expected, &answer),
+        (
+            expected,
+            answer
+                .as_ref()
+                .map_err(exchange_hours::CalendarQueryError::kind)
+        ),
         (
             DateCoverage::BeforeSupportFloor,
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ) | (
             DateCoverage::OutsideCoveredRange,
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ) | (
             DateCoverage::UnresolvedGap,
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         )
     );
     assert!(

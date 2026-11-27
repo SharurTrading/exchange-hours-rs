@@ -12,7 +12,7 @@
 use crate::support::zones::MADRID;
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, HolidayKind, MarketHoursKey, SessionKind, SessionState,
+    CalendarQueryErrorKind, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
@@ -205,8 +205,8 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
 
     // Below the support floor.
     assert!(matches!(
-        calendar.is_open(madrid((2009, 12, 31), (12, 0, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
+        calendar.is_open(madrid((2009, 12, 31), (12, 0, 0))).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
     ));
 
     // The bridged 2012-2013 span (two flanks): sessions answer from the
@@ -228,8 +228,8 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
     // Above the last audited window nothing is asserted.
     let above = madrid((2027, 1, 4), (10, 0, 0));
     assert!(matches!(
-        calendar.is_open(above),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
+        calendar.is_open(above).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
     ));
     assert!(
         calendar

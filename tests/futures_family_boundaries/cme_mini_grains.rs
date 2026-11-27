@@ -13,7 +13,7 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, MarketHoursKey, SessionState,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, MarketHoursKey, SessionState,
     calendar_for_market_hours_key, candle_end, hours_for_market_hours_key, next_session_open_after,
     session_profile,
 };
@@ -69,11 +69,12 @@ fn close_trade_date(hours: &exchange_hours::MarketHours, instant: Timestamp) -> 
 /// (LAW-COVERAGE), which is the fact these tests now state in place of the
 /// schedule they used to read back out of it.
 fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    let answer = answer.map_err(|error| error.kind());
     assert!(
         matches!(
             answer,
-            Err(CalendarQueryError::BeforeSupportFloor { .. }
-                | CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                | CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "{label}: a dormant identity must refuse, got {answer:?}"
     );

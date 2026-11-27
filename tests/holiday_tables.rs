@@ -37,9 +37,9 @@ mod support;
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt, utc_datetime};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
-    DayAdjustmentError, DayOverride, ExceptionCoverage, Exchange, ExchangeCalendar, Holiday,
-    HolidayKind, MarketHoursKey, PolicyCalendar, SUPPORT_FLOOR, SessionExceptionRecord,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource, DateCoverage,
+    DateException, DayAdjustmentError, DayOverride, ExceptionCoverage, Exchange, ExchangeCalendar,
+    Holiday, HolidayKind, MarketHoursKey, PolicyCalendar, SUPPORT_FLOOR, SessionExceptionRecord,
     SessionExceptionSource, SessionKind, StaticDayPolicy, StaticSessionExceptions,
     calendar_for_exchange, calendar_for_market_hours_key,
 };
@@ -258,7 +258,7 @@ fn assert_agrees(
 /// answers the normal week it claims; below that sourced start the same
 /// `OutsideCoveredRange` refusal is reported, and a bounded search that runs out
 /// reports the day it stopped on instead of a per-date verdict.
-fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+fn assert_published_refusal(error: &CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
     assert_eq!(
         error.source(),
         calendar.source(),
@@ -282,16 +282,16 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     );
     let declared = match verdict {
         DateCoverage::OutsideCoveredRange | DateCoverage::NormalWeekOnly => {
-            Some(CalendarQueryError::OutsideCoveredRange {
+            Some(CalendarQueryErrorKind::OutsideCoveredRange {
                 source: calendar.source(),
                 date,
             })
         }
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date,
         }),
@@ -299,13 +299,14 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     };
     match declared {
         Some(expected) => assert_eq!(
-            error, expected,
+            error.kind(),
+            expected,
             "{label}: the query must state the coverage verdict its identity publishes"
         ),
         None => assert!(
             matches!(
-                error,
-                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+                error.kind(),
+                CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. } if stopped == bound
             ),
             "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
         ),
@@ -971,7 +972,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                 // enumerates every occurrence the identity actually sources.
                 Err(error) => {
                     assert_published_refusal(
-                        error,
+                        &error,
                         calendar,
                         &format!("{label}: the cursor at {cursor}"),
                     );
@@ -1032,7 +1033,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                 // opposite of what the coverage contract says (LAW-COVERAGE).
                 Err(error) => {
                     assert_published_refusal(
-                        error,
+                        &error,
                         calendar,
                         &format!("{label}: the occurrence opening {open}"),
                     );

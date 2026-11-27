@@ -76,7 +76,7 @@ fn cotton_forward_search_keeps_the_shifted_friday_open_after_midnight() {
 
 #[test]
 fn forward_search_considers_a_shifted_occurrence_from_a_caller_policy() {
-    let records = [DayOverride::late_open(date(2026, 4, 21), 8 * 3_600)];
+    let records = [DayOverride::late_open(date(2026, 4, 21), 8 * 3_600).unwrap()];
     let policy = StaticDayPolicy::new(&records).unwrap();
     let calendar = ExchangeCalendar::for_market_hours_key(MarketHoursKey::IceUsCotton)
         .without_holidays()
@@ -163,7 +163,7 @@ fn a_shifted_open_does_not_preempt_an_earlier_open_on_the_following_day() {
     ];
     let exceptions =
         StaticSessionExceptions::new(calendar.source(), tuesday, wednesday, &exceptions).unwrap();
-    let overrides = [DayOverride::late_open(tuesday, 8 * 3_600)];
+    let overrides = [DayOverride::late_open(tuesday, 8 * 3_600).unwrap()];
     let policy = StaticDayPolicy::new(&overrides).unwrap();
     let calendar = calendar
         .with_session_exceptions(&exceptions)
@@ -202,7 +202,7 @@ fn a_proven_midnight_open_does_not_read_the_following_unaudited_opening_day() {
     let exceptions = [SessionExceptionRecord::replace_sessions(unaudited, &blocks)];
     let exceptions =
         StaticSessionExceptions::new(calendar.source(), unaudited, unaudited, &exceptions).unwrap();
-    let overrides = [DayOverride::late_open(unaudited, 0)];
+    let overrides = [DayOverride::late_open(unaudited, 0).unwrap()];
     let policy = StaticDayPolicy::new(&overrides).unwrap();
     let calendar = calendar
         .with_session_exceptions(&exceptions)
@@ -217,6 +217,6 @@ fn a_proven_midnight_open_does_not_read_the_following_unaudited_opening_day() {
     );
     assert!(matches!(
         calendar.next_session_after(open),
-        Err(exchange_hours::CalendarQueryError::OutsideCoveredRange { date, .. }) if date == unaudited
+        Err(error) if matches!(error.kind(), exchange_hours::CalendarQueryErrorKind::OutsideCoveredRange { date, .. } if date == unaudited)
     ));
 }

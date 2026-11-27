@@ -6,8 +6,8 @@ mod support;
 use crate::support::zones::SINGAPORE;
 use crate::support::{date_opt, elapsed_days};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, ExchangeCalendar, MarketHoursKey as K,
-    SessionKind, SessionState, session_profile,
+    CalendarQueryErrorKind, CalendarResolution, DateCoverage, ExchangeCalendar,
+    MarketHoursKey as K, SessionKind, SessionState, session_profile,
 };
 use jiff::{SignedDuration, Timestamp};
 
@@ -123,16 +123,19 @@ fn only_the_witnessed_current_publication_window_claims_coverage() {
         );
         assert_eq!(c.is_open(utc("2026-10-09T02:00:00Z")), Ok(true));
         assert!(matches!(
-            c.is_closed_trade_date(unaudited, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            c.is_closed_trade_date(unaudited, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
         assert!(matches!(
-            c.is_open(utc("2021-02-15T02:00:00Z")),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            c.is_open(utc("2021-02-15T02:00:00Z"))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(matches!(
-            c.is_open(utc("2026-11-02T02:00:00Z")),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            c.is_open(utc("2026-11-02T02:00:00Z"))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             c.holiday_on(date_opt(2026, 10, 19).expect("HK-only holiday"))
@@ -161,7 +164,7 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
             assert_eq!(c.is_open(instant), Ok(true));
             assert_eq!(c.session_bounds(instant), Ok(Some((utc(open), utc(close)))));
             assert!(
-                matches!(c.trade_date(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+                matches!(c.trade_date(instant).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
             );
         }
         for instant in [
@@ -170,20 +173,20 @@ fn last_audited_friday_returns_complete_bounds_but_saturday_queries_refuse() {
             utc(close),
         ] {
             assert!(
-                matches!(c.is_open(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+                matches!(c.is_open(instant).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
             );
             assert!(
-                matches!(c.session_bounds(instant), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+                matches!(c.session_bounds(instant).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
             );
         }
         assert!(
-            matches!(c.is_open(utc(close)), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            matches!(c.is_open(utc(close)).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
         );
         assert!(
-            matches!(c.session_bounds(utc(close)), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            matches!(c.session_bounds(utc(close)).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
         );
         assert!(
-            matches!(c.candle_end(utc("2026-10-12T02:00:00Z"), CalendarResolution::Monthly), Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == saturday)
+            matches!(c.candle_end(utc("2026-10-12T02:00:00Z"), CalendarResolution::Monthly).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == saturday)
         );
     }
 }
@@ -243,8 +246,9 @@ fn witnessed_eras_answer_on_their_own_opening_days() {
         // holiday classification refuses typed while sessions answer.
         let legacy_day = date_opt(2022, 6, 8).expect("valid date");
         assert!(matches!(
-            c.is_closed_trade_date(legacy_day, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            c.is_closed_trade_date(legacy_day, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
 }
@@ -255,8 +259,9 @@ fn books_refuse_below_their_2021_witness() {
         let c = ExchangeCalendar::for_market_hours_key(key);
         let carried = date_opt(2021, 2, 15).expect("valid date");
         assert!(matches!(
-            c.is_closed_trade_date(carried, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            c.is_closed_trade_date(carried, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 }

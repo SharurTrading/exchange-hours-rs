@@ -30,7 +30,7 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
+    CalendarQueryErrorKind, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
@@ -296,10 +296,10 @@ fn a_closed_venue_row_is_the_clocks_closure() {
                 Ok(closed) => assert!(closed, "{exchange:?}: {closure} closes the trading day"),
                 Err(error) => assert!(
                     matches!(
-                        error,
-                        CalendarQueryError::BeforeSupportFloor { .. }
-                            | CalendarQueryError::UnresolvedGap { .. }
-                            | CalendarQueryError::OutsideCoveredRange { .. }
+                        error.kind(),
+                        CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                            | CalendarQueryErrorKind::UnresolvedGap { .. }
+                            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
                     ),
                     "{exchange:?}: {closure} may refuse only as below-floor, withheld or \
                      outside the audited windows; got {error:?}"

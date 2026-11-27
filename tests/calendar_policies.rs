@@ -20,10 +20,11 @@ mod support;
 use crate::support::zones::{BANGKOK, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
-    DayAdjustment, DayAdjustmentError, DayPolicy, DayPolicyOutcome, Exchange, ExchangeCalendar,
-    HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR, SessionKind, SessionState,
-    calendar_for_exchange, calendar_for_market_hours_key, hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource,
+    CoverageGapReason, DateCoverage, DayAdjustment, DayAdjustmentError, DayPolicy,
+    DayPolicyOutcome, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy,
+    SUPPORT_FLOOR, SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
+    hours_for_market_hours_key,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -34,14 +35,15 @@ use jiff::{SignedDuration, Timestamp};
 /// answer.
 fn assert_refusal<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
+    expected: CalendarQueryErrorKind,
     label: &str,
 ) {
     let error = answer.expect_err(&format!(
         "{label}: expected the coverage refusal {expected:?}"
     ));
     assert_eq!(
-        error, expected,
+        error.kind(),
+        expected,
         "{label}: the query must state the refusal its identity declares"
     );
 }
@@ -56,7 +58,7 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
 ) {
     assert_refusal(
         answer,
-        CalendarQueryError::OutsideCoveredRange { source, date },
+        CalendarQueryErrorKind::OutsideCoveredRange { source, date },
         label,
     );
 }
@@ -72,7 +74,7 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
 /// per-date verdict — a bounded walk ran out — so it is checked for the identity
 /// and for the documented shape of its report (`date` is the day the walk
 /// stopped on, and `bound` equals it).
-fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+fn assert_published_refusal(error: &CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
     assert_eq!(
         error.source(),
         calendar.source(),
@@ -95,15 +97,15 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
         "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
     );
     let declared = match verdict {
-        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryErrorKind::OutsideCoveredRange {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date,
         }),
@@ -111,13 +113,14 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     };
     match declared {
         Some(expected) => assert_eq!(
-            error, expected,
+            error.kind(),
+            expected,
             "{label}: the query must state the coverage verdict its identity publishes"
         ),
         None => assert!(
             matches!(
-                error,
-                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+                error.kind(),
+                CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. } if stopped == bound
             ),
             "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
         ),
@@ -832,8 +835,8 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
         let answer = calendar.trade_date(instant);
         assert!(
             matches!(
-                answer,
-                Err(CalendarQueryError::SearchExhausted { date: stopped, bound, .. })
+                answer.as_ref().map_err(CalendarQueryError::kind),
+                Err(CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. })
                     if stopped == bound
             ),
             "an always-open profile must not invent a trade date, got {answer:?}"
@@ -1086,7 +1089,7 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
             let state = match calendar.session_state(instant) {
                 Ok(state) => state,
                 Err(error) => {
-                    assert_published_refusal(error, calendar, &label);
+                    assert_published_refusal(&error, calendar, &label);
                     continue;
                 }
             };
@@ -1104,8 +1107,8 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 let answer = calendar.trade_date(instant);
                 assert!(
                     matches!(
-                        answer,
-                        Err(CalendarQueryError::SearchExhausted { date: stopped, bound, .. })
+                        answer.as_ref().map_err(CalendarQueryError::kind),
+                        Err(CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. })
                             if stopped == bound
                     ),
                     "{label}: an always-open profile must not invent a trade date, got {answer:?}"
@@ -1274,9 +1277,9 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                         open.is_ok()
                             || (open_named_other
                                 && matches!(
-                                    open,
-                                    Err(CalendarQueryError::UnresolvedGap { .. }
-                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                    open.as_ref().map_err(CalendarQueryError::kind),
+                                    Err(CalendarQueryErrorKind::UnresolvedGap { .. }
+                                        | CalendarQueryErrorKind::OutsideCoveredRange { .. })
                                 )),
                         "{label}: a covered day answers, or refuses naming a neighbour it needed"
                     );
@@ -1284,9 +1287,9 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                         candle.is_ok()
                             || (candle_named_other
                                 && matches!(
-                                    candle,
-                                    Err(CalendarQueryError::UnresolvedGap { .. }
-                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                    candle.as_ref().map_err(CalendarQueryError::kind),
+                                    Err(CalendarQueryErrorKind::UnresolvedGap { .. }
+                                        | CalendarQueryErrorKind::OutsideCoveredRange { .. })
                                 )),
                         "{label}: a covered day answers the candle, or refuses naming a                          neighbour it needed"
                     );
@@ -1294,8 +1297,8 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                 Some(DateCoverage::UnresolvedGap) => {
                     assert!(
                         calendar.is_open(instant).is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::UnresolvedGap { .. }
+                            error.kind(),
+                            CalendarQueryErrorKind::UnresolvedGap { .. }
                         )),
                         "{label}: a withheld day is refused as UnresolvedGap"
                     );
@@ -1303,8 +1306,8 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                 Some(DateCoverage::OutsideCoveredRange) => {
                     assert!(
                         calendar.is_open(instant).is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::OutsideCoveredRange { .. }
+                            error.kind(),
+                            CalendarQueryErrorKind::OutsideCoveredRange { .. }
                         )),
                         "{label}: a carried or unaudited day is refused as OutsideCoveredRange"
                     );

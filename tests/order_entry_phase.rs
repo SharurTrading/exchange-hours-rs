@@ -16,9 +16,10 @@ mod support;
 use crate::support::zones::UTC;
 use crate::support::{PROFILE_INSTANT, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, DayOverride, Exchange, ExchangeCalendar,
-    MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_exchange,
-    calendar_for_market_hours_key, hours_for_exchange, hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, DayOverride,
+    Exchange, ExchangeCalendar, MarketHoursKey, SessionState, StaticDayPolicy,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
+    hours_for_market_hours_key,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -34,7 +35,7 @@ use jiff::civil::Date;
 /// per-date verdict — a bounded walk ran out — so it is checked for the identity
 /// and for the documented shape of its report (`date` is the day the walk
 /// stopped on, and `bound` equals it).
-fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+fn assert_published_refusal(error: &CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
     assert_eq!(
         error.source(),
         calendar.source(),
@@ -57,15 +58,15 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
         "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
     );
     let declared = match verdict {
-        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryErrorKind::OutsideCoveredRange {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date,
         }),
@@ -73,13 +74,14 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     };
     match declared {
         Some(expected) => assert_eq!(
-            error, expected,
+            error.kind(),
+            expected,
             "{label}: the query must state the coverage verdict its identity publishes"
         ),
         None => assert!(
             matches!(
-                error,
-                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+                error.kind(),
+                CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. } if stopped == bound
             ),
             "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
         ),
@@ -179,7 +181,7 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
             let state = match calendar.session_state(instant) {
                 Ok(state) => state,
                 Err(error) => {
-                    assert_published_refusal(error, calendar, &label);
+                    assert_published_refusal(&error, calendar, &label);
                     continue;
                 }
             };

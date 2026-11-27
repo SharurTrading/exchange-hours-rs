@@ -6,7 +6,7 @@ mod support;
 
 use crate::support::date_opt;
 use exchange_hours::{
-    CalendarQueryError, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,
+    CalendarQueryErrorKind, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,
     MarketHoursKey as K, SessionExceptionRecord, SessionKind, SessionState,
     StaticSessionExceptions,
 };
@@ -268,12 +268,16 @@ fn an_incomplete_memorial_reopen_refuses_the_following_trade_date() {
             "2026-05-26T12:00:00Z",
         ] {
             let instant = utc(instant);
-            assert!(matches!(calendar.is_open(instant),
-                Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date
-            ));
-            assert!(matches!(calendar.session_bounds(instant),
-                Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date
-            ));
+            assert!(
+                matches!(calendar.is_open(instant).map_err(|error| error.kind()),
+                    Err(CalendarQueryErrorKind::UnresolvedGap { date: withheld, .. }) if withheld == date
+                )
+            );
+            assert!(
+                matches!(calendar.session_bounds(instant).map_err(|error| error.kind()),
+                    Err(CalendarQueryErrorKind::UnresolvedGap { date: withheld, .. }) if withheld == date
+                )
+            );
         }
     }
 }
@@ -453,7 +457,7 @@ fn archived_2024_christmas_keeps_1804_reopens_and_the_missing_bond_close_explici
         HolidayKind::Unsourced
     );
     assert!(
-        matches!(bonds.is_open(close), Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date)
+        matches!(bonds.is_open(close).map_err(|error| error.kind()), Err(CalendarQueryErrorKind::UnresolvedGap { date: withheld, .. }) if withheld == date)
     );
     let date = date_opt(2024, 12, 26).unwrap();
     assert_eq!(
@@ -597,8 +601,10 @@ fn brent_uk_holiday_silence_preserves_typed_refusals_in_each_year() {
             HolidayKind::Unsourced
         );
         assert!(matches!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
 }

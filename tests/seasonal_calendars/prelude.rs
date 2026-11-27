@@ -4,7 +4,7 @@
 
 use crate::support::date_opt;
 pub(super) use exchange_hours::{
-    CalendarQueryError, CalendarResolution, Exchange, ExchangeCalendar, MarketHours,
+    CalendarQueryErrorKind, CalendarResolution, Exchange, ExchangeCalendar, MarketHours,
     MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key, candle_end,
     candle_end_with, candle_start, candle_start_with, hours_for_exchange,
     hours_for_market_hours_key, next_session_after, next_session_after_with, session_bounds,
@@ -64,11 +64,11 @@ pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: Timestam
                 Ok(answer) => assert_eq!(answer, $snapshot, "{}", $label),
                 Err(error) => assert!(
                     matches!(
-                        error,
-                        CalendarQueryError::BeforeSupportFloor { .. }
-                            | CalendarQueryError::OutsideCoveredRange { .. }
-                            | CalendarQueryError::UnresolvedGap { .. }
-                            | CalendarQueryError::SearchExhausted { .. }
+                        error.kind(),
+                        CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
+                            | CalendarQueryErrorKind::UnresolvedGap { .. }
+                            | CalendarQueryErrorKind::SearchExhausted { .. }
                     ),
                     "{}: only a coverage refusal may stand in for the fixed \
                          snapshot's answer, got {error:?}",

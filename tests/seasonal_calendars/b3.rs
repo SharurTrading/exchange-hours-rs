@@ -5,6 +5,7 @@
 use super::prelude::*;
 use crate::support::PROFILE_INSTANT;
 use crate::support::zones::SAO_PAULO;
+use exchange_hours::CalendarQueryErrorKind;
 use jiff::SignedDuration;
 
 #[test]
@@ -127,7 +128,10 @@ fn b3_selects_current_short_and_northern_winter_long_grids() {
     assert!(
         calendar
             .normal_week_open_seconds_containing(unaudited)
-            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
+            .is_err_and(|error| matches!(
+                error.kind(),
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
+            )),
         "2027 is outside the audited window"
     );
     assert!(
@@ -242,8 +246,10 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
         "the 19:30 probe answers the detached week's own state"
     );
     assert!(matches!(
-        calendar.is_closed_trade_date(day(old_long_day), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { .. })
+        calendar
+            .is_closed_trade_date(day(old_long_day), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
 
     let old_short_day = (2010, 4, 1);
@@ -280,8 +286,10 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
         "the 19:00 probe answers the detached week's own state"
     );
     assert!(matches!(
-        calendar.is_closed_trade_date(day(old_short_day), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { .. })
+        calendar
+            .is_closed_trade_date(day(old_short_day), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
 
     // The interim-grid day now sits inside the audited holiday window

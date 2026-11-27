@@ -17,7 +17,7 @@
 use crate::support::zones::NEW_YORK;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
     calendar_for_exchange,
 };
 use jiff::SignedDuration;
@@ -149,7 +149,10 @@ fn a_pre_floor_date_is_refused_not_claimed_normal() {
         .is_open(instant)
         .expect_err("2009-12-31 is before the support floor");
     assert!(
-        matches!(error, CalendarQueryError::BeforeSupportFloor { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+        ),
         "the floor refusal is BeforeSupportFloor, got {error:?}"
     );
 }
@@ -344,7 +347,10 @@ fn the_window_covers_to_2028_12_31_and_refuses_after_it() {
         .is_open(et((2029, 1, 3), (10, 0, 0)))
         .expect_err("the day after the window is refused");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
+        ),
         "the window-end refusal is OutsideCoveredRange, got {error:?}"
     );
 }

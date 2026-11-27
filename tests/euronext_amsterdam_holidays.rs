@@ -7,7 +7,7 @@ mod support;
 use crate::support::zones::AMSTERDAM;
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarQueryErrorKind, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
 };
 use jiff::SignedDuration;
 
@@ -94,8 +94,8 @@ fn announced_2026_half_days_remain_typed_gaps() {
         );
         let noon = local_opt(&AMSTERDAM, (2026, 12, day), (12, 0, 0)).unwrap();
         assert!(matches!(
-            calendar.is_open(noon),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar.is_open(noon).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
 }

@@ -18,9 +18,9 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, EvidenceTier, ExceptionBlock,
-    ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
-    calendar_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, EvidenceTier,
+    ExceptionBlock, ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, calendar_for_market_hours_key,
 };
 use jiff::civil::{Date, Weekday};
 use jiff::{SignedDuration, Timestamp};
@@ -85,16 +85,16 @@ fn assert_refused<T: std::fmt::Debug>(
     let error = query.expect_err("the contract must refuse this date, but it answered");
     assert!(
         matches!(
-            (expected, error),
+            (expected, error.kind()),
             (
                 DateCoverage::BeforeSupportFloor,
-                CalendarQueryError::BeforeSupportFloor { .. }
+                CalendarQueryErrorKind::BeforeSupportFloor { .. }
             ) | (
                 DateCoverage::OutsideCoveredRange,
-                CalendarQueryError::OutsideCoveredRange { .. }
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
             ) | (
                 DateCoverage::UnresolvedGap,
-                CalendarQueryError::UnresolvedGap { .. }
+                CalendarQueryErrorKind::UnresolvedGap { .. }
             )
         ),
         "the contract must refuse this date as {expected:?}, not {error}"
@@ -1575,7 +1575,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is refused, never reported closed"
         );
         assert!(

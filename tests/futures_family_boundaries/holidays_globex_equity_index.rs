@@ -33,10 +33,10 @@
 use crate::support::zones::US_CENTRAL;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, EvidenceTier,
-    ExceptionBlock, ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
-    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
-    hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource, DateCoverage,
+    EvidenceTier, ExceptionBlock, ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind,
+    MarketHoursKey, SessionKind, SessionState, calendar_for_exchange,
+    calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 use jiff::civil::{Date, Weekday};
 use jiff::{SignedDuration, Timestamp};
@@ -92,16 +92,16 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
     let day = error.date();
     let verdict = coverage.coverage_on(day);
     let states_verdict = matches!(
-        (verdict, error),
+        (verdict, error.kind()),
         (
             DateCoverage::BeforeSupportFloor,
-            CalendarQueryError::BeforeSupportFloor { .. }
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
         ) | (
             DateCoverage::OutsideCoveredRange,
-            CalendarQueryError::OutsideCoveredRange { .. }
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
         ) | (
             DateCoverage::UnresolvedGap,
-            CalendarQueryError::UnresolvedGap { .. }
+            CalendarQueryErrorKind::UnresolvedGap { .. }
         )
     );
     // Two documented exceptions. First: `trade_date` resolves a containing
@@ -114,10 +114,10 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
     // withheld row refuses `UnresolvedGap` — both are coverage refusals, and
     // the withheld row is what the query's own error names.
     let declared_phase_gap = matches!(
-        (verdict, error),
+        (verdict, error.kind()),
         (
             DateCoverage::BeforeSupportFloor,
-            CalendarQueryError::OutsideCoveredRange { .. }
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
         )
     ) && !coverage.phase_gaps().is_empty();
     // The variant the query raises must state the verdict the metadata
@@ -1751,7 +1751,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is refused, never reported closed"
         );
         assert!(
@@ -1763,7 +1766,9 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
     } else {
         let closed = calendar
             .is_closed_trade_date(date, SessionKind::Both)
-            .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. }));
+            .is_err_and(|error| {
+                matches!(error.kind(), CalendarQueryErrorKind::UnresolvedGap { .. })
+            });
         assert!(
             closed,
             "{date}: the withheld row must refuse, never read as an answer"

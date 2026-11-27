@@ -16,8 +16,8 @@
 use crate::support::local_opt;
 use crate::support::zones::US_CENTRAL;
 use exchange_hours::{
-    CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
-    hours_for_market_hours_key, session_profile,
+    CalendarQueryError, CalendarQueryErrorKind, MarketHoursKey, SessionKind, SessionState,
+    calendar_for_market_hours_key, hours_for_market_hours_key, session_profile,
 };
 use jiff::{SignedDuration, Timestamp};
 
@@ -73,11 +73,12 @@ fn calendar_state_at(
 
 /// Asserts the dormant TAS keys refuse rather than answer a date-aware query.
 fn assert_refused(answer: Result<SessionState, CalendarQueryError>, label: &str) {
+    let answer = answer.map_err(|error| error.kind());
     assert!(
         matches!(
             answer,
-            Err(CalendarQueryError::BeforeSupportFloor { .. }
-                | CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                | CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "{label}: a dormant identity must refuse, got {answer:?}"
     );

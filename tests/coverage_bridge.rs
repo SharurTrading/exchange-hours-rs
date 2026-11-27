@@ -15,7 +15,7 @@
 //! **below the first window**. On a date there whose normal week the identity
 //! sources, the session questions answer exactly as they do on a two-flank
 //! span, while the holiday-table classification refuses a typed
-//! [`CalendarQueryError::UnresolvedGap`] — a one-flank date has no bracket,
+//! [`CalendarQueryErrorKind::UnresolvedGap`] — a one-flank date has no bracket,
 //! nothing witnesses the holiday layer, and two flanks bracket a span where
 //! one does not. The asymmetry is the ruling's substance. A span **above the
 //! last window** is not an evidence gap — the operator's publication horizon
@@ -23,7 +23,7 @@
 //!
 //! Tier 3: every refusal is still a refusal; the error value carries the
 //! sourced normal-week baseline its date sits inside
-//! ([`CalendarQueryError::normal_week_baseline`]) so a consumer can make its
+//! ([`exchange_hours::CalendarQueryError::normal_week_baseline`]) so a consumer can make its
 //! own call. The enrichment changes no verdict.
 //!
 //! Every value below is read back through the public API. The asserted spans
@@ -38,7 +38,7 @@ use crate::support::zones::{
 };
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, Exchange,
+    CalendarCoverage, CalendarQueryErrorKind, CoverageGapReason, DateCoverage, Exchange,
     MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
 use jiff::civil::Date;
@@ -489,8 +489,8 @@ fn a_below_first_date_holiday_classification_refuses_with_the_baseline() {
         .is_closed_trade_date(date(2011, 6, 15), SessionKind::Both)
         .expect_err("the one-flank classification refuses");
     assert!(matches!(
-        error,
-        CalendarQueryError::UnresolvedGap { source, date: refused }
+        error.kind(),
+        CalendarQueryErrorKind::UnresolvedGap { source, date: refused }
             if source == sgx.source() && refused == date(2011, 6, 15)
     ));
     // The enriched refusal: the baseline names the sourced week the date sits
@@ -528,8 +528,10 @@ fn a_below_first_date_holiday_classification_refuses_with_the_baseline() {
         let calendar = calendar_for(name);
         assert!(
             matches!(
-                calendar.is_closed_trade_date(date(probe.0, probe.1, probe.2), SessionKind::Both),
-                Err(CalendarQueryError::UnresolvedGap { .. })
+                calendar
+                    .is_closed_trade_date(date(probe.0, probe.1, probe.2), SessionKind::Both)
+                    .map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::UnresolvedGap { .. })
             ),
             "{name}: the below-first classification refuses typed"
         );
@@ -542,8 +544,8 @@ fn a_below_first_date_holiday_classification_refuses_with_the_baseline() {
         .is_closed_trade_date(date(2011, 6, 15), SessionKind::Both)
         .expect_err("the carried part of the span refuses");
     assert!(matches!(
-        error,
-        CalendarQueryError::OutsideCoveredRange { .. }
+        error.kind(),
+        CalendarQueryErrorKind::OutsideCoveredRange { .. }
     ));
     assert!(
         error.normal_week_baseline().is_none(),
@@ -560,8 +562,9 @@ fn the_flank_kinds_disagree_on_classification_at_the_first_window() {
     // not.
     let sgx = calendar_for_exchange(Exchange::SgxSecurities);
     assert_eq!(
-        sgx.is_closed_trade_date(date(2013, 12, 31), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap {
+        sgx.is_closed_trade_date(date(2013, 12, 31), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap {
             source: sgx.source(),
             date: date(2013, 12, 31),
         }),
@@ -616,8 +619,9 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
         "the 2020 New Year closure answers shut"
     );
     assert!(matches!(
-        nse.is_closed_trade_date(date(2014, 10, 23), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { .. })
+        nse.is_closed_trade_date(date(2014, 10, 23), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
 }
 
@@ -686,8 +690,8 @@ fn above_the_last_window_still_refuses_everywhere() {
             calendar
                 .is_closed_trade_date(day, SessionKind::Both)
                 .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 )),
             "{name}: the classification above the last window refuses as before"
         );
@@ -706,8 +710,8 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
         .is_closed_trade_date(date(2014, 10, 23), SessionKind::Both)
         .expect_err("the withheld date refuses");
     assert!(matches!(
-        error,
-        CalendarQueryError::UnresolvedGap { source, date: refused }
+        error.kind(),
+        CalendarQueryErrorKind::UnresolvedGap { source, date: refused }
             if source == nse.source() && refused == date(2014, 10, 23)
     ));
     let baseline = error
@@ -786,8 +790,8 @@ fn the_baseline_is_absent_where_the_normal_week_is_not_sourced() {
         .is_open(ist(2009, 12, 31, 10, 0))
         .expect_err("a pre-floor instant refuses");
     assert!(matches!(
-        error,
-        CalendarQueryError::BeforeSupportFloor { .. }
+        error.kind(),
+        CalendarQueryErrorKind::BeforeSupportFloor { .. }
     ));
     assert!(
         error.normal_week_baseline().is_none(),
@@ -800,8 +804,8 @@ fn the_baseline_is_absent_where_the_normal_week_is_not_sourced() {
         .is_closed_trade_date(date(2015, 6, 15), SessionKind::Both)
         .expect_err("a carried date refuses");
     assert!(matches!(
-        error,
-        CalendarQueryError::OutsideCoveredRange { .. }
+        error.kind(),
+        CalendarQueryErrorKind::OutsideCoveredRange { .. }
     ));
     assert_eq!(
         gap_reason_on(krx.coverage(), date(2015, 6, 15)),

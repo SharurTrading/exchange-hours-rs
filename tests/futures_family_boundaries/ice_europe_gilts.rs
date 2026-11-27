@@ -8,7 +8,7 @@
 use crate::support::zones::LONDON;
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, HolidayKind, MarketHoursKey, SessionKind, SessionState,
+    CalendarQueryErrorKind, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
@@ -124,8 +124,10 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         );
         assert!(
             matches!(
-                calendar.is_closed_trade_date(date, SessionKind::Both),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
+                calendar
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
             ),
             "{date} is below the carried horizon and refuses typed"
         );
@@ -194,8 +196,10 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
             "{date}"
         );
         assert!(matches!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 
@@ -318,24 +322,26 @@ fn the_windowed_history_refuses_typed_and_bridges_the_gaps() {
     // `holiday_on` (asserted in the holiday test above).
     for date in [day((2010, 6, 15)), day((2018, 6, 12)), day((2022, 12, 23))] {
         assert!(matches!(
-            calendar.is_open(london((date.year(), date.month(), date.day()), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { date: refused, .. }) if refused == date
+            calendar.is_open(london((date.year(), date.month(), date.day()), (10, 0, 0))).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { date: refused, .. }) if refused == date
         ));
         assert!(matches!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 
     // Below the support floor and above the last window.
     assert!(matches!(
-        calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
+        calendar.is_open(london((2009, 12, 31), (12, 0, 0))).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
     ));
     let above = london((2027, 1, 4), (10, 0, 0));
     assert!(matches!(
-        calendar.is_open(above),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
+        calendar.is_open(above).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
     ));
     assert!(
         calendar

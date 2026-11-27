@@ -32,12 +32,12 @@ mod support;
 use crate::support::zones::{US_CENTRAL, US_EASTERN, UTC};
 use crate::support::{elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
-    DayAdjustment, DayOverride, DayPolicy, DayPolicyOutcome, ExceptionBlock, ExceptionBlockKind,
-    ExceptionCoverage, Exchange, Holiday, HolidayKind, MarketHoursKey, SessionExceptionRecord,
-    SessionExceptionSource, SessionKind, SessionState, StaticDayPolicy, StaticSessionExceptions,
-    StaticSessionExceptionsError, calendar_for_exchange, calendar_for_market_hours_key,
-    hours_for_exchange,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource, DateCoverage,
+    DateException, DayAdjustment, DayOverride, DayPolicy, DayPolicyOutcome, ExceptionBlock,
+    ExceptionBlockKind, ExceptionCoverage, Exchange, Holiday, HolidayKind, MarketHoursKey,
+    SessionExceptionRecord, SessionExceptionSource, SessionKind, SessionState, StaticDayPolicy,
+    StaticSessionExceptions, StaticSessionExceptionsError, calendar_for_exchange,
+    calendar_for_market_hours_key, hours_for_exchange,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -73,7 +73,7 @@ fn provider_coverage(provider: &dyn SessionExceptionSource) -> Option<ExceptionC
 fn assert_withheld_shadow<T: std::fmt::Debug>(answer: Result<T, CalendarQueryError>, label: &str) {
     let error = answer.expect_err(&format!("{label}: the withheld row must refuse"));
     assert!(
-        matches!(error, CalendarQueryError::UnresolvedGap { .. }),
+        matches!(error.kind(), CalendarQueryErrorKind::UnresolvedGap { .. }),
         "{label}: the withheld row refuses with UnresolvedGap, got {error:?}"
     );
 }
@@ -148,7 +148,7 @@ fn assert_declared_refusal<T: std::fmt::Debug>(
         "{label}: {date} is {verdict:?}, so a refusal is not the declared answer"
     );
     assert_eq!(
-        Some(error),
+        Some(error.kind()),
         declared_error(calendar.coverage(), date),
         "{label}: the query must state the coverage verdict its identity publishes"
     );
@@ -159,17 +159,17 @@ fn assert_declared_refusal<T: std::fmt::Debug>(
 fn declared_error(
     coverage: exchange_hours::CalendarCoverage,
     date: Date,
-) -> Option<CalendarQueryError> {
+) -> Option<CalendarQueryErrorKind> {
     match coverage.coverage_on(date) {
-        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryErrorKind::OutsideCoveredRange {
             source: coverage.identity(),
             date,
         }),
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: coverage.identity(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: coverage.identity(),
             date,
         }),
@@ -1396,9 +1396,9 @@ fn an_attached_but_recordless_layer_changes_no_answer() {
                 for error in [e, f] {
                     assert!(
                         matches!(
-                            error,
-                            CalendarQueryError::UnresolvedGap { .. }
-                                | CalendarQueryError::OutsideCoveredRange { .. }
+                            error.kind(),
+                            CalendarQueryErrorKind::UnresolvedGap { .. }
+                                | CalendarQueryErrorKind::OutsideCoveredRange { .. }
                         ),
                         "{instant}: {error} is not a coverage refusal"
                     );

@@ -15,7 +15,7 @@ mod support;
 use crate::support::zones::{HONG_KONG, SYDNEY};
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, DateCoverage, Holiday, HolidayKind, MarketHoursKey, SessionKind,
+    CalendarQueryErrorKind, DateCoverage, Holiday, HolidayKind, MarketHoursKey, SessionKind,
     SessionState, calendar_for_market_hours_key,
 };
 use jiff::Timestamp;
@@ -396,8 +396,10 @@ fn asx_t24_2028_rows_answer_and_the_withheld_eves_refuse() {
         );
         assert_eq!(calendar.holiday_on(withheld), None);
         assert!(matches!(
-            calendar.is_closed_trade_date(withheld, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_closed_trade_date(withheld, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
     assert!(calendar.is_open(sydney(2028, 12, 22, 12, 0)).is_err());

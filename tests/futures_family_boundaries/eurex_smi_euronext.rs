@@ -9,7 +9,7 @@ use super::prelude::*;
 use crate::support::zones::{PARIS, UTC, ZURICH};
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Holiday, HolidayKind, SessionState, calendar_for_market_hours_key,
+    CalendarQueryErrorKind, Holiday, HolidayKind, SessionState, calendar_for_market_hours_key,
 };
 use jiff::{SignedDuration, Timestamp};
 
@@ -326,8 +326,8 @@ fn the_smi_table_closes_the_swiss_and_all_derivatives_dates_and_keeps_the_german
     // error.
     let outside = zurich((2031, 1, 5), (12, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2031, 1, 5)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2031, 1, 5)
     ));
     assert_eq!(
         calendar.holiday_on(day(2031, 1, 5)),
@@ -336,8 +336,8 @@ fn the_smi_table_closes_the_swiss_and_all_derivatives_dates_and_keeps_the_german
     );
     let below = zurich((2009, 12, 31), (12, 0, 0));
     assert!(matches!(
-        calendar.is_open(below),
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) if date == day(2009, 12, 31)
+        calendar.is_open(below).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) if date == day(2009, 12, 31)
     ));
 
     // No wrap: the family's sessions stay inside one Zurich civil day, so
@@ -444,8 +444,8 @@ fn the_euronext_grid_answers_from_its_horizon_and_refuses_below_it() {
     // dates they audited.
     let carried = paris((2025, 6, 10), (12, 0, 0));
     assert!(matches!(
-        calendar.is_open(carried),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2025, 6, 10)
+        calendar.is_open(carried).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2025, 6, 10)
     ));
     assert!(calendar.trade_date(carried).is_err());
     assert_eq!(
@@ -501,8 +501,8 @@ fn the_euronext_table_classifies_its_answerable_dates_and_withholds_the_unstated
             "{eve} is the operator's announced half day with unstated hours"
         );
         assert!(matches!(
-            calendar.is_closed_trade_date(eve, exchange_hours::SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == eve
+            calendar.is_closed_trade_date(eve, exchange_hours::SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == eve
         ));
     }
 
@@ -521,8 +521,8 @@ fn the_euronext_table_classifies_its_answerable_dates_and_withholds_the_unstated
     // range only. The covered 2027 Monday beside the New Year closure answers.
     let outside = paris((2028, 1, 2), (12, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2028, 1, 2)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2028, 1, 2)
     ));
     assert!(
         calendar

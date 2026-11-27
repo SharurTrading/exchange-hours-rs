@@ -15,7 +15,7 @@ mod support;
 use crate::support::zones::{AUCKLAND, PARIS, SYDNEY, TOKYO, US_CENTRAL, UTC};
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason,
+    CalendarCoverage, CalendarQueryErrorKind, CalendarSource, CoverageGap, CoverageGapReason,
     DateCoverage, DateRange, Exchange, ExchangeCalendar, HolidayContract, MarketHoursKey,
     SUPPORT_FLOOR, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
 };
@@ -822,49 +822,41 @@ fn the_floor_is_a_local_date_not_a_utc_instant() {
 
 #[test]
 fn calendar_query_errors_are_distinguishable_by_a_caller() {
-    let source = CalendarSource::Exchange(Exchange::Cme);
-    let bound = date(2025, 6, 16);
-    let errors = [
-        CalendarQueryError::BeforeSupportFloor {
-            source,
-            date: date(2009, 12, 31),
-        },
-        CalendarQueryError::OutsideCoveredRange {
-            source,
-            date: date(2025, 6, 2),
-        },
-        CalendarQueryError::UnresolvedGap {
-            source,
-            date: date(2025, 1, 2),
-        },
-        CalendarQueryError::SearchExhausted {
-            source,
-            date: date(2025, 6, 2),
-            bound,
-        },
-    ];
+    let cme = calendar_for_exchange(Exchange::Cme);
+    let floor = cme
+        .is_open("2009-12-31T18:00:00Z".parse().unwrap())
+        .unwrap_err();
+    let outside = cme
+        .is_open("2099-06-02T18:00:00Z".parse().unwrap())
+        .unwrap_err();
+    let withheld = calendar_for_exchange(Exchange::NseIndia)
+        .is_closed_trade_date(date(2014, 10, 23), exchange_hours::SessionKind::Both)
+        .unwrap_err();
+    let exhausted = calendar_for_market_hours_key(MarketHoursKey::AlwaysOpen)
+        .trade_date("2026-04-20T18:00:00Z".parse().unwrap())
+        .unwrap_err();
 
-    for error in errors {
-        assert_eq!(error.source(), source);
-    }
-    assert_eq!(errors[0].date(), date(2009, 12, 31));
-    match errors[3] {
-        CalendarQueryError::SearchExhausted { bound: hit, .. } => assert_eq!(hit, bound),
-        other => panic!("expected an exhausted search, got {other:?}"),
-    }
-
-    // Unsupported coverage and bounded search exhaustion stay separable, which
-    // is the distinction the release plan requires.
+    assert_eq!(floor.source(), cme.source());
+    assert_eq!(floor.date(), date(2009, 12, 31));
     assert!(matches!(
-        errors[1],
-        CalendarQueryError::OutsideCoveredRange { .. }
+        floor.kind(),
+        CalendarQueryErrorKind::BeforeSupportFloor { .. }
     ));
     assert!(matches!(
-        errors[3],
-        CalendarQueryError::SearchExhausted { .. }
+        outside.kind(),
+        CalendarQueryErrorKind::OutsideCoveredRange { .. }
     ));
-
+    assert!(matches!(
+        withheld.kind(),
+        CalendarQueryErrorKind::UnresolvedGap { .. }
+    ));
+    assert!(
+        matches!(exhausted.kind(), CalendarQueryErrorKind::SearchExhausted { bound, .. } if bound == exhausted.date())
+    );
+    let errors = [&floor, &outside, &withheld, &exhausted];
     for (index, first) in errors.iter().enumerate() {
+        assert!(first.uses_embedded_tzdb());
+        assert_eq!(first.tzdb_release(), exchange_hours::EMBEDDED_TZDB_VERSION);
         for second in &errors[index + 1..] {
             assert_ne!(first, second);
             assert_ne!(
@@ -874,8 +866,7 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
             );
         }
     }
-
-    let boxed: Box<dyn std::error::Error> = Box::new(errors[0]);
+    let boxed: Box<dyn std::error::Error> = Box::new(floor);
     let rendered = boxed.to_string();
     assert!(rendered.contains("cme"), "{rendered}");
     assert!(rendered.contains("2009-12-31"), "{rendered}");
@@ -1889,7 +1880,7 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     // a date-level verdict, so only the three date-shaped
                     // errors promise anything about the named date.
                     let Some(error) = error else { continue };
-                    if matches!(error, CalendarQueryError::SearchExhausted { .. }) {
+                    if matches!(error.kind(), CalendarQueryErrorKind::SearchExhausted { .. }) {
                         continue;
                     }
                     let named = error.date();
@@ -1905,17 +1896,19 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     // -date divergence issue #128 recorded now removed.
                     let published = match coverage.coverage_on(named) {
                         DateCoverage::OutsideCoveredRange => {
-                            Some(CalendarQueryError::OutsideCoveredRange {
+                            Some(CalendarQueryErrorKind::OutsideCoveredRange {
                                 source: calendar.source(),
                                 date: named,
                             })
                         }
-                        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
-                            source: calendar.source(),
-                            date: named,
-                        }),
+                        DateCoverage::UnresolvedGap => {
+                            Some(CalendarQueryErrorKind::UnresolvedGap {
+                                source: calendar.source(),
+                                date: named,
+                            })
+                        }
                         DateCoverage::BeforeSupportFloor => {
-                            Some(CalendarQueryError::BeforeSupportFloor {
+                            Some(CalendarQueryErrorKind::BeforeSupportFloor {
                                 source: calendar.source(),
                                 date: named,
                             })
@@ -1924,7 +1917,8 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     };
                     if let Some(expected) = published {
                         assert_eq!(
-                            error, expected,
+                            error.kind(),
+                            expected,
                             "{label}: {family} at 14:07Z on {day} refuses {named} \
                              with a variant the metadata does not publish for it"
                         );

@@ -28,8 +28,8 @@
 use crate::support::zones::{KOLKATA, SHANGHAI, TOKYO};
 use crate::support::{date_opt, elapsed_days};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, EvidenceTier, Exchange,
-    ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarCoverage, CalendarQueryErrorKind, CoverageGapReason, DateCoverage, EvidenceTier,
+    Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
 use jiff::SignedDuration;
 
@@ -90,12 +90,15 @@ fn assert_closure_at(
     // contract is to refuse naming the day the scan needed: accepted only when
     // the error names a day before the window or the floor, or a day the table
     // withholds. Everywhere else the date must answer shut.
-    match calendar.is_closed_trade_date(trade_date, SessionKind::Both) {
+    match calendar
+        .is_closed_trade_date(trade_date, SessionKind::Both)
+        .map_err(|error| error.kind())
+    {
         Ok(closed) => assert!(
             closed,
             "{label}: {trade_date} has no session in either phase"
         ),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) => {
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) => {
             let first = calendar
                 .holiday_coverage()
                 .map(exchange_hours::HolidayCoverage::first)
@@ -106,7 +109,7 @@ fn assert_closure_at(
                  exits the window start may refuse"
             );
         }
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) => {
+        Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) => {
             let withheld = calendar
                 .holiday_on(date)
                 .map(Holiday::kind)
@@ -116,7 +119,7 @@ fn assert_closure_at(
                 "{label}: {trade_date} refused naming {date}, which the table does not withhold"
             );
         }
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) => {
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) => {
             let first = calendar
                 .holiday_coverage()
                 .map(exchange_hours::HolidayCoverage::first)
@@ -171,8 +174,10 @@ fn assert_unsourced_at(
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(trade_date, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_closed_trade_date(trade_date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ),
         "{label}: {trade_date} must refuse, never answer a closure or an open day"
     );
@@ -2020,8 +2025,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     );
     assert!(
         matches!(
-            tse.is_open(zoned(&TOKYO, (2028, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            tse.is_open(zoned(&TOKYO, (2028, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "a 2028 weekday is past the published schedule and must be refused"
     );
@@ -2034,8 +2040,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     assert_eq!(sse_coverage.last(), day(2026, 12, 31));
     assert!(
         matches!(
-            sse.is_open(zoned(&SHANGHAI, (2027, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            sse.is_open(zoned(&SHANGHAI, (2027, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "2027 is unpublished by SSE and the identity must refuse it outright"
     );
@@ -2050,8 +2057,8 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     );
     assert!(
         matches!(
-            sse.is_closed_trade_date(day(2010, 12, 31), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 12, 31)
+            sse.is_closed_trade_date(day(2010, 12, 31), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2010, 12, 31)
         ),
         "the 2010 classification refuses: no audited window brackets the date"
     );
@@ -2075,8 +2082,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     );
     assert!(
         matches!(
-            nse.is_open(zoned(&KOLKATA, (2027, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            nse.is_open(zoned(&KOLKATA, (2027, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
@@ -2108,8 +2116,8 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         let instant = zoned(&tz, (2009, 12, 31), (10, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(instant),
-                Err(CalendarQueryError::BeforeSupportFloor { date, .. })
+                calendar.is_open(instant).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. })
                     if date == day(2009, 12, 31)
             ),
             "{:?}: the pre-floor weekday must refuse naming its local day",

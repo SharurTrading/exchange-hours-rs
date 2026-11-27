@@ -42,7 +42,7 @@
 use crate::support::zones::BERLIN;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
     SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
 use jiff::Timestamp;
@@ -462,8 +462,8 @@ fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
         let outside = cet((2031, 1, 1), (12, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(outside),
-                Err(CalendarQueryError::OutsideCoveredRange {
+                calendar.is_open(outside).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::OutsideCoveredRange {
                     date,
                     ..
                 }) if date == day(2031, 1, 1)
@@ -1122,8 +1122,8 @@ fn the_window_reaches_the_floor_and_refuses_below_it() {
         let below = cet((2009, 12, 31), (12, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(below),
-                Err(CalendarQueryError::BeforeSupportFloor {
+                calendar.is_open(below).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::BeforeSupportFloor {
                     date,
                     ..
                 }) if date == day(2009, 12, 31)

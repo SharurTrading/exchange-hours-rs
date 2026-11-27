@@ -43,7 +43,7 @@ use crate::calendar::coverage::{CoverageGapReason, DateCoverage, ZonedCalendarCo
 use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::mk_local_open;
-use crate::calendar::{CalendarQueryError, CalendarSource, SUPPORT_FLOOR};
+use crate::calendar::{CalendarQueryError, CalendarQueryErrorKind, CalendarSource, SUPPORT_FLOOR};
 
 use crate::calendar::schedules::HoursProfile;
 
@@ -51,10 +51,10 @@ use crate::calendar::schedules::HoursProfile;
 // end of that opening day. Midnight-keyed revisions select the same profile
 // at any post-midnight anchor, so this only distinguishes sourced intraday
 // cutovers: one that lands in an intraday gap after noon (ICE Canada's 18:30
-// CT pre-open move) must govern the sessions opening later that day. The last
-// second of the local day exists in every zone — DST transitions never
-// collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
-// ambiguity regardless.
+// CT pre-open move) must govern the sessions opening later that day. The anchor
+// uses opening-boundary resolution: the earlier instant in a fold and the
+// end of the transition in a gap. A scan outside the timestamp range uses
+// the nearest timestamp limit.
 const OPEN_DAY_ANCHOR_SSM: u32 = 86_399;
 
 /// The source state a [`QueryContext`](super::schedule::QueryContext) is
@@ -210,7 +210,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     ///
     /// Running out of [`super::periods`]' bounded horizon is a different answer
     /// from a day the source refuses: an identity-backed source attributes the
-    /// exhaustion to itself as [`CalendarQueryError::SearchExhausted`], while a
+    /// exhaustion to itself as [`crate::CalendarQueryErrorKind::SearchExhausted`], while a
     /// detached snapshot has no coverage to attribute an error to and keeps
     /// its exhaustive `None` absence (LAW-PANIC's bounded-search contract).
     fn search_exhausted(coverage: Self::Coverage<'_>, day: Date) -> Result<(), Self::Error>;
@@ -345,18 +345,24 @@ impl SourceGate for Identified {
             // above, and a last-known-week view chose the week it knows everywhere.
             // Refusing here would let a caller read a coverage error as a closure.
             DateCoverage::Covered | DateCoverage::NormalWeekOnly => Ok(()),
-            DateCoverage::BeforeSupportFloor => Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            }),
-            DateCoverage::UnresolvedGap => Err(CalendarQueryError::UnresolvedGap {
-                source: coverage.identity(),
-                date,
-            }),
-            DateCoverage::OutsideCoveredRange => Err(CalendarQueryError::OutsideCoveredRange {
-                source: coverage.identity(),
-                date,
-            }),
+            DateCoverage::BeforeSupportFloor => Err(coverage.refusal(
+                CalendarQueryErrorKind::BeforeSupportFloor {
+                    source: coverage.identity(),
+                    date,
+                },
+            )),
+            DateCoverage::UnresolvedGap => {
+                Err(coverage.refusal(CalendarQueryErrorKind::UnresolvedGap {
+                    source: coverage.identity(),
+                    date,
+                }))
+            }
+            DateCoverage::OutsideCoveredRange => Err(coverage.refusal(
+                CalendarQueryErrorKind::OutsideCoveredRange {
+                    source: coverage.identity(),
+                    date,
+                },
+            )),
         }
     }
 
@@ -365,10 +371,12 @@ impl SourceGate for Identified {
         date: Date,
     ) -> Result<(), CalendarQueryError> {
         if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
-            return Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            });
+            return Err(
+                coverage.refusal(CalendarQueryErrorKind::BeforeSupportFloor {
+                    source: coverage.identity(),
+                    date,
+                }),
+            );
         }
         Ok(())
     }
@@ -392,10 +400,12 @@ impl SourceGate for Identified {
         // #117 lands. `require_answerable` deliberately passes below the floor,
         // so the check has to be made here.
         if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
-            return Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            });
+            return Err(
+                coverage.refusal(CalendarQueryErrorKind::BeforeSupportFloor {
+                    source: coverage.identity(),
+                    date,
+                }),
+            );
         }
         // Otherwise the date-level verdict governs: a date the identity cannot
         // answer at all is refused for its own reason, not the phase's.
@@ -417,10 +427,12 @@ impl SourceGate for Identified {
             }
             // A refusing declaration applies: the phase the scan consults is
             // the one the identity withholds on this date.
-            Some(_) => Err(CalendarQueryError::OutsideCoveredRange {
-                source: coverage.identity(),
-                date,
-            }),
+            Some(_) => Err(
+                coverage.refusal(CalendarQueryErrorKind::OutsideCoveredRange {
+                    source: coverage.identity(),
+                    date,
+                }),
+            ),
         }
     }
 
@@ -432,10 +444,10 @@ impl SourceGate for Identified {
             // The enriched refusal (Tier 3): the baseline derives from the
             // error itself, naming the sourced normal week the date sits
             // inside.
-            return Err(CalendarQueryError::UnresolvedGap {
+            return Err(coverage.refusal(CalendarQueryErrorKind::UnresolvedGap {
                 source: coverage.identity(),
                 date,
-            });
+            }));
         }
         Ok(())
     }
@@ -448,11 +460,11 @@ impl SourceGate for Identified {
         coverage: ZonedCalendarCoverage<'_>,
         day: Date,
     ) -> Result<(), CalendarQueryError> {
-        Err(CalendarQueryError::SearchExhausted {
+        Err(coverage.refusal(CalendarQueryErrorKind::SearchExhausted {
             source: coverage.identity(),
             date: day,
             bound: day,
-        })
+        }))
     }
 }
 

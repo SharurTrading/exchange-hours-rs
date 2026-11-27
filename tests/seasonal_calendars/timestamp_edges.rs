@@ -9,6 +9,7 @@ use crate::support::utc_datetime;
 use crate::support::zones::NEW_YORK;
 use crate::support::zones::TORONTO;
 use crate::support::zones::UTC;
+use exchange_hours::CalendarQueryErrorKind;
 use jiff::SignedDuration;
 use jiff::Timestamp;
 use jiff::civil::{Time, Weekday};
@@ -95,7 +96,7 @@ fn assert_refuses_totally<T: core::fmt::Debug>(
 ) {
     let answer = std::panic::catch_unwind(std::panic::AssertUnwindSafe(&call))
         .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at {instant}"));
-    match answer {
+    match answer.map_err(|error| error.kind()) {
         // A coverage refusal and an answer are both total. The claim at a timestamp
         // bound is **totality**, not refusal: most identities have no sourced
         // answer there, but a profile that genuinely holds at the bound (the
@@ -103,10 +104,10 @@ fn assert_refuses_totally<T: core::fmt::Debug>(
         // requires is that it returns rather than panicking, hanging, or
         // fabricating a degenerate session.
         Err(
-            exchange_hours::CalendarQueryError::BeforeSupportFloor { .. }
-            | exchange_hours::CalendarQueryError::OutsideCoveredRange { .. }
-            | exchange_hours::CalendarQueryError::UnresolvedGap { .. }
-            | exchange_hours::CalendarQueryError::SearchExhausted { .. },
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
+            | CalendarQueryErrorKind::UnresolvedGap { .. }
+            | CalendarQueryErrorKind::SearchExhausted { .. },
         )
         | Ok(_) => {}
         // Any other error is not a coverage verdict, so it is a defect.
@@ -440,8 +441,10 @@ fn dynamic_period_walks_keep_the_last_close_near_timestamp_maximum() {
     for resolution in [CalendarResolution::Weekly, CalendarResolution::Monthly] {
         assert_eq!(candle_end(&fixed, instant, resolution), Some(last_close));
         assert!(matches!(
-            calendar.candle_end(instant, resolution),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .candle_end(instant, resolution)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 }
@@ -453,8 +456,8 @@ fn a_civil_day_beyond_the_utc_timestamp_range_keeps_a_typed_coverage_refusal() {
     let unrepresentable = jiff::civil::Date::MAX;
     assert!(fixed.is_closed_all_day_in_calendar(unrepresentable, &UTC, SessionKind::Both));
     assert!(matches!(
-        calendar.is_closed_all_day_in_calendar(unrepresentable, &UTC, SessionKind::Both),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == unrepresentable
+        calendar.is_closed_all_day_in_calendar(unrepresentable, &UTC, SessionKind::Both).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == unrepresentable
     ));
 }
 

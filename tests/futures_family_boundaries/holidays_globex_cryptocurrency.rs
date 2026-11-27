@@ -22,7 +22,7 @@
 use crate::support::zones::{US_CENTRAL, UTC};
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlock, ExceptionBlockKind,
+    CalendarQueryErrorKind, CalendarResolution, EvidenceTier, ExceptionBlock, ExceptionBlockKind,
     ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key,
 };
@@ -1149,8 +1149,8 @@ fn the_coverage_window_has_two_hard_edges() {
     for probe in [ct(2028, 4, 15, 9, 0), ct(2028, 4, 15, 20, 0)] {
         assert!(
             calendar.is_open(probe).is_err_and(|error| matches!(
-                error,
-                CalendarQueryError::OutsideCoveredRange { .. }
+                error.kind(),
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
             )),
             "{probe} is past the audited window"
         );
@@ -1636,7 +1636,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is refused, never reported closed"
         );
         assert!(
@@ -1649,7 +1652,10 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "{date}: a withheld date is never reported closed"
         );
     }
@@ -1672,9 +1678,9 @@ fn assert_unsourced_changes_nothing(date: Date, row: Holiday, tier: EvidenceTier
             ),
             Err(error) => assert!(
                 matches!(
-                    error,
-                    CalendarQueryError::UnresolvedGap { .. }
-                        | CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                        | CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 ),
                 "{probe}: {error} is not a coverage refusal"
             ),

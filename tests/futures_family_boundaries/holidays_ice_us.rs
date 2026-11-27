@@ -16,8 +16,9 @@
 use crate::support::zones::NEW_YORK;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
-    HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -53,16 +54,16 @@ fn assert_declared_refusal<T: core::fmt::Debug>(
     );
     assert!(
         matches!(
-            (expected, error),
+            (expected, error.kind()),
             (
                 DateCoverage::BeforeSupportFloor,
-                CalendarQueryError::BeforeSupportFloor { .. }
+                CalendarQueryErrorKind::BeforeSupportFloor { .. }
             ) | (
                 DateCoverage::OutsideCoveredRange,
-                CalendarQueryError::OutsideCoveredRange { .. }
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
             ) | (
                 DateCoverage::UnresolvedGap,
-                CalendarQueryError::UnresolvedGap { .. }
+                CalendarQueryErrorKind::UnresolvedGap { .. }
             )
         ),
         "{claim}: {date} is {expected:?}, so the query must refuse it with the matching \
@@ -735,8 +736,10 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
          one-flank bridged residual"
     );
     assert!(matches!(
-        venue.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { .. })
+        venue
+            .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
     // 2025-01-01's noon probe rides the wrap opened that sourced evening and
     // answers shut from its own Closed row.
@@ -888,8 +891,10 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
     );
     assert!(
         matches!(
-            sugar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            sugar
+                .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ),
         "the 2024-12-31 classification refuses: nothing witnesses the holiday layer"
     );
@@ -971,8 +976,10 @@ fn the_2025_softs_closures_remove_the_whole_trading_day() {
             if (year, month, date) == (2025, 1, 1) {
                 assert!(
                     matches!(
-                        calendar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-                        Err(CalendarQueryError::UnresolvedGap { .. })
+                        calendar
+                            .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+                            .map_err(|error| error.kind()),
+                        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
                     ),
                     "{which:?}: the bridged eve's classification refuses typed"
                 );

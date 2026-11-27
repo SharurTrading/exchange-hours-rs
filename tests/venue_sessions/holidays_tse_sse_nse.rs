@@ -1642,6 +1642,115 @@ fn recovered_muhurat_sessions_preserve_their_published_phase_boundaries() {
     }
 }
 
+/// NSE's final weekday-hours circular and two Union Budget schedules.
+#[test]
+fn nse_full_hours_weekend_sessions_have_their_own_trade_date() {
+    let calendar = calendar_for_exchange(Exchange::NseIndia);
+    assert_closure(
+        calendar,
+        (2024, 1, 22),
+        "NSE-CMTR-60338",
+        "NSE January public holiday",
+    );
+    for (date, document) in [
+        ((2024, 1, 20), "NSE-MSD-2024-05"),
+        ((2025, 2, 1), "NSE-CIRC-2024-172"),
+        ((2026, 2, 1), "NSE-CIRC-2026-11"),
+    ] {
+        assert_nse_weekend_phases(
+            calendar,
+            date,
+            document,
+            &[
+                ((8, 44, 59), (false, false, false)),
+                ((8, 45, 0), (true, false, false)),
+                ((9, 0, 0), (false, false, true)),
+                ((9, 7, 0), (true, false, false)),
+                ((9, 15, 0), (true, true, false)),
+                ((10, 0, 0), (true, true, false)),
+                ((11, 15, 0), (true, true, false)),
+                ((15, 30, 0), (false, false, false)),
+                ((15, 40, 0), (true, false, false)),
+                ((16, 0, 0), (false, false, false)),
+            ],
+        );
+    }
+}
+
+/// Both live recovery days pause before accepting orders for the second leg.
+#[test]
+fn nse_live_recovery_sessions_preserve_the_site_switch_gap() {
+    let calendar = calendar_for_exchange(Exchange::NseIndia);
+    for (date, document) in [
+        ((2024, 3, 2), "NSE-MSD-2024-08"),
+        ((2024, 5, 18), "NSE-MSD-2024-40"),
+    ] {
+        assert_nse_weekend_phases(
+            calendar,
+            date,
+            document,
+            &[
+                ((8, 44, 59), (false, false, false)),
+                ((8, 45, 0), (true, false, false)),
+                ((9, 0, 0), (false, false, true)),
+                ((9, 7, 0), (true, false, false)),
+                ((9, 15, 0), (true, true, false)),
+                ((9, 59, 59), (true, true, false)),
+                ((10, 0, 0), (false, false, false)),
+                ((11, 14, 59), (false, false, false)),
+                ((11, 15, 0), (false, false, true)),
+                ((11, 22, 0), (true, false, false)),
+                ((11, 30, 0), (true, true, false)),
+                ((12, 30, 0), (false, false, false)),
+                ((12, 40, 0), (true, false, false)),
+                ((12, 50, 0), (false, false, false)),
+            ],
+        );
+    }
+}
+
+type NsePhaseProbe = ((u32, u32, u32), (bool, bool, bool));
+
+fn assert_nse_weekend_phases(
+    calendar: ExchangeCalendar,
+    date: (i16, i8, i8),
+    document: &str,
+    probes: &[NsePhaseProbe],
+) {
+    let trade_date = day(date.0, date.1, date.2);
+    let row = calendar
+        .holiday_on(trade_date)
+        .expect("published weekend row");
+    assert!(matches!(row.kind(), HolidayKind::ReplacementBlocks(_)));
+    assert_eq!(row.tier(), EvidenceTier::T1);
+    assert_eq!(row.document_id(), document);
+    assert_eq!(
+        calendar.is_closed_trade_date(trade_date, SessionKind::Both),
+        Ok(false)
+    );
+    for &(time, (open, regular, queue)) in probes {
+        let at = zoned(&KOLKATA, date, time);
+        assert_eq!(calendar.is_open(at), Ok(open), "{date:?} {time:?}");
+        assert_eq!(
+            calendar.is_open_regular(at),
+            Ok(regular),
+            "{date:?} {time:?}"
+        );
+        assert_eq!(
+            calendar.is_order_entry_only(at),
+            Ok(queue),
+            "{date:?} {time:?}"
+        );
+        if open || queue {
+            assert_eq!(
+                calendar.trade_date(at),
+                Ok(Some(trade_date)),
+                "{date:?} {time:?}"
+            );
+        }
+    }
+}
+
 /// Circular NSE/CMTR/76941's Sunday session, including both CAS and non-CAS
 /// securities, the random pre-open closure, and the post-close gap.
 #[test]
@@ -1933,9 +2042,9 @@ fn the_window_counts_are_the_printed_lists_counts() {
             (2021, 13, 0, 1),
             (2022, 12, 0, 1),
             (2023, 15, 0, 1),
-            (2024, 13, 0, 1),
-            (2025, 13, 0, 1),
-            (2026, 16, 0, 1),
+            (2024, 14, 0, 4),
+            (2025, 13, 0, 2),
+            (2026, 16, 0, 2),
         ],
         "NSE closures, withheld Muhurat dates and replacement-block Muhurat days per year, from the operator's lists"
     );

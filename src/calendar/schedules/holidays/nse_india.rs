@@ -126,6 +126,31 @@ static MUHURAT_2018_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 18 * 3_600 + 40 * 60, 18 * 3_600 + 50 * 60),
 ];
 
+/// Full-hours weekend cash sessions on 2024-01-20, 2025-02-01 and 2026-02-01.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static FULL_HOURS_WEEKEND_BLOCKS: [ExceptionBlock; 5] = [
+    ExceptionBlock::extended(0, 8 * 3_600 + 45 * 60, 9 * 3_600),
+    ExceptionBlock::order_entry(0, 9 * 3_600, 9 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 40 * 60, 16 * 3_600),
+];
+
+/// Cash-market disaster-recovery sessions on 2024-03-02 and 2024-05-18.
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static DISASTER_RECOVERY_2024_BLOCKS: [ExceptionBlock; 8] = [
+    ExceptionBlock::extended(0, 8 * 3_600 + 45 * 60, 9 * 3_600),
+    ExceptionBlock::order_entry(0, 9 * 3_600, 9 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 7 * 60, 9 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 15 * 60, 10 * 3_600),
+    ExceptionBlock::order_entry(0, 11 * 3_600 + 15 * 60, 11 * 3_600 + 22 * 60),
+    ExceptionBlock::extended(0, 11 * 3_600 + 22 * 60, 11 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 11 * 3_600 + 30 * 60, 12 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 12 * 3_600 + 40 * 60, 12 * 3_600 + 50 * 60),
+];
+
 /// NSE trading holidays and complete Muhurat replacement sessions.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
@@ -572,8 +597,14 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2023-12-25 - T2 - NSE-HOLMASTER-2023 - Christmas, Monday.
         (2023, 12, 25, Closed, T2, "NSE-HOLMASTER-2023"),
         // 2024, from the operator's holiday-master T2 feed (CM segment).
+        // 2024-01-20 - T1 - NSE-MSD-2024-05 - Full-hours primary-site session.
+        (2024, 1, 20, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-MSD-2024-05"),
+        // 2024-01-22 - T1 - NSE-CMTR-60338 - Maharashtra public holiday.
+        (2024, 1, 22, Closed, T1, "NSE-CMTR-60338"),
         // 2024-01-26 - T2 - NSE-HOLMASTER-2024 - Republic Day, Friday.
         (2024, 1, 26, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2024-03-02 - T1 - NSE-MSD-2024-08 - Live disaster-recovery session.
+        (2024, 3, 2, ReplacementBlocks(&DISASTER_RECOVERY_2024_BLOCKS), T1, "NSE-MSD-2024-08"),
         // 2024-03-08 - T2 - NSE-HOLMASTER-2024 - Mahashivratri, Friday.
         (2024, 3, 8, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-03-25 - T2 - NSE-HOLMASTER-2024 - Holi, Monday.
@@ -586,6 +617,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 4, 17, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-05-01 - T2 - NSE-HOLMASTER-2024 - Maharashtra Day, Wednesday.
         (2024, 5, 1, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2024-05-18 - T1 - NSE-MSD-2024-40 - Live disaster-recovery session.
+        (2024, 5, 18, ReplacementBlocks(&DISASTER_RECOVERY_2024_BLOCKS), T1, "NSE-MSD-2024-40"),
         // 2024-06-17 - T2 - NSE-HOLMASTER-2024 - Bakri Id, Monday.
         (2024, 6, 17, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-07-17 - T2 - NSE-HOLMASTER-2024 - Moharram, Wednesday.
@@ -603,6 +636,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 11, 15, Closed, T2, "NSE-HOLMASTER-2024"),
         // 2024-12-25 - T2 - NSE-HOLMASTER-2024 - Christmas, Wednesday.
         (2024, 12, 25, Closed, T2, "NSE-HOLMASTER-2024"),
+        // 2025-02-01 - T1 - NSE-CIRC-2024-172 - Union Budget session.
+        (2025, 2, 1, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-CIRC-2024-172"),
         // 2025-02-26 - T1 - NSE-HOL-2025 - Mahashivratri, Wednesday.
         (2025, 2, 26, Closed, T1, "NSE-HOL-2025"),
         // 2025-03-14 - T1 - NSE-HOL-2025 - Holi, Friday.
@@ -644,6 +679,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 1, 15, Closed, T2, "NSE-HOLMASTER-2026"),
         // 2026-01-26 - T1 - NSE-HOL-2026 - Republic Day, Monday.
         (2026, 1, 26, Closed, T1, "NSE-HOL-2026"),
+        // 2026-02-01 - T1 - NSE-CIRC-2026-11 - Union Budget session.
+        (2026, 2, 1, ReplacementBlocks(&FULL_HOURS_WEEKEND_BLOCKS), T1, "NSE-CIRC-2026-11"),
         // 2026-03-03 - T1 - NSE-HOL-2026 - Holi, Tuesday.
         (2026, 3, 3, Closed, T1, "NSE-HOL-2026"),
         // 2026-03-26 - T1 - NSE-HOL-2026 - Shri Ram Navami, Thursday.

@@ -824,7 +824,7 @@ fn withheld(calendar: ExchangeCalendar, date: Date) -> bool {
 /// closure unconditionally, and 2025-1 (a Wayback replay) states the mourning
 /// closure, so the scope reads complete to 2026-12-31.
 /// NSE recovered the 2018 list and its remaining Muhurat circulars on
-/// 2026-11-27 UTC. Special Saturday sessions remain tracked in #410. `hkex` was the next from
+/// 2026-11-27 UTC. The earliest special weekend candidates remain tracked in #410. `hkex` was the next from
 /// 2026-09-29 UTC, and left the map on
 /// 2026-09-30 UTC: the operator's own Phase-Two-era Trading Hours page states the
 /// eve session deletions in session language, so the ten 2012-2015 half-day eves
@@ -871,7 +871,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // resolved the 2026-12-28 `open1` withholding onto family rows and
         // shipped 2026-12-24 as one new disagreement date to the intersection.
         ("iceus", 70),
-        // The NSE date-level gaps are omitted Saturday sessions (#410),
+        // The NSE date-level gaps include earlier weekend-session candidates (#410),
         // so none of its shipped rows carries Unsourced.
         ("nse_india", 0),
         // 3 since the 2026-11-14 wave: the 2028/2029 Eid windows the operator

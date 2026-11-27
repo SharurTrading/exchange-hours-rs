@@ -522,9 +522,9 @@ the derivation from the saved bytes.
 
 ### 2027
 
-| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+| Trade date | Kind | Source statement | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2027-01-01 | closed | MOM: `1 January 2027 Friday New Year's Day` | `SGX-ST-SCHED-2026-11-27` | T2 | the current SGX-ST designation of the MOM calendar |
+| 2027-01-01 | closed | `SGX follows the Singapore holiday calendar` | `SGX-ST-SCHED-2026-11-27` | T2 | `SGX-MOM-CAL-2027` lists `1 January 2027, Friday` as `New Year's Day`. |
 
 **The half-day rows state the sheet exactly.** Every matching phase the
 operator prints on a half day — the morning session to 12:00, the closing

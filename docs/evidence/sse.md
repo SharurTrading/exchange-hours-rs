@@ -475,7 +475,7 @@ off and working weekends do not themselves establish SSE arrangements.
 | `CN-STATE-COUNCIL-795` | 2027-01-01 statutory date | <https://app.www.gov.cn/govdata/gov/202411/12/521605/article.html> | retrieved 2026-11-27 UTC | T1 | `131be90ed14f13512999b8de8c2fa4a0f567ec131d8f6ef0c15e829af4d598b9` |
 | `SSE-CLOSURE-INDEX-2026-11-27` | 2027 publication recheck | <https://www.sse.com.cn/disclosure/dealinstruc/closed/list/> | retrieved 2026-11-27 UTC | T1 | `aaebb9d5f7b6642c98596eb8e4d2bd5785339c9f09c6f5bd63774bbe20969396` |
 
-All nineteen historical artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fifteen 2011-2024 notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013` and the 2020 extension notice `SSE-NOTICE-2020-6`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
+All nineteen historical artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fourteen 2011-2024 annual notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013` and the 2020 extension notice `SSE-NOTICE-2020-6`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
 
 **Why the window runs 2011-01-01..2027-01-03.** SSE's media-center
 reprints begin with the 2011 annual notice. The 2010 annual notice

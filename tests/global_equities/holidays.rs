@@ -3,7 +3,7 @@
 //! Built-in holiday rows for the served cash-equity venues whose tables
 //! shipped with the 2025-2027 wave: `b3` (2025-2026 extended back to 2011,
 //! the 2010 span unaudited), `tadawul` (2021-2029-04-26, the earlier span
-//! unaudited) and `borsa_istanbul` (2012-03-02..2026-12-31), the APAC venues `nzx` (2010-2024 backfilled beside the
+//! unaudited) and `borsa_istanbul` (2012-03-02..2027-01-03), the APAC venues `nzx` (2010-2024 backfilled beside the
 //! operator's 2025-2027-01-04 rolling horizon; the 2016 mid-year span closed
 //! on 2026-10-03 UTC by the operator's own dairy-derivatives holiday
 //! memorandum of 20 November 2015), `asx` (2010-2024 backfilled
@@ -1250,7 +1250,7 @@ fn tadawul_page_gap_dates_refuse_rather_than_claim() {
 }
 
 // ---------------------------------------------------------------------------
-// borsa_istanbul — Borsa İstanbul Equity Market, 2012-2026, Europe/Istanbul.
+// borsa_istanbul — Borsa İstanbul Equity Market, Europe/Istanbul.
 // ---------------------------------------------------------------------------
 
 /// One operator year's weekday closure list and the label its probes carry.
@@ -1682,12 +1682,28 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
         .holiday_coverage()
         .expect("Borsa Istanbul ships a built-in table");
     assert_eq!(coverage.first(), day(2012, 3, 2));
-    assert_eq!(coverage.last(), day(2026, 12, 31));
+    assert_eq!(coverage.last(), day(2027, 1, 3));
+
+    let new_year = day(2027, 1, 1);
     assert_eq!(
-        calendar.holiday_on(coverage.last().tomorrow().expect("representable")),
-        None,
-        "no answer past the window: 2027 is unpublished"
+        calendar.holiday_on(new_year).map(Holiday::kind),
+        Some(HolidayKind::Closed)
     );
+    for date in [day(2027, 1, 2), day(2027, 1, 3)] {
+        assert_eq!(calendar.holiday_on(date), None);
+    }
+    for day_of_month in 1..=3 {
+        let date = day(2027, 1, day_of_month);
+        assert_eq!(
+            calendar.is_closed_trade_date(date, SessionKind::Both),
+            Ok(true)
+        );
+        assert_eq!(
+            calendar.is_open(istanbul((2027, 1, day_of_month), (11, 0, 0))),
+            Ok(false)
+        );
+    }
+
     // A 2012 probe below the window start (the floor and 2012-03-01 sit below
     // the operator's first year tab) answers its session questions from the
     // sourced normal week (the 2026-10-07 bridged-residual ruling, #296; the
@@ -1707,7 +1723,7 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
         ),
         "the 2012 classification refuses: no audited window brackets the date"
     );
-    // 2027-01-02 is inside 2027 and outside the audited window.
+    // The first weekday beyond the audited New Year weekend still refuses.
     let outside = istanbul((2027, 1, 4), (11, 0, 0));
     assert!(matches!(
         calendar.is_open(outside).map_err(|error| error.kind()),
@@ -1745,8 +1761,8 @@ fn borsa_istanbul_window_ships_only_closures_and_half_days() {
     }
     assert_eq!(
         (closed, half_days),
-        (145, 32),
-        "closures and 13:00 half days, Borsa Istanbul 2012-2026"
+        (146, 32),
+        "closures and 13:00 half days through January 3, 2027"
     );
 }
 

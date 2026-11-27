@@ -1,45 +1,16 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Borsa İstanbul Equity Market holiday rows, 2012-2026.
-//!
-//! Keyed by the venue-local trade date in `Europe/Istanbul`. Borsa İstanbul's
-//! Equity Market trades Monday-Friday, so every civil-date row in the
-//! operator's tables lands on its own trade date and no event-date conversion
-//! is needed; a holiday falling on a Saturday or Sunday (Zafer Bayramı
-//! 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29, and the
-//! weekend legs of the backfilled years) changes no trade date and ships no
-//! row.
-//!
-//! The whole block is **T1**: the operator's own `Resmi Tatil Günleri` page,
-//! whose server-rendered year tabs print every year 2012-2026 in one artifact,
-//! each table stating the holiday and its status — `Kapalı` (closed) or
-//! `Yarım Gün Tatil / Saat 13:00'e kadar` (half-day holiday until 13:00). The
-//! 2012-2024 rows key to that single artifact; the 2025-2026 rows also key to
-//! the per-market annex `EK-3 — Borsa İstanbul A.Ş. Pay Piyasası <year> Yılı
-//! Tatil Tablosu`, which states per holiday whether a session takes place
-//! (`seans yapılmayacaktır`) or a half-day session is held (`yarım gün seans
-//! yapılacaktır`). The annex carries the 2025-2026 closure rows and the
-//! half-day session's existence; the corporate page carries the 13:00 instant
-//! an early-close row states. The coverage window opens at 2012-03-02, the
-//! operator's own first sourced normal-week day; Borsa İstanbul has published
-//! no 2027 holiday tables — the page's year list stops at 2026 — so coverage
-//! stops at 2026-12-31; that and the per-row derivation are recorded in
-//! [`docs/evidence/borsa_istanbul.md`](../../../../../docs/evidence/borsa_istanbul.md).
+//! Borsa İstanbul Equity Market holidays, 2012-03-02..2027-01-03.
+//! See [evidence](../../../../../docs/evidence/borsa_istanbul.md).
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::Closed;
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
 
-/// Borsa İstanbul Equity Market's built-in holiday rows and the window they
-/// were audited over.
-///
-/// Every row is one line of the operator's `Resmi Tatil Günleri` page or of
-/// its `Pay Piyasası <year> Yılı Tatil Tablosu` annex (EK-3). A date inside
-/// the window with no row is audited normal.
 // Evidence: docs/evidence/borsa_istanbul.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2012, 3, 2) ..= (2026, 12, 31)],
+    coverage: [(2012, 3, 2) ..= (2027, 1, 3)],
     rows: [
         // 2012-04-23 - T1 - BIST-RESMI-TATIL-GUNLERI - Ulusal Egemenlik ve
         // Çocuk Bayramı: `23 Nisan 2012, Pazartesi … Kapalı`.
@@ -588,5 +559,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2026-10-29 - T1 - BIST-PP-TATIL-2026 - Cumhuriyet Bayramı, no
         // session Thursday.
         (2026, 10, 29, Closed, T1, "BIST-PP-TATIL-2026"),
+        // 2027-01-01 - T1 - BIST-PAY-SSS-2026-11-27 - statutory New Year's Day.
+        (2027, 1, 1, Closed, T1, "BIST-PAY-SSS-2026-11-27"),
     ],
 };

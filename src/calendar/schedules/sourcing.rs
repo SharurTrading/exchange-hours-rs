@@ -480,8 +480,8 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexPalladiumTas => DeclaredSourcing::nothing_carried(),
         // First normal-week witness; docs/evidence/oanda_fx.md.
         MarketHoursKey::OandaFx => DeclaredSourcing::carried_below(horizon!(2021, 12, 8)),
-        // First normal-week witness and current Forex holiday scope; docs/evidence/oanda_try_fx.md.
-        MarketHoursKey::OandaTryFx => DeclaredSourcing::carried_below(horizon!(2026, 10, 10)),
+        // First opening day after the archived witness; docs/evidence/oanda_try_fx.md.
+        MarketHoursKey::OandaTryFx => DeclaredSourcing::carried_below(horizon!(2025, 11, 17)),
         // Per-book first normal-week witnesses; docs/evidence/oanda_metals.md,
         // oanda_us_index_cfd.md, oanda_us_bond_cfd.md, oanda_us_commodity_cfd.md, oanda_brent.md.
         MarketHoursKey::OandaMetals => DeclaredSourcing::carried_below(horizon!(2021, 12, 8)),

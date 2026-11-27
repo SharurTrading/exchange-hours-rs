@@ -37,54 +37,61 @@ Interpretation, each step from the operator's own words:
 
 ## Holidays
 
-**Coverage:** 2026-10-10..2026-10-30 (inclusive trade dates; T1 Forex category audit).
+**Coverage:** 2025-11-17..2026-10-30 (inclusive trade dates, T1 Forex category audit).
 
-The built-in table audits **2026-10-10..2026-10-30**, the interval where
-both the restricted normal grid and the published holiday changes are witnessed.
-It contains **zero exception rows**: the only remaining dated changes in that
-window name Hong Kong index CFDs and Swedish share CFDs, not Forex.
-
-The fresh UK hours page (`OANDA-UK-HOURS-CURRENT-2026-10-12`) places the
+The archived UK hours page (`OANDA-UK-HOURS-2025-NOV-WAYBACK`) places the
 ordinary FX row and `TRY Pairs` within the same `Forex CFDs` section. The
-TRY carve-out changes normal hours; it does not remove the products from Forex.
-The UK holiday page (`OANDA-UK-HOLIDAYS-CURRENT-2026-10-12`) scopes its
-restrictions to `Forex`, without a TRY exclusion. Category membership therefore
-establishes the scope without requiring a separate TRY-specific holiday label.
-This is an interpretation of two operator statements, not a claim that either
-prints a TRY-specific holiday quote.
+current UK hours page confirms that grouping. The UK holiday page
+(`OANDA-UK-HOLIDAYS`) scopes the following restrictions to Forex as a
+category. Intersecting those restrictions with the TRY grid yields two
+closures.
 
-Generic Forex holiday restrictions must be intersected with the TRY daily grid.
-As a scope cross-check, the printed Christmas 2025 and New Year 2026 reopen at
-17:05 New York is 22:05 Berlin, after TRY's 17:00 close; it would remove the
-holiday daytime session, not add an overnight TRY session. The preceding
-16:59 New York close is after TRY's daytime close and cannot shorten it.
-These examples explain the category interpretation; they do not source the
-restricted UK grid before its 2026-10-10 witness, and no past rows are added.
+On both preceding eves the 16:59 New York close is 22:59 CET, after
+the 17:00 CET close. The other holiday sections in the audited range
+specify changes to other books. The October 30 publication boundary and
+earlier carried dates remain explicit coverage limits tracked in #332.
 
-No Turkish cash-market or bank calendar is inferred into spot Forex. Neither
-historical dates nor dates beyond the October 30 publication boundary are
-certified by this bounded table. Their explicit refusals remain tracked in #332.
+### 2025
+
+| Trade date | Kind | Time as printed | Document | Tier | Effect on the TRY grid |
+|---|---|---|---|---|---|
+| 2025-12-25 | closed | `Forex: open at 17:05` | `OANDA-UK-HOLIDAYS` | T1 | The 17:05 New York reopen is 23:05 CET, after the daytime session ends. |
+
+### 2026
+
+| Trade date | Kind | Time as printed | Document | Tier | Effect on the TRY grid |
+|---|---|---|---|---|---|
+| 2026-01-01 | closed | `Forex: open at 17:05` | `OANDA-UK-HOLIDAYS` | T1 | The 17:05 New York reopen is 23:05 CET, after the daytime session ends. |
 
 ## Dated selectors
 
-None. The module has one sourced grid; `sourcing.rs` declares every day
-below the 2026-10-10 capture carried, because the living hours page is the
-grid's only witness.
+The 2025-07-08 replay prints the ordinary FX week under `All FX products`
+without a TRY-specific row. The 2025-11-15 replay first witnesses the TRY
+carve-out at 02:32:04 UTC on a Saturday. December 2025, February and April
+2026 replays corroborate the restricted grid. The declaration starts
+on Monday, 2025-11-17, the first opening day after the archived witness.
+The UK effective day between the July and November observations remains
+unresolved. The module carries only the one witnessed grid.
 
 ## Sources
 
 - <https://www.oanda.com/uk-en/trading/hours-of-operation/> — the operator's
-  hours page for the UK entity, captured 2026-10-10 22:36 UTC (HTML) and
-  rendered by the maintainer to PDF the same UTC date. The TRY row is the
-  grid's only statement.
+  hours page for the UK entity. The November 2025 through April 2026
+  replays and the current UK page print the same TRY row.
 - <https://www.oanda.com/uk-en/trading/holiday-trading-hours> — the
   operator's UK holiday page, whose Forex category supplies the bounded
-  2026-10-10..2026-10-30 audit above.
+  2025-11-17..2026-10-30 audit above.
 
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `OANDA-UK-HOURS-2025-JUL-WAYBACK` | 2025-07-08 observation | <https://web.archive.org/web/20250708202954id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2025-07-08; retrieved 2026-10-13 UTC | T1 | `12ace0b5ae89d132e82242e6fe697f5bce745e5699906028fcf67a0819a432c6` |
+| `OANDA-UK-HOURS-2025-NOV-WAYBACK` | 2025-11-15 observation | <https://web.archive.org/web/20251115023204id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2025-11-15; retrieved 2026-10-13 UTC | T1 | `d5e3a4a9ef4309e2365866135957593eab1e007b86a9e2e8ca052aa65723d1b7` |
+| `OANDA-UK-HOURS-2025-DEC-WAYBACK` | 2025-12-13 observation | <https://web.archive.org/web/20251213234655id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2025-12-13; retrieved 2026-10-13 UTC | T1 | `ccc90896b61f46552fb3f93e90e8f5021b28d441d2efc215ff2244f08112475a` |
+| `OANDA-UK-HOURS-2026-FEB-WAYBACK` | 2026-02-09 observation | <https://web.archive.org/web/20260209190304id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2026-02-09; retrieved 2026-10-13 UTC | T1 | `4166cda4a13fa6acd7c3040ee51f027b39dfc7f50da1bb565d922ebf7b4b8d5b` |
+| `OANDA-UK-HOURS-2026-APR-WAYBACK` | 2026-04-11 observation | <https://web.archive.org/web/20260411231933id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | capture 2026-04-11; retrieved 2026-10-13 UTC | T1 | `27bf3ed23f951e0db8fd1defe8781923f508166e518232bf28a107965a26c002` |
+| `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 UTC | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
 | `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
 | `OANDA-UK-HOURS-CURRENT-2026-10-12` | current observation 2026-10-12; no cutover asserted | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | retrieved 2026-10-12 00:39 UTC | T1 | `1c986aee21fdd7b76d04cabc2a8846fe00e08bb28257a27cfada828291c7e063` |
@@ -93,16 +100,16 @@ grid's only witness.
 | `OANDA-TMS-TRY-2025-JUNE` | TMS only; valid from 2025-06-15 | <https://www.oanda.com/eu-en/sites/default/files/document_files/sif-tms-connect-pro-eng-15.06.2025.pdf> | retrieved 2026-10-11 UTC | T1 | `6dc257347389ca311f7313f3ff660e93d8b7b0fd9ed1f587a434e22ef1330e80` |
 | `OANDA-TMS-TRY-2025-OCT` | TMS only; valid from 2025-10-20 | <https://www.oanda.com/eu-en/sites/default/files/document_files/sif-tms-connect-eng-20.10.2025.pdf> | retrieved 2026-10-11 UTC | T1 | `b8c02e7040cf1b690d22ff05cba971831dfe247c68aed33f05d3b0b19753a0ab` |
 
-Store paths: see [`oanda_fx.md`](oanda_fx.md). The fresh artifacts and scope
-audit are in `normal-weeks/oanda-current-source-audit-2026-10-12/`,
-`uk-hours.html` and `uk-holidays.html`, in the research store.
+The UK hours replays are in
+`normal-weeks/oanda-withheld-holidays-2026-10-13/hours-retries/` in the
+research store. The UK holiday page and two October 12 captures are
+filed as listed in [`oanda_fx.md`](oanda_fx.md).
 
 ## Gaps and residual risks
 
-- **Every day before the 2026-10-10 capture is carried** — the TRY grid's
-  only witness is the living page. The date-aware surface refuses the whole
-  carried span; historical completion in #332 requires a Wayback sweep or an operator statement
-  dating the grid.
+- The date-aware surface refuses the carried span before 2025-11-17.
+  Historical completion in #332 still requires UK evidence dating the
+  switch and establishing the earlier UK TRY sessions and holidays.
 - The TRY carve-out exists because of the pair set's restricted schedule;
   if OANDA widens or narrows the TRY pair list the grid may change, and the
   page is the watch entry point.
@@ -112,10 +119,10 @@ not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-o
 
 ## Regional applicability audit — 2026-10-11 UTC
 
-None of the 19 usable UK hours replays in the existing archive capture set
-prints a TRY-specific row. The current UK row remains this identity's only
-normal-week witness. Distinct operator evidence establishes why a regional
-announcement cannot silently provide the missing UK day:
+The initial pass over 19 UK replays found no TRY-specific row.
+The later retrieval of the November 2025 UK replay supplies an earlier
+witness. Regional artifacts establish the following changes in their
+own scopes:
 
 - `OANDA-JAPAN-TRY-2025`, issued 2025-08-04, names TRY/JPY, EUR/TRY and
   USD/TRY and announces changed trading hours from 2025-08-11. It describes
@@ -129,16 +136,11 @@ announcement cannot silently provide the missing UK day:
   OANDA TMS Brokers S.A., not OANDA Europe Limited; the later specification
   does not prove the first effective day of a UK change.
 
-The UK historical-day refusal remains honest. The Japan and TMS effective
-days must not key a UK revision, and a common current session does not prove
-common holiday arrangements. A UK-scoped dated change artifact would close
-the normal-week history gap. The later category audit above closes current
-holiday applicability without proving the missing historical grid (#332). The operator's dated OEL execution
-policy also says broker hours may differ from underlying exchanges; see
-[the FX audit](oanda_fx.md#historical-normal-week-audit--2026-10-11-utc).
-An inherited calendar selected by product timezone is an explicit caller
-policy, with its source and limitations disclosed, rather than T1 proof of
-this book's holiday arrangements.
+The UK effective day requires an OANDA Europe Limited artifact. Its
+execution policy says broker hours may differ from underlying exchanges.
+See [the FX audit](oanda_fx.md#historical-normal-week-audit--2026-10-11-utc).
+An inherited calendar selected by product timezone is a disclosed caller
+policy. The native TRY schedule uses the UK artifacts listed above.
 
 Audit artifact paths in the research store:
 `normal-weeks/oanda-history-audit-2026-10-11/` with filenames

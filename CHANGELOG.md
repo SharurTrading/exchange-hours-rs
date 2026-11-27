@@ -48,6 +48,9 @@
 - Cover Borsa İstanbul's January 1, 2027 statutory closure and the following
   weekend. The rest of 2027 awaits the annual Equity Market schedule
   ([#391](https://github.com/SharurTrading/exchange-hours-rs/issues/391)).
+- Extend OANDA UK TRY-pair calendar coverage back to November 17, 2025 from
+  archived UK hours and apply the Christmas 2025 and New Year 2026 closures
+  ([#332](https://github.com/SharurTrading/exchange-hours-rs/issues/332)).
 - Cover the Shanghai Stock Exchange's January 1, 2027 statutory closure and
   the following weekend. The rest of 2027 awaits the exchange's annual
   closure notice ([#402](https://github.com/SharurTrading/exchange-hours-rs/issues/402)).

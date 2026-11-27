@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Current TRY sessions within OANDA's published Forex holiday scope.
+//! Witnessed TRY sessions within OANDA's published Forex holiday scope.
 
 mod support;
 
@@ -65,9 +65,9 @@ fn current_try_next_open_answers_without_turning_its_overnight_gap_into_maintena
 }
 
 #[test]
-fn current_try_coverage_does_not_certify_history_or_unpublished_future() {
+fn try_coverage_refuses_dates_before_the_witness_and_after_publication() {
     let calendar = ExchangeCalendar::for_market_hours_key(MarketHoursKey::OandaTryFx);
-    for date in ["2026-10-09T12:00:00Z", "2026-11-02T12:00:00Z"] {
+    for date in ["2025-11-14T12:00:00Z", "2026-11-02T12:00:00Z"] {
         assert!(calendar.is_open(utc(date)).is_err());
     }
     assert!(
@@ -75,4 +75,51 @@ fn current_try_coverage_does_not_certify_history_or_unpublished_future() {
             .next_session_open_after(utc("2026-10-30T17:00:00Z"))
             .is_err()
     );
+}
+
+#[test]
+fn archived_try_grid_answers_from_the_first_witnessed_opening_day() {
+    let calendar = ExchangeCalendar::for_market_hours_key(MarketHoursKey::OandaTryFx);
+    assert_eq!(
+        calendar.session_bounds(utc("2025-11-17T07:00:00Z")),
+        Ok(Some((
+            utc("2025-11-17T07:00:00Z"),
+            utc("2025-11-17T16:00:00Z")
+        )))
+    );
+}
+
+#[test]
+fn try_forex_holiday_reopens_leave_no_session_on_christmas_or_new_years_day() {
+    let calendar = ExchangeCalendar::for_market_hours_key(MarketHoursKey::OandaTryFx);
+    for (eve, holiday, midday, next_open) in [
+        (
+            (2025, 12, 24),
+            (2025, 12, 25),
+            "2025-12-25T12:00:00Z",
+            "2025-12-26T07:00:00Z",
+        ),
+        (
+            (2025, 12, 31),
+            (2026, 1, 1),
+            "2026-01-01T12:00:00Z",
+            "2026-01-02T07:00:00Z",
+        ),
+    ] {
+        let (year, month, day) = eve;
+        assert_eq!(
+            calendar.is_closed_trade_date(date_opt(year, month, day).unwrap(), SessionKind::Both),
+            Ok(false)
+        );
+        let (year, month, day) = holiday;
+        assert_eq!(
+            calendar.is_closed_trade_date(date_opt(year, month, day).unwrap(), SessionKind::Both),
+            Ok(true)
+        );
+        assert_eq!(calendar.is_open(utc(midday)), Ok(false));
+        assert_eq!(
+            calendar.next_session_open_after(utc(midday)),
+            Ok(Some(utc(next_open)))
+        );
+    }
 }

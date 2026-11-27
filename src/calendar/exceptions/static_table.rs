@@ -144,8 +144,7 @@ impl<'a> StaticSessionExceptions<'a> {
     /// inside it with no record are [`DateException::KnownNormal`], and dates
     /// outside it are [`DateException::OutOfCoverage`]. An empty record slice
     /// is valid and asserts that the whole window was audited and found normal.
-    /// This is a `const fn`, so a caller can validate while constructing a
-    /// constant or static table.
+    /// The constructor validates the borrowed records at runtime.
     ///
     /// Validation scans left to right, checking the coverage bounds, then each
     /// record's ordering and window membership, then each replacement block's

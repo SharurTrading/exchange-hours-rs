@@ -166,8 +166,7 @@ impl<'a> StaticDayPolicy<'a> {
     /// An empty slice is valid and behaves like [`super::NoPolicy`]. Records
     /// must be strictly increasing by trade date, so duplicates are rejected.
     /// Early closes use `0..=86_400`; late opens use `0..86_400`.
-    /// This is a `const fn`, so callers can evaluate validation while constructing
-    /// a constant or static policy.
+    /// The constructor validates the borrowed overrides at runtime.
     ///
     /// Validation scans from left to right. For each record it checks ordering,
     /// then the early close, then the late open, returning the first violation.

@@ -83,42 +83,14 @@ jiff = { version = "1", default-features = false, features = ["static"] }
 
 ### Time zone updates
 
-- **For backtesting, use the precompiled calendar.** Pin the crate version and
-  record `exchange_hours::EMBEDDED_TZDB_VERSION` with the results. The same
-  build replays the same historical UTC session boundaries offline.
-- **For live trading, use the latest stable IANA release.** Add the
-  `exchange-hours-tzdb` companion and start one updater at application
-  startup. It verifies the initial release before returning and checks hourly,
-  so a government clock change can reach a running application without a rebuild.
+Use the compiled time zones for live trading and backtesting. Record the
+`exchange-hours` version and `exchange_hours::EMBEDDED_TZDB_VERSION` with
+each run. Replaying with the same versions uses the same clock rules offline.
 
-Add `exchange-hours-tzdb = "0.1"` alongside
-`exchange-hours = "2"` for live use. The companion enables the calendar's
-`runtime-tzdb` feature.
-
-```rust
-use exchange_hours::{Exchange, ExchangeCalendar};
-use exchange_hours_tzdb::TimeZoneUpdater;
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let updater = TimeZoneUpdater::start_latest()?;
-    // Pin one release for this live operation.
-    let snapshot = updater.snapshot()?;
-    let calendar = ExchangeCalendar::new(Exchange::Nyse).with_time_zone_snapshot(&snapshot);
-    let _bounds = calendar.session_bounds("2026-01-15T15:00:00Z".parse()?)?;
-    Ok(())
-}
-```
-
-Keep the updater alive for automatic updates. To reproduce a particular live
-run, record the crate version and `snapshot.release()` and retain the exact
-zone data used. Supply that snapshot during replay. A run keeps its snapshot
-across background updates. An unsuccessful refresh is
-visible through `updater.status()?.last_error`, and live queries can continue
-using the last verified release. A coverage error retains the snapshot that
-produced it. Formatting the error or reading `error.normal_week_baseline()`
-uses that release even after an update. Startup requires network access and the
-`curl`, `gpgv` and `zic` tools. See the
-[companion setup and snapshot API](https://github.com/SharurTrading/exchange-hours-rs/tree/main/tzdb-runtime).
+CI compares the embedded version with IANA’s stable release daily and on pull
+requests. When the rules change, update the calendar dependency and redeploy
+the application to pick up the reviewed release. Until then, a running binary
+continues to use the rules it was built with.
 
 ## Migrating from 1.x
 
@@ -914,7 +886,6 @@ in `rust-toolchain.toml`. To reproduce CI locally:
 ```bash
 cargo fmt --all --check
 cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
-cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
 cargo check --locked --package exchange-hours --no-default-features
 cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
 cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast

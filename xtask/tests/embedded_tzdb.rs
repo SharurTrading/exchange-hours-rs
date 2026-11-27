@@ -14,12 +14,6 @@ fn freshness_requires_an_exact_match_and_successful_discovery() {
         &curl,
         r#"#!/bin/sh
 test "$IANA_FIXTURE" != unavailable || exit 22
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        --output|-o) shift; exec > "$1" ;;
-    esac
-    shift
-done
 printf '%s\n' "$IANA_FIXTURE"
 "#,
     )
@@ -29,6 +23,8 @@ printf '%s\n' "$IANA_FIXTURE"
     for (response, success, message) in [
         (current, true, current),
         ("9999z", false, "latest stable release is 9999z"),
+        ("9999za", false, "latest stable release is 9999za"),
+        ("9999aa", false, "Could not verify"),
         ("preview", false, "Could not verify"),
         ("unavailable", false, "Could not verify"),
     ] {

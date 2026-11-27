@@ -21,7 +21,7 @@
   input when building a policy record.
 - Match coverage refusals through `error.kind()` and `CalendarQueryErrorKind`.
   Refusals retain their original time-zone rules for display and normal-week
-  diagnostics across a live database refresh.
+  diagnostics when callers supply their own zone data.
 - `SessionRule` validates deserialized rules and exposes read-only weekday
   and boundary accessors. Valid records retain their original wire format.
 - Built-in calendars default to compile-time IANA 2026f time zones. A repeated local
@@ -37,11 +37,10 @@
 
 ### Added
 
-- The optional `exchange-hours-tzdb` companion loads IANA's latest stable
-  release at startup, verifies the signed data and checks hourly for updates.
-  The calendar's `runtime-tzdb` feature accepts immutable snapshots for live
-  operations and reproducible backtests. CI fails when the embedded release
-  differs from IANA's current stable release.
+- Use the same compiled zones for live trading and backtesting. CI compares
+  the embedded IANA release with the latest stable release daily and on pull
+  requests. Deploy a new build to pick up a change. The opt-in `runtime-tzdb`
+  feature accepts immutable snapshots from caller-supplied TZif bytes.
 - Extend the Nasdaq U.S. cash, BME principal-share and MEFF IBEX futures
   holiday calendars through 2027. Two abbreviated Nasdaq dates and two
   BME cash half days await their complete phase timetables.
@@ -662,5 +661,5 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v1.4.0...v2.0.0
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v1.4.0...2.0.0

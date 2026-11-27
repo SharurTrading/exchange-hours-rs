@@ -24,7 +24,7 @@ pub(super) fn regular_window(hours: &MarketHours) -> (u32, u32) {
         .regular
         .first()
         .expect("cash venue has a regular rule");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
 pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: Timestamp) {

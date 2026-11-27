@@ -48,7 +48,7 @@ pub(super) fn probe_instants(hours: &MarketHours) -> Vec<Timestamp> {
             continue;
         };
         for rule in hours.regular.iter().chain(hours.extended.iter()) {
-            for ssm in [rule.open_ssm, rule.close_ssm] {
+            for ssm in [rule.open_ssm(), rule.close_ssm()] {
                 // The end-exclusive `close_ssm == 86_400` sentinel is local
                 // midnight of the next day; probe it there so full-day rules
                 // get their close boundary +/-1s like every other rule.

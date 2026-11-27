@@ -53,50 +53,80 @@ pub(crate) const ALL_DAYS: [bool; 7] = [true, true, true, true, true, true, true
 ///
 /// A well-formed rule has `open_ssm < 86_400`, `close_ssm <= 86_400` (the
 /// `86_400` sentinel closes a same-day session exactly at next local
-/// midnight), and at least one enabled weekday. [`SessionRule::new`] enforces
-/// all three; construction by struct literal or via `Deserialize` bypasses them,
-/// so validate untrusted input with [`SessionRule::validate`]. Queries stay
-/// total for out-of-domain values but their answers are unspecified — an
-/// out-of-range `open_ssm` silently degrades the rule.
-#[non_exhaustive]
+/// midnight), and at least one enabled weekday. Construction and
+/// deserialization enforce all three. Use the accessors to read a rule.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "SessionRuleFields")]
 pub struct SessionRule {
-    /// Weekday activation mask (Mon=0 .. Sun=6).
-    pub days: [bool; 7],
-    /// Open time in seconds since local midnight, in `0..86_400`.
-    pub open_ssm: u32,
-    /// Close time in seconds since local midnight, end-exclusive, in
-    /// `0..=86_400`.
-    pub close_ssm: u32,
+    pub(super) days: [bool; 7],
+    pub(super) open_ssm: u32,
+    pub(super) close_ssm: u32,
+}
+
+#[derive(Deserialize)]
+#[serde(rename = "SessionRule")]
+struct SessionRuleFields {
+    days: [bool; 7],
+    open_ssm: u32,
+    close_ssm: u32,
+}
+
+impl TryFrom<SessionRuleFields> for SessionRule {
+    type Error = SessionRuleError;
+
+    fn try_from(fields: SessionRuleFields) -> Result<Self, Self::Error> {
+        Self::new(fields.days, fields.open_ssm, fields.close_ssm)
+    }
 }
 
 impl SessionRule {
-    /// Builds a rule after checking the domain invariants listed on
-    /// [`SessionRule`].
+    /// Builds a weekday-masked rule with end-exclusive local bounds.
     ///
     /// # Errors
     ///
-    /// Returns the first violated invariant: an out-of-range `open_ssm` or
-    /// `close_ssm`, or an all-`false` weekday mask. Equal endpoints are valid
-    /// and represent one complete local-day span.
-    pub fn new(days: [bool; 7], open_ssm: u32, close_ssm: u32) -> Result<Self, SessionRuleError> {
+    /// Returns the first out-of-range boundary or an empty weekday mask.
+    /// Equal endpoints represent one complete local-day span.
+    pub const fn new(
+        days: [bool; 7],
+        open_ssm: u32,
+        close_ssm: u32,
+    ) -> Result<Self, SessionRuleError> {
         let rule = Self {
             days,
             open_ssm,
             close_ssm,
         };
-        rule.validate()?;
-        Ok(rule)
+        match rule.validate() {
+            Ok(()) => Ok(rule),
+            Err(error) => Err(error),
+        }
     }
 
-    /// Checks the domain invariants listed on [`SessionRule`] without
-    /// consuming the rule — the check for rules that arrived by struct
-    /// literal or `Deserialize` rather than through [`SessionRule::new`].
+    /// Returns the opening weekday mask, starting with Monday.
+    #[must_use]
+    pub const fn days(&self) -> [bool; 7] {
+        self.days
+    }
+
+    /// Returns the opening time in seconds since local midnight.
+    #[must_use]
+    pub const fn open_ssm(&self) -> u32 {
+        self.open_ssm
+    }
+
+    /// Returns the end-exclusive closing time. A value of 86,400 denotes
+    /// the midnight after the opening day.
+    #[must_use]
+    pub const fn close_ssm(&self) -> u32 {
+        self.close_ssm
+    }
+
+    /// Checks the same bounds and weekday mask as construction.
     ///
     /// # Errors
     ///
     /// Returns the first violated invariant; see [`SessionRule::new`].
-    pub fn validate(&self) -> Result<(), SessionRuleError> {
+    pub const fn validate(&self) -> Result<(), SessionRuleError> {
         if self.open_ssm >= SECONDS_PER_NORMAL_DAY_U32 {
             return Err(SessionRuleError::OpenOutOfRange {
                 open_ssm: self.open_ssm,
@@ -107,7 +137,7 @@ impl SessionRule {
                 close_ssm: self.close_ssm,
             });
         }
-        if !self.days.iter().any(|&enabled| enabled) {
+        if matches!(self.days, [false, false, false, false, false, false, false]) {
             return Err(SessionRuleError::NoEnabledDays);
         }
         Ok(())

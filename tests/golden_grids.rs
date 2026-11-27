@@ -58,7 +58,7 @@ fn render_rules(out: &mut String, identity: &str, kind: &str, rules: &[SessionRu
         return;
     }
     for rule in rules {
-        let wrap = if rule.close_ssm <= rule.open_ssm {
+        let wrap = if rule.close_ssm() <= rule.open_ssm() {
             " +1d"
         } else {
             ""
@@ -66,9 +66,9 @@ fn render_rules(out: &mut String, identity: &str, kind: &str, rules: &[SessionRu
         let _ = writeln!(
             out,
             "{identity} | {kind} | {} | {}-{}{wrap}",
-            day_mask(rule.days),
-            clock(rule.open_ssm),
-            clock(rule.close_ssm),
+            day_mask(rule.days()),
+            clock(rule.open_ssm()),
+            clock(rule.close_ssm()),
         );
     }
 }

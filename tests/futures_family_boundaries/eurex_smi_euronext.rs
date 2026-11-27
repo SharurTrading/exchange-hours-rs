@@ -127,24 +127,24 @@ fn the_smi_extension_cutover_holds_on_both_sides_of_zurich_midnight() {
 
     let baseline = hours_for_market_hours_key(key, before);
     assert_eq!(
-        baseline.regular[0].close_ssm,
+        baseline.regular[0].close_ssm(),
         17 * 3600 + 27 * 60,
         "2010-07-04 still closes continuous trading at 17:27 local"
     );
     assert_eq!(
-        baseline.order_entry[1].close_ssm,
+        baseline.order_entry[1].close_ssm(),
         20 * 3600 + 30 * 60,
         "and runs the 17:27-20:30 post-trading leg"
     );
 
     let extended = hours_for_market_hours_key(key, at);
     assert_eq!(
-        extended.regular[0].close_ssm,
+        extended.regular[0].close_ssm(),
         22 * 3600,
         "2010-07-05 opens on the amended 22:00 close"
     );
     assert_eq!(
-        extended.order_entry[1].open_ssm,
+        extended.order_entry[1].open_ssm(),
         22 * 3600,
         "with the post-trading leg moved to 22:00-22:30"
     );

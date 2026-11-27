@@ -25,7 +25,7 @@ fn day(date: (i16, i8, i8)) -> jiff::civil::Date {
 fn regular_bounds(instant: jiff::Timestamp) -> (u32, u32) {
     let hours = hours_for_market_hours_key(GILTS, instant);
     let rule = hours.regular.first().expect("one regular rule per era");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
 /// The pre-change grid, exactly as the operator's product pages print it:

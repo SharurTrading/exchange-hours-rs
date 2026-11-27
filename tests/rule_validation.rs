@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The [`SessionRule`] domain contract: what [`SessionRule::new`] and
-//! [`SessionRule::validate`] accept and reject.
-//!
-//! The SSM domain is `open_ssm in 0..86_400`, `close_ssm in 0..=86_400` (the
-//! `86_400` sentinel closes a same-day session exactly at next local
-//! midnight — the shape the 24×7 profile uses), and at least one enabled
-//! weekday. Equal endpoints encode one complete local-day span. Struct-literal
-//! and serde construction bypass the checks by design; `validate` is the
-//! recheck for those paths.
+//! Construction and deserialization share the session-rule contract. The open
+//! is in `0..86_400` and the close in `0..=86_400`. The weekday mask enables
+//! at least one day. Equal endpoints span one complete local day.
 
 mod support;
 
@@ -29,9 +23,9 @@ const NO_DAYS: [bool; 7] = [false; 7];
 #[test]
 fn new_accepts_a_same_day_rule() {
     let rule = SessionRule::new(MON_FRI, 9 * 3600 + 30 * 60, 16 * 3600).expect("valid rule");
-    assert_eq!(rule.open_ssm, 9 * 3600 + 30 * 60);
-    assert_eq!(rule.close_ssm, 16 * 3600);
-    assert_eq!(rule.days, MON_FRI);
+    assert_eq!(rule.open_ssm(), 9 * 3600 + 30 * 60);
+    assert_eq!(rule.close_ssm(), 16 * 3600);
+    assert_eq!(rule.days(), MON_FRI);
     assert!(!rule.wraps_to_next_day());
 }
 
@@ -68,8 +62,8 @@ fn new_rejects_an_out_of_range_close() {
 #[test]
 fn new_accepts_equal_endpoints_as_a_complete_local_day() {
     let rule = SessionRule::new(MON_FRI, 3600, 3600).expect("complete local-day rule is valid");
-    assert_eq!(rule.open_ssm, 3600);
-    assert_eq!(rule.close_ssm, 3600);
+    assert_eq!(rule.open_ssm(), 3600);
+    assert_eq!(rule.close_ssm(), 3600);
     assert_eq!(rule.validate(), Ok(()));
     assert!(rule.wraps_to_next_day());
 }
@@ -83,28 +77,36 @@ fn new_rejects_an_all_disabled_mask() {
 }
 
 #[test]
-fn validate_rechecks_a_literal_or_deserialized_rule() {
-    // `SessionRule` is `#[non_exhaustive]`, so an out-of-crate struct literal no
-    // longer compiles and `new` cannot be bypassed that way. Deserialization is
-    // the remaining route that skips `new`, so that is what `validate` must
-    // still recheck - exercised below.
+fn valid_wire_rules_round_trip_with_the_original_field_names() {
+    for (open, close) in [(34_200, 57_600), (3_600, 3_600), (0, 86_400)] {
+        let wire = serde_json::json!({ "days": MON_FRI, "open_ssm": open, "close_ssm": close });
+        let rule: SessionRule = serde_json::from_value(wire.clone()).expect("valid persisted rule");
+        assert_eq!(rule, SessionRule::new(MON_FRI, open, close).unwrap());
+        assert_eq!(serde_json::to_value(rule).unwrap(), wire);
+    }
+}
 
-    let deserialized: SessionRule = serde_json::from_str(
-        r#"{"days":[true,true,true,true,true,false,false],"open_ssm":34200,"close_ssm":57600}"#,
-    )
-    .expect("valid JSON shape");
-    assert_eq!(deserialized.validate(), Ok(()));
-
-    // Serde does not enforce the domain; `validate` is the recheck that must
-    // reject an out-of-domain payload.
-    let out_of_domain_wire: SessionRule = serde_json::from_str(
-        r#"{"days":[true,true,true,true,true,false,false],"open_ssm":86400,"close_ssm":3600}"#,
-    )
-    .expect("serde accepts the shape regardless of domain");
-    assert_eq!(
-        out_of_domain_wire.validate(),
-        Err(SessionRuleError::OpenOutOfRange { open_ssm: 86_400 })
-    );
+#[test]
+fn invalid_wire_rules_are_rejected_during_deserialization() {
+    for (days, open, close, error) in [
+        (
+            MON_FRI,
+            86_400,
+            3_600,
+            SessionRuleError::OpenOutOfRange { open_ssm: 86_400 },
+        ),
+        (
+            MON_FRI,
+            0,
+            86_401,
+            SessionRuleError::CloseOutOfRange { close_ssm: 86_401 },
+        ),
+        (NO_DAYS, 0, 86_400, SessionRuleError::NoEnabledDays),
+    ] {
+        let wire = serde_json::json!({ "days": days, "open_ssm": open, "close_ssm": close });
+        let rejected = serde_json::from_value::<SessionRule>(wire).unwrap_err();
+        assert_eq!(rejected.to_string(), error.to_string());
+    }
 }
 
 #[test]

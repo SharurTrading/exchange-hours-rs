@@ -729,7 +729,7 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
     // 15:40-16:00 closing session; the order-entry queue opens 09:00.
     let tradeable: Vec<(u32, u32)> = baseline
         .tradeable_rules()
-        .map(|rule| (rule.open_ssm, rule.close_ssm))
+        .map(|rule| (rule.open_ssm(), rule.close_ssm()))
         .collect();
     // In table order: the regular session first, then the tradeable routine
     // slices the module's extended set carries.
@@ -745,7 +745,7 @@ fn a_withheld_date_refusal_carries_its_normal_week_baseline() {
     assert_eq!(
         baseline
             .order_entry_rules()
-            .map(|rule| (rule.open_ssm, rule.close_ssm))
+            .map(|rule| (rule.open_ssm(), rule.close_ssm()))
             .collect::<Vec<_>>(),
         vec![(9 * 3_600, 9 * 3_600 + 7 * 60)],
         "the baseline states the normal week's own order-entry queue"

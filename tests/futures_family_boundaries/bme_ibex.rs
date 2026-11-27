@@ -31,7 +31,7 @@ fn day(date: (i16, i8, i8)) -> jiff::civil::Date {
 fn regular_bounds(instant: jiff::Timestamp) -> (u32, u32) {
     let hours = hours_for_market_hours_key(IBEX, instant);
     let rule = hours.regular.first().expect("one regular rule per era");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
 /// The floor grid is the operator's own 2010-06-18 product-page print:

@@ -14,6 +14,8 @@
   policy and exception table constructors now run at runtime. Session bounds
   require both endpoints to fit Jiff's timestamp range. See
   [Migrating from 1.x](README.md#migrating-from-1x).
+- `SessionRule` validates deserialized rules and exposes read-only weekday
+  and boundary accessors. Valid records retain their original wire format.
 - Built-in calendars default to compile-time IANA 2026f time zones. A repeated local
   interval resolves to the earlier instant for opens and the later instant for
   closes. A wall time inside a gap resolves to the first instant after it.

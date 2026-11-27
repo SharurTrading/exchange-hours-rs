@@ -128,6 +128,9 @@ rendering a coverage refusal from that operation. Startup requires network acces
   date arguments to `DayPolicy` and `SessionExceptionSource` implementations.
   Use `jiff::civil::Weekday` for the weekday returned by
   `NormalWeekBaseline::weekday`.
+- Read `SessionRule` through `days()`, `open_ssm()` and `close_ssm()`.
+  Construct an updated rule with `SessionRule::new`. Deserialization accepts
+  existing valid records and rejects invalid boundaries or an empty weekday mask.
 - Keep hard-coded `DayOverride` and `SessionExceptionRecord` arrays in static
   storage if needed. Call `StaticDayPolicy::new` and
   `StaticSessionExceptions::new` at runtime because validation compares Jiff
@@ -845,10 +848,10 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
   the bounded search horizon (a venue before its go-live date), or a zero-duration candle
   resolution, is `None` — never a fabricated degenerate pair that could leak downstream as
   a real session. Predicates report closed/not-in-maintenance/closed-all-day.
-- **`SessionRule` has a stated domain.** `SessionRule::new` / `validate` enforce
-  `open_ssm < 86_400`, `close_ssm <= 86_400`, and at least one enabled weekday; every
-  shipped table is fence-checked against the same domain. Equal endpoints are intentional
-  complete-local-day rules, not empty intervals.
+- **Session rule validation.** Construction and deserialization require
+  `open_ssm < 86_400`, `close_ssm <= 86_400`, and at least one enabled weekday.
+  Tests check every shipped table against the same bounds. Equal endpoints
+  represent one complete local day.
 
 ## Testing
 
@@ -888,7 +891,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
 - `tests/support/` — fixture construction shared by integration targets; it uses only the
   public crate surface and provides no test-only access to production internals.
 - `tests/no_session_contract.rs` — the `None` contract for profiles with no rules.
-- `tests/rule_validation.rs` — the `SessionRule` domain: what `new`/`validate` accept and reject.
+- `tests/rule_validation.rs` — construction, wire validation and DST boundaries for session rules.
 - `tests/contract/session_invariants.rs` and `tests/contract/session_invariants/` — a thin,
   explicitly configured harness over handwritten identity/history expectations and focused
   property modules. A fixed-seed `splitmix64` sweep plus pinned DST fixtures cover totality,

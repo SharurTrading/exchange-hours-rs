@@ -128,9 +128,9 @@ required. Historical completion remains the target tracked in #332.
   The calendar crate's lint configuration disallows time reads and ambient
   database lookups when dependency feature unification makes them available.
 - **LAW-PANIC** — production queries are total: they do not panic, hang, or use
-  unreachable fallbacks. Invalid raw `SessionRule` values may return
-  unspecified answers, but still return normally; absence and bounded-search
-  exhaustion are explicit.
+  unreachable fallbacks. Caller-created and deserialized `SessionRule` values
+  must pass the same weekday and local-boundary checks on input. Absence and
+  bounded-search exhaustion are explicit.
 - **LAW-INVARIANT** — A supposedly impossible branch is not permission
   to invent a business value or silently abandon work. Exhaustive
   matches, failed conversions and missing required state must not

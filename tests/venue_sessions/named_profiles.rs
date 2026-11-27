@@ -241,11 +241,12 @@ fn futures_session_profile_always_open_has_one_all_days_rule() {
 
     let rule = &profile.regular[0];
     assert_eq!(
-        rule.days, [true; 7],
+        rule.days(),
+        [true; 7],
         "AlwaysOpen rule must activate all days"
     );
-    assert_eq!(rule.open_ssm, 0);
-    assert_eq!(rule.close_ssm, 24 * 3600);
+    assert_eq!(rule.open_ssm(), 0);
+    assert_eq!(rule.close_ssm(), 24 * 3600);
 }
 
 #[test]

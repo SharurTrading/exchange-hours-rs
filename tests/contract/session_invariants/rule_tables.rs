@@ -90,17 +90,17 @@ fn every_equal_endpoint_rule_is_an_intentional_complete_day_session() {
             .regular
             .iter()
             .chain(hours.extended.iter())
-            .filter(|rule| rule.open_ssm == rule.close_ssm)
+            .filter(|rule| rule.open_ssm() == rule.close_ssm())
         {
             assert!(rule.wraps_to_next_day());
             match exchange {
                 Exchange::Iceus | Exchange::Iceeu | Exchange::IceEuropeCommodities => {
-                    assert_eq!(rule.days, sunday);
-                    assert_eq!(rule.open_ssm, 18 * 3600);
+                    assert_eq!(rule.days(), sunday);
+                    assert_eq!(rule.open_ssm(), 18 * 3600);
                 }
                 Exchange::IceAbuDhabi => {
-                    assert_eq!(rule.days, monday);
-                    assert_eq!(rule.open_ssm, 2 * 3600);
+                    assert_eq!(rule.days(), monday);
+                    assert_eq!(rule.open_ssm(), 2 * 3600);
                 }
                 _ => panic!("unexpected equal-endpoint rule for {exchange:?}: {rule:?}"),
             }
@@ -114,9 +114,9 @@ fn every_equal_endpoint_rule_is_an_intentional_complete_day_session() {
         .regular
         .iter()
         .chain(profile.extended.iter())
-        .filter(|rule| rule.open_ssm == rule.close_ssm)
+        .filter(|rule| rule.open_ssm() == rule.close_ssm())
         .collect();
     assert_eq!(equal_rules.len(), 1);
-    assert_eq!(equal_rules[0].days, sunday);
-    assert_eq!(equal_rules[0].open_ssm, 18 * 3600);
+    assert_eq!(equal_rules[0].days(), sunday);
+    assert_eq!(equal_rules[0].open_ssm(), 18 * 3600);
 }

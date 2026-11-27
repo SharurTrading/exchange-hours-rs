@@ -2,9 +2,7 @@
 
 //! London Stock Exchange (SETS).
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -129,6 +127,6 @@ static REVISIONS: &[Revision] = revisions![
     (2016, 3, 21, &LSE_PROFILE, "LSE notice N01/16"),
 ];
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, Europe::London), &BASE_PROFILE, REVISIONS)
 }

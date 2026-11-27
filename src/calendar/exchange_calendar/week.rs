@@ -4,11 +4,11 @@
 
 use jiff::Timestamp;
 
-use super::ExchangeCalendar;
+use super::ZonedExchangeCalendar;
 use crate::calendar::CalendarQueryError;
 use crate::calendar::query::{QueryContext, week};
 
-impl ExchangeCalendar {
+impl ZonedExchangeCalendar<'_> {
     /// Returns distinct scheduled open seconds in the venue-local week that
     /// contains `instant`, selecting each session by its actual opening day.
     ///

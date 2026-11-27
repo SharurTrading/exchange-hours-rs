@@ -2,8 +2,8 @@
 
 //! Shared selection primitives for venue-local schedule histories.
 
-use jiff::tz::TimeZone;
-use jiff::{Timestamp, civil::Date};
+use crate::calendar::time_zones::{SelectionInstant, ZoneId};
+use jiff::civil::Date;
 
 use super::StaticHoursProfile;
 use crate::calendar::local_time::{self, mk_local_open};
@@ -153,8 +153,8 @@ pub(crate) const fn effective_date(year: i16, month: i8, day: i8) -> Date {
 
 /// Converts an instant to the calendar date used by a venue's rule table.
 #[inline]
-pub(crate) fn local_date(as_of: Timestamp, tz: &TimeZone) -> Date {
-    local_time::local_date(tz, as_of)
+pub(crate) fn local_date(as_of: SelectionInstant<'_>, tz: ZoneId) -> Date {
+    local_time::local_date(as_of.zones.resolve(tz), as_of.instant)
 }
 
 /// Selects from an ascending, venue-local revision timeline.
@@ -180,10 +180,13 @@ pub(crate) fn select_revision(
 /// Sample at venue-local noon. If Jiff's timestamp range excludes that noon,
 /// sample at the caller's representable instant on the same venue-local date.
 pub(crate) fn reference_delta_seconds(
-    as_of: Timestamp,
-    venue_tz: &TimeZone,
-    reference_tz: &TimeZone,
+    as_of: SelectionInstant<'_>,
+    venue_tz: ZoneId,
+    reference_tz: ZoneId,
 ) -> i32 {
-    let sample = mk_local_open(venue_tz, local_date(as_of, venue_tz), 12 * 3600).unwrap_or(as_of);
+    let day = local_date(as_of, venue_tz);
+    let venue_tz = as_of.zones.resolve(venue_tz);
+    let reference_tz = as_of.zones.resolve(reference_tz);
+    let sample = mk_local_open(venue_tz, day, 12 * 3600).unwrap_or(as_of.instant);
     reference_tz.to_offset(sample).seconds() - venue_tz.to_offset(sample).seconds()
 }

@@ -4,8 +4,8 @@
 //!
 //! Evidence: `docs/evidence/asx_spi_200.md`.
 
-use crate::calendar::time_zones::{America, Australia};
-use jiff::{Timestamp, civil::Date};
+use crate::calendar::time_zones::{America, Australia, SelectionInstant};
+use jiff::civil::Date;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -94,12 +94,19 @@ fn in_us_daylight_column(ny_date: Date) -> bool {
 /// `as_of`'s Sydney day: the New York local date of that night session's open
 /// instant decides the column (LAW-DETERMINISM — the caller's instant, never a
 /// clock).
-pub(crate) fn asx_spi_200_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn asx_spi_200_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Australia::Sydney);
     // The supported timestamp limits both fall in New York's standard column.
     // The caller's instant selects that column if Sydney's open is out of range.
-    let night_open = mk_local_open(Australia::Sydney, day, NIGHT_OPEN_SSM).unwrap_or(as_of);
-    let ny_date = local_date(night_open, America::New_York);
+    let night_open = mk_local_open(as_of.zones.resolve(Australia::Sydney), day, NIGHT_OPEN_SSM)
+        .unwrap_or(as_of.instant);
+    let ny_date = local_date(
+        SelectionInstant {
+            instant: night_open,
+            ..as_of
+        },
+        America::New_York,
+    );
     if in_us_daylight_column(ny_date) {
         &ASX_SPI_200_US_DST
     } else {

@@ -21,6 +21,9 @@ allow = [
 [bans]
 wildcards = "deny"
 multiple-versions = "warn"
+deny = [
+    { crate = "jiff-tzdb", deny-multiple-versions = true, reason = "The build reports the same IANA data package that jiff-static embeds." },
+]
 
 [advisories]
 unmaintained = "workspace"

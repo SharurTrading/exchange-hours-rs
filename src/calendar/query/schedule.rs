@@ -6,7 +6,7 @@ use jiff::tz::TimeZone;
 use jiff::{Timestamp, civil::Date};
 
 use crate::calendar::exceptions::{DateException, ExceptionBlock, SessionExceptionSource};
-use crate::calendar::exchange_calendar::ExchangeCalendar;
+use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::{
     clip_local_close, clip_local_open, mk_local_close, mk_local_open,
@@ -15,6 +15,7 @@ use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
 use crate::calendar::schedules::HoursProfile;
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
+use crate::calendar::time_zones::ZoneSelection;
 use crate::calendar::{CalendarResolution, CalendarSource};
 
 use super::gate::{FixedSnapshot, Identified, SourceGate};
@@ -78,7 +79,7 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     /// to resolve the sourced normal week without re-entering them, and the
     /// coverage verdict is a fact about the whole source state that must
     /// survive that narrowing unchanged.
-    coverage: G::Coverage,
+    coverage: G::Coverage<'a>,
     /// Whether some attached layer can supply a replacement trading day.
     ///
     /// Resolved once here rather than asked per scan. The caller's provider is
@@ -198,7 +199,7 @@ impl<'a> QueryContext<'a, FixedSnapshot> {
 }
 
 impl<'a> QueryContext<'a, Identified> {
-    pub(in crate::calendar) fn date_aware(calendar: ExchangeCalendar) -> Self {
+    pub(in crate::calendar) fn date_aware(calendar: ZonedExchangeCalendar<'a>) -> Self {
         let holidays = calendar.holiday_table();
         let builtin_blocks = table_can_replace(holidays);
         Self {
@@ -214,7 +215,7 @@ impl<'a> QueryContext<'a, Identified> {
     }
 
     pub(in crate::calendar) fn overlay(
-        calendar: ExchangeCalendar,
+        calendar: ZonedExchangeCalendar<'a>,
         policy: Option<&'a dyn DayPolicy>,
         exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
@@ -835,18 +836,12 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
 /// withholds, which is the conservative direction.
 pub(in crate::calendar) fn builtin_resolves_order_entry(
     source: CalendarSource,
+    zones: ZoneSelection<'_>,
     date: Date,
     open_ssm: Option<u32>,
     close_ssm: u32,
 ) -> bool {
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => {
-            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
-        }
-        CalendarSource::MarketHoursKey(key) => {
-            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
-        }
-    };
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
     let context = QueryContext::date_aware(calendar);
     let weekday = usize::from(date.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(date);
@@ -876,15 +871,12 @@ pub(in crate::calendar) fn builtin_resolves_order_entry(
 /// profile selection every query runs
 /// ([`QueryContext::profile_for_open_day`]), so the metadata and the query
 /// surface cannot disagree about which days carry rules.
-pub(in crate::calendar) fn builtin_has_tradeable_rule(source: CalendarSource, day: Date) -> bool {
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => {
-            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
-        }
-        CalendarSource::MarketHoursKey(key) => {
-            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
-        }
-    };
+pub(in crate::calendar) fn builtin_has_tradeable_rule(
+    source: CalendarSource,
+    zones: ZoneSelection<'_>,
+    day: Date,
+) -> bool {
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
     let context = QueryContext::date_aware(calendar);
     let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(day);

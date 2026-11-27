@@ -2,9 +2,7 @@
 
 //! BMV cash-equity grids, including its New York reference-zone regime.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -203,7 +201,7 @@ fn profile_for_regime(day: jiff::civil::Date, early: bool) -> &'static StaticHou
 }
 
 /// Resolves BMV's sourced bounded exceptions and recurring offset regime.
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Mexico_City);
     if day < REFERENCE_GRID {
         return select_revision(day, &BMV_PROFILE_NORMAL_PRE_2016, SOURCED_REVISIONS);

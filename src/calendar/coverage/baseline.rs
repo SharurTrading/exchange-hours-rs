@@ -23,9 +23,10 @@ use jiff::civil::Weekday;
 use jiff::tz::TimeZone;
 
 use super::SUPPORT_FLOOR;
-use crate::calendar::exchange_calendar::{calendar_for_exchange, calendar_for_market_hours_key};
+use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::local_time::mk_local_open;
 use crate::calendar::schedules::sourcing;
+use crate::calendar::time_zones::ZoneSelection;
 use crate::calendar::{CalendarQueryError, CalendarSource, MarketHours, SessionRule};
 
 /// The last second of a venue-local day, the anchor the query gate uses to
@@ -192,7 +193,10 @@ fn weekday_name(weekday: Weekday) -> &'static str {
 /// own era selection for the date's opening day — the same selection the query
 /// gate performs — so the context a caller reads beside the refusal is the
 /// week the crate's answers actually come from.
-pub(crate) fn for_error(error: CalendarQueryError) -> Option<NormalWeekBaseline> {
+pub(crate) fn for_error(
+    error: CalendarQueryError,
+    zones: ZoneSelection<'_>,
+) -> Option<NormalWeekBaseline> {
     let source = error.source();
     let date = error.date();
     if date < SUPPORT_FLOOR {
@@ -202,10 +206,7 @@ pub(crate) fn for_error(error: CalendarQueryError) -> Option<NormalWeekBaseline>
     if declared.carried_below.is_some_and(|carried| date < carried) {
         return None;
     }
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => calendar_for_exchange(exchange),
-        CalendarSource::MarketHoursKey(key) => calendar_for_market_hours_key(key),
-    };
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
     let anchor = mk_local_open(calendar.zone(), date, OPEN_DAY_ANCHOR_SSM)?;
     let profile = calendar.hours_at(anchor);
     Some(NormalWeekBaseline {

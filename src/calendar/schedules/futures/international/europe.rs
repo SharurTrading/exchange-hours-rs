@@ -6,9 +6,7 @@
 //! `docs/evidence/eurex_key.md` and `docs/evidence/eex.md`
 //! (LAW-EVIDENCE-FILES).
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::{Europe, UTC};
+use crate::calendar::time_zones::{Europe, SelectionInstant, UTC};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -95,7 +93,7 @@ pub(crate) static EUREX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 
 const EUREX_ASIAN_HOURS: jiff::civil::Date = effective_date(2018, 12, 10);
 
-pub(crate) fn eurex_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn eurex_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     if local_date(as_of, Europe::Berlin) < EUREX_ASIAN_HOURS {
         return &EUREX_PRE_2018;
     }
@@ -132,7 +130,7 @@ static EEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
 
 const EEX_NORDIC_LAUNCH: jiff::civil::Date = effective_date(2024, 3, 25);
 
-pub(crate) fn eex_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn eex_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     if local_date(as_of, Europe::Berlin) < EEX_NORDIC_LAUNCH {
         &EEX_CLOSED
     } else {

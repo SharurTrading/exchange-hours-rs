@@ -12,7 +12,7 @@
 //!   (`Error` is [`Infallible`]): every refusal the engine knows is a fact
 //!   about an identity's coverage metadata, and a snapshot carries none.
 //! - [`Identified`] — a built-in calendar, bare or overlaid. It always
-//!   carries its [`CalendarCoverage`] and reports every refusal through
+//!   carries its [`crate::CalendarCoverage`] and reports every refusal through
 //!   [`CalendarQueryError`] (LAW-COVERAGE).
 //!
 //! Two properties therefore hold structurally rather than by review:
@@ -39,8 +39,8 @@ use std::convert::Infallible;
 use jiff::tz::TimeZone;
 use jiff::{Timestamp, civil::Date};
 
-use crate::calendar::coverage::{CalendarCoverage, CoverageGapReason, DateCoverage};
-use crate::calendar::exchange_calendar::ExchangeCalendar;
+use crate::calendar::coverage::{CoverageGapReason, DateCoverage, ZonedCalendarCoverage};
+use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::mk_local_open;
 use crate::calendar::{CalendarQueryError, CalendarSource, SUPPORT_FLOOR};
@@ -69,7 +69,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     type Source<'a>: Copy;
 
     /// The coverage metadata this state carries.
-    type Coverage: Copy;
+    type Coverage<'a>: Copy;
 
     /// The error a query over this state can produce.
     type Error;
@@ -117,7 +117,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// Cost stays on the built-in hot path's budget: one comparison against a
     /// floor constant, then the same bounded static-table walk the holiday
     /// layer already performs, and no allocation.
-    fn require_answerable(coverage: Self::Coverage, date: Date) -> Result<(), Self::Error>;
+    fn require_answerable(coverage: Self::Coverage<'_>, date: Date) -> Result<(), Self::Error>;
 
     /// Fails when the queried venue-local day precedes the support floor.
     ///
@@ -125,7 +125,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// scan walks over: the plan requires that a session opening before the
     /// floor is still returned whole to an in-range query, while a query
     /// addressed to an earlier day errors (LAW-COVERAGE, plan section 6).
-    fn require_floor(coverage: Self::Coverage, date: Date) -> Result<(), Self::Error>;
+    fn require_floor(coverage: Self::Coverage<'_>, date: Date) -> Result<(), Self::Error>;
 
     /// Fails when the venue-local day containing `instant` precedes the floor.
     ///
@@ -133,7 +133,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// the caller's own instant rather than from each day a scan later walks
     /// over (see [`SourceGate::require_floor`]).
     fn require_floor_at(
-        coverage: Self::Coverage,
+        coverage: Self::Coverage<'_>,
         tz: &TimeZone,
         instant: Timestamp,
     ) -> Result<(), Self::Error>;
@@ -146,10 +146,10 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// phase gap is unaffected, so this costs one span check on that path.
     ///
     /// The declaration the metadata applies decides —
-    /// [`CalendarCoverage::phase_gap_on`], the first declaration in order whose
+    /// [`crate::CalendarCoverage::phase_gap_on`], the first declaration in order whose
     /// span contains the date *and* whose shape resolves against the built-in
     /// layers, which is the same shadowing rule `coverage_on` and
-    /// [`CalendarCoverage::gaps`] report by. Deciding from the span alone would
+    /// [`crate::CalendarCoverage::gaps`] report by. Deciding from the span alone would
     /// let an earlier pass-through declaration whose queue is absent on the
     /// date — the retired #152 shape resolved to no occurrence inside
     /// `globex_grains`'s omitted 2012-05-20..2013-04-06 regime, whose refusing
@@ -174,7 +174,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// coverage-error-read-as-closure failure LAW-COVERAGE exists to prevent.
     /// An unrecognized reason refuses, which is the conservative direction: a
     /// new declaration shape answers no queue until it says so.
-    fn require_phase_coverage(coverage: Self::Coverage, date: Date) -> Result<(), Self::Error>;
+    fn require_phase_coverage(coverage: Self::Coverage<'_>, date: Date) -> Result<(), Self::Error>;
 
     /// Fails when the source's **holiday-table classification** of `date` is
     /// refused.
@@ -192,7 +192,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// governs there, so this gate never fires on one). The floor is the
     /// caller's check, as for `require_answerable`.
     fn require_holiday_classification(
-        coverage: Self::Coverage,
+        coverage: Self::Coverage<'_>,
         date: Date,
     ) -> Result<(), Self::Error>;
 
@@ -204,7 +204,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// day's own rules, or a nearby block row say the day could reach the
     /// withheld arrangement, so an ordinary Tuesday never pays the refusal
     /// check.
-    fn has_unscoped_refusing_phase_gap_on(coverage: Self::Coverage, day: Date) -> bool;
+    fn has_unscoped_refusing_phase_gap_on(coverage: Self::Coverage<'_>, day: Date) -> bool;
 
     /// Gives the bounded-search-exhaustion verdict for the close walks.
     ///
@@ -213,7 +213,7 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// exhaustion to itself as [`CalendarQueryError::SearchExhausted`], while a
     /// detached snapshot has no coverage to attribute an error to and keeps
     /// its exhaustive `None` absence (LAW-PANIC's bounded-search contract).
-    fn search_exhausted(coverage: Self::Coverage, day: Date) -> Result<(), Self::Error>;
+    fn search_exhausted(coverage: Self::Coverage<'_>, day: Date) -> Result<(), Self::Error>;
 }
 
 /// Marker: a detached caller-supplied [`MarketHours`] snapshot.
@@ -228,7 +228,7 @@ pub(in crate::calendar) struct FixedSnapshot;
 
 impl SourceGate for FixedSnapshot {
     type Source<'a> = &'a MarketHours;
-    type Coverage = ();
+    type Coverage<'a> = ();
     type Error = Infallible;
 
     fn identity(_source: &MarketHours) -> Option<CalendarSource> {
@@ -286,18 +286,18 @@ impl SourceGate for FixedSnapshot {
 
 /// Marker: an identity-backed calendar, bare or overlaid.
 ///
-/// The context always carries its [`CalendarCoverage`], and every refusal the
+/// The context always carries its [`crate::CalendarCoverage`], and every refusal the
 /// coverage gates produce is reported through [`CalendarQueryError`] — never
 /// as absence, `false` or a default schedule (LAW-COVERAGE).
 #[derive(Clone, Copy)]
 pub(in crate::calendar) struct Identified;
 
 impl SourceGate for Identified {
-    type Source<'a> = ExchangeCalendar;
-    type Coverage = CalendarCoverage;
+    type Source<'a> = ZonedExchangeCalendar<'a>;
+    type Coverage<'a> = ZonedCalendarCoverage<'a>;
     type Error = CalendarQueryError;
 
-    fn identity(source: ExchangeCalendar) -> Option<CalendarSource> {
+    fn identity(source: ZonedExchangeCalendar<'_>) -> Option<CalendarSource> {
         Some(source.source())
     }
 
@@ -315,19 +315,19 @@ impl SourceGate for Identified {
                 Timestamp::MAX
             }
         });
-        *calendar.profile_at(anchor)
+        calendar.profile_at(anchor).into()
     }
 
-    fn has_daily_close_at(calendar: ExchangeCalendar, instant: Timestamp) -> bool {
+    fn has_daily_close_at(calendar: ZonedExchangeCalendar<'_>, instant: Timestamp) -> bool {
         calendar.profile_at(instant).has_daily_close
     }
 
-    fn has_weekend_close_at(calendar: ExchangeCalendar, instant: Timestamp) -> bool {
+    fn has_weekend_close_at(calendar: ZonedExchangeCalendar<'_>, instant: Timestamp) -> bool {
         calendar.profile_at(instant).has_weekend_close
     }
 
     fn require_answerable(
-        coverage: CalendarCoverage,
+        coverage: ZonedCalendarCoverage<'_>,
         date: Date,
     ) -> Result<(), CalendarQueryError> {
         if date < SUPPORT_FLOOR {
@@ -360,7 +360,10 @@ impl SourceGate for Identified {
         }
     }
 
-    fn require_floor(coverage: CalendarCoverage, date: Date) -> Result<(), CalendarQueryError> {
+    fn require_floor(
+        coverage: ZonedCalendarCoverage<'_>,
+        date: Date,
+    ) -> Result<(), CalendarQueryError> {
         if date < SUPPORT_FLOOR && !coverage.reads_before_the_floor() {
             return Err(CalendarQueryError::BeforeSupportFloor {
                 source: coverage.identity(),
@@ -371,7 +374,7 @@ impl SourceGate for Identified {
     }
 
     fn require_floor_at(
-        coverage: CalendarCoverage,
+        coverage: ZonedCalendarCoverage<'_>,
         tz: &TimeZone,
         instant: Timestamp,
     ) -> Result<(), CalendarQueryError> {
@@ -380,7 +383,7 @@ impl SourceGate for Identified {
     }
 
     fn require_phase_coverage(
-        coverage: CalendarCoverage,
+        coverage: ZonedCalendarCoverage<'_>,
         date: Date,
     ) -> Result<(), CalendarQueryError> {
         // The floor governs first. Below it the date is not "outside a covered
@@ -422,7 +425,7 @@ impl SourceGate for Identified {
     }
 
     fn require_holiday_classification(
-        coverage: CalendarCoverage,
+        coverage: ZonedCalendarCoverage<'_>,
         date: Date,
     ) -> Result<(), CalendarQueryError> {
         if coverage.holiday_classification_refused_on(date) {
@@ -437,11 +440,14 @@ impl SourceGate for Identified {
         Ok(())
     }
 
-    fn has_unscoped_refusing_phase_gap_on(coverage: CalendarCoverage, day: Date) -> bool {
+    fn has_unscoped_refusing_phase_gap_on(coverage: ZonedCalendarCoverage<'_>, day: Date) -> bool {
         coverage.has_unscoped_refusing_phase_gap_on(day)
     }
 
-    fn search_exhausted(coverage: CalendarCoverage, day: Date) -> Result<(), CalendarQueryError> {
+    fn search_exhausted(
+        coverage: ZonedCalendarCoverage<'_>,
+        day: Date,
+    ) -> Result<(), CalendarQueryError> {
         Err(CalendarQueryError::SearchExhausted {
             source: coverage.identity(),
             date: day,

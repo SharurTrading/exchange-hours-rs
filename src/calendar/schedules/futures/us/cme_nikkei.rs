@@ -4,9 +4,7 @@
 //!
 //! Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -281,6 +279,6 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 /// spellings; from 2010-04-11 — the day the operator's own Globex notice of
 /// 2010-04-05 dates the served grid's first Sunday session — the served grid
 /// answers.
-pub(crate) fn nkd_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nkd_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &NKD_CLOSED, NKD_REVISIONS)
 }

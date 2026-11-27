@@ -2,9 +2,7 @@
 
 //! B3 cash-equity grids, including its New York reference-zone regime.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -167,7 +165,7 @@ static EXPLICIT_REVISIONS: &[Revision] = revisions![
 const REFERENCE_GRID: jiff::civil::Date = effective_date(2015, 12, 21);
 
 /// Resolves B3's explicit old grids and its published recurring offset regime.
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Sao_Paulo);
     if day < REFERENCE_GRID {
         return select_revision(day, &B3_PROFILE_OLD_LONG, EXPLICIT_REVISIONS);

@@ -4,11 +4,11 @@
 
 use jiff::Timestamp;
 
-use super::ExchangeCalendar;
+use super::ZonedExchangeCalendar;
 use crate::calendar::query::{QueryContext, candles};
 use crate::calendar::{CalendarQueryError, CalendarResolution, SessionKind};
 
-impl ExchangeCalendar {
+impl ZonedExchangeCalendar<'_> {
     /// Returns the date-aware bar close after `instant`.
     ///
     /// A key-backed CME cryptocurrency calendar retains Friday 16:00 CT as

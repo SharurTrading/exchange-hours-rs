@@ -7,7 +7,8 @@ use crate::calendar::SessionRule;
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{effective_date, local_date};
 use crate::calendar::time_zones::Asia::Singapore;
-use jiff::{Timestamp, civil::Date};
+use crate::calendar::time_zones::SelectionInstant;
+use jiff::civil::Date;
 
 const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
 
@@ -141,7 +142,7 @@ static SINGAPORE30_INTERSECTION: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-pub(crate) fn oanda_china50_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_china50_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Singapore);
     // The current grid nests inside the legacy one, so the undated span's
     // sourced intersection is the current profile itself; the span is dated
@@ -152,7 +153,9 @@ pub(crate) fn oanda_china50_profile_at(as_of: Timestamp) -> &'static StaticHours
         &CHINA50_LEGACY
     }
 }
-pub(crate) fn oanda_singapore30_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_singapore30_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Singapore);
     if day >= SINGAPORE_CURRENT_FIRST_OPEN_DAY {
         &SINGAPORE30

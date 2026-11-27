@@ -2,9 +2,7 @@
 
 //! Euronext Dublin principal shares and the predecessor ISE Xetra book.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use super::super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -156,6 +154,6 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, Europe::Dublin), &ISE_PROFILE, REVISIONS)
 }

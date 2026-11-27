@@ -4,11 +4,11 @@
 
 use jiff::Timestamp;
 
-use super::PolicyCalendar;
+use super::ZonedPolicyCalendar;
 use crate::calendar::query::candles;
 use crate::calendar::{CalendarQueryError, CalendarResolution, SessionKind};
 
-impl PolicyCalendar<'_> {
+impl ZonedPolicyCalendar<'_, '_> {
     /// Returns the policy-aware bar close after `instant`.
     ///
     /// For a key-backed CME cryptocurrency calendar, Friday 16:00 CT remains

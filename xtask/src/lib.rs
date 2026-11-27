@@ -29,6 +29,7 @@ use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
 use std::fmt;
+use std::fmt::Write as _;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -113,7 +114,7 @@ pub struct FoundRow {
 pub fn digest_hex(bytes: &[u8]) -> String {
     let mut digest = String::with_capacity(64);
     for &byte in &Sha256::digest(bytes) {
-        digest.push_str(&format!("{byte:02x}"));
+        let _ = write!(digest, "{byte:02x}");
     }
     digest
 }
@@ -220,6 +221,10 @@ pub fn collect_rows(evidence_dir: &Path) -> Result<Vec<FoundRow>, XTaskError> {
             XTaskError::from_io("an evidence directory entry must be readable", &error)
         })?;
         let name = entry.file_name().to_string_lossy().into_owned();
+        #[expect(
+            clippy::case_sensitive_file_extension_comparisons,
+            reason = "evidence filenames use the exact lowercase .md suffix"
+        )]
         if name.ends_with(".md") {
             names.push(name);
         }
@@ -420,10 +425,11 @@ fn verify_all(rows: &[FoundRow], root: &Path, env_store: Option<OsString>) -> Ou
         store.display()
     );
     for row in &failures {
-        report.push_str(&format!(
-            "  {}:{}: `{}` digest `{}`\n",
+        let _ = writeln!(
+            report,
+            "  {}:{}: `{}` digest `{}`",
             row.file, row.line, row.id, row.sha256
-        ));
+        );
     }
     Outcome::Failure(report)
 }
@@ -472,13 +478,12 @@ fn verify_one(rows: &[FoundRow], root: &Path, env_store: Option<OsString>, query
         ));
     };
     let store_root = store.display();
-    let mut report = format!("{}:{}: {}\n", row.file, row.line, row.raw);
-    report.push_str(&format!(
-        "  document: {}\n  window:   {}\n  url:      {}\n  capture:  {}\n  tier:     {}\n  sha256:   {}\n",
-        row.id, row.window, row.url, row.capture, row.tier, row.sha256
-    ));
+    let mut report = format!(
+        "{}:{}: {}\n  document: {}\n  window:   {}\n  url:      {}\n  capture:  {}\n  tier:     {}\n  sha256:   {}\n",
+        row.file, row.line, row.raw, row.id, row.window, row.url, row.capture, row.tier, row.sha256
+    );
     for path in paths {
-        report.push_str(&format!("  bytes:    {store_root}/{path}\n"));
+        let _ = writeln!(report, "  bytes:    {store_root}/{path}");
     }
     report.push_str(&quote_report(root, &store, row, paths));
     Outcome::Success(report)
@@ -504,10 +509,11 @@ fn quote_report(root: &Path, store: &Path, row: &FoundRow, paths: &[String]) -> 
          artifact's bytes (best effort)\n"
             .to_owned()
     } else {
-        contexts
-            .iter()
-            .map(|context| format!("  quote:    {context}\n"))
-            .collect()
+        let mut report = String::new();
+        for context in contexts {
+            let _ = writeln!(report, "  quote:    {context}");
+        }
+        report
     }
 }
 
@@ -574,8 +580,7 @@ fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
         .position(|window| window == needle)
 }
 
-/// The subcommand entry point: `verify-evidence --all`, `verify-evidence
-/// <document-id>`, or a usage message for anything else.
+/// Dispatches evidence verification and the embedded IANA freshness check.
 ///
 /// `root` is the workspace root (the exchange-hours repository checkout);
 /// `env_store` is the raw `$EXCHANGE_HOURS_RESEARCH` value when set.
@@ -589,6 +594,18 @@ where
         .collect();
     let args: Vec<&str> = args.iter().map(String::as_str).collect();
     match args.as_slice() {
+        ["verify-embedded-tzdb"] => match exchange_hours_tzdb::IanaSource::latest_release() {
+            Ok(latest) if latest == exchange_hours::EMBEDDED_TZDB_VERSION => Outcome::Success(
+                format!("Embedded time zones match IANA's latest stable release {latest}."),
+            ),
+            Ok(latest) => Outcome::Failure(format!(
+                "Embedded time zones are {}. IANA's latest stable release is {latest}. Update the bundled jiff-tzdb data and its build assertion, then verify the affected calendars.",
+                exchange_hours::EMBEDDED_TZDB_VERSION
+            )),
+            Err(error) => Outcome::Failure(format!(
+                "Could not verify the latest stable IANA release: {error}"
+            )),
+        },
         ["verify-evidence", "--all"] => match collect_rows(&evidence_dir(root)) {
             Ok(rows) => verify_all(&rows, root, env_store),
             Err(error) => Outcome::Failure(error.message),
@@ -599,7 +616,7 @@ where
                 Err(error) => Outcome::Failure(error.message),
             }
         }
-        ["--help"] | ["-h"] | ["help"] => Outcome::Success(usage()),
+        ["--help" | "-h" | "help"] => Outcome::Success(usage()),
         _ => Outcome::Failure(usage()),
     }
 }
@@ -608,6 +625,7 @@ where
 fn usage() -> String {
     "usage: cargo xtask verify-evidence '<document-id>'
        cargo xtask verify-evidence --all
+       cargo xtask verify-embedded-tzdb
 
 The id is the `<artifact> @<capture label>` string a Documents row cites;
 a bare artifact name resolves when exactly one row cites it. The store

@@ -8,7 +8,8 @@
 
 use crate::calendar::time_zones::America::New_York;
 use crate::calendar::time_zones::Europe::{Berlin, London};
-use jiff::{Timestamp, civil::Date};
+use crate::calendar::time_zones::SelectionInstant;
+use jiff::civil::Date;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU, TUE_FRI};
@@ -225,7 +226,7 @@ static OANDA_BRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-pub(crate) fn oanda_fx_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_fx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select(
         day,
@@ -235,11 +236,11 @@ pub(crate) fn oanda_fx_profile_at(as_of: Timestamp) -> &'static StaticHoursProfi
     )
 }
 
-pub(crate) fn oanda_try_fx_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_try_fx_profile_at(_as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     &OANDA_TRY_FX
 }
 
-pub(crate) fn oanda_metals_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_metals_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select(
         day,
@@ -249,7 +250,9 @@ pub(crate) fn oanda_metals_profile_at(as_of: Timestamp) -> &'static StaticHoursP
     )
 }
 
-pub(crate) fn oanda_us_index_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_us_index_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     // The current grid nests inside the legacy one, so the undated span's
     // sourced intersection is the current profile itself; the span is dated
@@ -264,7 +267,9 @@ pub(crate) fn oanda_us_index_profile_at(as_of: Timestamp) -> &'static StaticHour
     )
 }
 
-pub(crate) fn oanda_us_commodity_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_us_commodity_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select_intersected(
         day,
@@ -276,6 +281,6 @@ pub(crate) fn oanda_us_commodity_profile_at(as_of: Timestamp) -> &'static Static
     )
 }
 
-pub(crate) fn oanda_brent_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_brent_profile_at(_as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     &OANDA_BRENT
 }

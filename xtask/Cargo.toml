@@ -32,7 +32,12 @@ print_stdout = "allow"
 print_stderr = "allow"
 
 [dependencies]
+exchange-hours = { workspace = true }
+exchange-hours-tzdb = { path = "../tzdb-runtime", version = "0.1.0" }
 # The same dependency the library's digest fence uses as a dev-dependency:
 # the verifier recomputes each artifact's sha256 from the evidence store's
 # bytes, so here it is linked for real. No new package enters the lockfile.
 sha2 = "0.11.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"

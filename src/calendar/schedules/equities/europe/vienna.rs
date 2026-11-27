@@ -2,9 +2,7 @@
 
 //! Vienna Stock Exchange cash equities, represented by the ATX segment.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 use jiff::{civil::Date, civil::Weekday};
 
 use super::super::StaticHoursProfile;
@@ -199,7 +197,7 @@ fn is_settlement_day(day: Date) -> bool {
     day.weekday() == Weekday::Friday && (15..=21).contains(&day.day())
 }
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Europe::Vienna);
     let settlement = is_settlement_day(day);
 

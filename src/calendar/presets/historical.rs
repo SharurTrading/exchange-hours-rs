@@ -17,12 +17,13 @@
 //! conditional future plans remain unselected rather than this router
 //! inventing or prematurely activating a cutover.
 
+use crate::calendar::time_zones::SelectionInstant;
 use jiff::Timestamp;
 
 use crate::calendar::schedules::ALWAYS_OPEN_PROFILE;
+use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::equities::{africa_middle_east, americas, apac, europe, us};
 use crate::calendar::schedules::futures::{international, us as futures_us};
-use crate::calendar::schedules::{StaticHoursProfile, from_profile};
 use crate::calendar::{Exchange, MarketHours};
 
 /// Returns the fixed schedule snapshot in effect for `exch` at `as_of`.
@@ -40,10 +41,13 @@ use crate::calendar::{Exchange, MarketHours};
 /// reselects at every candidate opening day.
 #[must_use]
 pub fn hours_for_exchange(exch: Exchange, as_of: Timestamp) -> MarketHours {
-    from_profile(exch, exchange_profile_at(exch, as_of))
+    crate::ExchangeCalendar::new(exch).hours_at(as_of)
 }
 
-pub(crate) fn exchange_profile_at(exch: Exchange, as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn exchange_profile_at(
+    exch: Exchange,
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     match exch {
         Exchange::Nasdaq => us::nasdaq_profile_at(as_of),
         Exchange::NasdaqBx => us::nasdaq_bx_profile_at(as_of),

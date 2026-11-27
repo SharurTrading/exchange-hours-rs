@@ -22,11 +22,13 @@ pub use profiles::session_profile;
 
 use std::borrow::Cow;
 
+use crate::calendar::time_zones::SelectionInstant;
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
 
 use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
+use super::schedules::StaticHoursProfile;
 use super::schedules::futures::international::{
     asx_spi_200_profile_at, bme_ibex_profile_at, eurex_fixed_income_profile_at, eurex_profile_at,
     eurex_smi_profile_at, euronext_index_futures_profile_at, hkex_index_futures_profile_at,
@@ -47,7 +49,6 @@ use super::schedules::futures::us::{
     silver_100oz_profile_at, silver_tas_profile_at, spot_quoted_profile_at, sugar_profile_at,
     weather_profile_at,
 };
-use super::schedules::{StaticHoursProfile, from_profile};
 use super::{Exchange, MarketHours, SessionRule};
 
 /// A timezone-aware set of normal-week futures session rules.
@@ -57,9 +58,9 @@ use super::{Exchange, MarketHours, SessionRule};
 /// overlays are deliberately modeled outside this normal-week profile.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct FuturesSessionProfile {
+pub struct ZonedFuturesSessionProfile<'z> {
     /// Exchange local timezone used to interpret `SessionRule` SSM values.
-    pub tz: &'static TimeZone,
+    pub tz: &'z TimeZone,
     /// Primary trading sessions.
     pub regular: &'static [SessionRule],
     /// Electronic, overnight, and other tradeable non-regular sessions.
@@ -72,7 +73,10 @@ pub struct FuturesSessionProfile {
     pub has_weekend_close: bool,
 }
 
-impl FuturesSessionProfile {
+/// A static futures profile using the precompiled clock.
+pub type FuturesSessionProfile = ZonedFuturesSessionProfile<'static>;
+
+impl ZonedFuturesSessionProfile<'_> {
     /// Returns `true` when any regular or extended normal-week session is active.
     #[must_use]
     pub fn is_open(&self, t: Timestamp) -> bool {
@@ -609,13 +613,13 @@ market_hours_keys! {
 /// date-aware scans that cross a family revision.
 #[must_use]
 pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: Timestamp) -> MarketHours {
-    from_profile(
-        CalendarSource::MarketHoursKey(key),
-        key_profile_at(key, as_of),
-    )
+    crate::ExchangeCalendar::for_market_hours_key(key).hours_at(as_of)
 }
 
-pub(super) fn key_profile_at(key: MarketHoursKey, as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(super) fn key_profile_at(
+    key: MarketHoursKey,
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     match key {
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),

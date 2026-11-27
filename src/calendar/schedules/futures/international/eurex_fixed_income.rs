@@ -4,9 +4,7 @@
 //!
 //! Evidence: `docs/evidence/eurex_fixed_income.md`.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::{Europe, UTC};
+use crate::calendar::time_zones::{Europe, SelectionInstant, UTC};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -225,7 +223,9 @@ const BERLIN_SUMMER_DELTA_SECONDS: i32 = -2 * 3600;
 /// offset on that day picks the CET or CEST grid. Berlin's changeover falls on
 /// a Sunday, which is not a Eurex trading day, so the two never disagree about
 /// a day that has a session.
-pub(crate) fn eurex_fixed_income_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn eurex_fixed_income_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let revisions =
         if reference_delta_seconds(as_of, Europe::Berlin, UTC) == BERLIN_SUMMER_DELTA_SECONDS {
             EUREX_FIXED_INCOME_REVISIONS

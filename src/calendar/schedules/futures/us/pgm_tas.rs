@@ -2,9 +2,7 @@
 
 //! NYMEX platinum and palladium Trading at Settlement (TAS) schedules.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -100,10 +98,10 @@ pub(crate) static PLATINUM_TAS_EXTENDED_CURRENT: &[SessionRule] = PLATINUM_EXTEN
 /// boilerplate from the outright row and CME deleted it in 2020.
 pub(crate) static PALLADIUM_TAS_EXTENDED_CURRENT: &[SessionRule] = PALLADIUM_EXTENDED;
 
-pub(crate) fn platinum_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn platinum_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, PLATINUM_REVISIONS)
 }
 
-pub(crate) fn palladium_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn palladium_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, PALLADIUM_REVISIONS)
 }

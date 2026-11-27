@@ -14,7 +14,7 @@
   policy and exception table constructors now run at runtime. Session bounds
   require both endpoints to fit Jiff's timestamp range. See
   [Migrating from 1.x](README.md#migrating-from-1x).
-- Built-in calendars use compile-time IANA 2026f time zones. A repeated local
+- Built-in calendars default to compile-time IANA 2026f time zones. A repeated local
   interval resolves to the earlier instant for opens and the later instant for
   closes. A wall time inside a gap resolves to the first instant after it.
   Winnipeg's updated UTC offset can change the civil date attached to a refusal
@@ -24,6 +24,14 @@
   ([#403](https://github.com/SharurTrading/exchange-hours-rs/issues/403)).
 - Speed up built-in holiday lookup with a compile-time date index and skip
   replacement-session searches on days no replacement can reach.
+
+### Added
+
+- The optional `exchange-hours-tzdb` companion loads IANA's latest stable
+  release at startup, verifies the signed data and checks hourly for updates.
+  The calendar's `runtime-tzdb` feature accepts immutable snapshots for live
+  operations and reproducible backtests. CI fails when the embedded release
+  differs from IANA's current stable release.
 
 ## [1.4.0] - 2026-11-18
 

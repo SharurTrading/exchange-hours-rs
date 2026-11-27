@@ -2,9 +2,7 @@
 
 //! NYMEX energy/PGM and COMEX gold/silver/copper futures schedules.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -112,7 +110,7 @@ static ENERGY_METALS_REVISIONS: &[Revision] = revisions![
     (2016, 1, 3, &ENERGY_METALS_PROFILE_2016_01_03, "MARKET-DATA"),
 ];
 
-pub(crate) fn energy_metals_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn energy_metals_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, US::Central),
         &ENERGY_METALS_AT_2010_FLOOR,

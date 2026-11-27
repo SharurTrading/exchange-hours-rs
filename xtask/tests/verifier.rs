@@ -58,7 +58,7 @@ fn row(file: &str, line: usize, id: &str, sha: &str) -> FoundRow {
 }
 
 /// A unique temp directory per call, removed and recreated.
-fn temp_dir(tag: &str) -> PathBuf {
+fn temp_dir(tag: &str) -> std::io::Result<PathBuf> {
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let ordinal = COUNTER.fetch_add(1, Ordering::Relaxed);
     let dir = std::env::temp_dir().join(format!(
@@ -66,22 +66,22 @@ fn temp_dir(tag: &str) -> PathBuf {
         process::id()
     ));
     let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir).unwrap();
-    dir
+    fs::create_dir_all(&dir)?;
+    Ok(dir)
 }
 
 /// Lays out a workspace (`base/repo`) beside an evidence store
 /// (`base/exchange-hours-evidence`), writes the evidence file and the
 /// artifact, and returns the repo root.
-fn fixture_workspace(tag: &str, sha_a: &str, sha_b: &str) -> PathBuf {
-    let base = temp_dir(tag);
+fn fixture_workspace(tag: &str, sha_a: &str, sha_b: &str) -> std::io::Result<PathBuf> {
+    let base = temp_dir(tag)?;
     let repo = base.join("repo");
-    fs::create_dir_all(repo.join("docs/evidence")).unwrap();
+    fs::create_dir_all(repo.join("docs/evidence"))?;
     let evidence_repo = base.join("exchange-hours-evidence");
-    fs::create_dir_all(evidence_repo.join("task")).unwrap();
-    fs::write(evidence_repo.join("task/example.pdf"), ARTIFACT).unwrap();
-    fs::write(repo.join("docs/evidence/owner.md"), fixture(sha_a, sha_b)).unwrap();
-    repo
+    fs::create_dir_all(evidence_repo.join("task"))?;
+    fs::write(evidence_repo.join("task/example.pdf"), ARTIFACT)?;
+    fs::write(repo.join("docs/evidence/owner.md"), fixture(sha_a, sha_b))?;
+    Ok(repo)
 }
 
 #[test]
@@ -121,7 +121,10 @@ fn the_parser_reads_rows_and_multi_id_cells() {
 #[test]
 fn the_parser_skips_files_without_a_documents_table() {
     let text = "## An owner\n\n| trade date | document |\n|---|---|\n| 2020-01-01 | `x` |\n";
-    assert!(parse_document_rows("owner.md", text).is_empty());
+    assert_eq!(
+        parse_document_rows("owner.md", text),
+        Vec::<FoundRow>::new()
+    );
 }
 
 #[test]
@@ -158,7 +161,7 @@ fn id_resolution_prefers_the_full_id_and_reports_ambiguity() {
 
 #[test]
 fn the_store_resolves_env_first_then_the_evidence_repo_then_the_working_store() {
-    let base = temp_dir("resolve");
+    let base = temp_dir("resolve").unwrap();
     let root = base.join("repo");
     fs::create_dir_all(&root).unwrap();
     let evidence = base.join("exchange-hours-evidence");
@@ -199,7 +202,7 @@ fn the_store_resolves_env_first_then_the_evidence_repo_then_the_working_store() 
 
 #[test]
 fn digest_verification_reports_only_unknown_digests() {
-    let base = temp_dir("digests");
+    let base = temp_dir("digests").unwrap();
     let artifact = b"the bytes".to_vec();
     fs::create_dir_all(base.join("task")).unwrap();
     fs::write(base.join("task/example.pdf"), &artifact).unwrap();
@@ -235,7 +238,7 @@ fn digest_verification_reports_only_unknown_digests() {
 #[test]
 fn run_all_and_run_one_verify_the_fixture_workspace() {
     let sha = &digest_hex(ARTIFACT);
-    let root = fixture_workspace("run", sha, sha);
+    let root = fixture_workspace("run", sha, sha).unwrap();
 
     let all = run(["verify-evidence", "--all"].map(Into::into), &root, None);
     let Outcome::Success(report) = &all else {
@@ -285,7 +288,7 @@ fn run_all_and_run_one_verify_the_fixture_workspace() {
 #[test]
 fn a_digest_no_store_file_produces_fails_the_single_verification() {
     let sha = &digest_hex(ARTIFACT);
-    let root = fixture_workspace("mismatch", sha, &"0".repeat(64));
+    let root = fixture_workspace("mismatch", sha, &"0".repeat(64)).unwrap();
     let outcome = run(
         ["verify-evidence", "paired-a.pdf @2020-01-02T03:04:05Z"].map(Into::into),
         &root,
@@ -307,7 +310,7 @@ fn a_digest_no_store_file_produces_fails_the_single_verification() {
 #[test]
 fn run_reports_missing_ids_missing_stores_and_usage() {
     let sha = &digest_hex(ARTIFACT);
-    let root = fixture_workspace("run-errors", sha, sha);
+    let root = fixture_workspace("run-errors", sha, sha).unwrap();
 
     let missing = run(
         ["verify-evidence", "absent.pdf"].map(Into::into),
@@ -321,7 +324,7 @@ fn run_reports_missing_ids_missing_stores_and_usage() {
 
     // An evidence directory with rows but no store anywhere: the store
     // resolution fails and names what was tried.
-    let base = temp_dir("storeless");
+    let base = temp_dir("storeless").unwrap();
     let storeless = base.join("repo");
     fs::create_dir_all(storeless.join("docs/evidence")).unwrap();
     fs::write(storeless.join("docs/evidence/owner.md"), fixture(sha, sha)).unwrap();
@@ -354,7 +357,7 @@ fn run_reports_missing_ids_missing_stores_and_usage() {
 
 #[test]
 fn an_empty_evidence_directory_fails_instead_of_passing_vacuously() {
-    let base = temp_dir("vacuous");
+    let base = temp_dir("vacuous").unwrap();
     let root = base.join("repo");
     fs::create_dir_all(root.join("docs/evidence")).unwrap();
     fs::create_dir_all(base.join("exchange-hours-evidence")).unwrap();
@@ -367,7 +370,7 @@ fn an_empty_evidence_directory_fails_instead_of_passing_vacuously() {
 
 #[test]
 fn collect_rows_walks_the_directory_in_name_order() {
-    let base = temp_dir("collect");
+    let base = temp_dir("collect").unwrap();
     let dir = base.join("docs/evidence");
     fs::create_dir_all(&dir).unwrap();
     fs::write(dir.join("b.md"), fixture(&"a".repeat(64), &"b".repeat(64))).unwrap();
@@ -399,13 +402,19 @@ fn quote_contexts_skip_the_id_and_digest_and_cap_the_hits() {
                 | 2020-01-04 | closed | `open quote four` | `example.pdf @2020-01-02T03:04:05Z` | T1 | x |\n";
     let artifact =
         b"prose open quote one, open quote two, open quote three, open quote four".to_vec();
-    let hits = quote_contexts(&text, &row, &artifact);
+    let hits = quote_contexts(text, &row, &artifact);
     assert_eq!(hits.len(), 3, "at most three quote hits");
     assert!(hits[0].contains("open quote one"), "{hits:?}");
     assert!(
         !hits.iter().any(|hit| hit.contains(&row.sha256)),
         "the digest cell is never a quote"
     );
-    assert!(quote_contexts(&text, &row, b"unrelated bytes").is_empty());
-    assert!(quote_contexts("no quotes cite the row", &row, &artifact).is_empty());
+    assert_eq!(
+        quote_contexts(text, &row, b"unrelated bytes"),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        quote_contexts("no quotes cite the row", &row, &artifact),
+        Vec::<String>::new()
+    );
 }

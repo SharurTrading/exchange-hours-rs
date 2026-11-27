@@ -101,12 +101,13 @@
 //! the only layer that can supply one.
 
 mod baseline;
+use crate::calendar::time_zones::ZoneSelection;
 mod error;
 mod ranges;
 
 pub use baseline::NormalWeekBaseline;
 pub use error::CalendarQueryError;
-pub use ranges::{CompleteRanges, CoverageGaps};
+pub use ranges::{CompleteRanges, CoverageGaps, ZonedCompleteRanges, ZonedCoverageGaps};
 
 use jiff::civil::Date;
 
@@ -871,7 +872,7 @@ enum BridgeSpanKind {
 ///
 /// Built by [`ExchangeCalendar::coverage`](crate::ExchangeCalendar::coverage);
 /// it borrows the identity's static tables, so reading it allocates nothing and
-/// the value stays `Copy + Send + Sync + 'static`. Every range it reports is
+/// the value stays `Copy + Send + Sync`. Every range it reports is
 /// clipped to [`SUPPORT_FLOOR`], the permanent 2010-01-01 local-date floor.
 ///
 /// [`Self::coverage_on`] is the per-date verdict, [`Self::complete_ranges`] the
@@ -895,7 +896,8 @@ enum BridgeSpanKind {
 /// declaration's own era. Deriving everything per call is also what lets a
 /// detached calendar report the normal-week contract from the very same value.
 #[derive(Clone, Copy)]
-pub struct CalendarCoverage {
+pub struct ZonedCalendarCoverage<'z> {
+    zones: ZoneSelection<'z>,
     source: CalendarSource,
     carried_below: Option<Date>,
     phase_gaps: &'static [PhaseGap],
@@ -920,7 +922,10 @@ pub struct CalendarCoverage {
     next_known_week: bool,
 }
 
-impl CalendarCoverage {
+/// Coverage metadata for a calendar using the precompiled IANA rules.
+pub type CalendarCoverage = ZonedCalendarCoverage<'static>;
+
+impl<'z> ZonedCalendarCoverage<'z> {
     /// Builds the metadata one identity's calendar reports.
     ///
     /// `view` is the calendar's own selection: a detached calendar reports the
@@ -934,6 +939,7 @@ impl CalendarCoverage {
         source: CalendarSource,
         view: HolidayView,
         next_known_week: bool,
+        zones: ZoneSelection<'z>,
     ) -> Self {
         let holidays_attached = !matches!(view, HolidayView::Detached);
         let declared = sourcing::declared(source);
@@ -948,6 +954,7 @@ impl CalendarCoverage {
             None => HolidayContract::NoTable,
         };
         Self {
+            zones,
             source,
             carried_below: declared.carried_below,
             phase_gaps: declared.phase_gaps,
@@ -1132,6 +1139,7 @@ impl CalendarCoverage {
                 close_ssm,
             } => crate::calendar::query::schedule::builtin_resolves_order_entry(
                 self.source,
+                self.zones,
                 date,
                 open_ssm,
                 close_ssm,
@@ -1224,8 +1232,8 @@ impl CalendarCoverage {
     /// The spans are disjoint and separated by [`Self::gaps`]; the last one may
     /// be open-ended.
     #[must_use]
-    pub fn complete_ranges(self) -> CompleteRanges {
-        CompleteRanges::new(self)
+    pub fn complete_ranges(self) -> ZonedCompleteRanges<'z> {
+        ZonedCompleteRanges::new(self)
     }
 
     /// Iterates the maximal spans, at or after the support floor, that this
@@ -1244,8 +1252,8 @@ impl CalendarCoverage {
     /// [`Self::phase_gaps`] for the whole declaration list. The record's reason
     /// and closing condition are the declaration's own.
     #[must_use]
-    pub fn gaps(self) -> CoverageGaps {
-        CoverageGaps::new(self)
+    pub fn gaps(self) -> ZonedCoverageGaps<'z> {
+        ZonedCoverageGaps::new(self)
     }
 
     /// Returns the reason `date` is not complete, or `None` when it is.
@@ -1307,7 +1315,11 @@ impl CalendarCoverage {
     /// a session day. The test reads the identity's shipped table, never a
     /// caller's overlay, because the reach is a fact about the identity.
     fn surviving_session_day(self, day: Date) -> bool {
-        if !crate::calendar::query::schedule::builtin_has_tradeable_rule(self.source, day) {
+        if !crate::calendar::query::schedule::builtin_has_tradeable_rule(
+            self.source,
+            self.zones,
+            day,
+        ) {
             return false;
         }
         match self.shipped.and_then(|table| table.holiday_on(day)) {
@@ -1849,7 +1861,7 @@ impl CalendarCoverage {
     }
 }
 
-impl core::fmt::Debug for CalendarCoverage {
+impl core::fmt::Debug for ZonedCalendarCoverage<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("CalendarCoverage")
             .field("identity", &self.source)
@@ -1861,9 +1873,10 @@ impl core::fmt::Debug for CalendarCoverage {
     }
 }
 
-impl PartialEq for CalendarCoverage {
+impl PartialEq for ZonedCalendarCoverage<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.source == other.source
+        self.zones == other.zones
+            && self.source == other.source
             && self.carried_below == other.carried_below
             && self.phase_gaps == other.phase_gaps
             && self.holidays == other.holidays
@@ -1872,7 +1885,7 @@ impl PartialEq for CalendarCoverage {
     }
 }
 
-impl Eq for CalendarCoverage {}
+impl Eq for ZonedCalendarCoverage<'_> {}
 
 /// Returns the gap one maximal run of `reason` reports when no declaration is
 /// the answer for it.

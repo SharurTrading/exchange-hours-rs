@@ -2,9 +2,7 @@
 
 //! ICE Futures U.S. Cotton No. 2 (`CT`) futures schedules.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
@@ -103,7 +101,7 @@ pub(crate) static COTTON_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the Cotton No. 2 profile in force on `as_of`'s New York day.
-pub(crate) fn cotton_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn cotton_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &COTTON_BASELINE,

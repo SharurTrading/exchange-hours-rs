@@ -7,11 +7,11 @@
 use jiff::tz::TimeZone;
 use jiff::{Timestamp, civil::Date};
 
-use super::calendar::{ExchangeCalendar, SessionWindow};
+use super::calendar::{SessionWindow, ZonedExchangeCalendar};
 use crate::calendar::query::{QueryContext, sessions, status};
 use crate::calendar::{CalendarQueryError, SessionKind, SessionState};
 
-impl ExchangeCalendar {
+impl ZonedExchangeCalendar<'_> {
     /// Returns whether any regular or extended session is open at `instant`.
     ///
     /// # Errors

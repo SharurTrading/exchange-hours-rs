@@ -4,9 +4,7 @@
 //!
 //! Evidence, quotations and URLs: `docs/evidence/globex_cryptocurrency.md`.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
@@ -147,7 +145,7 @@ saturday_extended_to!(EXTENDED_2026_08_29, 6, 0);
 saturday_extended_to!(EXTENDED_2026_09_19, 8, 0);
 
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: CURRENT_EXTENDED,
     order_entry: CURRENT_ORDER_ENTRY,
@@ -278,6 +276,6 @@ static REVISIONS: &[Revision] = revisions![
     (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
 ];
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, REVISIONS)
 }

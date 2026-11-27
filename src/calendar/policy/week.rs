@@ -4,11 +4,11 @@
 
 use jiff::Timestamp;
 
-use super::PolicyCalendar;
+use super::ZonedPolicyCalendar;
 use crate::calendar::CalendarQueryError;
 use crate::calendar::query::week;
 
-impl PolicyCalendar<'_> {
+impl ZonedPolicyCalendar<'_, '_> {
     /// Returns distinct effective open seconds in the venue-local week.
     ///
     /// Unlike hot status and boundary queries, this helper may allocate while

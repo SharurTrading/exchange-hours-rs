@@ -2,9 +2,7 @@
 
 //! NYSE-family US cash-equity profiles and dated schedule history.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::StaticHoursProfile;
 use super::equities::{US_EQUITY_EXTENDED, equity_profile, equity_profile_with_entry};
@@ -127,7 +125,7 @@ static NYSE_REVISIONS: &[Revision] = revisions![(
     "SEC 34-83230 (NYSE UTP Pillar production)"
 ),];
 
-pub(crate) fn nyse_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NYSE_HISTORICAL_PROFILE,
@@ -156,7 +154,7 @@ static NYSE_ARCA_REVISIONS: &[Revision] = revisions![(
     "NYSE Trader Update 2021-08-11"
 ),];
 
-pub(crate) fn nyse_arca_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_arca_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NYSE_ARCA_PRE_2021_09_13,
@@ -183,7 +181,7 @@ static AMERICAN_REVISIONS: &[Revision] = revisions![(
     "NYSE American Pillar update 2017-07-21"
 ),];
 
-pub(crate) fn nyse_american_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_american_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NYSE_AMERICAN_PRE_PILLAR,
@@ -224,7 +222,7 @@ static NATIONAL_REVISIONS: &[Revision] = revisions![
     (2018, 5, 21, &NYSE_NATIONAL_PROFILE, "SR-NYSENat-2020-05"),
 ];
 
-pub(crate) fn nyse_national_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_national_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NATIONAL_PRE_2010_08_02,
@@ -253,7 +251,7 @@ static TEXAS_REVISIONS: &[Revision] = revisions![(
     "NYSE Chicago migration notice"
 ),];
 
-pub(crate) fn nyse_texas_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn nyse_texas_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &NYSE_CHICAGO_PROFILE_PRE_PILLAR,

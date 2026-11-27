@@ -121,9 +121,11 @@ required. Historical completion remains the target tracked in #332.
 
 - **LAW-DETERMINISM** — library code never reads a clock, performs I/O, or uses
   randomness. Same inputs, same answer, forever. Enforced structurally where
-  possible. Jiff is built with `default-features = false`. Built-in venue
-  time zones are embedded at compile time. Use those static zones throughout
-  built-in queries. The lint configuration also disallows time reads and zone
+  possible. Jiff is built with `default-features = false`. A calendar uses
+  embedded zones by default. A caller may supply one immutable, versioned
+  snapshot for all venue and reference zones in a run. The separate
+  `exchange-hours-tzdb` companion owns release discovery, I/O and polling.
+  The calendar crate's lint configuration disallows time reads and ambient
   database lookups when dependency feature unification makes them available.
 - **LAW-PANIC** — production queries are total: they do not panic, hang, or use
   unreachable fallbacks. Invalid raw `SessionRule` values may return
@@ -754,19 +756,26 @@ fences; compare them against production data, never generate them from it.
 
 ## Verification
 
-Run before claiming any change is done — the first line is every check the
-`quality` CI job runs, in the same order; the second is the `markdown-lint`
-job:
+Run the quality and Markdown gates before marking a change complete. The
+embedded database check contacts IANA and fails if freshness cannot be verified.
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+cargo fmt --all --check
+cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+cargo check --locked --package exchange-hours --no-default-features
+cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast
+cargo test --locked --workspace --all-features --doc
+RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
+cargo deny --locked --workspace --all-features check
 npx markdownlint-cli2@0.23.3
 ```
 
 The MSRV job builds on a second toolchain, so it is a separate command:
 
 ```bash
-cargo +1.95 check --all-targets
+cargo +1.95 check --locked --workspace --all-features --all-targets
 ```
 
 ## Reviewing a change

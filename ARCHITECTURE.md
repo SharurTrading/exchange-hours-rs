@@ -127,10 +127,17 @@ sources plus an optional borrowed day policy. Do not add a second algorithm
 implementation for a public facade. Extend the context only when a genuinely
 different schedule source or overlay is needed.
 
-Built-in venue time zones are embedded from IANA 2026f at compile time. Static
-profiles borrow these zones and their rule slices. A `MarketHours` snapshot
-owns its Jiff `TimeZone`, and the engine borrows that zone for conversions.
-The date-aware calendar remains a copyable identity and query configuration.
+By default, a calendar resolves each venue and reference clock from embedded
+IANA data. With `runtime-tzdb`, a calendar can borrow one immutable
+`TimeZoneSnapshot`. Profile selection and boundary conversion use that same
+snapshot, including markets whose schedules depend on a second country's
+clock. Calendar handles remain copyable and share the same query engine.
+A detached `MarketHours` owns its resolved Jiff zone.
+
+The `exchange-hours-tzdb` companion checks the official stable release at
+startup and hourly. It verifies and compiles the release before making the
+complete snapshot available to new runs. A calendar already in use keeps its
+borrowed snapshot. The updater reports the outcome of its last check.
 
 The shared engine must preserve:
 

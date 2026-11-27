@@ -5,9 +5,7 @@
 //! Narrative evidence, sources and residual risks:
 //! `docs/evidence/coinbase_derivatives.md` (LAW-EVIDENCE-FILES).
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_ONLY, MON_THU, SUN_PLUS_MON_THU};
@@ -110,9 +108,9 @@ static REVISIONS: &[Revision] = revisions![
     )
 ];
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Chicago);
-    if as_of.as_second() < LAUNCH_UNIX_SECONDS {
+    if as_of.instant.as_second() < LAUNCH_UNIX_SECONDS {
         &CLOSED
     } else if day < FIRST_FULL_DAY {
         &LAUNCH_DAY

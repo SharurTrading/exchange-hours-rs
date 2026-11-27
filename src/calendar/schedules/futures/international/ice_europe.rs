@@ -2,9 +2,7 @@
 
 //! ICE Futures Europe Brent and FTSE defaults.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::{America, Europe};
+use crate::calendar::time_zones::{America, Europe, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -63,11 +61,13 @@ const fn brent_profile(
     }
 }
 
-pub(crate) fn iceeu_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn iceeu_profile_at(_as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     &ICEEU_CURRENT
 }
 
-pub(crate) fn ice_europe_commodities_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn ice_europe_commodities_profile_at(
+    _as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     &ICE_EUROPE_COMMODITIES_CURRENT
 }
 
@@ -139,7 +139,9 @@ static FTSE_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn ice_europe_financials_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn ice_europe_financials_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::London),
         &FTSE_CLOSED,

@@ -4,9 +4,7 @@
 //!
 //! Shared phase definitions and evidence: `docs/evidence/sgx_equity_index_japan.md`.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::Asia;
+use crate::calendar::time_zones::{Asia, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -219,7 +217,9 @@ pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX Taiwan equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_taiwan_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_taiwan_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_EQUITY_INDEX_CLOSED,
@@ -316,7 +316,9 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the SGX NTR (USD) equity-index profile in force on `as_of`'s Singapore day.
-pub(crate) fn sgx_equity_index_ntr_usd_profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_equity_index_ntr_usd_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_EQUITY_INDEX_CLOSED,

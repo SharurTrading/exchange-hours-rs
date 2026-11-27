@@ -68,11 +68,20 @@ jobs:
       - name: fmt
         run: cargo fmt --all --check
 
+      - name: Embedded time zones match the latest stable IANA release
+        run: cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+
+      - name: Load the signed IANA release through the live updater
+        run: cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+
+      - name: Check the standalone precompiled calendar
+        run: cargo check --locked --package exchange-hours --no-default-features
+
       - name: clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
 
       - name: tests
-        run: cargo nextest run --all-targets --no-fail-fast
+        run: cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast
         env:
           # The store the Documents-digest fence verifies against (also
           # reachable through the ../exchange-hours-evidence sibling
@@ -82,13 +91,13 @@ jobs:
 
       # nextest does not run doctests, and the Quick start example is one.
       - name: doctests
-        run: cargo test --doc
+        run: cargo test --locked --workspace --all-features --doc
 
       - name: docs
-        run: RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
+        run: RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
 
       - name: licenses & advisories
-        run: cargo deny check
+        run: cargo deny --locked --workspace --all-features check
 
   msrv:
     name: msrv (${{ matrix.rust }})
@@ -113,7 +122,7 @@ jobs:
           key: msrv-${{ matrix.rust }}
 
       - name: check
-        run: cargo +${{ matrix.rust }} check --all-targets
+        run: cargo +${{ matrix.rust }} check --locked --workspace --all-features --all-targets
 
   markdown-lint:
     name: markdown-lint

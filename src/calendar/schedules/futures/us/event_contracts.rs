@@ -2,9 +2,7 @@
 
 //! CME Group Event Contracts on futures schedules.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
@@ -80,6 +78,6 @@ static FROM_2022_09_18: StaticHoursProfile = StaticHoursProfile {
 // Evidence: docs/evidence/globex_event_contracts.md
 static REVISIONS: &[Revision] = revisions![(2022, 9, 18, &FROM_2022_09_18, "CME SER-8968R")];
 
-pub(crate) fn profile_at(as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, REVISIONS)
 }

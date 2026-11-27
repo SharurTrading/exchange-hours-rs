@@ -35,7 +35,9 @@ use super::baseline::NormalWeekBaseline;
 /// The type carries no allocation and no `String`: the identity, the offending
 /// venue-local date and, for an exhausted search, the bound it hit. It is
 /// `Copy + Send + Sync + 'static` so a caller can log or return it without
-/// ceremony.
+/// ceremony. It does not hold a time zone snapshot. With `runtime-tzdb` enabled,
+/// `Display` labels any baseline it derives with the embedded release. Use
+/// `display_in` with the originating snapshot to render its rules.
 ///
 /// **The mapping from [`DateCoverage`](super::DateCoverage) to these variants
 /// is exact in one direction only.** A date the metadata calls
@@ -134,7 +136,8 @@ impl CalendarQueryError {
     }
 
     /// Returns the sourced normal-week baseline the refused date sits inside,
-    /// or `None` when the crate states none (issue #296, Tier 3).
+    /// using the precompiled clocks, or `None` when the crate states none.
+    /// For a runtime calendar use `normal_week_baseline_in` with its snapshot.
     ///
     /// This is the context a consumer needs to make its own call beside a
     /// refusal: the weekday the refused date falls on and the normal-week
@@ -150,7 +153,25 @@ impl CalendarQueryError {
     /// at the date.
     #[must_use]
     pub fn normal_week_baseline(self) -> Option<NormalWeekBaseline> {
-        super::baseline::for_error(self)
+        super::baseline::for_error(self, crate::calendar::time_zones::ZoneSelection::EMBEDDED)
+    }
+    /// Derives the refused date's baseline using the same snapshot as the query.
+    #[cfg(feature = "runtime-tzdb")]
+    #[must_use]
+    pub fn normal_week_baseline_in(
+        self,
+        snapshot: &crate::TimeZoneSnapshot,
+    ) -> Option<NormalWeekBaseline> {
+        super::baseline::for_error(self, snapshot.selection())
+    }
+    /// Formats this refusal with any normal-week context derived from `snapshot`.
+    #[cfg(feature = "runtime-tzdb")]
+    #[must_use]
+    pub fn display_in(self, snapshot: &crate::TimeZoneSnapshot) -> impl core::fmt::Display + '_ {
+        ErrorDisplay {
+            error: self,
+            zones: snapshot.selection(),
+        }
     }
 }
 
@@ -164,19 +185,34 @@ const fn identity_name(source: CalendarSource) -> &'static str {
 
 impl core::fmt::Display for CalendarQueryError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let name = identity_name(self.source());
-        match *self {
-            Self::BeforeSupportFloor { date, .. } => write!(
+        ErrorDisplay {
+            error: *self,
+            zones: crate::calendar::time_zones::ZoneSelection::EMBEDDED,
+        }
+        .fmt(f)
+    }
+}
+
+struct ErrorDisplay<'z> {
+    error: CalendarQueryError,
+    zones: crate::calendar::time_zones::ZoneSelection<'z>,
+}
+
+impl core::fmt::Display for ErrorDisplay<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let name = identity_name(self.error.source());
+        match self.error {
+            CalendarQueryError::BeforeSupportFloor { date, .. } => write!(
                 f,
                 "{name}: {date} precedes the {SUPPORT_FLOOR} venue-local support floor"
             ),
-            Self::OutsideCoveredRange { date, .. } => {
+            CalendarQueryError::OutsideCoveredRange { date, .. } => {
                 write!(
                     f,
                     "{name}: {date} is outside this identity's covered ranges"
                 )
             }
-            Self::UnresolvedGap { date, .. } => {
+            CalendarQueryError::UnresolvedGap { date, .. } => {
                 write!(
                     f,
                     "{name}: {date} is an unresolved gap in the covered range"
@@ -185,12 +221,21 @@ impl core::fmt::Display for CalendarQueryError {
                 // baseline it sits inside, so a consumer can make its own call.
                 // The holiday arrangement stays unsourced — the baseline is
                 // context, never an answer.
-                if let Some(baseline) = self.normal_week_baseline() {
+                if let Some(baseline) = super::baseline::for_error(self.error, self.zones) {
+                    #[cfg(feature = "runtime-tzdb")]
+                    match self.zones {
+                        crate::calendar::time_zones::ZoneSelection::Embedded(_) => {
+                            write!(f, " [embedded tzdb {}]", crate::EMBEDDED_TZDB_VERSION)?;
+                        }
+                        crate::calendar::time_zones::ZoneSelection::Runtime(snapshot) => {
+                            write!(f, " [tzdb {}]", snapshot.0.release())?;
+                        }
+                    }
                     write!(f, " ({baseline}; the holiday arrangement is unsourced)")?;
                 }
                 Ok(())
             }
-            Self::SearchExhausted { date, bound, .. } => write!(
+            CalendarQueryError::SearchExhausted { date, bound, .. } => write!(
                 f,
                 "{name}: no answer for {date}; the bounded search ended at {bound}"
             ),

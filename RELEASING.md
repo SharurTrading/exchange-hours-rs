@@ -37,7 +37,10 @@ version afterwards.
 ## Release pull request
 
 1. Start from an up-to-date `main` and create `release/X.Y.Z`.
-2. Set the package version in `Cargo.toml` and `Cargo.lock`.
+2. Set the calendar package version and its `[workspace.dependencies]` entry
+   in `Cargo.toml` and regenerate `Cargo.lock`. The companion and repository
+   tools inherit that dependency. The Jiff migration pairs calendar 2.0.0
+   with the first companion release, 0.1.0.
 3. Move the accumulated `[Unreleased]` entries to `## [X.Y.Z] - YYYY-MM-DD`,
    restore an empty `[Unreleased]` heading, and update comparison links.
 4. Update the README installation, migration, coverage, and assurance text.
@@ -55,13 +58,17 @@ version afterwards.
 
    ```bash
    cargo fmt --all --check
-   cargo clippy --all-targets -- -D warnings
-   cargo nextest run --all-targets
-   cargo test --doc
-   RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
-   cargo deny check
-   cargo +1.95 check --all-targets
-   cargo publish --dry-run --locked
+   cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+   cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+   cargo check --locked --package exchange-hours --no-default-features
+   cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+   cargo nextest run --locked --workspace --all-features --all-targets
+   cargo test --locked --workspace --all-features --doc
+   RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
+   cargo deny --locked --workspace --all-features check
+   cargo +1.95 check --locked --workspace --all-features --all-targets
+   cargo package --locked -p exchange-hours -p exchange-hours-tzdb
+   cargo publish --dry-run --locked -p exchange-hours
    ```
 
 8. Inspect `cargo package --list --locked` for missing evidence/docs or
@@ -96,8 +103,12 @@ version afterwards.
 5. Publish the same clean tree with the crates.io owner credential:
 
    ```bash
-   cargo publish --locked
+   cargo publish --locked -p exchange-hours
    ```
+
+   For a companion release, wait for the calendar version to resolve from
+   crates.io, then run `cargo publish --locked --dry-run -p exchange-hours-tzdb`
+   and `cargo publish --locked -p exchange-hours-tzdb` for that version.
 
 6. Create the GitHub release from the verified tag and use the matching
    changelog section as its notes.

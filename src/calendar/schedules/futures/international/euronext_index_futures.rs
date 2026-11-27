@@ -4,9 +4,7 @@
 //!
 //! Evidence: `docs/evidence/euronext_index_futures.md`.
 
-use jiff::Timestamp;
-
-use crate::calendar::time_zones::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -41,6 +39,8 @@ static EURONEXT_INDEX_FUTURES: StaticHoursProfile = StaticHoursProfile {
 /// the 2026-10-11 retrieval rather than inventing a cutover history. The same
 /// one-grid-at-every-instant shape as a launch-dated family past its launch,
 /// with the horizon disclosure living in the ledger row and evidence file.
-pub(crate) fn euronext_index_futures_profile_at(_as_of: Timestamp) -> &'static StaticHoursProfile {
+pub(crate) fn euronext_index_futures_profile_at(
+    _as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     &EURONEXT_INDEX_FUTURES
 }

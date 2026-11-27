@@ -79,7 +79,7 @@ pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, t
 pub use coverage::{
     CalendarCoverage, CalendarQueryError, CompleteRanges, CoverageGap, CoverageGapReason,
     CoverageGaps, DateCoverage, DateRange, HolidayContract, NormalWeekBaseline, PhaseGap,
-    PhaseGapShape, SUPPORT_FLOOR,
+    PhaseGapShape, SUPPORT_FLOOR, ZonedCalendarCoverage, ZonedCompleteRanges, ZonedCoverageGaps,
 };
 pub use exceptions::{
     DateException, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, ExceptionScopeError,
@@ -88,15 +88,17 @@ pub use exceptions::{
 };
 pub use exchange::{Exchange, ParseExchangeError};
 pub use exchange_calendar::{
-    CalendarSource, ExchangeCalendar, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarSource, ExchangeCalendar, ZonedExchangeCalendar, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
 pub use futures_profile::{
-    FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, hours_for_market_hours_key,
-    session_profile,
+    FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, ZonedFuturesSessionProfile,
+    hours_for_market_hours_key, session_profile,
 };
 pub use hours::MarketHours;
 pub use policy::{
     DayOverride, DayPolicy, NoPolicy, PolicyCalendar, StaticDayPolicy, StaticDayPolicyError,
+    ZonedPolicyCalendar,
 };
 pub use presets::hours_for_exchange;
 pub use resolution::CalendarResolution;
@@ -107,3 +109,9 @@ pub use session::{
     session_bounds_with,
 };
 pub use state::SessionState;
+
+#[cfg(feature = "runtime-tzdb")]
+pub use time_zones::{TimeZoneSnapshot, TimeZoneSnapshotError};
+
+/// The IANA release compiled into the default calendars.
+pub const EMBEDDED_TZDB_VERSION: &str = env!("EXCHANGE_HOURS_EMBEDDED_TZDB");

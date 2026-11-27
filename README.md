@@ -81,6 +81,44 @@ exchange-hours = "2"
 jiff = { version = "1", default-features = false, features = ["static"] }
 ```
 
+### Time zone updates
+
+- **For backtesting, use the precompiled calendar.** Pin the crate version and
+  record `exchange_hours::EMBEDDED_TZDB_VERSION` with the results. The same
+  build replays the same historical UTC session boundaries offline.
+- **For live trading, use the latest stable IANA release.** Add the
+  `exchange-hours-tzdb` companion and start one updater at application
+  startup. It verifies the initial release before returning and checks hourly,
+  so a government clock change can reach a running application without a rebuild.
+
+For the 2.0 release, add `exchange-hours-tzdb = "0.1"` alongside
+`exchange-hours = "2"` for live use. The companion enables the calendar's
+`runtime-tzdb` feature.
+
+```rust
+use exchange_hours::{Exchange, ExchangeCalendar};
+use exchange_hours_tzdb::TimeZoneUpdater;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let updater = TimeZoneUpdater::start_latest()?;
+    // Pin one release for this live operation.
+    let snapshot = updater.snapshot()?;
+    let calendar = ExchangeCalendar::new(Exchange::Nyse).with_time_zone_snapshot(&snapshot);
+    let _bounds = calendar.session_bounds("2026-01-15T15:00:00Z".parse()?)?;
+    Ok(())
+}
+```
+
+Keep the updater alive for automatic updates. To reproduce a particular live
+run, record the crate version and `snapshot.release()` and retain the exact
+zone data used. Supply that snapshot during replay. A run keeps its snapshot
+across background updates. An unsuccessful refresh is
+visible through `updater.status()?.last_error`, and live queries can continue
+using the last verified release. Use `error.display_in(&snapshot)` when
+rendering a coverage refusal from that operation. Startup requires network access and the
+`curl`, `gpgv` and `zic` tools. See the
+[companion setup and snapshot API](https://github.com/SharurTrading/exchange-hours-rs/tree/main/tzdb-runtime).
+
 ## Migrating from 1.x
 
 - Use `jiff::Timestamp` for every timestamp argument and result, including both
@@ -738,7 +776,9 @@ currently published schedule and the relevant contract specifications.
 The runtime dependencies are Jiff for date, timestamp, and zone arithmetic,
 and Serde for canonical identity strings. Jiff's default features are disabled.
 A build dependency pins the IANA 2026f data embedded for built-in venues.
-Calendar queries use those rules independently of the host time zone database.
+Calendar queries resolve zones from the selected snapshot independently of
+the host time zone database. CI compares the embedded release with IANA on
+pull requests, pushes to `main` and daily on the default branch.
 
 Built-in `MarketHours` status/bound/candle queries and `ExchangeCalendar`
 status/bound/trade-date/candle queries allocate nothing. `is_open` is
@@ -856,21 +896,26 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   cross-query fence. The production tables are never imported into these expectations.
 - `src/lib.rs` doctest — the Quick start example above.
 
-The CI gate, in order — `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings`
-(clippy **pedantic** plus the panic-family and determinism restriction lints, configured in
-`Cargo.toml` and `clippy.toml`), `cargo nextest run`, `cargo test --doc`, `cargo doc` with
-warnings denied, and `cargo deny check` for dependency licences and advisories. A second job
-builds on the declared MSRV so that floor is exercised rather than asserted. The build
-toolchain is pinned in `rust-toolchain.toml`. Run everything the `quality` job runs:
+The quality job checks IANA freshness, formatting, the embedded-only build,
+Clippy, tests, documentation and dependency policy. The toolchain is pinned
+in `rust-toolchain.toml`. To reproduce CI locally:
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+cargo fmt --all --check
+cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+cargo check --locked --package exchange-hours --no-default-features
+cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast
+cargo test --locked --workspace --all-features --doc
+RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
+cargo deny --locked --workspace --all-features check
 ```
 
 The MSRV job needs a second toolchain, so it is a separate command:
 
 ```bash
-cargo +1.95 check --all-targets
+cargo +1.95 check --locked --workspace --all-features --all-targets
 ```
 
 ## License

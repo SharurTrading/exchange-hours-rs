@@ -50,7 +50,7 @@ use crate::calendar::schedules::futures::us::{
 
 // OANDA's own book: one grid each, no dated change, no seasonal switch.
 static FUTURES_OANDA_CHINA50: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: &[],
     extended: OANDA_CHINA50_EXTENDED,
     order_entry: &[],
@@ -58,7 +58,7 @@ static FUTURES_OANDA_CHINA50: FuturesSessionProfile = FuturesSessionProfile {
     has_weekend_close: true,
 };
 static FUTURES_ASX_SPI_200: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Australia::Sydney,
+    tz: Australia::Sydney.embedded(),
     regular: ASX_SPI_200_REGULAR,
     extended: ASX_SPI_200_EXTENDED_DST,
     order_entry: ASX_SPI_200_ORDER_ENTRY,
@@ -67,7 +67,7 @@ static FUTURES_ASX_SPI_200: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_HKEX_INDEX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Hong_Kong,
+    tz: Asia::Hong_Kong.embedded(),
     regular: HKEX_INDEX_1630_REGULAR,
     extended: HKEX_INDEX_AHT_0300_EXTENDED,
     order_entry: HKEX_INDEX_PHASE2_ORDER_ENTRY,
@@ -76,7 +76,7 @@ static FUTURES_HKEX_INDEX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_OANDA_SINGAPORE30: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: &[],
     extended: OANDA_SINGAPORE30_EXTENDED,
     order_entry: &[],
@@ -85,7 +85,7 @@ static FUTURES_OANDA_SINGAPORE30: FuturesSessionProfile = FuturesSessionProfile 
 };
 
 static FUTURES_BME_IBEX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Madrid,
+    tz: Europe::Madrid.embedded(),
     regular: BME_IBEX_REGULAR_CURRENT,
     extended: &[],
     order_entry: BME_IBEX_ORDER_ENTRY_CURRENT,
@@ -94,7 +94,7 @@ static FUTURES_BME_IBEX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_ICE_EUROPE_GILTS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::London,
+    tz: Europe::London.embedded(),
     regular: ICE_EUROPE_GILTS_REGULAR_CURRENT,
     extended: &[],
     order_entry: ICE_EUROPE_GILTS_ORDER_ENTRY_CURRENT,
@@ -102,7 +102,7 @@ static FUTURES_ICE_EUROPE_GILTS: FuturesSessionProfile = FuturesSessionProfile {
     has_weekend_close: true,
 };
 static FUTURES_OANDA_FX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: OANDA_FX_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -111,7 +111,7 @@ static FUTURES_OANDA_FX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_OANDA_TRY_FX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Berlin,
+    tz: Europe::Berlin.embedded(),
     regular: OANDA_TRY_FX_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -120,7 +120,7 @@ static FUTURES_OANDA_TRY_FX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_OANDA_METALS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: OANDA_METALS_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -129,7 +129,7 @@ static FUTURES_OANDA_METALS: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_OANDA_US_INDEX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: OANDA_US_CONTINUOUS_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -138,7 +138,7 @@ static FUTURES_OANDA_US_INDEX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_OANDA_US_COMMODITY: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: OANDA_US_CONTINUOUS_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -147,7 +147,7 @@ static FUTURES_OANDA_US_COMMODITY: FuturesSessionProfile = FuturesSessionProfile
 };
 
 static FUTURES_OANDA_BRENT: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::London,
+    tz: Europe::London.embedded(),
     regular: OANDA_BRENT_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -156,7 +156,7 @@ static FUTURES_OANDA_BRENT: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: CME_REGULAR,
     extended: CME_EXTENDED_CURRENT,
     order_entry: CME_ORDER_ENTRY_CURRENT,
@@ -165,7 +165,7 @@ static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfil
 };
 
 static FUTURES_GLOBEX_ENERGY: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: ENERGY_METALS_EXTENDED_CURRENT,
     order_entry: ENERGY_METALS_ORDER_ENTRY_CURRENT,
@@ -176,7 +176,7 @@ static FUTURES_GLOBEX_ENERGY: FuturesSessionProfile = FuturesSessionProfile {
 // The 100-oz silver family's verified-current 24/7 grid (from 2026-09-12). No
 // source states a Pre-Open queue for the 24/7 era, so `order_entry` is empty.
 static FUTURES_GLOBEX_SILVER_100OZ: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: SILVER_100OZ_EXTENDED_CURRENT,
     order_entry: &[],
@@ -185,7 +185,7 @@ static FUTURES_GLOBEX_SILVER_100OZ: FuturesSessionProfile = FuturesSessionProfil
 };
 
 static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: CBOT_REGULAR_CURRENT,
     extended: CBOT_EXTENDED_CURRENT,
     order_entry: CBOT_ORDER_ENTRY_CURRENT,
@@ -197,7 +197,7 @@ static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
 // tables are the shared ones under mini names; `mini_grains.rs` holds the
 // diverged history that makes the separate key necessary.
 static FUTURES_GLOBEX_MINI_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: MINI_REGULAR_CURRENT,
     extended: MINI_EXTENDED_CURRENT,
     order_entry: MINI_ORDER_ENTRY_CURRENT,
@@ -210,7 +210,7 @@ static FUTURES_GLOBEX_MINI_GRAINS: FuturesSessionProfile = FuturesSessionProfile
 // 15:15 CT close this family ran on until SER-9519, which is what makes the
 // key necessary despite an envelope shared with FX and energy today.
 static FUTURES_GLOBEX_WEATHER: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: WEATHER_EXTENDED_CURRENT,
     order_entry: WEATHER_ORDER_ENTRY_CURRENT,
@@ -224,7 +224,7 @@ static FUTURES_GLOBEX_WEATHER: FuturesSessionProfile = FuturesSessionProfile {
 // which is what makes this key distinct from `globex_weather` despite an
 // identical current envelope.
 static FUTURES_GLOBEX_SPOT_QUOTED: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: SPOT_QUOTED_EXTENDED_CURRENT,
     order_entry: SPOT_QUOTED_ORDER_ENTRY_CURRENT,
@@ -239,7 +239,7 @@ static FUTURES_GLOBEX_SPOT_QUOTED: FuturesSessionProfile = FuturesSessionProfile
 // root. `event_contracts.rs` holds the 2022-09-18 launch, the closed era
 // before it, and `ECBTC`'s 2026-05-29 departure from scope.
 static FUTURES_GLOBEX_EVENT_CONTRACTS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: EVENT_CONTRACTS_EXTENDED_CURRENT,
     order_entry: EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
@@ -254,7 +254,7 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS: FuturesSessionProfile = FuturesSessionPro
 // listing, the 17:00-15:00 CT era, the 2026-05-29 transition day and six
 // notice-dated Saturday extensions.
 static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: BITCOIN_EVENT_CONTRACTS_EXTENDED_CURRENT,
     order_entry: BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
@@ -269,7 +269,7 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessio
 // and is `Closed`. COMEX gold, silver and copper share one queue in
 // `metals_tas.rs`; `pgm_tas.rs` holds NYMEX platinum and palladium.
 static FUTURES_GLOBEX_GOLD_TAS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: GOLD_TAS_EXTENDED_CURRENT,
     order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
@@ -278,7 +278,7 @@ static FUTURES_GLOBEX_GOLD_TAS: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_GLOBEX_SILVER_TAS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: SILVER_TAS_EXTENDED_CURRENT,
     order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
@@ -287,7 +287,7 @@ static FUTURES_GLOBEX_SILVER_TAS: FuturesSessionProfile = FuturesSessionProfile 
 };
 
 static FUTURES_GLOBEX_COPPER_TAS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: COPPER_TAS_EXTENDED_CURRENT,
     order_entry: METALS_TAS_ORDER_ENTRY_2016_01_03,
@@ -296,7 +296,7 @@ static FUTURES_GLOBEX_COPPER_TAS: FuturesSessionProfile = FuturesSessionProfile 
 };
 
 static FUTURES_GLOBEX_PLATINUM_TAS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: PLATINUM_TAS_EXTENDED_CURRENT,
     order_entry: PGM_TAS_ORDER_ENTRY_CURRENT,
@@ -307,7 +307,7 @@ static FUTURES_GLOBEX_PLATINUM_TAS: FuturesSessionProfile = FuturesSessionProfil
 // No 16:00-17:00 CT break: the specification clause that once implied one is
 // inherited boilerplate from the outright row, and CME deleted it in 2020.
 static FUTURES_GLOBEX_PALLADIUM_TAS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: &[],
     extended: PALLADIUM_TAS_EXTENDED_CURRENT,
     order_entry: PGM_TAS_ORDER_ENTRY_CURRENT,
@@ -316,7 +316,7 @@ static FUTURES_GLOBEX_PALLADIUM_TAS: FuturesSessionProfile = FuturesSessionProfi
 };
 
 static FUTURES_GLOBEX_ROUGH_RICE: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: ROUGH_RICE_REGULAR_CURRENT,
     extended: ROUGH_RICE_EXTENDED_CURRENT,
     order_entry: ROUGH_RICE_ORDER_ENTRY_CURRENT,
@@ -325,7 +325,7 @@ static FUTURES_GLOBEX_ROUGH_RICE: FuturesSessionProfile = FuturesSessionProfile 
 };
 
 static FUTURES_CFE_VIX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: CFE_REGULAR,
     extended: CFE_EXTENDED,
     order_entry: CFE_ORDER_ENTRY,
@@ -334,7 +334,7 @@ static FUTURES_CFE_VIX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_EUREX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Berlin,
+    tz: Europe::Berlin.embedded(),
     regular: EUREX_CURRENT_REGULAR,
     extended: EUREX_CURRENT_EXTENDED,
     order_entry: EUREX_CURRENT_ORDER_ENTRY,
@@ -343,7 +343,7 @@ static FUTURES_EUREX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_ICE_US: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: ICE_US_FANG_REGULAR_CURRENT,
     extended: ICE_US_FANG_EXTENDED_CURRENT,
     order_entry: ICE_US_FANG_ORDER_ENTRY_CURRENT,
@@ -352,7 +352,7 @@ static FUTURES_ICE_US: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_ICE_US_SUGAR: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: SUGAR_REGULAR_CURRENT,
     extended: SUGAR_EXTENDED_CURRENT,
     order_entry: SUGAR_ORDER_ENTRY_CURRENT,
@@ -361,7 +361,7 @@ static FUTURES_ICE_US_SUGAR: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_COFFEE: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: COFFEE_REGULAR_CURRENT,
     extended: COFFEE_EXTENDED_CURRENT,
     order_entry: COFFEE_ORDER_ENTRY_CURRENT,
@@ -370,7 +370,7 @@ static FUTURES_COFFEE: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_COCOA: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: COCOA_REGULAR_CURRENT,
     extended: COCOA_EXTENDED_CURRENT,
     order_entry: COCOA_ORDER_ENTRY_CURRENT,
@@ -379,7 +379,7 @@ static FUTURES_COCOA: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_COTTON: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: COTTON_REGULAR_CURRENT,
     extended: COTTON_EXTENDED_CURRENT,
     order_entry: COTTON_ORDER_ENTRY_CURRENT,
@@ -388,7 +388,7 @@ static FUTURES_COTTON: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_FCOJ: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: FCOJ_REGULAR_CURRENT,
     extended: FCOJ_EXTENDED_CURRENT,
     order_entry: FCOJ_ORDER_ENTRY_CURRENT,
@@ -397,7 +397,7 @@ static FUTURES_FCOJ: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_ICE_USDX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
+    tz: America::New_York.embedded(),
     regular: ICE_USDX_REGULAR_CURRENT,
     extended: ICE_USDX_EXTENDED_CURRENT,
     order_entry: ICE_USDX_ORDER_ENTRY_CURRENT,
@@ -406,7 +406,7 @@ static FUTURES_ICE_USDX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_NKD: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: NKD_REGULAR_CURRENT,
     extended: NKD_EXTENDED_CURRENT,
     order_entry: NKD_ORDER_ENTRY_CURRENT,
@@ -415,7 +415,7 @@ static FUTURES_NKD: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_EUREX_FIXED_INCOME: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Berlin,
+    tz: Europe::Berlin.embedded(),
     regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
     extended: EUREX_FIXED_INCOME_EXTENDED_CURRENT,
     order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
@@ -424,7 +424,7 @@ static FUTURES_EUREX_FIXED_INCOME: FuturesSessionProfile = FuturesSessionProfile
 };
 
 static FUTURES_EUREX_SMI: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Zurich,
+    tz: Europe::Zurich.embedded(),
     regular: EUREX_SMI_REGULAR_CURRENT,
     extended: &[],
     order_entry: EUREX_SMI_ORDER_ENTRY_CURRENT,
@@ -433,7 +433,7 @@ static FUTURES_EUREX_SMI: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_EURONEXT_INDEX_FUTURES: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Paris,
+    tz: Europe::Paris.embedded(),
     regular: EURONEXT_INDEX_FUTURES_REGULAR,
     extended: &[],
     order_entry: &[],
@@ -442,7 +442,7 @@ static FUTURES_EURONEXT_INDEX_FUTURES: FuturesSessionProfile = FuturesSessionPro
 };
 
 static FUTURES_SGX_EQUITY_INDEX_JAPAN: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT,
     order_entry: SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT,
@@ -451,7 +451,7 @@ static FUTURES_SGX_EQUITY_INDEX_JAPAN: FuturesSessionProfile = FuturesSessionPro
 };
 
 static FUTURES_SGX_EQUITY_INDEX_CHINA: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
     order_entry: SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT,
@@ -460,7 +460,7 @@ static FUTURES_SGX_EQUITY_INDEX_CHINA: FuturesSessionProfile = FuturesSessionPro
 };
 
 static FUTURES_SGX_EQUITY_INDEX_SINGAPORE: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT,
     order_entry: SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT,
@@ -469,7 +469,7 @@ static FUTURES_SGX_EQUITY_INDEX_SINGAPORE: FuturesSessionProfile = FuturesSessio
 };
 
 static FUTURES_SGX_EQUITY_INDEX_TAIWAN: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT,
     order_entry: SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT,
@@ -478,7 +478,7 @@ static FUTURES_SGX_EQUITY_INDEX_TAIWAN: FuturesSessionProfile = FuturesSessionPr
 };
 
 static FUTURES_SGX_EQUITY_INDEX_NTR_USD: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT,
     order_entry: SGX_EQUITY_INDEX_NTR_USD_ORDER_ENTRY_CURRENT,
@@ -487,7 +487,7 @@ static FUTURES_SGX_EQUITY_INDEX_NTR_USD: FuturesSessionProfile = FuturesSessionP
 };
 
 static FUTURES_SGX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
+    tz: Asia::Singapore.embedded(),
     regular: SGX_CURRENT_REGULAR,
     extended: SGX_CURRENT_EXTENDED,
     order_entry: SGX_CURRENT_ORDER_ENTRY,
@@ -496,7 +496,7 @@ static FUTURES_SGX: FuturesSessionProfile = FuturesSessionProfile {
 };
 
 static FUTURES_ALWAYS_OPEN: FuturesSessionProfile = FuturesSessionProfile {
-    tz: UTC,
+    tz: UTC.embedded(),
     regular: ALWAYS_OPEN_RULE,
     extended: &[],
     order_entry: &[],

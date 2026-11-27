@@ -17,8 +17,8 @@ use super::query::gate::Identified;
 use super::query::{QueryContext, sessions, status};
 use super::schedules::holidays::{Holiday, HolidayCoverage};
 use super::{
-    CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey,
-    SessionKind, SessionState,
+    CalendarQueryError, CalendarSource, Exchange, MarketHours, MarketHoursKey, SessionKind,
+    SessionState, ZonedExchangeCalendar,
 };
 
 /// Day-level schedule overrides supplied by a caller.
@@ -106,7 +106,7 @@ impl DayPolicy for NoPolicy {
     }
 }
 
-impl core::fmt::Debug for PolicyCalendar<'_> {
+impl core::fmt::Debug for ZonedPolicyCalendar<'_, '_> {
     /// Reports the identity and which overlays are attached.
     ///
     /// Neither overlay is a `Debug` value — both are caller-supplied trait
@@ -135,15 +135,18 @@ impl core::fmt::Debug for PolicyCalendar<'_> {
 /// calendar's performance guarantees. [`Self::hours_at`] deliberately returns
 /// the unmodified sourced profile; the overlays apply to queries, not tables.
 #[derive(Clone, Copy)]
-pub struct PolicyCalendar<'a> {
-    calendar: ExchangeCalendar,
+pub struct ZonedPolicyCalendar<'a, 'z> {
+    calendar: ZonedExchangeCalendar<'z>,
     policy: Option<&'a dyn DayPolicy>,
     exceptions: Option<&'a dyn SessionExceptionSource>,
 }
 
-impl<'a> PolicyCalendar<'a> {
+/// An overlaid calendar using the precompiled IANA rules.
+pub type PolicyCalendar<'a> = ZonedPolicyCalendar<'a, 'static>;
+
+impl<'a, 'z> ZonedPolicyCalendar<'a, 'z> {
     pub(super) const fn new(
-        calendar: ExchangeCalendar,
+        calendar: ZonedExchangeCalendar<'z>,
         policy: Option<&'a dyn DayPolicy>,
         exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
@@ -154,7 +157,11 @@ impl<'a> PolicyCalendar<'a> {
         }
     }
 
-    fn context(self) -> QueryContext<'a, Identified> {
+    fn context<'q>(self) -> QueryContext<'q, Identified>
+    where
+        'a: 'q,
+        'z: 'q,
+    {
         QueryContext::overlay(self.calendar, self.policy, self.exceptions)
     }
 
@@ -215,13 +222,13 @@ impl<'a> PolicyCalendar<'a> {
 
     /// Returns the underlying date-aware calendar.
     #[must_use]
-    pub const fn calendar(self) -> ExchangeCalendar {
+    pub const fn calendar(self) -> ZonedExchangeCalendar<'z> {
         self.calendar
     }
 
     /// Detaches the identity's built-in holiday table, keeping both overlays.
     ///
-    /// See [`ExchangeCalendar::without_holidays`].
+    /// See [`crate::ExchangeCalendar::without_holidays`].
     #[must_use]
     pub const fn without_holidays(self) -> Self {
         Self::new(
@@ -236,7 +243,7 @@ impl<'a> PolicyCalendar<'a> {
     /// This reports the crate's own table only, never the composed answer: the
     /// caller's own layers are introspected through
     /// [`Self::session_exception_on`] and through the [`DayPolicy`] the caller
-    /// already holds. See [`ExchangeCalendar::holiday_on`] for what `None`
+    /// already holds. See [`crate::ExchangeCalendar::holiday_on`] for what `None`
     /// means.
     #[must_use]
     pub fn holiday_on(self, trade_date: Date) -> Option<Holiday> {
@@ -699,11 +706,11 @@ impl<'a> PolicyCalendar<'a> {
     }
 }
 
-impl ExchangeCalendar {
+impl<'z> ZonedExchangeCalendar<'z> {
     /// Applies caller-supplied trade-date boundary overrides to every query.
     #[must_use]
-    pub const fn with_day_policy(self, policy: &dyn DayPolicy) -> PolicyCalendar<'_> {
-        PolicyCalendar::new(self, Some(policy), None)
+    pub const fn with_day_policy(self, policy: &dyn DayPolicy) -> ZonedPolicyCalendar<'_, 'z> {
+        ZonedPolicyCalendar::new(self, Some(policy), None)
     }
 
     /// Applies a caller-supplied replacement-session provider to every query.
@@ -724,10 +731,10 @@ impl ExchangeCalendar {
     pub fn with_session_exceptions(
         self,
         exceptions: &dyn SessionExceptionSource,
-    ) -> Result<PolicyCalendar<'_>, ExceptionScopeError> {
+    ) -> Result<ZonedPolicyCalendar<'_, 'z>, ExceptionScopeError> {
         let provider = exceptions.source();
         if provider == self.source() {
-            Ok(PolicyCalendar::new(self, None, Some(exceptions)))
+            Ok(ZonedPolicyCalendar::new(self, None, Some(exceptions)))
         } else {
             Err(ExceptionScopeError {
                 calendar: self.source(),

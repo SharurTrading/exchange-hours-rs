@@ -3,6 +3,10 @@
 //! Pins the IANA data used to compile the built-in time zones.
 
 fn main() {
+    println!(
+        "cargo::rustc-env=EXCHANGE_HOURS_EMBEDDED_TZDB={}",
+        jiff_tzdb::VERSION
+    );
     assert_eq!(
         jiff_tzdb::VERSION,
         "2026f",

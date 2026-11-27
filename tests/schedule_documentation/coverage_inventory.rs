@@ -822,7 +822,8 @@ fn withheld(calendar: ExchangeCalendar, date: Date) -> bool {
 /// Alerts 2010-73 and 2011-54 (still served live) state the two TBA early
 /// closes at their printed 1:00 p.m., 2012-45 states the Sandy Tuesday
 /// closure unconditionally, and 2025-1 (a Wayback replay) states the mourning
-/// closure, so the scope reads complete to 2026-12-31.
+/// closure. It rejoined on 2026-11-27 UTC for two abbreviated dates awaiting
+/// complete phase detail (#418).
 /// NSE recovered the 2018 list and its remaining Muhurat circulars on
 /// 2026-11-27 UTC. The dated morning block-deal revision completes the NSE scope (#410). `hkex` was the next from
 /// 2026-09-29 UTC, and left the map on
@@ -858,6 +859,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("euronext_paris", 4),
         ("euronext_amsterdam", 4),
         ("bme", 2),
+        ("nasdaq", 2),
         // 0 since the 2026-10-14 UTC wave-2 build: the incompleteness is the
         // 2013-2016 unpublished-closure era the family declares (#332) — the
         // 2013-04-08 T+1 circular's UK/US bank-holiday suspension rule whose
@@ -1015,8 +1017,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (39, 11, 8),
-        "the inventory's verdict shapes: thirty-nine complete, eleven incomplete, eight with no 2025 \
+        (38, 12, 8),
+        "the inventory's verdict shapes: thirty-eight complete, twelve incomplete, eight with no 2025 \
          coverage (cme and cbot joined the complete group on 2026-10-15 UTC, when the market-data \
          confirmation of 2023-01-16 closed their last date-level gaps - their verdicts keep the \
          incomplete word for #116/#223's tracked programmes and the disclosed quarter-hour and \

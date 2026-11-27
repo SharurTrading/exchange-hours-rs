@@ -18,6 +18,7 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 - 2011-10-03 — T1 — NSE circular NSE/CMTR/19013 — post-close start moves 15:50 → 15:40.
 - 2018-01-01 — T1 — NSE-CIRC-2017-77 — the new morning block-deal trading window is 08:45–09:00 IST.
 - 2026-08-03 — T1 — SEBI circular 99122 — Closing Auction Session: CAS-eligible stocks enter CAS at 15:15 and it ends 15:35, transition runs to 15:50, post-close ends 16:00.
+- 2026-12-07 — T1 — NSE-CAS-2-FAQ — revised Closing Auction Session, with order entry 15:31–15:38 and the matching envelope 15:38–15:45 IST.
 
 The NSE Capital Market circular CMTR36573 sets its revised block-deal
 mechanism effective January 1, 2018. The 08:45–09:00 IST morning window
@@ -25,6 +26,33 @@ executes trades, so it adds an extended phase before the 09:00 order-entry
 queue. The 14:05–14:20 IST window falls inside regular trading. NSE's
 [current market timings](https://www.nseindia.com/static/market-data/market-timings)
 continue to list the morning window after the 2026 CAS change.
+
+### Revised closing auction from 2026-12-07
+
+SEBI circular 23843 of 2026, clause 5, directs the new timings from
+2026-12-07. NSE’s CAS 2.0 FAQ version 1 states the same effective day on
+the cover and in question 2. Question 12 gives the capital-market
+timetable. Continuous trading ends at 15:30 IST. Reference-price
+calculation from 15:30 to 15:31 accepts no orders, as confirmed in
+question 60. Order collection begins at 15:31, restricts new orders to
+limits from 15:36 and stops at a random time from 15:38 to 15:40. Matching
+starts immediately after random closure and the matching and confirmation
+phase ends at 15:45. After a transition until 15:50, fixed-price post-close
+matching runs through 16:00.
+
+The date-aware venue envelope keeps Regular through 15:30, serves order
+entry only through the first possible random closure at 15:38 and serves
+the possible matching window as Extended through 15:45. This is the same
+randomized-auction convention used for NSE’s morning call. The
+15:30–15:31 and 15:45–15:50 transitions are closed, and the post-close
+block remains Extended. The 2027-02-08 change concerns which unexecuted
+orders carry from continuous trading into CAS and has no clock effect.
+
+The official SEBI circular and NSE FAQ were rechecked on 2026-11-27 UTC,
+before the 2026-12-06 confirm-by date. The captured bytes are under
+`holidays/raw/equities/nse_india/cas-december-2026-11-27/`. The current
+fixed snapshot as of 2026-11-27 still uses the August profile. The dated
+selector switches on the December effective day.
 
 ## Holidays
 
@@ -479,6 +507,8 @@ extend trading.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `SEBI-CAS-23843-2026` | 2026-12-07 | <https://www.sebi.gov.in/sebi_data/attachdocs/oct-2026/1792079571420.pdf> | published 2026-10-15, retrieved 2026-11-27 UTC | T1 | `b2bd9c92fdc8bd0b0076792a64cc087dd921037085ff402065acafbe3590f244` |
+| `NSE-CAS-2-FAQ` | 2026-12-07 | <https://nsearchives.nseindia.com/web/mediaattachment/2026-11/FAQs_for_CM_and_FO_FOR_CAS_2.0_20261109152618.pdf> | version 1, updated 2026-11-06, retrieved 2026-11-27 UTC | T1 | `b0f9ac15a0c1f0f0f7550e90203d140f276bfd63ee383f4406bb3dd608329aad` |
 | `NSE-CAS-CASH-TIMINGS` | Current equity cash CAS and non-CAS phases | <https://www.nseindia.in/static/products-services/closing-auction-session> | Direct, 2026-11-27 UTC | T1 | `a27caf462376d6a93bc473af3d852526b16869592b7a06572b7b5c54b28aedaf` |
 | `NSE-CMTR-14051` | 2010-02-06 | <https://archives.nseindia.com/content/circulars/cmtr14051.pdf> | Direct, 2026-11-27 UTC | T1 | `c0e9c226dd1c37636b82404285fc3e9d3b897006e570842c5495db9803227374` |
 | `NSE-CMTR-19734` | 2012-01-07 | <https://archives.nseindia.com/content/circulars/CMTR19734.pdf> | Direct, 2026-11-27 UTC | T1 | `a8161ca8cb3c350de045b4ee234ebaec09573aa2232630a54792354184cd14a2` |

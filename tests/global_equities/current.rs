@@ -77,8 +77,8 @@ fn lse_sets_current_auction_envelope() {
     assert!(h.is_order_entry_only(local(&tz, date, (7, 0, 0))));
     assert!(h.is_open_extended(local(&tz, date, (8, 0, 29))));
     assert!(h.is_open_regular(local(&tz, date, (8, 0, 30))));
-    assert!(h.is_open_extended(local(&tz, date, (12, 0, 0))));
-    assert!(h.is_open_extended(local(&tz, date, (12, 2, 29))));
+    assert!(h.is_open_regular(local(&tz, date, (12, 0, 0))));
+    assert!(!h.is_open_extended(local(&tz, date, (12, 2, 29))));
     assert!(h.is_open_regular(local(&tz, date, (12, 2, 30))));
     assert!(h.is_open_extended(local(&tz, date, (16, 30, 0))));
     let (_, closing_auction_end) = exchange_hours::session_bounds_with(

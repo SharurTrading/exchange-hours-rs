@@ -2408,6 +2408,73 @@ mod asx {
     }
 
     #[test]
+    fn year_end_2026_answers_the_shortened_phases_and_auction_gaps() {
+        use exchange_hours::SessionState;
+
+        let calendar = asx();
+        for date in [(2026, 12, 24), (2026, 12, 31)] {
+            let trade_date = day(date.0, date.1, date.2);
+            assert!(matches!(
+                calendar.holiday_on(trade_date).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+            for (time, expected) in [
+                ((6, 59, 59), SessionState::Closed),
+                ((7, 0, 0), SessionState::OrderEntry),
+                ((9, 58, 59), SessionState::OrderEntry),
+                ((9, 59, 0), SessionState::OpenExtended),
+                ((9, 59, 14), SessionState::OpenExtended),
+                ((9, 59, 15), SessionState::Closed),
+                ((9, 59, 44), SessionState::Closed),
+                ((9, 59, 45), SessionState::OpenExtended),
+                ((9, 59, 59), SessionState::OpenExtended),
+                ((10, 0, 0), SessionState::OpenRegular),
+                ((13, 59, 59), SessionState::OpenRegular),
+                ((14, 0, 0), SessionState::OrderEntry),
+                ((14, 9, 59), SessionState::OrderEntry),
+                ((14, 10, 0), SessionState::OpenExtended),
+                ((14, 10, 29), SessionState::OpenExtended),
+                ((14, 10, 30), SessionState::Closed),
+                ((14, 10, 59), SessionState::Closed),
+                ((14, 11, 0), SessionState::OpenExtended),
+                ((14, 21, 29), SessionState::OpenExtended),
+                ((14, 21, 30), SessionState::Closed),
+            ] {
+                assert_eq!(
+                    calendar.session_state(syd(date, time)).expect("covered"),
+                    expected,
+                    "{date:?} {time:?}"
+                );
+            }
+            let pre_open = syd(date, (8, 0, 0));
+            assert!(calendar.is_order_entry_only(pre_open).expect("covered"));
+            assert!(calendar.is_accepting_orders(pre_open).expect("covered"));
+            assert!(!calendar.is_open(pre_open).expect("covered"));
+            assert_eq!(
+                calendar.session_bounds(pre_open).expect("covered"),
+                Some((syd(date, (9, 59, 0)), syd(date, (9, 59, 15))))
+            );
+            assert_eq!(
+                calendar
+                    .session_bounds(syd(date, (14, 15, 0)))
+                    .expect("covered"),
+                Some((syd(date, (14, 11, 0)), syd(date, (14, 21, 30))))
+            );
+            assert_eq!(
+                calendar
+                    .trade_date(syd(date, (14, 21, 29)))
+                    .expect("covered"),
+                Some(trade_date)
+            );
+            assert!(
+                !calendar
+                    .is_accepting_orders(syd(date, (14, 21, 30)))
+                    .expect("covered")
+            );
+        }
+    }
+
+    #[test]
     fn an_ordinary_weekday_answers_and_closes_end_exclusively() {
         let calendar = asx();
         assert_eq!(calendar.holiday_on(day(2025, 7, 15)), None);
@@ -2473,8 +2540,8 @@ mod asx {
         assert_eq!(
             rows.len(),
             174,
-            "121 pre-2025 closures + 24 pre-2025 14:10 early closes, 23 closures \
-             and six 14:10 early closes across 2025-2027"
+            "121 pre-2025 closures + 24 pre-2025 early closes, 23 closures and \
+             six half days across 2025-2027"
         );
         // 2010-2024, read off each year's own operator sheet.
         assert_eq!(tally(&rows, 2010), (8, 2, 0), "2010");
@@ -2527,8 +2594,8 @@ mod asx {
         );
         assert_eq!(
             tally(&rows, 2026),
-            (8, 2, 0),
-            "2026: eight closures (the Saturday ANZAC included), two half days"
+            (8, 0, 2),
+            "2026: eight closures (including Saturday ANZAC), two replacement half days"
         );
         assert_eq!(
             tally(&rows, 2027),
@@ -2559,7 +2626,6 @@ mod asx {
                                 | 2021
                                 | 2024
                                 | 2025
-                                | 2026
                                 | 2027,
                             12,
                             24 | 31
@@ -3274,21 +3340,9 @@ mod lse {
     }
 
     #[test]
-    fn the_half_days_close_at_the_printed_1230_london_time() {
+    fn the_2025_half_days_keep_their_encoded_close() {
         let calendar = lse();
-        // The sheet states `Markets closing process commences from 12:30
-        // London time.` for every Christmas Eve and New Year's Eve in the
-        // window; closes are end-exclusive.
-        for date in [
-            (2025, 12, 24),
-            (2025, 12, 31),
-            (2026, 12, 24),
-            (2026, 12, 31),
-            (2027, 12, 24),
-            (2027, 12, 31),
-            (2028, 12, 22),
-            (2028, 12, 29),
-        ] {
+        for date in [(2025, 12, 24), (2025, 12, 31)] {
             assert_eq!(
                 calendar
                     .holiday_on(day(date.0, date.1, date.2))
@@ -3318,6 +3372,53 @@ mod lse {
                 calendar.is_open(london(date, (9, 0, 0))).expect("covered"),
                 "lse {date:?} trades the morning"
             );
+        }
+    }
+
+    #[test]
+    fn the_published_future_half_days_include_the_closing_call_and_crossing() {
+        let calendar = lse();
+        for date in [
+            (2026, 12, 24),
+            (2026, 12, 31),
+            (2027, 12, 24),
+            (2027, 12, 31),
+            (2028, 12, 22),
+            (2028, 12, 29),
+        ] {
+            let trade_date = day(date.0, date.1, date.2);
+            assert!(matches!(
+                calendar.holiday_on(trade_date).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+            assert!(
+                !calendar
+                    .is_accepting_orders(london(date, (5, 5, 0)))
+                    .unwrap()
+            );
+            assert!(
+                !calendar
+                    .is_accepting_orders(london(date, (7, 49, 59)))
+                    .unwrap()
+            );
+            for time in [(7, 50, 0), (7, 59, 59), (12, 30, 0), (12, 34, 59)] {
+                let instant = london(date, time);
+                assert!(calendar.is_order_entry_only(instant).unwrap());
+                assert!(!calendar.is_open(instant).unwrap());
+            }
+            for time in [(8, 0, 0), (12, 35, 0), (12, 35, 30), (12, 39, 59)] {
+                let instant = london(date, time);
+                assert!(calendar.is_open_extended(instant).unwrap());
+                assert_eq!(calendar.trade_date(instant).unwrap(), Some(trade_date));
+            }
+            for time in [(8, 0, 30), (12, 0, 0), (12, 29, 59)] {
+                assert!(calendar.is_open_regular(london(date, time)).unwrap());
+            }
+            for time in [(12, 40, 0), (13, 0, 0)] {
+                let instant = london(date, time);
+                assert!(!calendar.is_open(instant).unwrap());
+                assert!(!calendar.is_accepting_orders(instant).unwrap());
+            }
         }
     }
 
@@ -3419,7 +3520,7 @@ mod lse {
         assert_eq!(
             rows.len(),
             195,
-            "157 closures, 38 half days, no withheld dates — one audited window, 2010-2029"
+            "157 closures, 32 scalar half days, six replacements and no withheld dates"
         );
         let expected: [(i16, (usize, usize, usize, usize)); 20] = [
             (2010, (8, 2, 0, 0)),
@@ -3438,9 +3539,9 @@ mod lse {
             (2023, (9, 2, 0, 0)),
             (2024, (8, 2, 0, 0)),
             (2025, (8, 2, 0, 0)),
-            (2026, (8, 2, 0, 0)),
-            (2027, (8, 2, 0, 0)),
-            (2028, (8, 2, 0, 0)),
+            (2026, (8, 0, 2, 0)),
+            (2027, (8, 0, 2, 0)),
+            (2028, (8, 0, 2, 0)),
             (2029, (1, 0, 0, 0)),
         ];
         for (year, tally) in expected {
@@ -3463,7 +3564,7 @@ mod lse {
         }
         let half_days: Vec<(i16, i8, i8)> = rows
             .iter()
-            .filter(|(_, kind, _)| kind == "early close")
+            .filter(|(_, kind, _)| kind == "early close" || kind == "replacement")
             .map(|(date, _, _)| *date)
             .collect();
         assert_eq!(

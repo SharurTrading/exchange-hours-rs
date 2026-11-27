@@ -5,18 +5,24 @@
 //! Evidence and derivations: `docs/evidence/lse.md`.
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
+use crate::calendar::exceptions::ExceptionBlock;
 
-/// CFE-style alias: LSE's stated half-day close, 12:30 London time.
-///
-/// The sheet's own words are `Markets closing process commences from 12:30
-/// London time.` — the same boundary its normal week prints as 16:30 for the
-/// closing-auction start, so the scalar is the day's final close.
 const HALF_DAY_12_30: u32 = 12 * 3_600 + 30 * 60;
 
-/// LSE's built-in holiday rows and their audited window.
+// Evidence: docs/evidence/lse.md
+#[rustfmt::skip]
+static SETS_HALF_DAY_BLOCKS: [ExceptionBlock; 6] = [
+    ExceptionBlock::order_entry(0, 7 * 3_600 + 50 * 60, 8 * 3_600),
+    ExceptionBlock::extended(0, 8 * 3_600, 8 * 3_600 + 30),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30, 12 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(0, 12 * 3_600 + 30 * 60, 12 * 3_600 + 35 * 60),
+    ExceptionBlock::extended(0, 12 * 3_600 + 35 * 60, 12 * 3_600 + 35 * 60 + 30),
+    ExceptionBlock::extended(0, 12 * 3_600 + 35 * 60 + 30, 12 * 3_600 + 40 * 60),
+];
+
 // Evidence: docs/evidence/lse.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2029, 1, 1)],
@@ -462,18 +468,16 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2026-08-31 - T1 - LSE-BUSDAYS-2025-12-18 - Summer Bank Holiday:
         // `NON-trading day.`
         (2026, 8, 31, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
-        // 2026-12-24 - T1 - LSE-BUSDAYS-2025-12-18 - Christmas Holiday half
-        // day, closing process from 12:30 London time.
-        (2026, 12, 24, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2026-12-24 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2026, 12, 24, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2026-12-25 - T1 - LSE-BUSDAYS-2025-12-18 - Christmas Day:
         // `NON-trading day.`
         (2026, 12, 25, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
         // 2026-12-28 - T1 - LSE-BUSDAYS-2025-12-18 - Boxing Day (substitute):
         // `NON-trading day.`
         (2026, 12, 28, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
-        // 2026-12-31 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Holiday half
-        // day, closing process from 12:30 London time.
-        (2026, 12, 31, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2026-12-31 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2026, 12, 31, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2027-01-01 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Day:
         // `NON-trading day.`
         (2027, 1, 1, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
@@ -492,18 +496,16 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2027-08-30 - T1 - LSE-BUSDAYS-2025-12-18 - Summer Bank Holiday:
         // `NON-trading day.`
         (2027, 8, 30, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
-        // 2027-12-24 - T1 - LSE-BUSDAYS-2025-12-18 - Christmas Holiday half
-        // day, closing process from 12:30 London time.
-        (2027, 12, 24, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2027-12-24 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2027, 12, 24, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2027-12-27 - T1 - LSE-BUSDAYS-2025-12-18 - Christmas Day
         // (substitute): `NON-trading day.`
         (2027, 12, 27, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
         // 2027-12-28 - T1 - LSE-BUSDAYS-2025-12-18 - Boxing Day (substitute):
         // `NON-trading day.`
         (2027, 12, 28, Closed, T1, "LSE-BUSDAYS-2025-12-18"),
-        // 2027-12-31 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Holiday half
-        // day, closing process from 12:30 London time.
-        (2027, 12, 31, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2025-12-18"),
+        // 2027-12-31 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2027, 12, 31, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2028-01-03 - T1 - LSE-BUSDAYS-2025-12-18 - New Year's Day
         // (substitute): `NON-trading day.`; the final row that capture's
         // table prints, keyed to its earliest print.
@@ -523,9 +525,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2028-08-28 - T1 - LSE-BUSDAYS-2026-06-17 - Summer Bank Holiday:
         // `NON-trading day.`
         (2028, 8, 28, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
-        // 2028-12-22 - T1 - LSE-BUSDAYS-2026-06-17 - Christmas Holiday half
-        // day: `Markets closing process commences from 12:30 London time.`
-        (2028, 12, 22, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-22 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2028, 12, 22, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2028-12-25 - T1 - LSE-BUSDAYS-2026-06-17 - Christmas Day:
         // `NON-trading day.`
         (2028, 12, 25, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
@@ -533,9 +534,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // `NON-trading day.` (the trading arrangement; the capture's
         // OTC/SI service-availability cell reads `To be confirmed`).
         (2028, 12, 26, Closed, T1, "LSE-BUSDAYS-2026-06-17"),
-        // 2028-12-29 - T1 - LSE-BUSDAYS-2026-06-17 - New Year's Holiday half
-        // day: `Markets closing process commences from 12:30 London time.`
-        (2028, 12, 29, early_close(HALF_DAY_12_30), T1, "LSE-BUSDAYS-2026-06-17"),
+        // 2028-12-29 - T1 - LSE-SETS-L1-2026-11-27 - SETS-L1 holiday timetable.
+        (2028, 12, 29, ReplacementBlocks(&SETS_HALF_DAY_BLOCKS), T1, "LSE-SETS-L1-2026-11-27"),
         // 2029-01-01 - T1 - LSE-BUSDAYS-2026-06-17 - New Year's Day:
         // `NON-trading day.`
         (2029, 1, 1, Closed, T1, "LSE-BUSDAYS-2026-06-17"),

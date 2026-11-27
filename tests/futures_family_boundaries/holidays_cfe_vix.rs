@@ -18,7 +18,7 @@
 //!
 //! The 2025 rows are not copies of the 2026 shapes and the suite says so: Good
 //! Friday 2025-04-18 is a closure where 2026-04-03 is an early close, and
-//! 2025-01-09 is the only `ReplacementBlocks` row the table ships. The
+//! 2025-01-09 carries the National Day of Mourning replacement. The
 //! pre-2025 rows are the 2017 rules-page shapes, the recovered 2014-2016 press
 //! releases and information circulars, and the per-holiday notices of
 //! 2018-2024, tested per year band below; 2017-07-03 was the windows' one
@@ -378,14 +378,81 @@ fn a_shortened_day_keeps_its_trade_date_and_the_evening_takes_the_next() {
 
 #[test]
 fn the_thanksgiving_and_christmas_half_days_close_at_1215_central() {
-    for cell in [
-        (2025, 11, 28),
-        (2025, 12, 24),
-        (2026, 11, 27),
-        (2026, 12, 24),
-    ] {
+    for cell in [(2025, 11, 28), (2025, 12, 24), (2026, 12, 24)] {
         assert_early_close(cell, 12 * 60 + 15, "half day");
     }
+}
+
+#[test]
+fn both_thanksgiving_legs_belong_to_friday() {
+    assert_thanksgiving_trade_date(2026, 27, "CBOE-SU-2026-THANKSGIVING");
+    assert_thanksgiving_trade_date(2027, 26, "CBOE-HOURS-USFUT-2027");
+}
+
+fn assert_thanksgiving_trade_date(year: i16, friday_day: i8, source: &str) {
+    let calendar = cfe();
+    let wednesday = (year, 11, friday_day - 2);
+    let thursday = (year, 11, friday_day - 1);
+    let friday = (year, 11, friday_day);
+    let friday_date = date_of(friday);
+    let first_open = ct(wednesday, (17, 0, 0));
+    let first_close = ct(thursday, (10, 30, 0));
+    let second_open = ct(thursday, (17, 0, 0));
+    let regular_open = ct(friday, (8, 30, 0));
+    let final_close = ct(friday, (12, 15, 0));
+
+    assert_eq!(
+        calendar.holiday_on(date_of(thursday)).map(Holiday::kind),
+        Some(HolidayKind::Closed),
+    );
+    assert!(
+        calendar
+            .is_closed_trade_date(date_of(thursday), SessionKind::Both)
+            .unwrap()
+    );
+    assert!(
+        !calendar
+            .is_closed_trade_date(friday_date, SessionKind::Both)
+            .unwrap()
+    );
+    assert_eq!(
+        calendar.holiday_on(friday_date).unwrap().document_id(),
+        source,
+    );
+
+    for (open, close) in [
+        (first_open, first_close),
+        (second_open, regular_open),
+        (regular_open, final_close),
+    ] {
+        assert_eq!(calendar.session_bounds(open).unwrap(), Some((open, close)));
+        assert_eq!(calendar.trade_date(open).unwrap(), Some(friday_date));
+        assert!(
+            calendar
+                .is_open(close - SignedDuration::from_nanos(1))
+                .unwrap()
+        );
+    }
+    assert_eq!(
+        calendar.trade_date(ct(thursday, (9, 0, 0))).unwrap(),
+        Some(friday_date),
+    );
+    for close in [first_close, final_close] {
+        assert!(!calendar.is_open(close).unwrap());
+    }
+    for date in [wednesday, thursday] {
+        let queue_open = ct(date, (16, 45, 6));
+        assert!(
+            !calendar
+                .is_accepting_orders(queue_open - SignedDuration::from_nanos(1))
+                .unwrap()
+        );
+        assert!(calendar.is_order_entry_only(queue_open).unwrap());
+    }
+    assert_eq!(
+        calendar.next_session_after(first_close).unwrap(),
+        Some((second_open, regular_open)),
+    );
 }
 
 /// The 2025 rows, one case each, from Cboe's own per-holiday notices.
@@ -1559,20 +1626,9 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
     }
 }
 
-/// §4.1 case 4, as a negative over the whole coverage: the table ships only
-/// closures, early closes, late opens and the one replacement day, with no
-/// withheld date.
-///
-/// The counts are per date, read back from the shipped table: 151 rows in all,
-/// thirty-four closures, seventy-four 10:30 CT early closes, twenty-three 12:15 CT
-/// ones, three 08:30 CT ones, the single pre-migration 08:15 CT Good Friday,
-/// thirteen 17:00 CT late opens, two combined late-open-and-early-close half
-/// days, the single mourning replacement and no `Unsourced` date (2017-07-03
-/// has keyed CFEIC17-022's own 12:15 row since 2026-10-10 UTC). The
-/// distinct instants are counted separately so a row that silently takes a
-/// neighbouring holiday's close fails here.
+/// Count the holiday kinds and distinct close times across all audited windows.
 #[test]
-fn the_window_ships_only_closures_early_closes_and_one_replacement() {
+fn the_window_ships_only_sourced_holiday_kinds() {
     let calendar = cfe();
     let coverage = calendar
         .holiday_coverage()
@@ -1634,9 +1690,9 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             replacements,
             unsourced
         ),
-        (34, 74, 23, 3, 1, 13, 2, 1, 0),
+        (42, 66, 21, 3, 1, 13, 2, 9, 0),
         "closures, 10:30/12:15/08:30/08:15 CT early closes, 17:00 late opens, combined \
-         half-day rows, the mourning replacement and zero withheld dates (2017-07-03 is \
+         half-day rows, nine replacements and zero withheld dates (2017-07-03 is \
          CFEIC17-022's own 12:15 row since 2026-10-10 UTC), across the three windows"
     );
 }
@@ -1644,41 +1700,49 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
 #[test]
 fn the_2027_schedule_answers_with_its_own_shapes() {
     let calendar = cfe();
-    // CBOE-HOURS-USFUT-2027 (retrieved 2026-11-03 UTC): three closures whose
-    // cells both read `None`, seven 10:30 CT early closes and the 12:15 CT
-    // Thanksgiving half day. Good Friday 2027-03-26 is a closure, unlike
-    // 2026-04-03's early close at the regular open.
     for date in [(2027, 1, 1), (2027, 3, 26), (2027, 12, 24)] {
         assert_eq!(
-            calendar
-                .holiday_on(day(date.0, date.1, date.2))
-                .map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "cfe {date:?} is closed"
+            calendar.holiday_on(date_of(date)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
         );
     }
-    for date in [
-        (2027, 1, 18),
-        (2027, 2, 15),
-        (2027, 5, 31),
-        (2027, 6, 18),
-        (2027, 7, 5),
-        (2027, 9, 6),
-        (2027, 11, 25),
+    for (holiday, following) in [
+        ((2027, 1, 18), (2027, 1, 19)),
+        ((2027, 2, 15), (2027, 2, 16)),
+        ((2027, 5, 31), (2027, 6, 1)),
+        ((2027, 6, 18), (2027, 6, 21)),
+        ((2027, 7, 5), (2027, 7, 6)),
+        ((2027, 9, 6), (2027, 9, 7)),
     ] {
+        let trade_date = date_of(following);
         assert_eq!(
-            calendar
-                .holiday_on(day(date.0, date.1, date.2))
-                .map(Holiday::kind),
-            Some(early_close_at(10 * 60 + 30)),
-            "cfe {date:?} early-closes at 10:30 CT"
+            calendar.holiday_on(date_of(holiday)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
         );
+        let holiday_end = ct(holiday, (10, 30, 0));
+        let tick = SignedDuration::from_nanos(1);
+        assert_eq!(
+            calendar.trade_date(holiday_end - tick),
+            Ok(Some(trade_date))
+        );
+        assert_eq!(calendar.is_open(holiday_end - tick), Ok(true));
+        assert_eq!(calendar.is_open(holiday_end), Ok(false));
+        let reopen = if holiday == (2027, 6, 18) {
+            (2027, 6, 20)
+        } else {
+            holiday
+        };
+        assert_eq!(
+            calendar.next_session_open_after(holiday_end),
+            Ok(Some(ct(reopen, (17, 0, 0))))
+        );
+        assert_eq!(
+            calendar.trade_date(ct(reopen, (17, 0, 0))),
+            Ok(Some(trade_date))
+        );
+        assert_eq!(calendar.is_open(ct(following, (16, 0, 0)) - tick), Ok(true));
+        assert_eq!(calendar.is_open(ct(following, (16, 0, 0))), Ok(false));
     }
-    assert_eq!(
-        calendar.holiday_on(day(2027, 11, 26)).map(Holiday::kind),
-        Some(early_close_at(12 * 60 + 15)),
-        "cfe 2027-11-26 early-closes at 12:15 CT"
-    );
     assert!(
         !calendar
             .is_open(ct((2027, 3, 26), (9, 0, 0)))

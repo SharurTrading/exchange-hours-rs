@@ -1,21 +1,12 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Built-in holiday rows for the `nasdaq` venue, 2010-2026.
-//!
-//! Every case runs through `calendar_for_exchange`. The table's scalars are
-//! `Closed` and `EarlyClose{13:00}` — the sheet prints "Early Close - U.S.
-//! 1:00 p.m." and nothing after it — and the suite pins the scalar kinds, the
-//! two TBA early closes at their alerts' printed time, both Sandy closures,
-//! the mourning day, and the window's end at 2026-12-31 (the operator has
-//! published no 2027 schedule). The four dates the table withheld through
-//! 2026-10-08 UTC closed on 2026-10-09 UTC on the operator's own Equity
-//! Trader Alerts, so no date in the window refuses any more.
+//! Nasdaq Stock Market holiday dispositions and phase boundaries.
 
 use crate::support::zones::NEW_YORK;
 use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
-    calendar_for_exchange,
+    SessionState, calendar_for_exchange,
 };
 use jiff::SignedDuration;
 use jiff::civil::Date;
@@ -180,8 +171,6 @@ fn the_2025_2026_rows() {
     assert_closed((2025, 7, 4), "2025 Independence Day");
     assert_early_close((2025, 11, 28), "2025 day after Thanksgiving");
     assert_early_close((2025, 12, 24), "2025 Christmas Eve");
-    assert_early_close((2026, 11, 27), "2026 day after Thanksgiving");
-    assert_early_close((2026, 12, 24), "2026 Christmas Eve");
     assert_closed((2026, 12, 25), "2026 Christmas");
 }
 
@@ -207,6 +196,7 @@ fn every_scalar_early_close_is_the_printed_one_oclock() {
     let mut closed = 0_u32;
     let mut early = 0_u32;
     let mut unsourced = 0_u32;
+    let mut replacements = 0_u32;
     while date <= coverage.last() {
         match calendar.holiday_on(date).map(Holiday::kind) {
             Some(HolidayKind::Closed) => closed += 1,
@@ -219,6 +209,7 @@ fn every_scalar_early_close_is_the_printed_one_oclock() {
                 );
             }
             Some(HolidayKind::Unsourced) => unsourced += 1,
+            Some(HolidayKind::ReplacementBlocks(_)) => replacements += 1,
             Some(other) => panic!("{date} carries {other:?}: the table ships no other kind"),
             None => {}
         }
@@ -226,8 +217,9 @@ fn every_scalar_early_close_is_the_printed_one_oclock() {
             .checked_add(elapsed_days(1))
             .expect("the walk stays representable");
     }
-    assert_eq!(closed + early + unsourced, 194, "the table ships 194 rows");
-    assert_eq!(unsourced, 0, "no date in the window is withheld any more");
+    assert_eq!(closed + early + unsourced + replacements, 205);
+    assert_eq!(unsourced, 2);
+    assert_eq!(replacements, 1);
 }
 
 #[test]
@@ -236,12 +228,12 @@ fn the_window_ends_where_the_operator_stops_publishing() {
     let coverage = calendar.holiday_coverage().expect("nasdaq ships a table");
     assert_eq!(
         coverage.last(),
-        day((2026, 12, 31)),
-        "the operator publishes no 2027"
+        day((2027, 12, 31)),
+        "the 2027 operator calendar supplies a complete year of disposition dates"
     );
     let error = calendar
-        .is_open(et((2027, 1, 4), (10, 0, 0)))
-        .expect_err("2027-01-04 is outside the audited window");
+        .is_open(et((2028, 1, 3), (10, 0, 0)))
+        .expect_err("2028-01-03 is outside the audited window");
     assert!(
         matches!(
             error.kind(),
@@ -249,4 +241,62 @@ fn the_window_ends_where_the_operator_stops_publishing() {
         ),
         "the horizon refusal is OutsideCoveredRange, got {error:?}"
     );
+}
+
+#[test]
+fn thanksgiving_friday_2026_keeps_extended_matching_until_1700() {
+    let calendar = nasdaq();
+    let friday = (2026, 11, 27);
+    let premarket = et(friday, (4, 0, 0));
+    let regular_open = et(friday, (9, 30, 0));
+    let regular_close = et(friday, (13, 0, 0));
+    let extended_close = et(friday, (17, 0, 0));
+    let tick = SignedDuration::from_nanos(1);
+    assert!(matches!(
+        row_of(friday),
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
+    assert_eq!(calendar.is_open(premarket - tick), Ok(false));
+    assert_eq!(calendar.is_open(premarket), Ok(true));
+    assert_eq!(
+        calendar.session_state(regular_open),
+        Ok(SessionState::OpenRegular)
+    );
+    assert_eq!(calendar.is_open(regular_close - tick), Ok(true));
+    assert_eq!(
+        calendar.session_state(regular_close),
+        Ok(SessionState::OpenExtended)
+    );
+    assert_eq!(calendar.is_open(extended_close - tick), Ok(true));
+    assert_eq!(calendar.is_open(extended_close), Ok(false));
+    assert_eq!(calendar.trade_date(regular_close), Ok(Some(day(friday))));
+}
+
+#[test]
+fn the_2027_calendar_and_pending_full_early_close_schedules() {
+    for date in [
+        (2027, 1, 1),
+        (2027, 1, 18),
+        (2027, 2, 15),
+        (2027, 3, 26),
+        (2027, 5, 31),
+        (2027, 6, 18),
+        (2027, 7, 5),
+        (2027, 9, 6),
+        (2027, 11, 25),
+        (2027, 12, 24),
+    ] {
+        assert_closed(date, "2027 Nasdaq trading calendar");
+    }
+    for date in [(2026, 12, 24), (2027, 11, 26)] {
+        assert_eq!(row_of(date), Some(HolidayKind::Unsourced));
+        let error = nasdaq()
+            .is_open(et(date, (14, 0, 0)))
+            .expect_err("the extended session's exact disposition is unpublished");
+        assert!(matches!(
+            error.kind(),
+            CalendarQueryErrorKind::UnresolvedGap { .. }
+        ));
+    }
+    assert_eq!(nasdaq().is_open(et((2027, 12, 31), (10, 0, 0))), Ok(true));
 }

@@ -40,6 +40,16 @@ fn lse_cutovers() {
     assert!(pre.is_open_regular(at_1201));
     assert!(!post.is_open_regular(at_1201));
     assert!(post.is_open_extended(at_1201));
+
+    let (pre, post) = cutover_sides(Exchange::Lse, tz, (2020, 9, 21));
+    assert!(pre.is_open_extended(at_1201));
+    assert!(!pre.is_open_regular(at_1201));
+    assert!(post.is_open_regular(at_1201));
+    assert!(!post.is_open_extended(at_1201));
+    for profile in [pre, post] {
+        assert!(profile.is_open_extended(at_1638));
+        assert!(!profile.is_accepting_orders(local(tz, probe, (16, 40, 0))));
+    }
 }
 
 #[test]

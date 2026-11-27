@@ -205,6 +205,21 @@ static SATURDAY_TO_1530_BLOCKS: [ExceptionBlock; 7] = [
     ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 16 * 3_600),
 ];
 
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "the evidence fence requires midnight in hour-and-minute grammar"
+)]
+static SATURDAY_TO_0800_BLOCKS: [ExceptionBlock; 7] = [
+    ExceptionBlock::order_entry(-3, 16 * 3_600 + 1 * 60, 16 * 3_600 + 2 * 60),
+    ExceptionBlock::extended(-3, 16 * 3_600 + 2 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-2, 0 * 3_600 + 0 * 60, 2 * 3_600),
+    ExceptionBlock::order_entry(-2, 7 * 3_600 + 45 * 60, 8 * 3_600 + 0 * 60),
+    ExceptionBlock::extended(-2, 8 * 3_600 + 0 * 60, 24 * 3_600),
+    ExceptionBlock::extended(-1, 0 * 3_600 + 0 * 60, 24 * 3_600),
+    ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 16 * 3_600),
+];
+
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
 /// Four audited eras: the launch-to-2018 span at T2 `MARKET-DATA` (the
@@ -506,6 +521,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             T2,
             "CME-SVC-2026-11-25"
         ),
+        // 2026-12-14 — T2 — CME-SVC-2026-12-11 — December 12 maintenance.
+        (2026, 12, 14, ReplacementBlocks(&SATURDAY_TO_0800_BLOCKS), T2, "CME-SVC-2026-12-11"),
         // 2026-12-25 — T2 — CME-SVC-2026-12-24 — Christmas Day; the 16:00 CT close
         // carries trade date 2026-12-28.
         (2026, 12, 25, HolidayKind::Closed, T2, "CME-SVC-2026-12-24"),

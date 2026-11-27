@@ -1,61 +1,24 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The Nasdaq Stock Market holiday rows, 2010-2026.
-//!
-//! Keyed by the venue-local trade date in `America/New_York`; every session
-//! the operator publishes inside one civil day, so an event date is its own
-//! trade date and no conversion applies.
-//!
-//! The whole block is **T1**: the operator's own "U.S. Equity and Options
-//! Markets Holiday Schedule" pages on `nasdaqtrader.com` (2010-2025, read as
-//! Wayback `id_` replays of the operator's pages), the live operator pages and
-//! holiday PDF (2026), and the operator's Equity Trader Alert `ETA2012-44`
-//! for the Hurricane Sandy closure. Every artifact is saved under
-//! `holidays/raw/nyse-nasdaq/` in the research store with its sha256, and the
-//! per-row derivation is recorded in
-//! [`docs/evidence/nasdaq.md`](../../../../../docs/evidence/nasdaq.md).
-//!
-//! Every scalar row is either `Closed` or `early_close(13:00)`: from 2012 on,
-//! the operator's sheet prints each early close for the Nasdaq Stock Market
-//! itself as "Early Close - U.S. 1:00 p.m." and states nothing else for those
-//! dates, so the whole envelope clips. The same sheets add that "Nasdaq will
-//! continue to send alerts to notify customers of days when the Market will
-//! close early ... for full information, including system operating times";
-//! the operator's own alerts are the early closes' instants where the sheet
-//! prints only `TBA` — Equity Trader Alerts 2010-73 and 2011-54 (recovered
-//! 2026-10-09 UTC from the operator's own live Trader News pages) print the
-//! "Early Closing Schedule" that closes the Nasdaq day session at 1:00 p.m.
-//! for 2010-11-26 and 2011-11-25 — and the per-date alerts for the 2012-and-
-//! later sheet dates remain unrecovered, so no row invents post-13:00 session
-//! topology no operator document prints. The sheet's options columns state
-//! option-product times; they are a different market and never key a row
-//! here.
-//!
-//! Coverage is 2010-01-01..2026-12-31. The operator has published no 2027
-//! holiday schedule (verified 2026-09-27 UTC against both live channels), so
-//! nothing past 2026-12-31 is claimed. Every date inside the window now ships
-//! a sourced row: the four dates this table withheld through 2026-10-08 UTC
-//! closed on 2026-10-09 UTC on the operator's own Equity Trader Alerts — the
-//! 2010-11-26 and 2011-11-25 early closes at the alerts' printed 1:00 p.m.,
-//! the 2012-10-30 Sandy closure (alert 2012-45, "NASDAQ OMX Markets Closed on
-//! Tuesday, October 30, 2012 Due to Hurricane Sandy"), and the 2025-01-09
-//! National Day of Mourning closure (alert 2025-1, served from the Wayback
-//! replay the live site's redesign no longer fronts).
+//! The Nasdaq Stock Market holiday rows, 2010-01-01..2027-12-31. See [the evidence record](../../../../../docs/evidence/nasdaq.md).
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
+use crate::calendar::ExceptionBlock;
 
-/// The Nasdaq Stock Market's built-in holiday rows and the window they were
-/// audited over.
-///
-/// Every row's date, kind and instant is one line of an operator holiday page
-/// or trader alert; the document ids resolve through the evidence file's
-/// `### Documents` table.
+// Evidence: docs/evidence/nasdaq.md, Equity Trader Alert 2026-69.
+static THANKSGIVING_2026_FRIDAY: [ExceptionBlock; 3] = [
+    ExceptionBlock::extended(0, 4 * 3_600, 9 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600 + 30 * 60, 13 * 3_600),
+    ExceptionBlock::extended(0, 13 * 3_600, 17 * 3_600),
+];
+
+/// The Nasdaq Stock Market's built-in holiday rows and audited windows.
 // Evidence: docs/evidence/nasdaq.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010 - NQ-HOL-2010; the 11-26 early close prints as TBA on the
         // sheet and its time comes from the operator's own alert.
@@ -283,8 +246,20 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 7, 3, Closed, T1, "NQ-HOL-2026"),
         (2026, 9, 7, Closed, T1, "NQ-HOL-2026"),
         (2026, 11, 26, Closed, T1, "NQ-HOL-2026"),
-        (2026, 11, 27, early_close(13 * 3_600), T1, "NQ-HOL-2026"),
-        (2026, 12, 24, early_close(13 * 3_600), T1, "NQ-HOL-2026"),
+        (2026, 11, 27, ReplacementBlocks(&THANKSGIVING_2026_FRIDAY), T1, "NQ-ETA-2026-69"),
+        (2026, 12, 24, Unsourced, T1, "NQ-HOL-2026"),
         (2026, 12, 25, Closed, T1, "NQ-HOL-2026"),
+        // 2027 trading calendar, with full hours for the abbreviated session tracked in #418.
+        (2027, 1, 1, Closed, T1, "NQ-HOL-2027"),
+        (2027, 1, 18, Closed, T1, "NQ-HOL-2027"),
+        (2027, 2, 15, Closed, T1, "NQ-HOL-2027"),
+        (2027, 3, 26, Closed, T1, "NQ-HOL-2027"),
+        (2027, 5, 31, Closed, T1, "NQ-HOL-2027"),
+        (2027, 6, 18, Closed, T1, "NQ-HOL-2027"),
+        (2027, 7, 5, Closed, T1, "NQ-HOL-2027"),
+        (2027, 9, 6, Closed, T1, "NQ-HOL-2027"),
+        (2027, 11, 25, Closed, T1, "NQ-HOL-2027"),
+        (2027, 11, 26, Unsourced, T1, "NQ-HOL-2027"),
+        (2027, 12, 24, Closed, T1, "NQ-HOL-2027"),
     ],
 };

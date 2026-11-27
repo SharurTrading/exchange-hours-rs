@@ -619,6 +619,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 1, 1, Closed, T1, "ASX24-LIVE-2026-10"),
         // 2027-01-02 - T1 - ASX24-LIVE-2026-10 - the operator closed the Friday evening's night session, whose trade date is the Saturday
         (2027, 1, 2, Closed, T1, "ASX24-LIVE-2026-10"),
+        // 2027-01-04 - T1 - ASX24-XMAS-2026 - ASX 24 reopens at the day session
+        (2027, 1, 4, ReplacementBlocks(&BLOCKS_05), T1, "ASX24-XMAS-2026"),
         // 2027-01-26 - T1 - ASX24-LIVE-2026-10 - Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 08:00 close
         (2027, 1, 26, early_close(8 * 3_600 ), T1, "ASX24-LIVE-2026-10"),
         // 2027-03-26 - T1 - ASX24-LIVE-2026-10 - Day Before Good Friday: the night session opening on the eve ceased at midnight (operator row) and Good Friday itself is Closed/Non Trading Day, so the trade date runs that shortened evening leg and no day session

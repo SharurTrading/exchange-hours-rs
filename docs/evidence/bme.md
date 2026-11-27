@@ -56,15 +56,15 @@ The former module narrative's empty-order-entry interpretation was corrected on
 calls are required order-entry phases; only their randomized uncross windows
 and Trading-at-Last are executable extended phases.
 
-## Holidays — reviewed 2026-10-11 UTC
+## Holidays — reviewed 2026-11-27 UTC
 
-**Coverage:** 2010-01-01..2026-12-31 (BME principal-share general trading).
+**Coverage:** 2010-01-01..2027-12-31 (BME principal-share general trading).
 
 The named BME principal-share scope now owns a T1 holiday table audited from
-2010-01-01 through 2026-12-31. The operator's Sociedad de Bolsas operating
+2010-01-01 through 2027-12-31. The operator's Sociedad de Bolsas operating
 instructions publish each annual SIBE cash calendar independently; this is not
-holiday inheritance from MEFF or another exchange. There are 106 rows: 86 full
-closures, 18 complete replacement sessions and two `Unsourced` 2026 year-end
+holiday inheritance from MEFF or another exchange. There are 111 rows: 89 full
+closures, 20 complete replacement sessions and two `Unsourced` 2027 year-end
 sessions. Dates without rows are audited normal within this window. The runtime
 identity is served after current-scope activation on 2026-10-12 UTC;
 historical gaps remain #332 under the dated AGENTS.md exception.
@@ -96,7 +96,7 @@ name their own session years and 24/31 December, and the operator index titles
 name the same years; the cross-reference errors do not change the stated scope
 or dates. No runtime boundary is inferred from those erroneous references.
 
-Instructions 47/2024 and 64/2025 explicitly print `CONTINUO: Fin fase TAL` at
+Instructions 47/2024, 64/2025 and 148/2026 explicitly print `CONTINUO: Fin fase TAL` at
 14:10. Those dates have the same 13:55 end of continuous trading but retain the
 14:00 uncross and Trading-at-Last executable union until 14:10. The later detailed
 timetables govern over the annual summaries' 14:00 shorthand. Replacement
@@ -113,17 +113,16 @@ They do not extend the general principal-share matching scope to 15:00.
 
 ### Publication horizon and residual gaps
 
-Instruction 65/2025 unconditionally names 2026-12-24 and 2026-12-31 as half
-sessions but says their detailed hours will be published in a later instruction.
-The operator's public Regulation Renta Variable index, retrieved 2026-10-11 UTC,
-contains no later 2026 timetable or 2027 annual cash calendar. The two known
-2026 eves remain `Unsourced` inside the window; an annual shorthand or the
-current general calendar page cannot establish the missing phase details.
-Closing condition: the operator's detailed 2026 `ACCIONES (EQ)` timetable.
-The absence of a 2027 publication ends the audited window at 2026-12-31; no
-2027 date is asserted normal. The unresolved detailed timetable remains
-disclosed in #332; these future
-eves stay typed refusals under LAW-HOLIDAY-SCOPE.
+Instruction 148/2026, dated 6 November 2026, supplies the principal-share
+timetable for both half days announced by Instruction 65/2025. The general
+trading phases match the operator's detailed 2024 and 2025 schedules.
+
+Instruction 161/2026, dated 25 November 2026, states the three 2027 SIBE
+closures and announces half sessions on 24 and 31 December. It explicitly
+defers the detailed timetable. Both half days remain `Unsourced` until the
+operator publishes the `ACCIONES (EQ)` phase timings. The BME-wide press
+release's 14:00 summary supplies no such phases. The existing publication gaps
+remain tracked in #332. No 2028 SIBE calendar was available on the review date.
 
 ### Per-date derivation
 
@@ -320,9 +319,19 @@ publish no substitute half days, and 2025-12-26 is expressly closed.
 | 2026-04-03 | closed | − Viernes, 3 de abril | `BME-CAL-2026` | T1 | Operator's printed SIBE non-working date; same local civil trade date |
 | 2026-04-06 | closed | − Lunes, 6 de abril | `BME-CAL-2026` | T1 | Operator's printed SIBE non-working date; same local civil trade date |
 | 2026-05-01 | closed | − Viernes, 1 de mayo | `BME-CAL-2026` | T1 | Operator's printed SIBE non-working date; same local civil trade date |
-| 2026-12-24 | unsourced | Announced half session; detailed hours to be published | `BME-CAL-2026` | T1 | Unconditional named half session, detailed principal-share hours unpublished; same local civil date |
+| 2026-12-24 | replacement blocks | `ACCIONES (EQ)`: opening call `8:30`, nominal opening uncross `9:00`, closing call `13:55`, nominal closing uncross `14:00`, TAL ends `14:10` | `BME-EVES-2026` | T1 | Principal-share timetable and the documented auction convention |
 | 2026-12-25 | closed | − Viernes, 25 de diciembre | `BME-CAL-2026` | T1 | Operator's printed SIBE non-working date; same local civil trade date |
-| 2026-12-31 | unsourced | Announced half session; detailed hours to be published | `BME-CAL-2026` | T1 | Unconditional named half session, detailed principal-share hours unpublished; same local civil date |
+| 2026-12-31 | replacement blocks | `ACCIONES (EQ)`: opening call `8:30`, nominal opening uncross `9:00`, closing call `13:55`, nominal closing uncross `14:00`, TAL ends `14:10` | `BME-EVES-2026` | T1 | Principal-share timetable and the documented auction convention |
+
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `Viernes, 1 de enero` | `BME-CAL-2027` | T1 | SIBE non-trading date |
+| 2027-03-26 | closed | `Viernes, 26 de marzo` | `BME-CAL-2027` | T1 | SIBE non-trading date |
+| 2027-03-29 | closed | `Lunes, 29 de marzo` | `BME-CAL-2027` | T1 | SIBE non-trading date |
+| 2027-12-24 | unsourced | Half session, detailed timetable to follow | `BME-CAL-2027` | T1 | SIBE phase boundaries await the detailed instruction |
+| 2027-12-31 | unsourced | Half session, detailed timetable to follow | `BME-CAL-2027` | T1 | SIBE phase boundaries await the detailed instruction |
 
 ### Documents
 
@@ -331,9 +340,10 @@ The operator page embeds `data-six-component-path` for its public
 PDF, its issuer Sociedad de Bolsas, title and publication metadata, including
 all seventeen annual calendars and the nine detailed half-day instructions.
 The operator index is discovery and provenance; the saved PDFs themselves
-supply every session statement. Public bytes are saved under
-`holidays/raw/bme-cash-2010-2026/` in the research store. `retrieval.json` records
-each exact URL, retrieval timestamp and digest; text extractions are only aids.
+supply every session statement. The research store holds the November captures
+under `holidays/raw/europe-forward-2026-11-27/bme/` and the earlier captures
+under `holidays/raw/bme-cash-2010-2026/`. Each `retrieval.json` records the
+exact URL, retrieval timestamp and digest.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
@@ -364,5 +374,7 @@ each exact URL, retrieval timestamp and digest; text extractions are only aids.
 | `BME-CAL-2025` | 2025-01-01..2025-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2024/2024-52-io-calendario-sesiones-2025-es.pdf> | 2026-10-11 23:08:07 UTC | T1 | `c06054989be4ec343f525b13d0ba85ccf2ee0a624a46b874e784005d33312196` |
 | `BME-EVES-2025` | 2025-12-24 and 2025-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2025/2025-64-io-horarios-24-y-31.pdf> | 2026-10-11 23:08:07 UTC | T1 | `f1f9f5e22c1aaed4da98a27e299cd062cce2af24aeba72bdc2df5569086ff609` |
 | `BME-CAL-2026` | 2026-01-01..2026-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2025/2025-65-io-calendario-de-sesiones-2026.pdf> | 2026-10-11 23:08:07 UTC | T1 | `9067c20484938b1c5c3be7a29c7e72f065eec97ddc2bbba22619c492ba91a401` |
+| `BME-EVES-2026` | 2026-12-24 and 2026-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2026/2026-148-io-horarios-24-y-31.pdf> | 2026-11-27 06:24:14 UTC | T1 | `d28c15b5cfb73e5e18e2b2a8235fbb392aa43f4a5376914b601840cd7036b268` |
+| `BME-CAL-2027` | 2027-01-01..2027-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2026/2026-161-io-calendario-sesiones-2027.pdf> | 2026-11-27 06:24:14 UTC | T1 | `74bcf162a03910387beb3740d58bce05c3da6d92c31bc05f6480401d29353ad5` |
 | `BME-REGULATION-INDEX-2026-10-11` | public discovery index | <https://www.bolsasymercados.es/es/bme-exchange/regulacion/renta-variable/_jcr_content/root/containers/container/assetstaxonomyfilter.results.json> | 2026-10-11 UTC | T1 | `cee89745ab76da14b5507f1b9b0f2246d5e766f27a4ac4ff71d63b278ec2c925` |
 | `BME-TAL-RULES-2023` | nominal post-auction TAL phase | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2023/circular-1-23-english.pdf> | 2026-10-11 23:22:29 UTC | T1 | `bb91f0bf4edfdb67e3a39c2e940f183d3db89363b44fcff6c4923a1d23511fc9` |

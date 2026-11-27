@@ -2180,7 +2180,7 @@ fn summary_days(summary: &str, own: &str) -> Vec<String> {
     found
 }
 
-/// Every `hh:mm` a text states, ignoring digits inside a longer number.
+/// Every `hh:mm` or `hh:mm:ss` a text states, ignoring digits inside a longer number.
 ///
 /// The window is taken with `get` and the halves with `get` as well, because the
 /// prose carries em dashes: a fixed five-byte slice, or a `[3..]` split inside
@@ -2203,8 +2203,15 @@ fn stated_times(text: &str) -> Vec<String> {
                 .is_some_and(|minute| minute.chars().all(|c| c.is_ascii_digit()));
         let bounded = index == 0 || !bytes[index - 1].is_ascii_digit();
         if looks_like_an_instant && bounded {
-            found.push(window.to_owned());
-            index += 5;
+            let seconds = bytes
+                .get(index + 5..index + 8)
+                .filter(|suffix| suffix[0] == b':' && suffix[1..].iter().all(u8::is_ascii_digit));
+            if seconds.is_some_and(|suffix| suffix != b":00") {
+                found.push(text[index..index + 8].to_owned());
+            } else {
+                found.push(window.to_owned());
+            }
+            index += if seconds.is_some() { 8 } else { 5 };
         } else {
             index += 1;
         }
@@ -2212,8 +2219,7 @@ fn stated_times(text: &str) -> Vec<String> {
     found
 }
 
-/// Every instant the given families' tables state, by trade date, as `hh:mm`
-/// strings.
+/// Every instant the given families' tables state, by trade date.
 ///
 /// `families` are `(name, evidence file)` pairs: a block belongs to a family
 /// when it declares that family's evidence file, which is how the family module

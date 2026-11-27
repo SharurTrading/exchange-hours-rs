@@ -148,7 +148,7 @@ fn a_search_crossing_the_last_window_answers_from_the_week_beyond_it() {
 #[test]
 fn a_search_crossing_the_last_window_keeps_the_audited_row_it_starts_from() {
     let ibex = ExchangeCalendar::for_market_hours_key(MarketHoursKey::BmeIbex);
-    let at = utc("2026-12-31T10:00:00Z");
+    let at = utc("2027-12-31T10:00:00Z");
     assert!(matches!(
         ibex.candle_end(at, CalendarResolution::Monthly)
             .map_err(|error| error.kind()),
@@ -157,7 +157,7 @@ fn a_search_crossing_the_last_window_keeps_the_audited_row_it_starts_from() {
     assert_eq!(
         ibex.with_last_known_week()
             .candle_end(at, CalendarResolution::Monthly),
-        Ok(Some(utc("2026-12-31T13:00:00Z")))
+        Ok(Some(utc("2027-12-31T13:00:00Z")))
     );
 }
 

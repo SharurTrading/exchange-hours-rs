@@ -43,6 +43,9 @@
 
 ### Fixed
 
+- Restore the December 26, 2018 CME equity-index and dollar Nikkei 225
+  trading day, including the December 25 evening open. CME's Christmas
+  schedule identifies 15:30 CT on December 26 as an afternoon reopening.
 - Session searches include overnight rules whose effective opening was
   delayed past midnight, including the November 27, 2026 ICE US Cotton
   session. [#409](https://github.com/SharurTrading/exchange-hours-rs/issues/409)

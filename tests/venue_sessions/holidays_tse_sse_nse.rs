@@ -2115,8 +2115,9 @@ fn the_window_counts_are_the_printed_lists_counts() {
             (2024, 20, 0, 0),
             (2025, 18, 0, 0),
             (2026, 19, 0, 0),
+            (2027, 1, 0, 0),
         ],
-        "SSE closures per year, from the operator's notices"
+        "SSE closures per year from the annual notices and standing rule"
     );
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::NseIndia)),
@@ -2216,19 +2217,25 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "a 2028 weekday is past the published schedule and must be refused"
     );
 
-    // SSE: 2011-01-01 .. 2026-12-31; 2010 is the unrecovered-notice gap and
-    // the 2027 notice is not published.
+    // SSE coverage ends after the statutory New Year closure and weekend.
     let sse = calendar_for_exchange(Exchange::Sse);
     let sse_coverage = sse.holiday_coverage().expect("SSE ships a table");
     assert_eq!(sse_coverage.first(), day(2011, 1, 1));
-    assert_eq!(sse_coverage.last(), day(2026, 12, 31));
+    assert_eq!(sse_coverage.last(), day(2027, 1, 3));
+    assert_eq!(
+        sse.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    for date in [day(2027, 1, 1), day(2027, 1, 2), day(2027, 1, 3)] {
+        assert_eq!(sse.is_closed_trade_date(date, SessionKind::Both), Ok(true));
+    }
     assert!(
         matches!(
             sse.is_open(zoned(&SHANGHAI, (2027, 1, 4), (10, 0, 0)))
                 .map_err(|error| error.kind()),
             Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
-        "2027 is unpublished by SSE and the identity must refuse it outright"
+        "the first weekday after the audited New Year weekend must be refused"
     );
     // 2010 is the unrecovered-notice gap, below the first audited window: the
     // session questions answer from the sourced normal week (the 2026-10-07

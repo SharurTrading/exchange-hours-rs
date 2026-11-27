@@ -17,9 +17,9 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 ## Holidays
 
-**Coverage:** 2011-01-01..2026-12-31 (inclusive trade dates; T1 throughout)
+**Coverage:** 2011-01-01..2027-01-03 (inclusive trade dates; T1 throughout)
 
-Fourteen notices key the block, all the operator's own annual
+Fourteen notices key the historical block, all the operator's own annual
 closure-arrangement notices: 关于2011年全年休市安排的通知 (dated 2010-12-27)
 onward, one per arrangement year through 关于上海证券交易所2024年部分节假日休市
 安排的通知 (上证公告〔2023〕47号, dated 2023-12-26), then 上证公告〔2024〕38号 for
@@ -429,6 +429,24 @@ a full closure.
 | 2026-10-06 | closed | `（七）国庆节：10月1日（星期四）至10月7日（星期三）休市` | `SSE-NOTICE-2025-45` | T1 | Range 2026-10-01..2026-10-07, weekday leg |
 | 2026-10-07 | closed | `（七）国庆节：10月1日（星期四）至10月7日（星期三）休市` | `SSE-NOTICE-2025-45` | T1 | Range 2026-10-01..2026-10-07; the range's own last day is a Wednesday |
 
+### 2027
+
+| Trade date | Kind | Source statement | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `国家法定假日和本所公告的休市日，本所市场休市。` | `SSE-RULES-2026` | T1 | Rule 2.4.1 closes the market on national statutory holidays. State Council Order 795, Article 2(1), identifies January 1 as the statutory New Year's Day. |
+
+SSE's 2026 trading rules took effect on July 6, 2026. Rule 2.4.1
+limits trading days to Monday through Friday and closes the market on
+national statutory holidays and exchange-announced closure days.
+Article 2(1) of State Council Order 795 fixes January 1 as the statutory
+holiday. The 2027 civil calendar confirms that it falls on Friday.
+January 2 and 3 fall on Saturday and Sunday under the same SSE rule,
+so the normal week supplies their closures. The 2027 SSE annual notice
+and a separate 2027 New Year notice were absent from the exchange's
+closure index on 2026-11-27 UTC. January 4 and later remain outside the
+audited holiday window pending #402. The civil calendar's adjusted days
+off and working weekends do not themselves establish SSE arrangements.
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -452,10 +470,23 @@ a full closure.
 | `SSE-NOTICE-2024-38` | 2025-01-01..2026-12-31 | <https://www.sse.com.cn/disclosure/announcement/general/c/c_20241223_10767108.shtml> | retrieved 2026-09-28 UTC | T1 | `b88e5777d868192c156b85f7514fafcba8638a8bcec0cd80190b2e67769f5fff` |
 | `SSE-NOTICE-2025-36` | 2025-01-01..2026-12-31 | <https://www.sse.com.cn/disclosure/announcement/general/c/c_20250925_10792976.shtml> | retrieved 2026-09-28 UTC | T1 | `b587eadba8fc24d097028039278b5fa7a1fccb1ab6ed69ce619c8fb5d686ce54` |
 | `SSE-NOTICE-2025-45` | 2025-01-01..2026-12-31 | <https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml> | retrieved 2026-09-28 UTC | T1 | `4e260b815ce1309175ed994e6490a4ccd51b998a5f92bcdc41cec00fc6823dc7` |
+| `SSE-RULES-2026` | 2027-01-01..2027-01-03 | <https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/10816482/files/e3a3b98e36894edca77841837936e006.docx> | retrieved 2026-11-27 UTC | T1 | `fc922c433438b2636cb631eab25cca405209712acbb6aaded768c45456ff8888` |
+| `CN-STATE-COUNCIL-795` | 2027-01-01 statutory date | <https://app.www.gov.cn/govdata/gov/202411/12/521605/article.html> | retrieved 2026-11-27 UTC | T1 | `131be90ed14f13512999b8de8c2fa4a0f567ec131d8f6ef0c15e829af4d598b9` |
+| `SSE-CLOSURE-INDEX-2026-11-27` | 2027 publication recheck | <https://www.sse.com.cn/disclosure/dealinstruc/closed/list/> | retrieved 2026-11-27 UTC | T1 | `aaebb9d5f7b6642c98596eb8e4d2bd5785339c9f09c6f5bd63774bbe20969396` |
 
-All nineteen artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fifteen 2011-2024 notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013` and the 2020 extension notice `SSE-NOTICE-2020-6`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
+All nineteen historical artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fifteen 2011-2024 notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013` and the 2020 extension notice `SSE-NOTICE-2020-6`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
 
-**Why the window runs 2011-01-01..2026-12-31.** The 2011 start is the earliest arrangement the operator's own channel still serves: SSE's media-center reprints begin with the 2011 notice, and the 2010 annual notice (上证交字〔2009〕42号, published 2009-12-23) is neither live on sse.com.cn nor captured in the Internet Archive, so 2010 sits outside every audited window and refuses rather than answers (see Gaps). Every notice from 2011 on states its year complete. **The forward end at 2026-12-31 is the operator's horizon, not a withholding.** SSE publishes the next year's arrangement each December; the 2026 notice was published 2025-12-22, and no `关于2027年部分节假日休市安排的通知` exists as of the 2026-09-28 retrieval (web search found none; the SSE announcement search and English calendar channels refused that day, see Gaps). Re-checked 2026-09-29 UTC by web search for the notice title: still nothing from the operator — the only hits are third-party pages (a commodity-association circular and press restatements), which key no row (LAW-PRIMARY-SOURCES). Re-checked again 2026-10-03 UTC by web search for the notice title and its variants (record in the store's `holidays/raw/equities/sse/forward-2027/SEARCH-recheck-2026-10-03.md`): still nothing from the operator — the only holiday-arrangement hits are press restatements of prior years' notices and third-party market-diary pages, which key no row. Re-checked again 2026-11-18 UTC: web search for the notice title, unrestricted and restricted to sse.com.cn, has no hits anywhere; the announcement channel (`disclosure/announcement/general/`) was read live through 2026-11-18 and carries no holiday-arrangement notice; the announcement query API and the English calendar channel refused as recorded under Gaps (record in the store's `holidays/raw/equities/sse/forward-2027/SEARCH-recheck-2026-11-18.md`). What did appear is the national layer: the State Council General Office's own 2027 arrangement (国办发明电〔2026〕10号, published 2026-11-05, retrieved from gov.cn on 2026-11-18 and saved under `holidays/raw/equities/sse/state-council-2027/`, with the English release of 2026-11-06). It states the seven civil 放假 windows — 元旦 1月1日（周五）至3日（周日）; 春节 2月5日（除夕、周五）至13日（周六）, 调休上班 1月31日（周日）、2月14日（周日）; 清明节 4月3日（周六）至5日（周一）; 劳动节 5月1日（周六）至5日（周三）, 调休上班 5月8日（周六）; 端午节 6月9日（周三）; 中秋节 9月15日（周三）; 国庆节 10月1日（周五）至7日（周四）, 调休上班 9月26日（周日）、10月9日（周六）— but in national-holiday language (放假/放假调休), not the exchange's 休市 sessions, and its 调休 weekend workdays stay ordinary weekend closures for the stock market, as every keyed year's `另外，X为周末休市` clauses have been treated. Every row in this table keys from the operator's own annual notice, so the State Council document keys no row and moves no coverage; its windows wait for the operator's own closure arrangement. **Closing condition:** publication of 上交所's 2027 notice, which extends the window to 2027-12-31. Re-checked monthly per LAW-WATCH.
+**Why the window runs 2011-01-01..2027-01-03.** SSE's media-center
+reprints begin with the 2011 annual notice. The 2010 annual notice
+(上证交字〔2009〕42号, published 2009-12-23) is missing from the live and
+archived channels. The annual notices from 2011 through 2026 give the
+annual closures. SSE's standing rule and the national statutory holiday
+law supply the 2027 New Year weekend. The rest of the 2027 holiday
+audit waits for the exchange's annual notice, tracked in #402.
+Historical rechecks and the 2027 civil arrangement (国办发明电〔2026〕10号)
+are in `holidays/raw/equities/sse/forward-2027/` and
+`holidays/raw/equities/sse/state-council-2027/`. The three November 27
+captures are in `holidays/raw/equities/sse/2027-new-year-standing-rule/`.
 
 ## Sources
 
@@ -471,7 +502,9 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **No holiday gap inside the audited window.** Every weekday closure the two notices print for 2025-2026 ships a row and every other trade date in the window is audited normal; the window's end is the operator's own publication horizon (the annual December notice), not a withholding. Closing condition for extension: the operator's own 2027 notice (tracked as #402), re-checked monthly per LAW-WATCH, latest 2026-11-18 UTC — the State Council's 2027 arrangement (国办发明电〔2026〕10号, published 2026-11-05) is captured under `holidays/raw/equities/sse/state-council-2027/` as context and keys no row, because the national civil document states 放假 arrangements, not the exchange's 休市 sessions (see Holidays).
+- **2027-01-04 onward.** The published civil holidays inform
+  the research. The exchange's annual 2027 closure notice supplies the
+  remaining exact session treatment and extends the window (#402).
 - **The 2010 arrangement is unrecovered.** The annual notice 上证交字〔2009〕42号 (published 2009-12-23) is not among the media-center reprints (which begin with the 2011 notice) and no capture of the pre-2015 announcement pages exists in the Internet Archive; the surviving reprints of the 2010 per-holiday notices found by search are third-party pages, which are T3/T4 and key no row (LAW-PRIMARY-SOURCES). 2010-01-01..2010-12-31 therefore sits outside every audited window. Since the 2026-10-07 bridged-residual ruling (AGENTS.md "Modeling conventions", #296) the span answers its **session** questions from the sourced normal week — the metadata reports it `HolidayWindowsBridged` and the complete-calendar claim stays withheld — while the **holiday-table classification** (`is_closed_trade_date`) refuses a typed `UnresolvedGap` on every span date: the span has one flank only, nothing witnesses the 2010 holiday layer, and no closure is asserted that no operator statement witnesses. What is served: the sourced normal week's sessions on every span date. What is withheld: each span date's holiday arrangement, and the complete-calendar claim. Closing condition: an operator-hosted copy of the 2010 annual notice or of the per-holiday notices that together state the year, live or archived, worked up the same way, which lands the year's rows as table data and shrinks the bridge to nothing.
 - **National-schedule dependence.** Each notice states `根据中国证监会有关通知要求` — the closures follow the State Council's civil holiday arrangement. A later State Council adjustment would move a printed date; a slipped or cancelled date is corrected as a schedule fix (LAW-NO-FABRICATED-DATES). The notices also announce pre-holiday system tests (`有关春节、国庆节测试事宜，本所将另行通知`); a test is not a session and nothing is modelled for one.
 - **Retrieval channels.** The English trading-calendar page (`english.sse.com.cn/start/trading/schedule/calendar/`) refused twice with HTTP 403 on 2026-09-28 and the Internet Archive holds only 404 captures of it; the SSE announcement search API errored. The Chinese general-announcement notices above are the channel that works and is cited here.

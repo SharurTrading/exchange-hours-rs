@@ -43,6 +43,9 @@
 
 ### Fixed
 
+- Cover the Shanghai Stock Exchange's January 1, 2027 statutory closure and
+  the following weekend. The rest of 2027 awaits the exchange's annual
+  closure notice ([#402](https://github.com/SharurTrading/exchange-hours-rs/issues/402)).
 - Fill NSE's 2018 cash holiday calendar, restore eight historical Muhurat
   sessions and correct the two 2014 election closures from NSE circulars.
 - Source the ICE Futures Europe Long and Medium Gilt futures early closes for

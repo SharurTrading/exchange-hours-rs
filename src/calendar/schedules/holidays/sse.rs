@@ -1,62 +1,15 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Shanghai Stock Exchange holiday rows, 2011-2026.
-//!
-//! Keyed by the crate's own venue-local trade date in `Asia/Shanghai` (design
-//! memo D1). SSE runs no overnight wrap and no weekend sessions, so a closed
-//! trade date is one whose daytime sessions are absent outright.
-//!
-//! The whole block is **T1**: the operator's own annual closure-arrangement
-//! notices — 关于2011年全年休市安排的通知 onward, each stating every holiday
-//! closure of its year. The 2011-2013 notices were retrieved live from the
-//! operator's own media-center reprints (`aboutus/mediacenter/hotandd/`),
-//! where SSE republishes its pre-2015 notices verbatim; the 2014-2024 notices
-//! from the same announcement channel's Wayback `id_` replays; 上证公告
-//! 〔2024〕38号 for 2025 and 上证公告〔2025〕45号 for 2026 complete the window,
-//! with 上证公告〔2025〕36号 restating the 2025 October block verbatim. The
-//! notices are printed as event-date ranges ("10月1日（星期三）至10月8日
-//! （星期三）休市，10月9日（星期四）起照常开市"), and a row ships for each
-//! **weekday** the range covers: the range endpoints are inclusive closures,
-//! and the days inside a range that fall on a Saturday or Sunday are already
-//! closed by the normal week. The notices' "另外，X为周末休市" clauses are the
-//! national working-weekend swaps (调休); the stock market keeps those days as
-//! ordinary weekend closures and no session exists to encode, so none is
-//! invented. A range may reach back into the prior December (the 2019, 2023
-//! and 2024 notices' 元旦 legs): its weekday legs ship with the notice that
-//! states them, so 2018-12-31 keys from 上证公告〔2018〕39号. One later
-//! operator adjustment is encoded: 上证公告〔2020〕6号 (关于调整2020年春节休市
-//! 相关安排的公告) extends the 2020 Spring Festival closure past the annual
-//! notice's "1月31日（星期五）起照常开市" clause, so 2020-01-31 keys from the
-//! extension. The derivation and
-//! per-row quotations are recorded in
-//! [`docs/evidence/sse.md`](../../../../../docs/evidence/sse.md).
-//!
-//! SSE publishes the next year's arrangement each December; no 2027 notice
-//! exists as of the 2026-11-18 re-check — the State Council's own 2027 civil
-//! arrangement (国办发明电〔2026〕10号, published 2026-11-05) states the 放假
-//! windows but not the exchange's 休市 sessions, so it keys no row — and the
-//! window ends 2026-12-31. The
-//! 2010 arrangement (上证交字〔2009〕42号) is unrecovered — the operator's
-//! media-center reprints begin with the 2011 notice and the pre-2011-era
-//! pages are not in the archive — so 2010 sits outside the audited window as
-//! a recorded gap, never a claim.
+//! Shanghai Stock Exchange holidays, 2011-01-01..2027-01-03.
+//! Evidence: [SSE](../../../../../docs/evidence/sse.md).
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::Closed;
 use super::{HolidayTable, holidays};
 
-/// SSE's built-in holiday rows and the window they were audited over.
-///
-/// Every row is one weekday inside an event-date range the operator's own
-/// notice prints as a closure: `SSE-NOTICE-2011`..`SSE-NOTICE-2014` (the
-/// unnumbered annual notices), `SSE-NOTICE-2014-15` .. `SSE-NOTICE-2023-47`
-/// (the 上证公告-numbered annual notices, plus the `SSE-NOTICE-2020-6`
-/// extension that adjusted the 2020 annual notice), then
-/// `SSE-NOTICE-2024-38` for 2025 and `SSE-NOTICE-2025-45` for 2026. A date
-/// inside the window with no row is audited normal.
 // Evidence: docs/evidence/sse.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2011, 1, 1) ..= (2026, 12, 31)],
+    coverage: [(2011, 1, 1) ..= (2027, 1, 3)],
     rows: [
         // 2011-01-03 - T1 - SSE-NOTICE-2011 - 元旦: "元旦：1月1日（星期六）至1月3日（星期一）为节假日休市"; the range's only weekday.
         (2011, 1, 3, Closed, T1, "SSE-NOTICE-2011"),
@@ -644,5 +597,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 10, 6, Closed, T1, "SSE-NOTICE-2025-45"),
         // 2026-10-07 - T1 - SSE-NOTICE-2025-45 - 国庆节: the range's own last day.
         (2026, 10, 7, Closed, T1, "SSE-NOTICE-2025-45"),
+        // 2027-01-01 - T1 - SSE-RULES-2026 - statutory New Year's Day.
+        (2027, 1, 1, Closed, T1, "SSE-RULES-2026"),
     ],
 };

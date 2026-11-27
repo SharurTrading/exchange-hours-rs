@@ -46,6 +46,10 @@
 - Restore the December 26, 2018 CME equity-index and dollar Nikkei 225
   trading day, including the December 25 evening open. CME's Christmas
   schedule identifies 15:30 CT on December 26 as an afternoon reopening.
+- Restore the ICE Cotton No. 2 Sunday 19:30 New York pre-open and 21:00
+  matching session for Monday's trade date. The Fridays after Thanksgiving
+  in 2025 and 2026 close at 13:30, then accept orders for Monday from 14:00
+  until 15:30 New York time.
 - Session searches include overnight rules whose effective opening was
   delayed past midnight, including the November 27, 2026 ICE US Cotton
   session. [#409](https://github.com/SharurTrading/exchange-hours-rs/issues/409)

@@ -43,6 +43,7 @@
 
 ### Fixed
 
+- Classify eleven 2012 and 2013 holiday dates as full closures in the Euronext CAC 40 and AEX index-futures holiday table.
 - A published full closure answers the trade-date closure query even when
   the adjacent day has unpublished hours. An explicit caller replacement
   still takes precedence.

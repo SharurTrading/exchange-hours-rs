@@ -358,10 +358,10 @@ next review).
 | 2026-05-04 | closed | `Early May Bank Holiday` — `Monday 4 May 2026` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the 2026-06-17 capture |
 | 2026-05-25 | closed | `Spring Bank Holiday` — `Monday 25 May 2026` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the 2026-06-17 capture |
 | 2026-08-31 | closed | `Summer Bank Holiday` — `Monday 31 August 2026` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the live table |
-| 2026-12-24 | early close | `Christmas Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 24 December 2026; the day's final close is the printed 12:30 London time |
+| 2026-12-24 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2025-12-18`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 | 2026-12-25 | closed | `Christmas Day` — `Friday 25 December 2026` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the live table |
 | 2026-12-28 | closed | `Boxing Day (substitute)` — `Monday 28 December 2026` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own substitute-day print; trade date is the same civil day |
-| 2026-12-31 | early close | `New Year's Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 31 December 2026; the day's final close is the printed 12:30 London time |
+| 2026-12-31 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2025-12-18`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 
 ### 2027
 
@@ -373,10 +373,10 @@ next review).
 | 2027-05-03 | closed | `Early May Bank Holiday` — `Monday 3 May 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the live table |
 | 2027-05-31 | closed | `Spring Bank Holiday` — `Monday 31 May 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the live table |
 | 2027-08-30 | closed | `Summer Bank Holiday` — `Monday 30 August 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; corroborated by the live table |
-| 2027-12-24 | early close | `Christmas Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 24 December 2027; the day's final close is the printed 12:30 London time |
+| 2027-12-24 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2025-12-18`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 | 2027-12-27 | closed | `Christmas Day (substitute)` — `Monday 27 December 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own substitute-day print; corroborated by the live table |
 | 2027-12-28 | closed | `Boxing Day (substitute)` — `Tuesday 28 December 2027` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own substitute-day print; corroborated by the live table |
-| 2027-12-31 | early close | `New Year's Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 31 December 2027; the day's final close is the printed 12:30 London time |
+| 2027-12-31 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2025-12-18`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 
 ### 2028
 
@@ -388,10 +388,10 @@ next review).
 | 2028-05-01 | closed | `Early May Bank Holiday` — `Monday 1 May 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
 | 2028-05-29 | closed | `Spring Bank Holiday` — `Monday 29 May 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
 | 2028-08-28 | closed | `Summer Bank Holiday` — `Monday 28 August 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
-| 2028-12-22 | early close | `Christmas Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2026-06-17` | T1 | the printed event date 22 December 2028; the day's final close is the printed 12:30 London time |
+| 2028-12-22 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2026-06-17`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 | 2028-12-25 | closed | `Christmas Day` — `Monday 25 December 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; corroborated by the live table re-read byte-identically 2026-10-13 |
 | 2028-12-26 | closed | `Boxing Day` — `Tuesday 26 December 2028` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; the trading arrangement prints `NON-trading day.` while the OTC/SI service-availability cell reads `To be confirmed` — that column is not the trading column; corroborated by the live table re-read byte-identically 2026-10-13 |
-| 2028-12-29 | early close | `New Year's Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2026-06-17` | T1 | the printed event date 29 December 2028; the day's final close is the printed 12:30 London time |
+| 2028-12-29 | replacement blocks | Opening call 07:50, randomized uncross from 08:00, regular trading to 12:30, closing call until randomized uncross from 12:35, and crossing to 12:40 London time | `LSE-SETS-L1-2026-11-27` | T1 | The Business Days calendar (`LSE-BUSDAYS-2026-06-17`) names the date. The SETS-L1 early-close column supplies the full schedule. |
 
 ### 2029
 
@@ -399,17 +399,49 @@ next review).
 |---|---|---|---|---|---|
 | 2029-01-01 | closed | `New Year's Day` — `Monday 1 January 2029` — `NON-trading day.` | `LSE-BUSDAYS-2026-06-17` | T1 | the operator's own event date; the last date the rolling table prints; corroborated by the live table re-read byte-identically 2026-10-13 |
 
-**Interpretive step — the half-day scalar.** The sheet states "Markets closing process
-commences from 12:30 London time." for each half day. On a full day the same printed boundary
-kind — the closing-process start — sits at 16:30, so the 12:30 statement is the day's final
-close of the availability envelope and the closing-auction phase that would follow it is
-removed rather than modelled; the row is an `EarlyClose` at 45 000 seconds. No late opens and
-no other half days are printed in any audited year.
+**Future SETS half days, reviewed 2026-11-27 UTC.** The Business Days calendar names
+the six December half days in 2026 through 2028 and identifies 12:30 as the start of
+the closing process. The production workbook's `Trading Cycles` sheet, SETS-L1 rows
+18–27, uses columns F/G for the final trading day before Christmas and the final
+trading day of each year. It gives a 07:50 opening call, a randomized uncross from
+08:00, continuous trading through 12:30, a closing call through the randomized
+uncross from 12:35, then Auction Volume Discovery and Closing Price Crossing until
+the scheduled 12:40 boundary. There is no noon auction in the half-day columns.
+The earlier notice N18/19 attachment, Topic 3, expressly excluded these half days
+from the old noon auction.
+
+The Trading Cycles legend allows 30 seconds of randomization. The replacement
+classifies each scheduled call before its nominal uncross as order entry, with
+the possible uncross period in extended hours. The latest unextended edges,
+08:00:30 and 12:35:30, separate the opening uncross from regular trading and the
+closing uncross from the crossing session. MIT201 Issue 15.9 §§4.5, 5.4 and 7.2
+explain order entry in auction calls, crossing-price executions and the price-
+or market-order extensions that can delay these events. The calendar describes
+the scheduled market-wide envelope. Instrument-specific extensions, an uncross
+that produces no executions and the resulting absence of crossing in that
+instrument depend on the live book.
+
+The workbook labels 05:05–07:50 as Pre-Trading. MIT801 Issue 22.1, Codes and Reasons,
+lists matching-engine reject 9014 for the pre-trading state and reject 9011 for
+the post-close state. The operator's SETS-aligned International Order Book guide
+describes off-book reporting before the opening call, order entry during the call,
+and deletion and reporting during post-close. The replacement begins accepting
+orders at 07:50 and ends the executable envelope at 12:40. It excludes the
+post-close state through 13:15. Issue [#421](https://github.com/SharurTrading/exchange-hours-rs/issues/421) tracks the ordinary pre-trading history. The five operator artifacts are saved under
+`holidays/raw/lse-sets-half-days-2026-11-27/` in the research store.
+
+The earlier audited half days retain the scalar 12:30 close from their own
+calendar captures. The production workbook keys only the six future replacements.
 
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `LSE-SETS-L1-2026-11-27` | 2026-12-24 .. 2028-12-29 | <https://www.londonstockexchange.com/content/dam/lse/en_us/documents/technical-library/millennium-exchange-and-tradecho-business-parameters.xlsx> | retrieved 2026-11-27 06:31:11 UTC | T1 | `c6779adfc40993c0f4e882957612c860aa6a35d70e804852eb20c460474952d2` |
+| `LSE-MIT201-15.9` | current phase definitions | <https://www.londonstockexchange.com/content/dam/lse/en_us/documents/technical-library/mit201-guide-to-the-trading-system-issue-15-9.pdf> | retrieved 2026-11-27 06:32:14 UTC | T1 | `84217c4e36553b3a55b9a54eab3bc1fed10b2e8a5c2282dcdbbbef1886e465ab` |
+| `LSE-MIT801-22.1` | current matching-engine reject codes | <https://www.londonstockexchange.com/content/dam/lse/en_us/documents/technical-library/mit801-reject-codes-issue-22-1.xlsx> | retrieved 2026-11-27 06:34:20 UTC | T1 | `9246905a658da06f102d62070c182a14f25f6263ed76ff7127d55cc5968a33eb` |
+| `LSE-IOB-INTRO-2026-11-27` | SETS-aligned phase descriptions | <https://www.londonstockexchange.com/content/dam/lse/en_us/documents/order-book/lse-international-order-book-introduction-sheet.pdf> | retrieved 2026-11-27 06:36:14 UTC | T1 | `1a25decc36eb8c3e0f0235dc1286e80fe01f9ccd10c2391cb65a617dc7310ed3` |
+| `LSE-N18-19-ATTACH1` | 2019 half-day noon-auction exception | <https://docs.londonstockexchange.com/resources/lse-notices/2019/12/10/n1819_attach1.pdf> | retrieved 2026-11-27 06:37:39 UTC | T1 | `e3aed1ab62d6b9df0ab4a1db7f95fa2abad40a3aea8592a129173698934ffe3d` |
 | `LSE-BUSDAYS-2010-01-30` | 2010-01-01 .. 2011-01-03 | <https://web.archive.org/web/20100130065529id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20100130065529`, retrieved 2026-09-29 05:30 UTC | T1 | `f1d64609b54a52ed2496fd105819c055789bb583e7d5c7577f1351691ab2a25e` |
 | `LSE-BUSDAYS-2010-10-07` | 2010-01-01 .. 2011-12-30 | <https://web.archive.org/web/20101007091122id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20101007091122`, retrieved 2026-09-29 05:30 UTC | T1 | `ac99b16b81d82eba2c0557e727077f071fa477140293fe24ff1a2e434b886974` |
 | `LSE-BUSDAYS-2010-12-03` | 2010-12-27 .. 2011-12-30 | <https://web.archive.org/web/20101203104856id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20101203104856`, retrieved 2026-09-29 05:30 UTC | T1 | `4416ea2bc9604d2370b35c8f1ae83221391b8087e5eba97734c7ea9f0eaef53f` |
@@ -528,16 +560,9 @@ channel's captures (found 2026-10-02 UTC; the closing capture of the
 2020-05-25 window is `20200317072237`), so coverage is one continuous
 window.
 
-Half days are **early closes at the operator's own instant**: the sheet
-states `Markets closing process commences from 12:30 London time.` for the
-Christmas-period half days (2010-2012 in the words `all Exchange markets
-will close from 12:30 London time onwards`), so the day's final close is
-12:30 and the closing-auction phase that would follow disappears rather
-than being invented. The half days are not always 24/31 December: 2011's
-fell on Friday 23 and Friday 30 December, 2016's on Friday 23 and Friday
-30, 2017's on Friday 22 and Friday 29, 2022's on Friday 23 and Friday
-30 December and 2028's on Friday 22 and Friday 29 December, as printed. No other date carries an early close in any
-audited year.
+The December half-day dates come from each year's operator calendar. The 2010–2025
+rows carry the existing 12:30 scalar. The 2026–2028 half days carry the production
+workbook's full session arrangement as recorded above.
 
 Five 2025 dates — 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and
 2025-08-25 — are inside the second window but **not audited**: the rolling

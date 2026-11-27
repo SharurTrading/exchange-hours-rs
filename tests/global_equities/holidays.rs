@@ -3321,21 +3321,9 @@ mod lse {
     }
 
     #[test]
-    fn the_half_days_close_at_the_printed_1230_london_time() {
+    fn the_2025_half_days_keep_their_encoded_close() {
         let calendar = lse();
-        // The sheet states `Markets closing process commences from 12:30
-        // London time.` for every Christmas Eve and New Year's Eve in the
-        // window; closes are end-exclusive.
-        for date in [
-            (2025, 12, 24),
-            (2025, 12, 31),
-            (2026, 12, 24),
-            (2026, 12, 31),
-            (2027, 12, 24),
-            (2027, 12, 31),
-            (2028, 12, 22),
-            (2028, 12, 29),
-        ] {
+        for date in [(2025, 12, 24), (2025, 12, 31)] {
             assert_eq!(
                 calendar
                     .holiday_on(day(date.0, date.1, date.2))
@@ -3365,6 +3353,53 @@ mod lse {
                 calendar.is_open(london(date, (9, 0, 0))).expect("covered"),
                 "lse {date:?} trades the morning"
             );
+        }
+    }
+
+    #[test]
+    fn the_published_future_half_days_include_the_closing_call_and_crossing() {
+        let calendar = lse();
+        for date in [
+            (2026, 12, 24),
+            (2026, 12, 31),
+            (2027, 12, 24),
+            (2027, 12, 31),
+            (2028, 12, 22),
+            (2028, 12, 29),
+        ] {
+            let trade_date = day(date.0, date.1, date.2);
+            assert!(matches!(
+                calendar.holiday_on(trade_date).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+            assert!(
+                !calendar
+                    .is_accepting_orders(london(date, (5, 5, 0)))
+                    .unwrap()
+            );
+            assert!(
+                !calendar
+                    .is_accepting_orders(london(date, (7, 49, 59)))
+                    .unwrap()
+            );
+            for time in [(7, 50, 0), (7, 59, 59), (12, 30, 0), (12, 34, 59)] {
+                let instant = london(date, time);
+                assert!(calendar.is_order_entry_only(instant).unwrap());
+                assert!(!calendar.is_open(instant).unwrap());
+            }
+            for time in [(8, 0, 0), (12, 35, 0), (12, 35, 30), (12, 39, 59)] {
+                let instant = london(date, time);
+                assert!(calendar.is_open_extended(instant).unwrap());
+                assert_eq!(calendar.trade_date(instant).unwrap(), Some(trade_date));
+            }
+            for time in [(8, 0, 30), (12, 0, 0), (12, 29, 59)] {
+                assert!(calendar.is_open_regular(london(date, time)).unwrap());
+            }
+            for time in [(12, 40, 0), (13, 0, 0)] {
+                let instant = london(date, time);
+                assert!(!calendar.is_open(instant).unwrap());
+                assert!(!calendar.is_accepting_orders(instant).unwrap());
+            }
         }
     }
 
@@ -3466,7 +3501,7 @@ mod lse {
         assert_eq!(
             rows.len(),
             195,
-            "157 closures, 38 half days, no withheld dates — one audited window, 2010-2029"
+            "157 closures, 32 scalar half days, six replacements and no withheld dates"
         );
         let expected: [(i16, (usize, usize, usize, usize)); 20] = [
             (2010, (8, 2, 0, 0)),
@@ -3485,9 +3520,9 @@ mod lse {
             (2023, (9, 2, 0, 0)),
             (2024, (8, 2, 0, 0)),
             (2025, (8, 2, 0, 0)),
-            (2026, (8, 2, 0, 0)),
-            (2027, (8, 2, 0, 0)),
-            (2028, (8, 2, 0, 0)),
+            (2026, (8, 0, 2, 0)),
+            (2027, (8, 0, 2, 0)),
+            (2028, (8, 0, 2, 0)),
             (2029, (1, 0, 0, 0)),
         ];
         for (year, tally) in expected {
@@ -3510,7 +3545,7 @@ mod lse {
         }
         let half_days: Vec<(i16, i8, i8)> = rows
             .iter()
-            .filter(|(_, kind, _)| kind == "early close")
+            .filter(|(_, kind, _)| kind == "early close" || kind == "replacement")
             .map(|(date, _, _)| *date)
             .collect();
         assert_eq!(

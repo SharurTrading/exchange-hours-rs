@@ -193,8 +193,8 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
     // when their 2025 rows landed on 2026-09-26 UTC, and `iceus` — the last
     // served scope whose window opened after the floor — left it the same day
     // when its 2025 rows landed. `iceus_2025_holiday_rows_report_covered` below
-    // is what holds it to the opposite claim, and `iceus` is asserted there to
-    // withhold fourteen 2025 dates rather than to answer 2025 completely.
+    // is what holds it to the opposite claim, including the venue’s withheld
+    // January 2 trade date and the surrounding resolution edges.
     //
     // The claim is kept as a loop over every served exchange so a scope that
     // regresses to a post-floor window fails here rather than passing by
@@ -229,47 +229,55 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
     }
 }
 
-/// The reverse claim for the scope that left the list above.
-///
-/// A served market with no 2025 answer was the whole defect, so this asserts
-/// the public metadata now answers 2025 — through the venue and through the
-/// routed keys — and cannot silently fall back out of its window. The 2025
-/// interval is **not** complete: fourteen of its dates are withheld as
-/// `Unsourced`, which is what the inventory row's `**incomplete**` verdict and
-/// its withheld count record.
+/// The venue and all seven routed families audit the same holiday window.
+/// Cotton's January 2 queue belongs to its own replacement row. The venue
+/// withholds the family disagreement, which also affects the surrounding dates.
 #[test]
 fn iceus_2025_holiday_rows_report_covered() {
+    let venue = calendar_for_exchange(Exchange::Iceus);
     let day = date(2025, 6, 2);
-    for calendar in [
-        calendar_for_exchange(Exchange::Iceus),
-        calendar_for_market_hours_key(MarketHoursKey::IceUs),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsSugar),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsOrangeJuice),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsDollarIndex),
-    ] {
+    let first = date(2025, 1, 1);
+    let calendars = [
+        MarketHoursKey::IceUs,
+        MarketHoursKey::IceUsCoffee,
+        MarketHoursKey::IceUsCocoa,
+        MarketHoursKey::IceUsCotton,
+        MarketHoursKey::IceUsSugar,
+        MarketHoursKey::IceUsOrangeJuice,
+        MarketHoursKey::IceUsDollarIndex,
+    ]
+    .map(|key| (calendar_for_market_hours_key(key), first));
+    for (calendar, first_complete) in calendars.into_iter().chain([(venue, date(2025, 1, 5))]) {
         let coverage = calendar.coverage();
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
-        // The window's own first day is complete since the 2026-10-07
-        // bridged-residual ruling (#296): its backward reach reads
-        // 2024-12-31, a one-flank bridged date whose session facts answer, so
-        // the reach stays inside answered land and the span opens on the
-        // window's own first day.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2025, 1, 1)),
-            "the audited window opens at the 2025 floor, and the first complete              date is the window's own first day"
+            Some(first_complete),
+            "{:?}: first date whose resolution stays within answered dates",
+            calendar.source()
         );
         assert!(
-            coverage
-                .holiday_contract()
-                .coverage()
-                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
-                    && windows.last() == date(2028, 1, 3)),
-            "iceus must audit the 2025 floor through the 2027 calendar's last entry"
+            coverage.holiday_contract().coverage().is_some_and(
+                |windows| windows.first() == first && windows.last() == date(2028, 1, 3)
+            ),
+            "ICE audits the 2025 window through the 2027 calendar's last entry"
         );
     }
+    // January 1 needs the withheld January 2 on its forward walk. January
+    // 3–4 have no Friday or Saturday opening on the venue's FANG+ clock,
+    // so their backward walk reaches that same withheld date. Sunday opens.
+    for day in [1, 3, 4] {
+        assert_eq!(
+            gap_reason_on(venue.coverage(), date(2025, 1, day)),
+            Some(CoverageGapReason::ResolutionEdge)
+        );
+    }
+    assert_eq!(
+        gap_reason_on(venue.coverage(), date(2025, 1, 2)),
+        Some(CoverageGapReason::WithheldDate)
+    );
     // The dates the venue withholds inside that window: Juneteenth 2025 is one
     // (the softs close while the index families shorten), and it is the reason
     // the interval cannot read complete.
@@ -337,60 +345,34 @@ fn cfe_2025_holiday_rows_report_covered() {
 
 #[test]
 fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
-    // `cme` is deliberately absent: it now declares the Sunday quarter-hour
-    // phase-level gap (#79), which is checked before the date-level facts, so
-    // inside the dated era its per-date verdict for a withheld date is
-    // `OutsideCoveredRange` rather than `UnresolvedGap`. From 2026-08-22 the
-    // declaration is retired and 13 of its 32 withheld dates again answer
-    // `UnresolvedGap`; neither is the plain shape this intersection shows.
-    // `cbot` is absent since 2026-10-15 (UTC): its one withheld date, the
-    // clock family's own 2023-01-16 marker, was confirmed with market data and
-    // encoded as the grain closure, so the venue answers `Covered` there.
-    // The `neighbour` is the first answered day after the withheld date, and
-    // the resolution-edge rule (#151) means it is not complete either: every
-    // query on it reaches the withheld day, so its verdict is
-    // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
-    // complete date after the withheld one is the day past the zone. Iceus
-    // trades the whole span and its zone ends two days out.
-    let fixtures = [(
-        Exchange::Iceus,
-        date(2026, 1, 19),
-        date(2026, 1, 20),
-        date(2026, 1, 21),
-    )];
-    for (exchange, withheld, neighbour, complete_again) in fixtures {
-        let coverage = exchange_coverage(exchange);
-        assert_eq!(
-            coverage.coverage_on(withheld),
-            DateCoverage::UnresolvedGap,
-            "{exchange:?} withholds {withheld} as Unsourced"
-        );
+    let coverage = exchange_coverage(Exchange::Iceus);
+    // On MLK Day the softs close and FANG+ closes early. On Tuesday Cotton
+    // carries the prior Friday's post-close queue while the other families
+    // follow their ordinary schedules. Both disagreements are venue rows.
+    for withheld in [date(2026, 1, 19), date(2026, 1, 20)] {
+        assert_eq!(coverage.coverage_on(withheld), DateCoverage::UnresolvedGap);
         assert_eq!(
             gap_reason_on(coverage, withheld),
-            Some(CoverageGapReason::WithheldDate),
-            "{exchange:?}"
-        );
-        assert_eq!(
-            coverage.coverage_on(neighbour),
-            DateCoverage::OutsideCoveredRange,
-            "{exchange:?}: answering {neighbour} completely would consult the              withheld {withheld}"
-        );
-        assert_eq!(
-            gap_reason_on(coverage, neighbour),
-            Some(CoverageGapReason::ResolutionEdge),
-            "{exchange:?}"
-        );
-        assert!(
-            coverage.is_complete_on(complete_again),
-            "{exchange:?} answers {complete_again} completely"
+            Some(CoverageGapReason::WithheldDate)
         );
         assert!(
             coverage
                 .complete_ranges()
-                .all(|range| !range.contains(withheld)),
-            "{exchange:?} must exclude a withheld date from its complete ranges"
+                .all(|range| !range.contains(withheld))
         );
     }
+    // Wednesday's backward lookup reaches Tuesday. Thursday's predecessor
+    // and successor are both answerable.
+    let wednesday = date(2026, 1, 21);
+    assert_eq!(
+        coverage.coverage_on(wednesday),
+        DateCoverage::OutsideCoveredRange
+    );
+    assert_eq!(
+        gap_reason_on(coverage, wednesday),
+        Some(CoverageGapReason::ResolutionEdge)
+    );
+    assert!(coverage.is_complete_on(date(2026, 1, 22)));
 }
 
 #[test]

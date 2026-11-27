@@ -69,8 +69,10 @@ version afterwards.
    cargo publish --dry-run --locked -p exchange-hours
    ```
 
-8. Inspect `cargo package --list --locked` for missing evidence/docs or
-   accidental repository-only files.
+8. Inspect `cargo package --list --locked -p exchange-hours`. Check that the
+   calendar and its evidence are present and that the archive excludes
+   `tools/`, `xtask/`, and their repository configuration. The `xtask` package
+   sets `publish = false`.
 9. For changes to the calendar query engine, run the informational performance
    baseline. This is not a correctness gate, but a release review should call
    out a material regression rather than hiding it:

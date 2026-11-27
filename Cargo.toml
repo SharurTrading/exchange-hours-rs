@@ -23,13 +23,17 @@ categories = ["date-and-time", "finance"]
 # research and encode helpers from the evidence waves, likewise never a
 # consumer's concern.
 exclude = [
+    ".cargo/",
     ".coderabbit.yaml",
     ".github/",
+    ".kache.toml",
+    ".markdownlint-cli2.jsonc",
     "rust-toolchain.toml",
     "clippy.toml",
     "deny.toml",
     "docs/plans/",
     "tools/",
+    "xtask/",
 ]
 
 [lib]

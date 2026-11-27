@@ -2,7 +2,7 @@
 
 //! SGX Three-Month SORA Futures.
 
-use chrono_tz::Asia;
+use crate::calendar::time_zones::{Asia, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -72,7 +72,7 @@ static SGX_REVISIONS: &[Revision] = revisions![(
     "SGX launch announcement 2024-07-29"
 ),];
 
-pub(crate) fn sgx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn sgx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
         &SGX_CLOSED,

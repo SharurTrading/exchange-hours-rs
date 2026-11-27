@@ -3,24 +3,23 @@
 //! The calendar type itself: construction, identity and holiday accessors,
 //! and the constructors every caller starts from.
 
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::Tz;
+use crate::calendar::time_zones::{SelectionInstant, ZoneSelection};
+use jiff::tz::TimeZone;
+use jiff::{Timestamp, civil::Date};
 
 use super::source::CalendarSource;
 use crate::calendar::schedules::holidays::{self, Holiday, HolidayCoverage, HolidayTable};
-use crate::calendar::{
-    CalendarCoverage, Exchange, MarketHours, MarketHoursKey, hours_for_exchange,
-    hours_for_market_hours_key,
-};
+use crate::calendar::schedules::{StaticHoursProfile, from_profile};
+use crate::calendar::{Exchange, MarketHours, MarketHoursKey, ZonedCalendarCoverage};
 
 /// A venue's zone is invariant across its revision eras, so any fixed instant
 /// resolves it; the epoch keeps this independent of schedule data and of any
 /// caller's clock.
-const TZ_RESOLUTION_INSTANT: DateTime<Utc> = DateTime::<Utc>::UNIX_EPOCH;
+const TZ_RESOLUTION_INSTANT: Timestamp = Timestamp::UNIX_EPOCH;
 
 /// One session's `(open, close)` bounds in UTC, as every boundary query
 /// reports them: opens resolve earliest and closes latest under DST ambiguity.
-pub type SessionWindow = (DateTime<Utc>, DateTime<Utc>);
+pub type SessionWindow = (Timestamp, Timestamp);
 
 /// Which answer the built-in holiday layer gives a calendar's queries.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -38,7 +37,7 @@ pub(in crate::calendar) enum HolidayView {
 ///
 /// The calendar reselects a concrete fixed profile for every candidate local
 /// opening day. It holds no clock and performs no I/O. It is
-/// `Copy + Send + Sync + 'static`; built-in status, session-boundary,
+/// `Copy + Send + Sync`; built-in status, session-boundary,
 /// trade-date, session-state, and candle-boundary queries allocate nothing.
 /// A containing-session predicate takes `O(R + log H)` work for `R` selected
 /// rules and `H` dated revisions. Forward and period queries inspect at most a
@@ -51,24 +50,46 @@ pub(in crate::calendar) enum HolidayView {
 /// table and is gated so a date the table says nothing about costs only that
 /// search.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ExchangeCalendar {
+pub struct ZonedExchangeCalendar<'z> {
+    zones: ZoneSelection<'z>,
     source: CalendarSource,
     holidays: HolidayView,
     next_known_week: bool,
 }
 
-impl ExchangeCalendar {
+/// A calendar using the precompiled IANA rules.
+pub type ExchangeCalendar = ZonedExchangeCalendar<'static>;
+
+impl<'z> ZonedExchangeCalendar<'z> {
+    /// Selects one immutable runtime snapshot for all venue and reference clocks.
+    #[cfg(feature = "runtime-tzdb")]
+    #[must_use]
+    pub const fn with_time_zone_snapshot(
+        self,
+        snapshot: &crate::TimeZoneSnapshot,
+    ) -> ZonedExchangeCalendar<'_> {
+        self.with_zones(snapshot.selection())
+    }
+
+    pub(in crate::calendar) const fn with_zones(
+        self,
+        zones: ZoneSelection<'_>,
+    ) -> ZonedExchangeCalendar<'_> {
+        ZonedExchangeCalendar {
+            zones,
+            source: self.source,
+            holidays: self.holidays,
+            next_known_week: self.next_known_week,
+        }
+    }
+
     /// Creates a date-aware calendar for `exchange`.
     ///
     /// The identity's built-in holiday table, if it has one, applies to every
     /// query; [`Self::without_holidays`] detaches it.
     #[must_use]
     pub const fn new(exchange: Exchange) -> Self {
-        Self {
-            source: CalendarSource::Exchange(exchange),
-            holidays: HolidayView::Attached,
-            next_known_week: false,
-        }
+        Self::from_source(CalendarSource::Exchange(exchange))
     }
 
     /// Creates a date-aware calendar for `key`.
@@ -77,8 +98,13 @@ impl ExchangeCalendar {
     /// query; [`Self::without_holidays`] detaches it.
     #[must_use]
     pub const fn for_market_hours_key(key: MarketHoursKey) -> Self {
+        Self::from_source(CalendarSource::MarketHoursKey(key))
+    }
+
+    pub(in crate::calendar) const fn from_source(source: CalendarSource) -> Self {
         Self {
-            source: CalendarSource::MarketHoursKey(key),
+            zones: ZoneSelection::EMBEDDED,
+            source,
             holidays: HolidayView::Attached,
             next_known_week: false,
         }
@@ -96,6 +122,7 @@ impl ExchangeCalendar {
     #[must_use]
     pub const fn without_holidays(self) -> Self {
         Self {
+            zones: self.zones,
             source: self.source,
             holidays: HolidayView::Detached,
             next_known_week: self.next_known_week,
@@ -130,26 +157,27 @@ impl ExchangeCalendar {
     /// detached.
     ///
     /// ```
-    /// use chrono::{DateTime, Utc};
-    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    /// use jiff::Timestamp;
+    /// use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar};
     ///
-    /// let thursday: DateTime<Utc> = "2029-03-01T15:00:00Z".parse().unwrap();
+    /// let thursday: Timestamp = "2029-03-01T15:00:00Z".parse().unwrap();
     /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
     /// assert!(matches!(
-    ///     nyse.is_open(thursday),
-    ///     Err(CalendarQueryError::OutsideCoveredRange { .. })
+    ///     nyse.is_open(thursday).map_err(|e| e.kind()),
+    ///     Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     /// ));
     ///
     /// let view = nyse.with_last_known_week();
     /// assert_eq!(view.is_open(thursday), Ok(true));
     /// assert_eq!(
-    ///     view.coverage().coverage_on(thursday.date_naive()),
+    ///     view.coverage().coverage_on(jiff::civil::date(2029, 3, 1)),
     ///     DateCoverage::NormalWeekOnly
     /// );
     /// ```
     #[must_use]
     pub const fn with_last_known_week(self) -> Self {
         Self {
+            zones: self.zones,
             source: self.source,
             holidays: match self.holidays {
                 HolidayView::Detached => HolidayView::Detached,
@@ -178,26 +206,27 @@ impl ExchangeCalendar {
     /// as [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly).
     ///
     /// ```
-    /// use chrono::{DateTime, Utc};
-    /// use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar};
+    /// use jiff::Timestamp;
+    /// use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar};
     ///
-    /// let tuesday: DateTime<Utc> = "2005-03-01T16:00:00Z".parse().unwrap();
+    /// let tuesday: Timestamp = "2005-03-01T16:00:00Z".parse().unwrap();
     /// let nyse = ExchangeCalendar::new(Exchange::Nyse);
     /// assert!(matches!(
-    ///     nyse.is_open(tuesday),
-    ///     Err(CalendarQueryError::BeforeSupportFloor { .. })
+    ///     nyse.is_open(tuesday).map_err(|e| e.kind()),
+    ///     Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     /// ));
     ///
     /// let view = nyse.with_next_known_week();
     /// assert_eq!(view.is_open(tuesday), Ok(true));
     /// assert_eq!(
-    ///     view.coverage().coverage_on(tuesday.date_naive()),
+    ///     view.coverage().coverage_on(jiff::civil::date(2005, 3, 1)),
     ///     DateCoverage::NormalWeekOnly
     /// );
     /// ```
     #[must_use]
     pub const fn with_next_known_week(self) -> Self {
         Self {
+            zones: self.zones,
             source: self.source,
             holidays: self.holidays,
             next_known_week: true,
@@ -217,7 +246,7 @@ impl ExchangeCalendar {
     /// every date. This metadata lookup does not establish coverage for a
     /// date-aware session query; inspect [`Self::coverage`] for that contract.
     #[must_use]
-    pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+    pub fn holiday_on(self, trade_date: Date) -> Option<Holiday> {
         self.holiday_table()
             .and_then(|table| table.holiday_on(trade_date))
     }
@@ -274,12 +303,12 @@ impl ExchangeCalendar {
     /// date they read from the normal week as
     /// [`DateCoverage::NormalWeekOnly`](crate::DateCoverage::NormalWeekOnly).
     ///
-    /// The value borrows static tables, allocates nothing, and is
-    /// `Copy + Send + Sync + 'static`. Inspecting it changes no query: the
+    /// The value borrows the selected clocks and static tables, allocates nothing, and is
+    /// `Copy + Send + Sync`. Inspecting it changes no query: the
     /// metadata is not permission to return a fabricated schedule.
     #[must_use]
-    pub const fn coverage(self) -> CalendarCoverage {
-        CalendarCoverage::new(self.source, self.holidays, self.next_known_week)
+    pub const fn coverage(self) -> ZonedCalendarCoverage<'z> {
+        ZonedCalendarCoverage::new(self.source, self.holidays, self.next_known_week, self.zones)
     }
 
     /// Returns the schedule identity represented by this calendar.
@@ -308,22 +337,32 @@ impl ExchangeCalendar {
 
     /// Resolves the fixed [`MarketHours`] profile in force at `instant`.
     #[must_use]
-    pub fn hours_at(self, instant: DateTime<Utc>) -> MarketHours {
-        match self.source {
-            CalendarSource::Exchange(exchange) => hours_for_exchange(exchange, instant),
-            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key(key, instant),
-        }
+    pub fn hours_at(self, instant: Timestamp) -> MarketHours {
+        from_profile(self.source, self.profile_at(instant), self.zones)
     }
 
     /// Returns the venue's invariant IANA time zone.
     #[must_use]
-    pub fn tz(self) -> Tz {
+    pub fn tz(self) -> TimeZone {
+        self.zone().clone()
+    }
+
+    pub(in crate::calendar) fn zone(self) -> &'z TimeZone {
+        self.zones
+            .resolve(self.profile_at(TZ_RESOLUTION_INSTANT).tz)
+    }
+
+    pub(in crate::calendar) fn profile_at(self, instant: Timestamp) -> &'static StaticHoursProfile {
+        let instant = SelectionInstant {
+            instant,
+            zones: self.zones,
+        };
         match self.source {
             CalendarSource::Exchange(exchange) => {
-                hours_for_exchange(exchange, TZ_RESOLUTION_INSTANT).tz
+                crate::calendar::presets::exchange_profile_at(exchange, instant)
             }
             CalendarSource::MarketHoursKey(key) => {
-                hours_for_market_hours_key(key, TZ_RESOLUTION_INSTANT).tz
+                crate::calendar::futures_profile::key_profile_at(key, instant)
             }
         }
     }
@@ -337,7 +376,7 @@ pub const fn calendar_for_exchange(exchange: Exchange) -> ExchangeCalendar {
 
 /// Creates a date-aware calendar for a product-family `key`.
 ///
-/// The calendar reselects [`hours_for_market_hours_key`] for every
+/// The calendar reselects [`crate::hours_for_market_hours_key`] for every
 /// candidate session-opening day, including while scanning across a sourced
 /// historical revision.
 #[must_use]

@@ -2,7 +2,7 @@
 
 //! ICE Endex Dutch TTF Natural Gas Futures.
 
-use chrono_tz::{America, Europe};
+use crate::calendar::time_zones::{America, Europe, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -104,11 +104,11 @@ const fn amsterdam_profile(
     }
 }
 
-const TRANSFER: chrono::NaiveDate = effective_date(2013, 10, 7);
-const EXTENSION_OPENING_DAY: chrono::NaiveDate = effective_date(2026, 4, 12);
-const EXTENSION: chrono::NaiveDate = effective_date(2026, 4, 13);
+const TRANSFER: jiff::civil::Date = effective_date(2013, 10, 7);
+const EXTENSION_OPENING_DAY: jiff::civil::Date = effective_date(2026, 4, 12);
+const EXTENSION: jiff::civil::Date = effective_date(2026, 4, 13);
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Europe::Amsterdam);
     if day < TRANSFER {
         return &CLOSED;

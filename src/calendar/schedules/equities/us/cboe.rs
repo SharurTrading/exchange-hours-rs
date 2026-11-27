@@ -2,7 +2,7 @@
 
 //! Cboe US cash-equity profiles and dated schedule history.
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::StaticHoursProfile;
 use super::equities::{US_EQUITY_EXTENDED, equity_profile, equity_profile_with_entry};
@@ -169,7 +169,7 @@ static BZX_REVISIONS: &[Revision] = revisions![
     (2025, 5, 1, &CBOE_BZX_PROFILE, "Cboe insights May 2025"),
 ];
 
-pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn bzx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &BZX_0800_1700,
@@ -201,7 +201,7 @@ static BYX_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn byx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -225,7 +225,7 @@ static EDGA_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn edga_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -253,7 +253,7 @@ static EDGX_REVISIONS: &[Revision] = revisions![
     (2021, 9, 7, &CBOE_EDGX_PROFILE, "SEC 34-92914"),
 ];
 
-pub(crate) fn edgx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn edgx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,

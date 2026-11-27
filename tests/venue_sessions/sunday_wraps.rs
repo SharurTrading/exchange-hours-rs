@@ -3,6 +3,8 @@
 //! Sunday open-side behavior for overnight wrap sessions.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // Overnight-wrap open-side regression
@@ -21,10 +23,7 @@ use super::prelude::*;
 
 #[test]
 fn comex_sunday_morning_closed_before_globex_open() {
-    let h = hours_for_exchange(
-        Exchange::Comex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Comex, PROFILE_INSTANT);
     let t = ct((2026, 4, 19), (10, 0, 0));
     assert!(
         !h.is_open(t),
@@ -34,10 +33,7 @@ fn comex_sunday_morning_closed_before_globex_open() {
 
 #[test]
 fn nymex_sunday_morning_closed_before_globex_open() {
-    let h = hours_for_exchange(
-        Exchange::Nymex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Nymex, PROFILE_INSTANT);
     let t = ct((2026, 4, 19), (10, 0, 0));
     assert!(
         !h.is_open(t),
@@ -47,10 +43,7 @@ fn nymex_sunday_morning_closed_before_globex_open() {
 
 #[test]
 fn iceus_sunday_morning_closed_before_open() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 19), (10, 0, 0));
     assert!(
         !h.is_open(t),
@@ -64,20 +57,17 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     // Sunday 18:00 open, preceded by a 17:30 Pre-Open. Equal endpoints
     // describe one complete local day after that distinct queue phase.
     // https://www.ice.com/products/66380320/NYSE-FANG-Index-Future
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let pre_open = et((2026, 4, 19), (17, 30, 0));
     let sunday_open = et((2026, 4, 19), (18, 0, 0));
     let monday_close = et((2026, 4, 20), (18, 0, 0));
 
-    assert!(!h.is_open(pre_open - chrono::Duration::seconds(1)));
+    assert!(!h.is_open(pre_open - SignedDuration::from_secs(1)));
     assert!(h.is_order_entry_only(pre_open));
-    assert!(h.is_order_entry_only(sunday_open - chrono::Duration::seconds(1)));
+    assert!(h.is_order_entry_only(sunday_open - SignedDuration::from_secs(1)));
     assert!(h.is_open(sunday_open));
     assert!(h.is_open(et((2026, 4, 20), (0, 0, 0))));
-    assert!(h.is_open(monday_close - chrono::Duration::seconds(1)));
+    assert!(h.is_open(monday_close - SignedDuration::from_secs(1)));
     assert!(!h.is_open(monday_close));
     assert_eq!(
         session_bounds(&h, sunday_open),
@@ -100,7 +90,7 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     // count as scheduled open time.
     assert_eq!(h.normal_week_open_seconds(), 112 * 3600);
 
-    let before = pre_open - chrono::Duration::seconds(1);
+    let before = pre_open - SignedDuration::from_secs(1);
     assert_eq!(
         next_session_after(&h, before),
         // The queue is not a session, so the next session is the Sunday open.
@@ -136,10 +126,7 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
 
 #[test]
 fn cme_sunday_morning_closed_before_globex_open() {
-    let h = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     let t = ct((2026, 4, 19), (10, 0, 0));
     assert!(!h.is_open(t), "CME closed Sun 10:00 CT");
 }
@@ -154,10 +141,7 @@ fn sunday_morning_is_open_agrees_with_session_bounds() {
         (Exchange::Iceus, et((2026, 4, 19), (10, 0, 0))),
         (Exchange::Cme, ct((2026, 4, 19), (10, 0, 0))),
     ] {
-        let h = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let h = hours_for_exchange(exchange, PROFILE_INSTANT);
         let (open, close) = session_bounds(&h, instant).expect("a session follows the weekend");
         let contained = open <= instant && instant < close;
         assert_eq!(
@@ -179,10 +163,7 @@ fn wrap_venues_reopen_at_their_published_sunday_open() {
         (Exchange::Iceus, et((2026, 4, 19), (18, 0, 0))),
         (Exchange::Cme, ct((2026, 4, 19), (17, 0, 0))),
     ] {
-        let h = hours_for_exchange(
-            exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let h = hours_for_exchange(exchange, PROFILE_INSTANT);
         assert!(h.is_open(instant), "{exchange:?} open at its Sunday open");
     }
 }

@@ -17,8 +17,9 @@
 //! sibling and on the ten modules whose single timeline serves several rows.
 
 use super::{EVIDENCE_DIR, evidence_target, exchange_rows, market_hours_key_rows, wire_name};
-use chrono::NaiveDate;
+use crate::support::date_opt;
 use exchange_hours::Exchange;
+use jiff::civil::Date;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -960,14 +961,14 @@ fn document_rows(text: &str) -> Vec<DocumentRow> {
                 panic!("a documents row's capture-or-retrieval cell must state a timestamp: {line}")
             });
             assert!(
-                NaiveDate::parse_from_str(&capture.day, "%Y-%m-%d").is_ok(),
+                Date::strptime("%Y-%m-%d", &capture.day).is_ok(),
                 "a documents row's capture stamp must be a real calendar day: {line}"
             );
             let wayback = wayback_stamp(url, line);
             if let Some(stamp) = &wayback {
                 let day = format!("{}-{}-{}", &stamp[..4], &stamp[4..6], &stamp[6..8]);
                 assert!(
-                    NaiveDate::parse_from_str(&day, "%Y-%m-%d").is_ok(),
+                    Date::strptime("%Y-%m-%d", day).is_ok(),
                     "a documents row's Wayback stamp must be a real calendar day: {line}"
                 );
             }
@@ -1710,7 +1711,7 @@ fn every_evidence_holiday_line_is_well_formed() {
             );
             let day = cells[0];
             assert!(
-                day.len() == 10 && NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+                day.len() == 10 && Date::strptime("%Y-%m-%d", day).is_ok(),
                 "{name}: a holiday line must open with a real ISO calendar date: {line}"
             );
             assert!(
@@ -2167,7 +2168,7 @@ fn summary_days(summary: &str, own: &str) -> Vec<String> {
                 .chars()
                 .enumerate()
                 .all(|(at, character)| at == 4 || at == 7 || character.is_ascii_digit());
-        if looks_like_a_day && NaiveDate::parse_from_str(window, "%Y-%m-%d").is_ok() {
+        if looks_like_a_day && Date::strptime("%Y-%m-%d", window).is_ok() {
             if !found.iter().any(|day| day == window) {
                 found.push(window.to_owned());
             }
@@ -2592,7 +2593,7 @@ fn every_evidence_revision_line_exists_in_source() {
 }
 
 /// Day-level boundaries an identity's `profile_at` selects on directly — the
-/// `NaiveDate` and Unix-second constants in `eurex_profile_at`, `eex_profile_at`,
+/// `Date` and Unix-second constants in `eurex_profile_at`, `eex_profile_at`,
 /// `b3.rs`, `bmv.rs`, `ice_endex.rs`, `ice_abu_dhabi.rs`, `binance.rs`,
 /// `ice_canada.rs` and `coinbase_derivatives.rs` — never reach a `revisions!`
 /// block, so every fence above is blind to them: a selector could move a date
@@ -2648,11 +2649,11 @@ fn every_handwritten_cutover_date_appears_in_its_evidence_file() {
             }
 
             let previous = day
-                .pred_opt()
+                .yesterday()
                 .expect("a cutover date must have a previous day")
-                .format("%Y-%m-%d")
+                .strftime("%Y-%m-%d")
                 .to_string();
-            let day = day.format("%Y-%m-%d").to_string();
+            let day = day.strftime("%Y-%m-%d").to_string();
 
             assert!(
                 keyed.contains(&day) || (allow_previous_day && keyed.contains(&previous)),
@@ -2688,7 +2689,7 @@ fn dated_bullet_key(name: &str, heading: &str, bullet: &str) -> Option<String> {
         return None;
     }
     assert!(
-        NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+        Date::strptime("%Y-%m-%d", day).is_ok(),
         "{name}: a `{heading}` bullet opens with {day}, which is not a real calendar date: {bullet}"
     );
 
@@ -2711,7 +2712,7 @@ fn dated_bullet_key(name: &str, heading: &str, bullet: &str) -> Option<String> {
 }
 
 /// Parses `(Exchange::Variant, (y, m, d), ..)` entries out of one cutover list.
-fn cutover_entries(source: &str, list: &str) -> Vec<(String, NaiveDate)> {
+fn cutover_entries(source: &str, list: &str) -> Vec<(String, Date)> {
     let start = source.find(list);
     assert!(start.is_some(), "cutover expectations must declare {list}");
     let start = start.expect("the list name was just asserted present");
@@ -2759,7 +2760,7 @@ fn cutover_entries(source: &str, list: &str) -> Vec<(String, NaiveDate)> {
             numbers.len() >= 3,
             "{list} entry for {variant} must open with (year, month, day)"
         );
-        let date = NaiveDate::from_ymd_opt(
+        let date = date_opt(
             numbers[0],
             u32::try_from(numbers[1]).expect("month must be non-negative"),
             u32::try_from(numbers[2]).expect("day must be non-negative"),
@@ -2841,7 +2842,7 @@ fn revision_rows_and_evidence_bullets_match_as_multisets() {
 
 /// Asserts one `## Revision rows` bullet parses and matches its source tuple.
 ///
-/// A module that encodes its dated cutovers as `NaiveDate` constants rather
+/// A module that encodes its dated cutovers as `Date` constants rather
 /// than `revisions!` tuples (`vienna.rs`, `europe.rs`, `binance.rs` and the
 /// ICE siblings) declares no block, so its bullets are checked for grammar
 /// only; extending the day fence to those boundaries is issue #86.
@@ -3001,7 +3002,7 @@ fn longest_comment_run(text: &str) -> usize {
     longest
 }
 
-/// One dated cutover encoded as a `NaiveDate` constant outside a `revisions!`
+/// One dated cutover encoded as a `Date` constant outside a `revisions!`
 /// block (issue #86).
 struct DatedConstant {
     /// Repository-relative source file that declares it.
@@ -3012,7 +3013,7 @@ struct DatedConstant {
     day: String,
 }
 
-/// Returns every `const NAME: NaiveDate = effective_date(y, m, d);` in `src/`.
+/// Returns every `const NAME: Date = effective_date(y, m, d);` in `src/`.
 ///
 /// A module that encodes a dated cutover this way declares no `revisions!`
 /// block, so `every_revision_row_day_appears_in_its_evidence_file` cannot see
@@ -3048,8 +3049,8 @@ fn dated_constants() -> Vec<DatedConstant> {
                 continue;
             };
             let Some((name, value)) = rest
-                .split_once(": NaiveDate = ")
-                .or_else(|| rest.split_once(": chrono::NaiveDate = "))
+                .split_once(": Date = ")
+                .or_else(|| rest.split_once(": jiff::civil::Date = "))
             else {
                 continue;
             };
@@ -3178,7 +3179,7 @@ fn every_dated_constant_day_appears_in_its_evidence_file() {
 fn the_dated_constant_fence_reads_every_shipped_constant() {
     // A guard on the fence itself. The collection is pinned **by count** as well
     // as by example, because the failure this fence had was silent under-collection:
-    // it matched only bare private `NaiveDate` constants and so saw 3 of the 15
+    // it matched only bare private `Date` constants and so saw 3 of the 15
     // shipped ones, reporting green while twelve cutovers were unfenced. Naming
     // examples alone would not have caught that, so every module that ships a
     // dated constant is required to contribute at least one, and the total is
@@ -3193,7 +3194,7 @@ fn the_dated_constant_fence_reads_every_shipped_constant() {
             "the Vienna era boundary {day} must be collected by the fence"
         );
     }
-    // And one `chrono::NaiveDate`-qualified const, the spelling the first
+    // And one `jiff::civil::Date`-qualified const, the spelling the first
     // matcher missed entirely.
     for day in ["2018-12-10", "2024-03-25", "2013-10-07", "2026-04-13"] {
         assert!(
@@ -3256,7 +3257,7 @@ fn declared_dated_boundaries() -> Vec<DatedBoundary> {
                 )
             });
             assert!(
-                NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+                Date::strptime("%Y-%m-%d", day).is_ok(),
                 "{module}: a dated-boundary day must be an ISO calendar day: {trimmed}"
             );
             let file = file.strip_prefix("docs/evidence/").unwrap_or_else(|| {

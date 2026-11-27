@@ -2,13 +2,13 @@
 
 //! Date-aware candle adapters over the shared query engine.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
-use super::ExchangeCalendar;
+use super::ZonedExchangeCalendar;
 use crate::calendar::query::{QueryContext, candles};
 use crate::calendar::{CalendarQueryError, CalendarResolution, SessionKind};
 
-impl ExchangeCalendar {
+impl ZonedExchangeCalendar<'_> {
     /// Returns the date-aware bar close after `instant`.
     ///
     /// A key-backed CME cryptocurrency calendar retains Friday 16:00 CT as
@@ -18,21 +18,21 @@ impl ExchangeCalendar {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_end(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_end_with(instant, resolution, SessionKind::Both)
     }
 
@@ -43,22 +43,22 @@ impl ExchangeCalendar {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_end_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
         kind: SessionKind,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;
         candles::candle_end_with(&context, instant, resolution, kind)
@@ -68,21 +68,21 @@ impl ExchangeCalendar {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_start(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_start_with(instant, resolution, SessionKind::Both)
     }
 
@@ -91,22 +91,22 @@ impl ExchangeCalendar {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn candle_start_with(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
         resolution: CalendarResolution,
         kind: SessionKind,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;
         candles::candle_start_with(&context, instant, resolution, kind)
@@ -116,20 +116,20 @@ impl ExchangeCalendar {
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn time_end_of_day(
         self,
-        instant: DateTime<Utc>,
-    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+        instant: Timestamp,
+    ) -> Result<Option<Timestamp>, CalendarQueryError> {
         self.candle_end(instant, CalendarResolution::Daily)
     }
 }

@@ -2,7 +2,7 @@
 
 //! Small Exchange, Inc. venue history (now Kraken Derivatives Exchange).
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -88,6 +88,6 @@ static REVISIONS: &[Revision] = revisions![
     (2025, 3, 24, &CLOSED, "SMFE 2025-001 delisting"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, America::Chicago), &CLOSED, REVISIONS)
 }

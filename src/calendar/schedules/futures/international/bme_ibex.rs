@@ -2,7 +2,7 @@
 
 //! MEFF IBEX 35 index-futures family (with Mini and Micro IBEX 35), Madrid.
 
-use chrono_tz::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -100,9 +100,7 @@ static BME_IBEX_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the IBEX 35 futures profile in force at `as_of` (Madrid local day).
-pub(crate) fn bme_ibex_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn bme_ibex_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::Madrid),
         &BME_IBEX_2010,

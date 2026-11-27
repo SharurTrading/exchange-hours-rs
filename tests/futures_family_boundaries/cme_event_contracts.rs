@@ -13,13 +13,15 @@
 //! 2022-09-18 is the Sunday on which CME SER-8968R takes effect, for trade
 //! date Monday 2022-09-19; 2023-03-12 is SER-9092's Sunday for `ECBTC`.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DayOverride, MarketHoursKey, SessionState,
-    StaticDayPolicy, calendar_for_market_hours_key, candle_end, hours_for_market_hours_key,
-    next_session_open_after, session_bounds, session_profile,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DayOverride, MarketHoursKey,
+    SessionState, StaticDayPolicy, calendar_for_market_hours_key, candle_end,
+    hours_for_market_hours_key, next_session_open_after, session_bounds, session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const EVENT_CONTRACTS: MarketHoursKey = MarketHoursKey::GlobexEventContracts;
 const SPOT_QUOTED: MarketHoursKey = MarketHoursKey::GlobexSpotQuoted;
@@ -27,19 +29,15 @@ const WEATHER: MarketHoursKey = MarketHoursKey::GlobexWeather;
 const CRYPTOCURRENCY: MarketHoursKey = MarketHoursKey::GlobexCryptocurrency;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
+fn hours_at(date: (i16, i8, i8)) -> exchange_hours::MarketHours {
     hours_for_market_hours_key(EVENT_CONTRACTS, ct(date, (0, 0, 0)))
 }
 
@@ -54,7 +52,7 @@ fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
 /// classification assertions below keep their force through that surface;
 /// `assert_refused` is how the calendar-backed surface is asserted to refuse
 /// the same dates.
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(EVENT_CONTRACTS, instant).session_state(instant)
 }
 
@@ -66,11 +64,12 @@ fn state_at(instant: DateTime<Utc>) -> SessionState {
 /// (LAW-COVERAGE), which is the fact these tests now state in place of the
 /// schedule they used to read back out of it.
 fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    let answer = answer.map_err(|error| error.kind());
     assert!(
         matches!(
             answer,
-            Err(CalendarQueryError::BeforeSupportFloor { .. }
-                | CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                | CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "{label}: a dormant identity must refuse, got {answer:?}"
     );
@@ -491,9 +490,9 @@ fn three_keys_share_one_envelope_today_and_no_history_at_all() {
             (20, 0),
         ] {
             let instant = ct((2026, 9, 13), (0, 0, 0))
-                + chrono::Duration::days(day_offset)
-                + chrono::Duration::hours(hour)
-                + chrono::Duration::minutes(minute);
+                + elapsed_days(day_offset)
+                + SignedDuration::from_hours(hour)
+                + SignedDuration::from_mins(minute);
             let event_contracts = hours_for_market_hours_key(EVENT_CONTRACTS, instant);
             for other in [SPOT_QUOTED, WEATHER] {
                 let other_hours = hours_for_market_hours_key(other, instant);
@@ -548,7 +547,8 @@ fn day_policy_overlays_a_closed_date_and_an_early_close() {
     let early_wednesday = day((2026, 9, 16));
     let records = [
         DayOverride::closed(closed_tuesday),
-        DayOverride::early_close(early_wednesday, 12 * 3_600),
+        DayOverride::early_close(early_wednesday, 12 * 3_600)
+            .expect("the fixture boundary must be valid"),
     ];
     let policy = StaticDayPolicy::new(&records).expect("the fixture records must be valid");
     let calendar = calendar_for_market_hours_key(EVENT_CONTRACTS).with_day_policy(&policy);

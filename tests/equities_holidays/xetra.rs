@@ -5,13 +5,17 @@
 //! only) and weekend-falling table entries keying no row.
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::BERLIN;
+use jiff::Timestamp;
+use jiff::civil::Date;
 
-fn de(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    local(Europe::Berlin, date, time)
+fn de(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local(&BERLIN, date, time)
 }
 
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 fn calendar() -> ExchangeCalendar {
@@ -51,7 +55,7 @@ fn every_printed_2010_closure_ships_as_a_settlement_day_closure() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2010, 1, 1),
             day(2010, 4, 2),
@@ -79,7 +83,7 @@ fn the_2011_sentence_names_three_closures_and_no_unity_day() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[day(2011, 4, 22), day(2011, 4, 25), day(2011, 12, 26)],
     );
     // New Year 2011 (Saturday), Labour Day (Sunday) and the Christmas/New Year
@@ -103,7 +107,7 @@ fn the_2014_german_edition_closes_unity_day_and_the_settlement_eves() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2014, 1, 1),
             day(2014, 4, 18),
@@ -128,7 +132,7 @@ fn the_2016_closures_ship_and_the_weekend_eves_key_no_row() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2016, 1, 1),
             day(2016, 3, 25),
@@ -152,7 +156,7 @@ fn from_2022_whit_monday_and_unity_day_trade_as_ordinary_days() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[day(2022, 4, 15), day(2022, 4, 18), day(2022, 12, 26)],
     );
     // Whit Monday 2022-06-06 and German Unity Day 2022-10-03 are named by no
@@ -212,7 +216,7 @@ fn every_printed_2025_closure_ships_and_no_early_close_is_invented() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2025, 1, 1),
             day(2025, 4, 18),
@@ -243,7 +247,7 @@ fn the_2026_closures_and_the_three_named_trading_holidays_ship() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2026, 1, 1),
             day(2026, 4, 3),
@@ -260,7 +264,7 @@ fn the_2026_closures_and_the_three_named_trading_holidays_ship() {
         assert_early_close(
             "xetra",
             calendar,
-            Europe::Berlin,
+            &BERLIN,
             holiday_date,
             20 * 3_600,
             "DB-TC-PAGE",
@@ -356,7 +360,7 @@ fn every_printed_2027_closure_ships() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             day(2027, 1, 1),
             day(2027, 3, 26),
@@ -389,7 +393,7 @@ fn every_printed_2028_through_2032_closure_ships() {
     assert_closed(
         "xetra",
         calendar,
-        Europe::Berlin,
+        &BERLIN,
         &[
             // 2028: the Saturday New Year and the Sunday starred eves key no
             // row, so five weekday entries ship.
@@ -525,7 +529,7 @@ fn the_christmas_block_reopens_on_the_first_open_day() {
         .expect("the coverage contract must answer a covered date")
         .expect("a reopening must exist inside the bounded search");
     assert_eq!(
-        next.0.with_timezone(&Europe::Berlin).date_naive(),
+        next.0.to_zoned_datetime(BERLIN).date(),
         day(2026, 12, 28),
         "xetra must reopen on 28 December 2026"
     );

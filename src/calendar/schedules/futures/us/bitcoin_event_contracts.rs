@@ -2,7 +2,7 @@
 
 //! CME Event Contracts on Bitcoin Futures (`ECBTC`) schedule.
 
-use chrono_tz::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use super::event_contracts::EVENT_CONTRACTS_ORDER_ENTRY_CURRENT;
 use crate::calendar::SessionRule;
@@ -300,6 +300,6 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &CLOSED, REVISIONS)
 }

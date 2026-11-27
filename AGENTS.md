@@ -121,12 +121,16 @@ required. Historical completion remains the target tracked in #332.
 
 - **LAW-DETERMINISM** — library code never reads a clock, performs I/O, or uses
   randomness. Same inputs, same answer, forever. Enforced structurally where
-  possible: `chrono` is built with `default-features = false` so `Utc::now()`
-  does not compile here. Do not add a dependency or code path that breaks this.
+  possible. Jiff is built with `default-features = false`. A calendar uses
+  embedded zones by default. A caller may supply one immutable, versioned
+  snapshot for all venue and reference zones in a run. The separate
+  `exchange-hours-tzdb` companion owns release discovery, I/O and polling.
+  The calendar crate's lint configuration disallows time reads and ambient
+  database lookups when dependency feature unification makes them available.
 - **LAW-PANIC** — production queries are total: they do not panic, hang, or use
-  unreachable fallbacks. Invalid raw `SessionRule` values may return
-  unspecified answers, but still return normally; absence and bounded-search
-  exhaustion are explicit.
+  unreachable fallbacks. Caller-created and deserialized `SessionRule` values
+  must pass the same weekday and local-boundary checks on input. Absence and
+  bounded-search exhaustion are explicit.
 - **LAW-INVARIANT** — A supposedly impossible branch is not permission
   to invent a business value or silently abandon work. Exhaustive
   matches, failed conversions and missing required state must not
@@ -440,14 +444,15 @@ state actual supported ranges; an unknown date is not a market closure.
 ## Modeling conventions
 
 - **UTC in, UTC out.** Every *timestamp* crossing the public boundary is a
-  `DateTime<Utc>`: a local time is never a parameter or a return value, and the
-  venue's zone stays an internal detail. Session rules are seconds-since-local-
-  midnight in the venue's own IANA zone.
+  `jiff::Timestamp`. Use `jiff::civil::Date` for date-only trade dates and
+  civil-day queries. The schedule's IANA zone interprets session rules in
+  seconds since local midnight.
 - **Closes are end-exclusive.** An instant equal to a close is closed.
 - **`open_ssm >= close_ssm` wraps** into the next local day. Equal endpoints
   encode one complete local-day span; omit a rule to express no session.
-- **DST bias is asymmetric on purpose**: opens resolve earliest, closes latest.
-  Never "simplify" this to a single bias.
+- **DST bias is asymmetric on purpose.** In a repeated local interval,
+  opens resolve to the earlier instant and closes to the later instant. A
+  wall time inside a gap resolves to the first instant after the gap.
 - **Boundaries, trade date and `order_entry` are required; `regular` is
   declared.** The session boundaries (the union of every executable phase) and
   the trade date are what every consumer purpose depends on. `order_entry` is
@@ -751,19 +756,26 @@ fences; compare them against production data, never generate them from it.
 
 ## Verification
 
-Run before claiming any change is done — the first line is every check the
-`quality` CI job runs, in the same order; the second is the `markdown-lint`
-job:
+Run the quality and Markdown gates before marking a change complete. The
+embedded database check contacts IANA and fails if freshness cannot be verified.
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+cargo fmt --all --check
+cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+cargo check --locked --package exchange-hours --no-default-features
+cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast
+cargo test --locked --workspace --all-features --doc
+RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
+cargo deny --locked --workspace --all-features check
 npx markdownlint-cli2@0.23.3
 ```
 
 The MSRV job builds on a second toolchain, so it is a separate command:
 
 ```bash
-cargo +1.95 check --all-targets
+cargo +1.95 check --locked --workspace --all-features --all-targets
 ```
 
 ## Reviewing a change

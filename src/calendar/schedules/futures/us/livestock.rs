@@ -2,7 +2,7 @@
 
 //! CME Live Cattle, Feeder Cattle, and Lean Hog futures schedules.
 
-use chrono_tz::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
@@ -77,7 +77,7 @@ pub(crate) static ORDER_ENTRY_CURRENT: &[SessionRule] = &[
 ];
 
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
+    tz: US::Central.embedded(),
     regular: REGULAR_CURRENT,
     extended: &[],
     order_entry: ORDER_ENTRY_CURRENT,
@@ -176,7 +176,7 @@ static REVISIONS: &[Revision] = revisions![
     (2020, 5, 31, &PROFILE_CURRENT, "CME SER-8599R"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, US::Central),
         &PROFILE_AT_2010_FLOOR,

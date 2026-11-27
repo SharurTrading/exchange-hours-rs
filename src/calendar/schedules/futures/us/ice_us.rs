@@ -5,7 +5,7 @@
 //! Narrative evidence, sources and residual risks: `docs/evidence/iceus.md` and
 //! `docs/evidence/ice_us.md` (LAW-EVIDENCE-FILES).
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, TUE_ONLY};
@@ -100,9 +100,7 @@ static ICE_US_FANG_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn ice_us_fang_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn ice_us_fang_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,

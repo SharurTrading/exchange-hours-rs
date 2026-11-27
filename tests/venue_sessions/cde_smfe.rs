@@ -3,6 +3,7 @@
 //! Coinbase Derivatives and Small Exchange launch cutovers and weekly grids.
 
 use super::prelude::*;
+use jiff::{SignedDuration, Timestamp};
 
 // ---------------------------------------------------------------------------
 // Coinbase Derivatives (traded as FairX until March 2022)
@@ -12,14 +13,14 @@ use super::prelude::*;
 //   the 2026-09-11 knowledge-bound review row; its onset is undated.
 // ---------------------------------------------------------------------------
 
-fn cde(as_of: DateTime<Utc>) -> MarketHours {
+fn cde(as_of: Timestamp) -> MarketHours {
     hours_for_exchange(Exchange::CoinbaseDerivatives, as_of)
 }
 
 #[test]
 fn coinbase_derivatives_is_closed_until_its_launch_instant() {
     let launch = ct((2021, 6, 28), (8, 0, 0));
-    let before = cde(launch - chrono::Duration::seconds(1));
+    let before = cde(launch - SignedDuration::from_secs(1));
 
     assert!(before.regular.is_empty());
     assert!(before.order_entry.is_empty());
@@ -51,10 +52,10 @@ fn coinbase_derivatives_monday_evening_session_survives_the_day_switch() {
     let midnight = ct((2021, 6, 29), (0, 0, 0));
     let evening = (ct((2021, 6, 28), (17, 0, 0)), ct((2021, 6, 29), (16, 0, 0)));
 
-    let launch_day = cde(midnight - chrono::Duration::seconds(1));
+    let launch_day = cde(midnight - SignedDuration::from_secs(1));
     let first_full_day = cde(midnight);
     assert_eq!(
-        session_bounds(&launch_day, midnight - chrono::Duration::seconds(1)),
+        session_bounds(&launch_day, midnight - SignedDuration::from_secs(1)),
         Some(evening)
     );
     assert_eq!(session_bounds(&first_full_day, midnight), Some(evening));
@@ -80,7 +81,7 @@ fn coinbase_derivatives_weekly_grid_is_unchanged_since_launch() {
 #[test]
 fn coinbase_derivatives_pre_open_starts_at_the_knowledge_bound_row() {
     let row = ct((2026, 9, 11), (0, 0, 0));
-    let before = cde(row - chrono::Duration::seconds(1));
+    let before = cde(row - SignedDuration::from_secs(1));
     let after = cde(row);
 
     assert!(before.order_entry.is_empty());
@@ -101,14 +102,14 @@ fn coinbase_derivatives_pre_open_starts_at_the_knowledge_bound_row() {
 //   Closed from 2025-03-24: every contract was delisted at the 2025-03-21 close.
 // ---------------------------------------------------------------------------
 
-fn smfe(as_of: DateTime<Utc>) -> MarketHours {
+fn smfe(as_of: Timestamp) -> MarketHours {
     hours_for_exchange(Exchange::Smfe, as_of)
 }
 
 #[test]
 fn small_exchange_is_closed_before_its_2020_launch() {
     let launch = ct((2020, 5, 18), (0, 0, 0));
-    let before = smfe(launch - chrono::Duration::seconds(1));
+    let before = smfe(launch - SignedDuration::from_secs(1));
     assert!(before.regular.is_empty());
     assert!(before.order_entry.is_empty());
 
@@ -146,7 +147,7 @@ fn small_exchange_is_closed_once_nothing_is_listed() {
 
     let closure = ct((2025, 3, 24), (0, 0, 0));
     assert_eq!(
-        smfe(closure - chrono::Duration::seconds(1)),
+        smfe(closure - SignedDuration::from_secs(1)),
         last_listed_day
     );
     let delisted = smfe(closure);

@@ -13,12 +13,13 @@
 //! reselects per venue-local opening day, as well as through the instant
 //! selector.
 
-use chrono::{DateTime, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::local_opt;
+use crate::support::zones::US_CENTRAL;
 use exchange_hours::{
-    CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
-    hours_for_market_hours_key, session_profile,
+    CalendarQueryError, CalendarQueryErrorKind, MarketHoursKey, SessionKind, SessionState,
+    calendar_for_market_hours_key, hours_for_market_hours_key, session_profile,
 };
+use jiff::{SignedDuration, Timestamp};
 
 const GOLD: MarketHoursKey = MarketHoursKey::GlobexGoldTas;
 const SILVER: MarketHoursKey = MarketHoursKey::GlobexSilverTas;
@@ -29,7 +30,7 @@ const PALLADIUM: MarketHoursKey = MarketHoursKey::GlobexPalladiumTas;
 const OUTRIGHTS: MarketHoursKey = MarketHoursKey::GlobexEnergy;
 
 /// A venue-local calendar date stated as `(year, month, day)`.
-type Ymd = (i32, u32, u32);
+type Ymd = (i16, i8, i8);
 /// A venue-local wall-clock time stated as `(hour, minute)`.
 type Hm = (u32, u32);
 
@@ -43,19 +44,15 @@ const KEYS: [(MarketHoursKey, Ymd, Hm); 5] = [
 ];
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: Ymd, time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: Ymd, time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
+fn open_at(key: MarketHoursKey, instant: Timestamp) -> bool {
     hours_for_market_hours_key(key, instant).is_open(instant)
 }
 
-fn state_at(key: MarketHoursKey, instant: DateTime<Utc>) -> SessionState {
+fn state_at(key: MarketHoursKey, instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(key, instant).session_state(instant)
 }
 
@@ -69,18 +66,19 @@ fn state_at(key: MarketHoursKey, instant: DateTime<Utc>) -> SessionState {
 /// crate claims.
 fn calendar_state_at(
     key: MarketHoursKey,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<SessionState, CalendarQueryError> {
     calendar_for_market_hours_key(key).session_state(instant)
 }
 
 /// Asserts the dormant TAS keys refuse rather than answer a date-aware query.
 fn assert_refused(answer: Result<SessionState, CalendarQueryError>, label: &str) {
+    let answer = answer.map_err(|error| error.kind());
     assert!(
         matches!(
             answer,
-            Err(CalendarQueryError::BeforeSupportFloor { .. }
-                | CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                | CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "{label}: a dormant identity must refuse, got {answer:?}"
     );
@@ -197,7 +195,7 @@ fn the_close_is_end_exclusive_and_the_daily_gap_is_closed_not_maintenance() {
             assert!(
                 open_at(
                     key,
-                    ct(tuesday, (hour, minute, 0)) - chrono::Duration::seconds(1)
+                    ct(tuesday, (hour, minute, 0)) - SignedDuration::from_secs(1)
                 ),
                 "{key:?} {tuesday:?}: one second before the close"
             );
@@ -233,7 +231,7 @@ fn there_is_no_friday_evening_reopen_and_the_weekend_is_closed() {
         assert!(
             open_at(
                 key,
-                ct(friday, (hour, minute, 0)) - chrono::Duration::seconds(1)
+                ct(friday, (hour, minute, 0)) - SignedDuration::from_secs(1)
             ),
             "{key:?}: Friday trades to its close"
         );
@@ -339,7 +337,7 @@ fn the_2011_stagger_moves_only_the_queue_onset() {
             assert!(
                 open_at(
                     key,
-                    ct(probe_day, (close.0, close.1, 0)) - chrono::Duration::seconds(1)
+                    ct(probe_day, (close.0, close.1, 0)) - SignedDuration::from_secs(1)
                 ),
                 "{key:?} {probe_day:?}: close unchanged"
             );

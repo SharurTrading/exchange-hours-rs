@@ -3,13 +3,17 @@
 //! Recurring international reference-clock selectors.
 
 use super::prelude::*;
+use crate::support::zones::AMSTERDAM;
+use crate::support::zones::BERLIN;
+use crate::support::zones::DUBAI;
+use jiff::SignedDuration;
 
 #[test]
 fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
     let calendar = calendar_for_exchange(Exchange::Eurex);
-    let berlin = Europe::Berlin;
+    let berlin = BERLIN;
 
-    let spring_close = local(berlin, (2026, 3, 27), (22, 0, 0));
+    let spring_close = local(&berlin, (2026, 3, 27), (22, 0, 0));
     assert_eq!(
         calendar
             .next_session_after(spring_close)
@@ -17,29 +21,29 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
         // Eurex pre-trading 02:00-02:10 CEST is order entry, so the session
         // itself now begins at the 02:10 opening auction.
         Some((
-            local(berlin, (2026, 3, 30), (2, 10, 0)),
-            local(berlin, (2026, 3, 30), (2, 15, 0)),
+            local(&berlin, (2026, 3, 30), (2, 10, 0)),
+            local(&berlin, (2026, 3, 30), (2, 15, 0)),
         ))
     );
     assert!(
         calendar
-            .is_open_regular(local(berlin, (2026, 3, 30), (2, 15, 0)))
+            .is_open_regular(local(&berlin, (2026, 3, 30), (2, 15, 0)))
             .expect("the coverage contract must answer a covered date")
     );
 
-    let autumn_close = local(berlin, (2026, 10, 23), (22, 0, 0));
+    let autumn_close = local(&berlin, (2026, 10, 23), (22, 0, 0));
     assert_eq!(
         calendar
             .next_session_after(autumn_close)
             .expect("the coverage contract must answer a covered date"),
         Some((
-            local(berlin, (2026, 10, 26), (1, 10, 0)),
-            local(berlin, (2026, 10, 26), (1, 15, 0)),
+            local(&berlin, (2026, 10, 26), (1, 10, 0)),
+            local(&berlin, (2026, 10, 26), (1, 15, 0)),
         ))
     );
     assert!(
         calendar
-            .is_open_regular(local(berlin, (2026, 10, 26), (1, 15, 0)))
+            .is_open_regular(local(&berlin, (2026, 10, 26), (1, 15, 0)))
             .expect("the coverage contract must answer a covered date")
     );
 }
@@ -47,27 +51,27 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
 #[test]
 fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
     let calendar = calendar_for_exchange(Exchange::IceEndex);
-    let amsterdam = Europe::Amsterdam;
+    let amsterdam = AMSTERDAM;
     let cases = [
         (
-            local(amsterdam, (2027, 3, 12), (23, 0, 0)),
-            local(amsterdam, (2027, 3, 14), (22, 50, 0)),
-            local(amsterdam, (2027, 3, 15), (22, 0, 0)),
+            local(&amsterdam, (2027, 3, 12), (23, 0, 0)),
+            local(&amsterdam, (2027, 3, 14), (22, 50, 0)),
+            local(&amsterdam, (2027, 3, 15), (22, 0, 0)),
         ),
         (
-            local(amsterdam, (2027, 3, 26), (22, 0, 0)),
-            local(amsterdam, (2027, 3, 28), (23, 50, 0)),
-            local(amsterdam, (2027, 3, 29), (23, 0, 0)),
+            local(&amsterdam, (2027, 3, 26), (22, 0, 0)),
+            local(&amsterdam, (2027, 3, 28), (23, 50, 0)),
+            local(&amsterdam, (2027, 3, 29), (23, 0, 0)),
         ),
         (
-            local(amsterdam, (2026, 10, 23), (23, 0, 0)),
-            local(amsterdam, (2026, 10, 25), (22, 50, 0)),
-            local(amsterdam, (2026, 10, 26), (22, 0, 0)),
+            local(&amsterdam, (2026, 10, 23), (23, 0, 0)),
+            local(&amsterdam, (2026, 10, 25), (22, 50, 0)),
+            local(&amsterdam, (2026, 10, 26), (22, 0, 0)),
         ),
         (
-            local(amsterdam, (2026, 10, 30), (22, 0, 0)),
-            local(amsterdam, (2026, 11, 1), (23, 50, 0)),
-            local(amsterdam, (2026, 11, 2), (23, 0, 0)),
+            local(&amsterdam, (2026, 10, 30), (22, 0, 0)),
+            local(&amsterdam, (2026, 11, 1), (23, 50, 0)),
+            local(&amsterdam, (2026, 11, 2), (23, 0, 0)),
         ),
     ];
 
@@ -91,7 +95,7 @@ fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
         );
         assert!(
             calendar
-                .is_order_entry_only(expected_open - Duration::nanoseconds(1))
+                .is_order_entry_only(expected_open - SignedDuration::from_nanos(1))
                 .is_err(),
             "{expected_open}: the queue probe refuses with the rest"
         );
@@ -110,11 +114,11 @@ fn murban_calendar_scans_refuse_where_the_identity_has_no_answer() {
     // property of the fixed snapshot, which is asserted in the sibling Endex
     // test; here the refusal is the whole claim.
     let calendar = calendar_for_exchange(Exchange::IceAbuDhabi);
-    let dubai = Asia::Dubai;
+    let dubai = DUBAI;
 
     for close in [
-        local(dubai, (2026, 3, 7), (3, 0, 0)),
-        local(dubai, (2026, 10, 31), (2, 0, 0)),
+        local(&dubai, (2026, 3, 7), (3, 0, 0)),
+        local(&dubai, (2026, 10, 31), (2, 0, 0)),
     ] {
         assert!(
             calendar.next_session_after(close).is_err(),

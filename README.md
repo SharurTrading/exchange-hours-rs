@@ -20,7 +20,7 @@ begin and end.**
 > guessing — but a covered answer is best-effort research, not a guarantee of the
 > venue's actual behavior. Verify against the operator before acting on it.
 
-Give it a UTC timestamp (`chrono::DateTime<Utc>`) and an exchange, and it answers three
+Give it a UTC timestamp (`jiff::Timestamp`) and an exchange, and it answers three
 questions:
 
 1. **Is the market open right now?** — regular hours, extended hours, or either.
@@ -72,40 +72,111 @@ certify those gaps as ordinary trading.
 
 ## Installation
 
-`exchange-hours` 1.0 requires Rust 1.95 or newer. The Quick start constructs
-timestamps directly, so its complete dependency set is:
+The Jiff API requires a 2.0.0 release. For that release, use Rust 1.95 or
+newer and enable compile-time Jiff time zones to run the Quick start:
 
 ```toml
 [dependencies]
-exchange-hours = "1"
-chrono = "0.4"
-chrono-tz = "0.10"
+exchange-hours = "2"
+jiff = { version = "1", default-features = false, features = ["static"] }
 ```
+
+### Time zone updates
+
+- **For backtesting, use the precompiled calendar.** Pin the crate version and
+  record `exchange_hours::EMBEDDED_TZDB_VERSION` with the results. The same
+  build replays the same historical UTC session boundaries offline.
+- **For live trading, use the latest stable IANA release.** Add the
+  `exchange-hours-tzdb` companion and start one updater at application
+  startup. It verifies the initial release before returning and checks hourly,
+  so a government clock change can reach a running application without a rebuild.
+
+For the 2.0 release, add `exchange-hours-tzdb = "0.1"` alongside
+`exchange-hours = "2"` for live use. The companion enables the calendar's
+`runtime-tzdb` feature.
+
+```rust
+use exchange_hours::{Exchange, ExchangeCalendar};
+use exchange_hours_tzdb::TimeZoneUpdater;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let updater = TimeZoneUpdater::start_latest()?;
+    // Pin one release for this live operation.
+    let snapshot = updater.snapshot()?;
+    let calendar = ExchangeCalendar::new(Exchange::Nyse).with_time_zone_snapshot(&snapshot);
+    let _bounds = calendar.session_bounds("2026-01-15T15:00:00Z".parse()?)?;
+    Ok(())
+}
+```
+
+Keep the updater alive for automatic updates. To reproduce a particular live
+run, record the crate version and `snapshot.release()` and retain the exact
+zone data used. Supply that snapshot during replay. A run keeps its snapshot
+across background updates. An unsuccessful refresh is
+visible through `updater.status()?.last_error`, and live queries can continue
+using the last verified release. A coverage error retains the snapshot that
+produced it. Formatting the error or reading `error.normal_week_baseline()`
+uses that release even after an update. Startup requires network access and the
+`curl`, `gpgv` and `zic` tools. See the
+[companion setup and snapshot API](https://github.com/SharurTrading/exchange-hours-rs/tree/main/tzdb-runtime).
+
+## Migrating from 1.x
+
+- Use `jiff::Timestamp` for every timestamp argument and result, including both
+  session endpoints. RFC 3339 strings with an offset parse directly
+  into a `Timestamp` and display in UTC.
+- Use `jiff::civil::Date` for trade dates, coverage and error dates, and the
+  date arguments to `DayPolicy` and `SessionExceptionSource` implementations.
+  Use `jiff::civil::Weekday` for the weekday returned by
+  `NormalWeekBaseline::weekday`.
+- Match `CalendarQueryError` through `error.kind()`. The variants on
+  `CalendarQueryErrorKind` carry the same identity, date and search-bound
+  fields. A runtime error owns a reference to the time-zone data that produced it.
+- Implement `DayPolicy::outcome_on(date)` to return `DayPolicyOutcome::Normal`,
+  `Closed` or `Adjusted`. Build adjustments when ingesting caller data with
+  `DayAdjustment::early_close`, `late_open` or `late_open_and_early_close`.
+  The corresponding `DayOverride` constructors also return a `Result`.
+- Read `SessionRule` through `days()`, `open_ssm()` and `close_ssm()`.
+  Construct an updated rule with `SessionRule::new`. Deserialization accepts
+  existing valid records and rejects invalid boundaries or an empty weekday mask.
+- Keep hard-coded `DayOverride` and `SessionExceptionRecord` arrays in static
+  storage if needed. Call `StaticDayPolicy::new` and
+  `StaticSessionExceptions::new` at runtime because validation compares Jiff
+  dates.
+- Build custom `MarketHours` with an owned `jiff::tz::TimeZone`. Calendar
+  `tz()` accessors return an owned zone, `FuturesSessionProfile::tz` holds a
+  static reference, and civil-day queries that take a caller's zone borrow it.
+  Use `zone.to_datetime(instant).date()` when you need the civil date of an
+  instant in that zone.
+- Consumers that keep Chrono can convert at the application boundary. Jiff
+  timestamps have a narrower representable range around years −9999 to 9999.
+  Check conversions from Chrono for out-of-range instants and its distinct
+  leap-second representation. A session occurrence contributes bounds only
+  when both endpoints fit in Jiff's timestamp range.
+
+`Exchange` and `MarketHoursKey` retain their canonical Serde strings.
 
 ## Quick start
 
-This is the compiled doctest in `src/lib.rs`, copied verbatim. CME equity-index futures match
-17:00→16:00 CT and accept weekday orders from 16:45; RTH runs 08:30–15:15 CT:
+CME equity-index futures match 17:00→16:00 CT and accept weekday orders from
+16:45. RTH runs 08:30–15:15 CT.
 
 ```rust
-use chrono::{TimeZone, Utc};
-use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, Exchange, candle_end, hours_for_exchange, next_session_after,
     session_bounds,
 };
+use jiff::civil::date;
+use jiff::tz::{self, TimeZone};
 
+static CENTRAL: TimeZone = tz::get!("US/Central");
 let ct = |y, m, d, hh, mm| {
-    US::Central
-        .with_ymd_and_hms(y, m, d, hh, mm, 0)
-        .single()
+    CENTRAL
+        .to_timestamp(date(y, m, d).at(hh, mm, 0, 0))
         .expect("valid CT instant")
-        .with_timezone(&Utc)
 };
 
-// Every snapshot request carries the caller's instant: the crate never reads
-// a clock, so a backtest and a live query run identical code. A live caller
-// passes their own `Utc::now()` at the application edge.
+// The caller supplies the instant for both live queries and backtests.
 let hours = hours_for_exchange(Exchange::Cme, ct(2026, 8, 24, 10, 0));
 
 // Monday mid-morning sits inside the regular session. Boundary queries
@@ -123,11 +194,12 @@ let monday_evening = ct(2026, 8, 24, 16, 30);
 assert!(!hours.is_open(monday_evening));
 assert!(hours.is_maintenance(monday_evening));
 
-// After Friday's close the next accepted-order phase is Sunday's 16:00
-// Pre-Open, not Saturday. Matching resumes at 17:00.
+// Sunday Pre-Open accepts orders at 16:00. The next session opens for
+// matching at 17:00.
 let friday_after_close = ct(2026, 8, 28, 16, 30);
 let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-assert_eq!(next_open, ct(2026, 8, 30, 16, 0));
+assert_eq!(next_open, ct(2026, 8, 30, 17, 0));
+assert!(hours.is_order_entry_only(ct(2026, 8, 30, 16, 0)));
 
 // Bar boundaries follow the same rules: a daily bar closes at the venue's
 // session close, not at midnight.
@@ -139,17 +211,15 @@ For a venue whose grid can change between dates, keep an `ExchangeCalendar`
 instead of carrying one fixed snapshot:
 
 ```rust
-use chrono::{TimeZone, Utc};
 use exchange_hours::{Exchange, calendar_for_exchange};
+use jiff::Timestamp;
 
 let bmv = calendar_for_exchange(Exchange::Bmv);
 // All predicates, session scans, and candle methods take UTC instants and
 // reselect BMV's normal/early grid for each candidate trading date.
-let instant = Utc.with_ymd_and_hms(2026, 8, 19, 16, 0, 0)
-    .single()
-    .expect("valid UTC instant");
+let instant: Timestamp = "2026-08-19T16:00:00Z".parse().expect("valid UTC instant");
 let snapshot_for_one_instant = bmv.hours_at(instant);
-assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
+assert_eq!(snapshot_for_one_instant.exchange(), Some(Exchange::Bmv));
 ```
 
 Product-family calendars use the same date-aware surface. Their identity is a
@@ -533,10 +603,10 @@ unlisted holiday reads as an ordinary day and `coverage_on` reports the date as
 `DateCoverage::NormalWeekOnly`.
 
 ```rust
-use chrono::{DateTime, Utc};
 use exchange_hours::{DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+use jiff::{Timestamp, civil::date};
 
-let utc = |text: &str| text.parse::<DateTime<Utc>>().expect("valid RFC 3339 instant");
+let utc = |text: &str| text.parse::<Timestamp>().expect("valid RFC 3339 instant");
 let nyse = ExchangeCalendar::new(Exchange::Nyse).with_last_known_week();
 
 // Audited rows hold on their own dates: Thanksgiving 2026 is closed, and the
@@ -558,11 +628,11 @@ assert_eq!(
 // `coverage_on` tells the two apart, so a consumer can disclose the difference.
 let coverage = nyse.coverage();
 assert_eq!(
-    coverage.coverage_on(utc("2026-11-26T16:00:00Z").date_naive()),
+    coverage.coverage_on(date(2026, 11, 26)),
     DateCoverage::Covered
 );
 assert_eq!(
-    coverage.coverage_on(utc("2040-11-22T16:00:00Z").date_naive()),
+    coverage.coverage_on(date(2040, 11, 22)),
     DateCoverage::NormalWeekOnly
 );
 ```
@@ -573,18 +643,16 @@ identity's coverage from the next week it knows. It changes nothing inside or
 after coverage, and with both views no date refuses.
 
 ```rust
-use chrono::{DateTime, Utc};
-use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+use jiff::{Timestamp, civil::date};
 
-let utc = |text: &str| text.parse::<DateTime<Utc>>().expect("valid RFC 3339 instant");
+let utc = |text: &str| text.parse::<Timestamp>().expect("valid RFC 3339 instant");
 let nyse = ExchangeCalendar::new(Exchange::Nyse);
 let thanksgiving_2005 = utc("2005-11-24T16:00:00Z");
 
 // The default calendar refuses a date below the support floor.
-assert!(matches!(
-    nyse.is_open(thanksgiving_2005),
-    Err(CalendarQueryError::BeforeSupportFloor { .. })
-));
+let refusal = nyse.is_open(thanksgiving_2005).unwrap_err();
+assert!(matches!(refusal.kind(), CalendarQueryErrorKind::BeforeSupportFloor { .. }));
 
 // The view reads it from the next week it knows, so that Thanksgiving reads as
 // open, and the next day keeps the normal 16:00 New York close.
@@ -595,7 +663,7 @@ assert_eq!(
     Ok(Some((utc("2005-11-25T14:30:00Z"), utc("2005-11-25T21:00:00Z"))))
 );
 assert_eq!(
-    backtest.coverage().coverage_on(thanksgiving_2005.date_naive()),
+    backtest.coverage().coverage_on(date(2005, 11, 24)),
     DateCoverage::NormalWeekOnly
 );
 
@@ -628,20 +696,22 @@ profile.
 For a small caller-owned table, no custom trait implementation is needed:
 
 ```rust
-use chrono::NaiveDate;
 use exchange_hours::{
     DayOverride, MarketHoursKey, StaticDayPolicy, calendar_for_market_hours_key,
 };
+use jiff::civil::date;
 
-let closed_date = NaiveDate::from_ymd_opt(2026, 4, 20).expect("valid trade date");
-let overrides = [DayOverride::closed(closed_date)];
-let policy = StaticDayPolicy::new(&overrides).expect("records are sorted and valid");
+let closed_date = date(2026, 4, 20);
+let early_date = date(2026, 4, 21);
+let early_close = DayOverride::early_close(early_date, 13 * 3600).expect("valid close");
+let overrides = [DayOverride::closed(closed_date), early_close];
+let policy = StaticDayPolicy::new(&overrides).expect("dates are unique and sorted");
 let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
     .with_day_policy(&policy);
 ```
 
-The date above is an API example, not bundled operator data; callers remain
-responsible for the source and exact family/venue scope of every record.
+These dates illustrate a caller-owned policy. Callers supply the source and
+exact family or venue scope of every record.
 
 Boundary clipping is not a complete holiday-session model. It cannot insert an
 intraday pause/reopen or close only regular trading while an extended phase
@@ -651,11 +721,11 @@ ships for caller-owned data alongside `DayPolicy`. Implement
 then call `ExchangeCalendar::with_session_exceptions`:
 
 ```rust
-use chrono::NaiveDate;
 use exchange_hours::{
     CalendarSource, Exchange, ExceptionBlock, SessionExceptionRecord,
     StaticSessionExceptions, calendar_for_exchange,
 };
+use jiff::civil::date;
 
 // A regular-only early close: extended trading continues past 13:00 local.
 static BLOCKS: [ExceptionBlock; 2] = [
@@ -663,9 +733,9 @@ static BLOCKS: [ExceptionBlock; 2] = [
     ExceptionBlock::extended(0, 13 * 3_600, 17 * 3_600),
 ];
 
-let half_day = NaiveDate::from_ymd_opt(2026, 11, 27).expect("valid trade date");
-let first = NaiveDate::from_ymd_opt(2026, 11, 23).expect("valid trade date");
-let last = NaiveDate::from_ymd_opt(2026, 11, 30).expect("valid trade date");
+let half_day = date(2026, 11, 27);
+let first = date(2026, 11, 23);
+let last = date(2026, 11, 30);
 let records = [SessionExceptionRecord::replace_sessions(half_day, &BLOCKS)];
 let table = StaticSessionExceptions::new(
     CalendarSource::Exchange(Exchange::Nasdaq),
@@ -714,10 +784,12 @@ currently published schedule and the relevant contract specifications.
 
 ## Design
 
-This is a foundational leaf crate. It depends only on `chrono` + `chrono-tz`
-(instant/zone arithmetic and the DST resolver) and `serde` (canonical string
-serialization of public identities)—no logging facade, engine, transport,
-adapter, async runtime, credential crate, or `tokio`.
+The runtime dependencies are Jiff for date, timestamp, and zone arithmetic,
+and Serde for canonical identity strings. Jiff's default features are disabled.
+A build dependency pins the IANA 2026f data embedded for built-in venues.
+Calendar queries resolve zones from the selected snapshot independently of
+the host time zone database. CI compares the embedded release with IANA on
+pull requests, pushes to `main` and daily on the default branch.
 
 Built-in `MarketHours` status/bound/candle queries and `ExchangeCalendar`
 status/bound/trade-date/candle queries allocate nothing. `is_open` is
@@ -733,8 +805,9 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
 
 ## Boundaries & invariants
 
-- **UTC in, UTC out.** Every timestamp argument and timestamp result is `DateTime<Utc>`; the exchange `Tz` is an
-  internal detail and callers never pass or receive local times.
+- **UTC in, UTC out.** Every timestamp argument and result is a
+  `jiff::Timestamp`. Trade dates and civil-day query arguments are
+  `jiff::civil::Date` values interpreted in the applicable calendar's zone.
 - **Closes are end-exclusive.** An instant equal to a close is *closed*. Relaxing this makes
   adjacent sessions overlap and every duration double-count at its boundary.
 - **`open_ssm >= close_ssm` means the session wraps** into the next local day. Equal
@@ -783,10 +856,10 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
   the bounded search horizon (a venue before its go-live date), or a zero-duration candle
   resolution, is `None` — never a fabricated degenerate pair that could leak downstream as
   a real session. Predicates report closed/not-in-maintenance/closed-all-day.
-- **`SessionRule` has a stated domain.** `SessionRule::new` / `validate` enforce
-  `open_ssm < 86_400`, `close_ssm <= 86_400`, and at least one enabled weekday; every
-  shipped table is fence-checked against the same domain. Equal endpoints are intentional
-  complete-local-day rules, not empty intervals.
+- **Session rule validation.** Construction and deserialization require
+  `open_ssm < 86_400`, `close_ssm <= 86_400`, and at least one enabled weekday.
+  Tests check every shipped table against the same bounds. Equal endpoints
+  represent one complete local day.
 
 ## Testing
 
@@ -817,7 +890,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   notice/evidence channels for every source set; rejects orphaned source sets;
   and prevents the README freshness date from drifting from the ledger.
 - `tests/seasonal_calendars.rs` and `tests/seasonal_calendars/` — a thin integration harness
-  split into B3, BMV, transition-scan, candle/weekend, Chrono-edge, and compatibility-contract
+  split into B3, BMV, transition-scan, candle/weekend, timestamp-edge, and compatibility-contract
   modules. The contracts include all-fixed-venue `MarketHours`/`ExchangeCalendar` parity and
   a daily history scan proving venue time zones remain stable.
 - `tests/calendar_policies.rs` and `tests/calendar_value_traits.rs` — pin
@@ -826,7 +899,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
 - `tests/support/` — fixture construction shared by integration targets; it uses only the
   public crate surface and provides no test-only access to production internals.
 - `tests/no_session_contract.rs` — the `None` contract for profiles with no rules.
-- `tests/rule_validation.rs` — the `SessionRule` domain: what `new`/`validate` accept and reject.
+- `tests/rule_validation.rs` — construction, wire validation and DST boundaries for session rules.
 - `tests/contract/session_invariants.rs` and `tests/contract/session_invariants/` — a thin,
   explicitly configured harness over handwritten identity/history expectations and focused
   property modules. A fixed-seed `splitmix64` sweep plus pinned DST fixtures cover totality,
@@ -834,21 +907,26 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   cross-query fence. The production tables are never imported into these expectations.
 - `src/lib.rs` doctest — the Quick start example above.
 
-The CI gate, in order — `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings`
-(clippy **pedantic** plus the panic-family and determinism restriction lints, configured in
-`Cargo.toml` and `clippy.toml`), `cargo nextest run`, `cargo test --doc`, `cargo doc` with
-warnings denied, and `cargo deny check` for dependency licences and advisories. A second job
-builds on the declared MSRV so that floor is exercised rather than asserted. The build
-toolchain is pinned in `rust-toolchain.toml`. Run everything the `quality` job runs:
+The quality job checks IANA freshness, formatting, the embedded-only build,
+Clippy, tests, documentation and dependency policy. The toolchain is pinned
+in `rust-toolchain.toml`. To reproduce CI locally:
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+cargo fmt --all --check
+cargo run --locked --quiet --package xtask -- verify-embedded-tzdb
+cargo test --locked --package exchange-hours-tzdb --test updater opens_current_signed_iana_release -- --ignored --exact
+cargo check --locked --package exchange-hours --no-default-features
+cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+cargo nextest run --locked --workspace --all-features --all-targets --no-fail-fast
+cargo test --locked --workspace --all-features --doc
+RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --all-features --no-deps
+cargo deny --locked --workspace --all-features check
 ```
 
 The MSRV job needs a second toolchain, so it is a separate command:
 
 ```bash
-cargo +1.95 check --all-targets
+cargo +1.95 check --locked --workspace --all-features --all-targets
 ```
 
 ## License

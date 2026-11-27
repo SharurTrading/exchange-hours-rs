@@ -40,8 +40,7 @@ pub enum HolidayKind {
         /// in `0..86_400`. For a wrapped trading day a value at or after the
         /// day's normal first open is interpreted on the **preceding** local
         /// date, exactly as
-        /// [`DayPolicy::late_open_ssm`](crate::DayPolicy::late_open_ssm)
-        /// interprets a caller's.
+        /// [`DayAdjustment`](crate::DayAdjustment) interprets a caller's.
         open_ssm: u32,
     },
     /// Both boundaries move.

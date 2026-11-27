@@ -4,6 +4,8 @@
 
 use super::prelude::*;
 use super::property_support::*;
+use crate::support::zones::UTC;
+use crate::support::{PROFILE_INSTANT, local_opt};
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -16,11 +18,7 @@ fn calendar_queries_are_total_and_consistent_over_random_instants() {
         let mut state = seed;
         for iter in 0..ITERATIONS {
             let exch = PROPERTY_VENUES[bounded(&mut state, PROPERTY_VENUES.len())];
-            let hours = hours_for_exchange(
-                exch,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            );
+            let hours = hours_for_exchange(exch, PROFILE_INSTANT);
             let instant = random_instant(&mut state);
             let label = format!(
                 "[total+consistency invariant] seed={seed:#018x} iter={iter}/{ITERATIONS} \
@@ -54,11 +52,7 @@ fn next_session_after_walk_strictly_advances_opens() {
     for seed in SEEDS {
         let mut state = seed;
         for exch in WALK_VENUES {
-            let hours = hours_for_exchange(
-                exch,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            );
+            let hours = hours_for_exchange(exch, PROFILE_INSTANT);
             let mut cursor = random_instant(&mut state);
             for step in 0..STEPS {
                 let (open, close) = next_session_after(&hours, cursor)
@@ -91,11 +85,7 @@ fn always_open_venues_stay_open_without_maintenance() {
     for seed in SEEDS {
         let mut state = seed;
         for exch in ALWAYS_OPEN {
-            let hours = hours_for_exchange(
-                exch,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            );
+            let hours = hours_for_exchange(exch, PROFILE_INSTANT);
             for iter in 0..ITERATIONS {
                 let instant = random_instant(&mut state);
                 let ctx = format!(
@@ -112,7 +102,7 @@ fn always_open_venues_stay_open_without_maintenance() {
                 );
                 assert!(
                     !hours.is_closed_all_day_on(
-                        instant.with_timezone(&hours.tz).date_naive(),
+                        instant.to_zoned_datetime(hours.tz.clone()).date(),
                         SessionKind::Both,
                     ),
                     "always-open venue reported closed all day ({ctx})"
@@ -124,33 +114,16 @@ fn always_open_venues_stay_open_without_maintenance() {
 
 #[test]
 fn dst_transition_queries_are_stable_and_total() {
-    use chrono::TimeZone;
-
-    let hours = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     // UTC instants bracketing the US 2025 spring-forward (Mar 9) and fall-back
     // (Nov 2) transitions, where local wall-clock mapping is a gap or a fold.
     let instants = [
-        Utc.with_ymd_and_hms(2025, 3, 9, 6, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2025, 3, 9, 7, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2025, 3, 9, 8, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2025, 11, 2, 5, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2025, 11, 2, 6, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
-        Utc.with_ymd_and_hms(2025, 11, 2, 7, 0, 0)
-            .single()
-            .expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 3, 9), (6, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 3, 9), (7, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 3, 9), (8, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 11, 2), (5, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 11, 2), (6, 0, 0)).expect("valid UTC instant"),
+        local_opt(&UTC, (2025, 11, 2), (7, 0, 0)).expect("valid UTC instant"),
     ];
     for instant in instants {
         assert_instant_invariants(

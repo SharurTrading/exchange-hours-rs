@@ -3,6 +3,7 @@
 //! Stable regional bulk membership and exchange-name wiring.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
 
 #[test]
 fn global_bulk_and_names_are_stable() {
@@ -14,12 +15,8 @@ fn global_bulk_and_names_are_stable() {
         (Exchange::B3, "b3"),
         (Exchange::Bmv, "bmv"),
     ];
-    let bulk = hours_for_global_equities(
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let map = hours_map_global_equities(
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let bulk = hours_for_global_equities(PROFILE_INSTANT);
+    let map = hours_map_global_equities(PROFILE_INSTANT);
     assert_eq!(bulk.len(), expected.len());
     assert_eq!(map.len(), expected.len());
     assert_eq!(

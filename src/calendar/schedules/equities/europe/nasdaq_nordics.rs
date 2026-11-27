@@ -5,7 +5,9 @@
 //! The books synchronise on CET, but Helsinki publishes one-hour-later local
 //! values and Copenhagen has a shorter continuous session.
 
-use chrono_tz::{Europe, Tz};
+use crate::calendar::time_zones::{SelectionInstant, ZoneId};
+
+use crate::calendar::time_zones::Europe;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -225,23 +227,19 @@ static HEL_REVISIONS: &[Revision] = revisions![(
 ),];
 
 fn randomized_open_profile(
-    as_of: chrono::DateTime<chrono::Utc>,
-    tz: Tz,
+    as_of: SelectionInstant<'_>,
+    tz: ZoneId,
     baseline: &'static StaticHoursProfile,
     revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, tz), baseline, revisions)
 }
 
-pub(crate) fn stockholm_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn stockholm_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     randomized_open_profile(as_of, Europe::Stockholm, &STO_BASE_PROFILE, STO_REVISIONS)
 }
 
-pub(crate) fn helsinki_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn helsinki_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     randomized_open_profile(as_of, Europe::Helsinki, &HEL_BASE_PROFILE, HEL_REVISIONS)
 }
 
@@ -268,9 +266,7 @@ static CPH_REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn copenhagen_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn copenhagen_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::Copenhagen),
         &CPH_BASE_PROFILE,

@@ -2,31 +2,10 @@
 
 //! ASX SPI 200 index futures — the Sydney 24-hour grid.
 //!
-//! The family is AP SPI 200 on ASX 24 (formerly SFE/SYCOM). The operator's
-//! own trading-hours table carries the one seasonal selector modelled here
-//! verbatim: two columns, "For period from second Sunday in March to first
-//! Sunday in November" (US daylight time — night session 5.10pm to 7.00am)
-//! and "first Sunday in November to second Sunday in March" (night session
-//! 5.10pm to 8.00am), with the day session 9.50am to 4.30pm in both. Every
-//! captured state of that table from 2010 to 2026 prints the same two-column
-//! grid, so the normal week sources to the floor with no dated change; the
-//! quotations are in `docs/evidence/asx_spi_200.md`.
-//!
-//! The weekly shape the calendars imply: the day session opens Monday to
-//! Friday, the night session opens Sunday to Friday evenings (the ANZAC
-//! Saturdays the calendars mark closed close the Friday-evening leg, and the
-//! 2015 calendar's "normal trading hours apply" on ANZAC Day Saturday keeps
-//! it), and the week ends with that leg on the Saturday morning. The
-//! pre-open footnote on the SYCOM hours page — "Pre-open starts 10 minutes
-//! prior to trading for all contracts" — supplies both order-entry windows.
-//!
-//! The selector computes the New York local date of the night session's open
-//! instant and reads the operator's own two columns off it; it never applies a
-//! fixed day delta, which would misclassify the transition Sundays the night
-//! session opens on.
+//! Evidence: `docs/evidence/asx_spi_200.md`.
 
-use chrono::{Datelike, Duration, NaiveDate, Utc};
-use chrono_tz::{America, Australia};
+use crate::calendar::time_zones::{America, Australia, SelectionInstant};
+use jiff::civil::Date;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -98,24 +77,15 @@ pub(crate) static ASX_SPI_200_US_STANDARD: StaticHoursProfile = StaticHoursProfi
     has_weekend_close: true,
 };
 
-/// The `n`-th Sunday of `month` in `year` — the operator's own column
-/// boundaries ("second Sunday in March", "first Sunday in November").
-fn nth_sunday(year: i32, month: u32, n: u32) -> Option<NaiveDate> {
-    let first = NaiveDate::from_ymd_opt(year, month, 1)?;
-    let weekday = first.weekday().num_days_from_sunday();
-    let step = (7 - weekday) % 7 + 7 * (n - 1);
-    first.checked_add_signed(Duration::days(i64::from(step)))
-}
-
-/// Whether the New York civil date sits in the operator's US daylight column
-/// (from the second Sunday in March up to the first Sunday in November, the
-/// table's own headings).
-fn in_us_daylight_column(ny_date: NaiveDate) -> bool {
-    let year = ny_date.year();
-    match (nth_sunday(year, 3, 2), nth_sunday(year, 11, 1)) {
-        (Some(start), Some(end)) => ny_date >= start && ny_date < end,
-        // Unrepresentable outside chrono's year range; the standard column is
-        // the profile both headings name outside the daylight period.
+/// Whether New York is between the second Sunday in March (inclusive) and
+/// the first Sunday in November (exclusive).
+fn in_us_daylight_column(ny_date: Date) -> bool {
+    // A result below one means the most recent Sunday is in the prior month.
+    let sunday_day = ny_date.day() - ny_date.weekday().to_sunday_zero_offset();
+    match ny_date.month() {
+        3 => sunday_day >= 8,
+        4..=10 => true,
+        11 => sunday_day < 1,
         _ => false,
     }
 }
@@ -124,10 +94,19 @@ fn in_us_daylight_column(ny_date: NaiveDate) -> bool {
 /// `as_of`'s Sydney day: the New York local date of that night session's open
 /// instant decides the column (LAW-DETERMINISM — the caller's instant, never a
 /// clock).
-pub(crate) fn asx_spi_200_profile_at(as_of: chrono::DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn asx_spi_200_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, Australia::Sydney);
-    let night_open = mk_local_open(Australia::Sydney, day, NIGHT_OPEN_SSM).with_timezone(&Utc);
-    let ny_date = local_date(night_open, America::New_York);
+    // The supported timestamp limits both fall in New York's standard column.
+    // The caller's instant selects that column if Sydney's open is out of range.
+    let night_open = mk_local_open(as_of.zones.resolve(Australia::Sydney), day, NIGHT_OPEN_SSM)
+        .unwrap_or(as_of.instant);
+    let ny_date = local_date(
+        SelectionInstant {
+            instant: night_open,
+            ..as_of
+        },
+        America::New_York,
+    );
     if in_us_daylight_column(ny_date) {
         &ASX_SPI_200_US_DST
     } else {

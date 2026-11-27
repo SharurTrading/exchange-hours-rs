@@ -19,14 +19,15 @@
 //! baseline, because claiming one would fabricate a sourced state the ledger
 //! does not record.
 
-use chrono::{Datelike as _, Utc, Weekday};
-use chrono_tz::Tz;
+use jiff::civil::Weekday;
+use jiff::tz::TimeZone;
 
 use super::SUPPORT_FLOOR;
-use crate::calendar::exchange_calendar::{calendar_for_exchange, calendar_for_market_hours_key};
+use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::local_time::mk_local_open;
 use crate::calendar::schedules::sourcing;
-use crate::calendar::{CalendarQueryError, CalendarSource, MarketHours, SessionRule};
+use crate::calendar::time_zones::ZoneSelection;
+use crate::calendar::{CalendarQueryErrorKind, CalendarSource, MarketHours, SessionRule};
 
 /// The last second of a venue-local day, the anchor the query gate uses to
 /// select the profile governing the sessions opening on that day.
@@ -60,8 +61,8 @@ impl NormalWeekBaseline {
 
     /// Returns the profile's venue zone.
     #[must_use]
-    pub fn tz(&self) -> Tz {
-        self.profile.tz
+    pub fn tz(&self) -> TimeZone {
+        self.profile.tz.clone()
     }
 
     /// Returns the refused date's weekday in the profile's zone.
@@ -107,7 +108,7 @@ impl NormalWeekBaseline {
         &'a self,
         rules: impl Iterator<Item = &'a SessionRule> + 'a,
     ) -> impl Iterator<Item = SessionRule> + 'a {
-        let weekday_index = self.weekday.num_days_from_monday() as usize;
+        let weekday_index = usize::from(self.weekday.to_monday_zero_offset().cast_unsigned());
         rules.copied().filter(move |rule| rule.days[weekday_index])
     }
 }
@@ -171,13 +172,13 @@ fn clock_text(ssm: u32) -> String {
 /// The weekday names the baseline renders, Monday-first.
 fn weekday_name(weekday: Weekday) -> &'static str {
     match weekday {
-        Weekday::Mon => "Monday",
-        Weekday::Tue => "Tuesday",
-        Weekday::Wed => "Wednesday",
-        Weekday::Thu => "Thursday",
-        Weekday::Fri => "Friday",
-        Weekday::Sat => "Saturday",
-        Weekday::Sun => "Sunday",
+        Weekday::Monday => "Monday",
+        Weekday::Tuesday => "Tuesday",
+        Weekday::Wednesday => "Wednesday",
+        Weekday::Thursday => "Thursday",
+        Weekday::Friday => "Friday",
+        Weekday::Saturday => "Saturday",
+        Weekday::Sunday => "Sunday",
     }
 }
 
@@ -192,7 +193,10 @@ fn weekday_name(weekday: Weekday) -> &'static str {
 /// own era selection for the date's opening day — the same selection the query
 /// gate performs — so the context a caller reads beside the refusal is the
 /// week the crate's answers actually come from.
-pub(crate) fn for_error(error: CalendarQueryError) -> Option<NormalWeekBaseline> {
+pub(crate) fn for_error(
+    error: CalendarQueryErrorKind,
+    zones: ZoneSelection<'_>,
+) -> Option<NormalWeekBaseline> {
     let source = error.source();
     let date = error.date();
     if date < SUPPORT_FLOOR {
@@ -202,12 +206,8 @@ pub(crate) fn for_error(error: CalendarQueryError) -> Option<NormalWeekBaseline>
     if declared.carried_below.is_some_and(|carried| date < carried) {
         return None;
     }
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => calendar_for_exchange(exchange),
-        CalendarSource::MarketHoursKey(key) => calendar_for_market_hours_key(key),
-    };
-    let tz = calendar.tz();
-    let anchor = mk_local_open(tz, date, OPEN_DAY_ANCHOR_SSM).with_timezone(&Utc);
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
+    let anchor = mk_local_open(calendar.zone(), date, OPEN_DAY_ANCHOR_SSM)?;
     let profile = calendar.hours_at(anchor);
     Some(NormalWeekBaseline {
         weekday: date.weekday(),

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The ascending span walks behind [`CalendarCoverage::complete_ranges`] and
-//! [`CalendarCoverage::gaps`].
+//! The ascending span walks behind [`crate::CalendarCoverage::complete_ranges`] and
+//! [`crate::CalendarCoverage::gaps`].
 //!
 //! One walk answers both: it visits the supported domain in maximal runs of a
 //! single verdict, and the two iterators keep the runs they were asked for. The
 //! walks are **derived, not duplicated** — a run ends at the next static edge
-//! ([`CalendarCoverage::next_boundary_after`]) — so reading the metadata
+//! ([`crate::CalendarCoverage::next_boundary_after`]) — so reading the metadata
 //! allocates nothing, never sorts, and cannot disagree with the per-date
 //! accessor beside it.
 //!
@@ -14,7 +14,7 @@
 //! case beside it. Where every declaration an identity carries is whole-domain or
 //! era-bounded, the declaration is itself static across its era: every run lies
 //! wholly inside the declaration's era or wholly outside it, and one precedence
-//! ([`CalendarCoverage::phase_gap_on`], the first declaration applying to a date)
+//! ([`crate::CalendarCoverage::phase_gap_on`], the first declaration applying to a date)
 //! settles each run exactly as the per-date accessor settles its dates.
 //!
 //! A **date-scoped** declaration — one carrying an
@@ -23,7 +23,7 @@
 //! date, because the served occurrence it is keyed to resolves on a bracket-era
 //! Sunday and not on the Tuesday beside it. Inside such a declaration's span the
 //! walk therefore merges verdicts **day by day**, which keeps every reported run
-//! faithful to [`CalendarCoverage::coverage_on`] one date at a time: #79's
+//! faithful to [`crate::CalendarCoverage::coverage_on`] one date at a time: #79's
 //! quarter-hour came back as the bracket-era Sundays, one record each, with the
 //! Tuesdays between them answered, until the charter's 2026-10-04 residual
 //! convention retired the declaration. The day-merged region is bounded by the
@@ -32,12 +32,12 @@
 //! so the walk's cost stays bounded by the identity's own tables.
 //!
 //! The two iterators are a partition of the supported domain: the runs are
-//! disjoint, ascending, and together they tile `[SUPPORT_FLOOR, NaiveDate::MAX]`,
+//! disjoint, ascending, and together they tile `[SUPPORT_FLOOR, Date::MAX]`,
 //! and each run's verdict is exactly what the per-date accessor answers on every
 //! date inside it.
 
-use super::{CalendarCoverage, CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR};
-use chrono::NaiveDate;
+use super::{CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR, ZonedCalendarCoverage};
+use jiff::civil::Date;
 
 /// The most declarations one identity may carry.
 ///
@@ -64,15 +64,15 @@ pub(super) type Run = (
 /// date-scoped declaration, where the run is merged from per-date verdicts; both
 /// regimes are bounded by the identity's own tables and allocate nothing.
 #[derive(Debug, Clone, Copy)]
-pub(super) struct Runs {
-    coverage: CalendarCoverage,
-    cursor: NaiveDate,
+pub(super) struct Runs<'z> {
+    coverage: ZonedCalendarCoverage<'z>,
+    cursor: Date,
     done: bool,
 }
 
-impl Runs {
+impl<'z> Runs<'z> {
     /// Starts a walk at the support floor.
-    pub(super) const fn new(coverage: CalendarCoverage) -> Self {
+    pub(super) const fn new(coverage: ZonedCalendarCoverage<'z>) -> Self {
         Self {
             coverage,
             cursor: SUPPORT_FLOOR,
@@ -98,7 +98,7 @@ impl Runs {
             .has_date_scoped_shapes_between(first, segment_last)
         {
             let mut day = first;
-            while let Some(next) = day.succ_opt() {
+            while let Ok(next) = day.tomorrow() {
                 if next > segment_last || self.verdict_at(next) != verdict {
                     break;
                 }
@@ -108,7 +108,7 @@ impl Runs {
         } else {
             segment_last
         };
-        match last.succ_opt() {
+        match last.tomorrow().ok() {
             Some(next) => self.cursor = next,
             None => self.done = true,
         }
@@ -117,7 +117,7 @@ impl Runs {
 
     /// The verdict one date walks to: the reason the date refuses with, and the
     /// declaration that reason belongs to when a declaration supplies it.
-    fn verdict_at(&self, date: NaiveDate) -> (Option<CoverageGapReason>, Option<super::PhaseGap>) {
+    fn verdict_at(&self, date: Date) -> (Option<CoverageGapReason>, Option<super::PhaseGap>) {
         match self.coverage.phase_gap_on(date) {
             Some(declaration) => (Some(declaration.reason()), Some(declaration)),
             None => (self.coverage.gap_reason_on(date), None),
@@ -127,16 +127,16 @@ impl Runs {
 
 /// Ascending iterator over the spans an identity answers completely.
 ///
-/// Produced by [`CalendarCoverage::complete_ranges`]. An identity with any
+/// Produced by [`crate::CalendarCoverage::complete_ranges`]. An identity with any
 /// unbounded whole-domain declaration reports no span at all; one whose
 /// declarations are bounded or date-scoped reports the spans its ordinary facts
 /// answer between them.
 #[derive(Debug)]
-pub struct CompleteRanges {
-    runs: Runs,
+pub struct ZonedCompleteRanges<'z> {
+    runs: Runs<'z>,
 }
 
-impl CompleteRanges {
+impl<'z> ZonedCompleteRanges<'z> {
     /// Returns the walk's declaration bound.
     ///
     /// This iterator reports complete spans, never declaration records, and holds
@@ -150,14 +150,14 @@ impl CompleteRanges {
     }
 
     /// Starts the walk this iterator reports.
-    pub(super) const fn new(coverage: CalendarCoverage) -> Self {
+    pub(super) const fn new(coverage: ZonedCalendarCoverage<'z>) -> Self {
         Self {
             runs: Runs::new(coverage),
         }
     }
 }
 
-impl Iterator for CompleteRanges {
+impl Iterator for ZonedCompleteRanges<'_> {
     type Item = DateRange;
 
     fn next(&mut self) -> Option<DateRange> {
@@ -177,7 +177,7 @@ impl Iterator for CompleteRanges {
 /// Ascending iterator over the spans an identity cannot answer completely, each
 /// with its reason.
 ///
-/// Produced by [`CalendarCoverage::gaps`]. The records are **streamed in
+/// Produced by [`crate::CalendarCoverage::gaps`]. The records are **streamed in
 /// ascending date order** by one walk over the supported domain: a record whose
 /// reason is a declared phase-level gap carries that declaration
 /// ([`CoverageGap::phase_gap`]) over one maximal span the declaration answers
@@ -185,11 +185,11 @@ impl Iterator for CompleteRanges {
 /// derived. No span is reported twice and none is withheld, so the records and
 /// [`CompleteRanges`] tile the supported domain.
 #[derive(Debug)]
-pub struct CoverageGaps {
-    runs: Runs,
+pub struct ZonedCoverageGaps<'z> {
+    runs: Runs<'z>,
 }
 
-impl CoverageGaps {
+impl<'z> ZonedCoverageGaps<'z> {
     /// Returns the walk's declaration bound.
     ///
     /// It bounds the **declarations** one identity may carry, not the records
@@ -202,14 +202,14 @@ impl CoverageGaps {
     }
 
     /// Starts the walk this iterator reports.
-    pub(super) const fn new(coverage: CalendarCoverage) -> Self {
+    pub(super) const fn new(coverage: ZonedCalendarCoverage<'z>) -> Self {
         Self {
             runs: Runs::new(coverage),
         }
     }
 }
 
-impl Iterator for CoverageGaps {
+impl Iterator for ZonedCoverageGaps<'_> {
     type Item = CoverageGap;
 
     fn next(&mut self) -> Option<CoverageGap> {
@@ -228,3 +228,9 @@ impl Iterator for CoverageGaps {
         }
     }
 }
+
+/// The range iterator for a calendar using the precompiled IANA rules.
+pub type CompleteRanges = ZonedCompleteRanges<'static>;
+
+/// The range iterator for a calendar using the precompiled IANA rules.
+pub type CoverageGaps = ZonedCoverageGaps<'static>;

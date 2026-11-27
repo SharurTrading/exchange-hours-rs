@@ -3,6 +3,8 @@
 //! Always-open and cross-venue futures contracts.
 
 use super::prelude::*;
+use crate::support::{PROFILE_INSTANT, date_opt};
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // Always-open venues (crypto perpetuals)
@@ -14,10 +16,7 @@ use super::prelude::*;
 
 #[test]
 fn binance_futures_always_open() {
-    let h = hours_for_exchange(
-        Exchange::BinanceFutures,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::BinanceFutures, PROFILE_INSTANT);
     assert!(
         h.is_open(utc((2026, 4, 20), (0, 0, 0))),
         "Binance Mon midnight UTC"
@@ -37,15 +36,15 @@ fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
     let launch = utc((2019, 9, 13), (4, 0, 0));
     let before = hours_for_exchange(
         Exchange::BinanceFutures,
-        launch - chrono::Duration::nanoseconds(1),
+        launch - SignedDuration::from_nanos(1),
     );
     let after = hours_for_exchange(Exchange::BinanceFutures, launch);
 
     assert!(before.regular.is_empty());
     assert!(before.extended.is_empty());
-    assert!(!before.is_open(launch - chrono::Duration::nanoseconds(1)));
+    assert!(!before.is_open(launch - SignedDuration::from_nanos(1)));
     assert!(after.is_open_regular(launch));
-    assert!(after.is_open_regular(launch + chrono::Duration::nanoseconds(1)));
+    assert!(after.is_open_regular(launch + SignedDuration::from_nanos(1)));
 
     // The launch is dated 2019-09-13, which precedes the 2025-01-01 floor, so
     // the date-aware calendar states neither side of this exact-instant cutover
@@ -56,9 +55,9 @@ fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
     // surface the launch notice is sourced from.
     let calendar = calendar_for_exchange(Exchange::BinanceFutures);
     assert_refuses_before_floor(
-        calendar.is_open(launch - chrono::Duration::nanoseconds(1)),
+        calendar.is_open(launch - SignedDuration::from_nanos(1)),
         calendar,
-        launch - chrono::Duration::nanoseconds(1),
+        launch - SignedDuration::from_nanos(1),
     );
     assert_refuses_before_floor(calendar.is_open_regular(launch), calendar, launch);
     assert_refuses_before_floor(calendar.session_bounds(launch), calendar, launch);
@@ -66,10 +65,7 @@ fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
 
 #[test]
 fn always_open_no_maintenance() {
-    let h = hours_for_exchange(
-        Exchange::BinanceFutures,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::BinanceFutures, PROFILE_INSTANT);
     for day in 19..26 {
         let t = utc((2026, 4, day), (12, 0, 0));
         assert!(
@@ -81,10 +77,7 @@ fn always_open_no_maintenance() {
 
 #[test]
 fn always_open_no_daily_or_weekend_close() {
-    let h = hours_for_exchange(
-        Exchange::BinanceFutures,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::BinanceFutures, PROFILE_INSTANT);
     assert!(!h.has_daily_close, "Always-open venue has no daily close");
     assert!(
         !h.has_weekend_close,
@@ -118,14 +111,8 @@ fn always_open_no_daily_or_weekend_close() {
 
 #[test]
 fn always_open_distinct_from_futures() {
-    let always_open = hours_for_exchange(
-        Exchange::BinanceFutures,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let cme = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let always_open = hours_for_exchange(Exchange::BinanceFutures, PROFILE_INSTANT);
+    let cme = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
 
     assert!(
         !always_open.has_daily_close,
@@ -154,7 +141,7 @@ fn always_open_distinct_from_futures() {
 
 #[test]
 fn futures_venues_closed_saturday() {
-    let saturday = chrono::NaiveDate::from_ymd_opt(2026, 4, 25).unwrap();
+    let saturday = date_opt(2026, 4, 25).unwrap();
     for &exch in &[
         Exchange::Cme,
         Exchange::Cbot,
@@ -165,10 +152,7 @@ fn futures_venues_closed_saturday() {
         Exchange::Iceeu,
         Exchange::Cfe,
     ] {
-        let h = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let h = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(
             h.is_closed_all_day_on(saturday, SessionKind::Both),
             "{exch:?} should be closed all Saturday"
@@ -178,11 +162,8 @@ fn futures_venues_closed_saturday() {
 
 #[test]
 fn sgx_saturday_partial_trading_from_friday_wrap() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let saturday = chrono::NaiveDate::from_ymd_opt(2026, 4, 25).unwrap();
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
+    let saturday = date_opt(2026, 4, 25).unwrap();
     assert!(
         !h.is_closed_all_day_on(saturday, SessionKind::Both),
         "SGX Friday T+1 wrap extends into Saturday morning"
@@ -199,12 +180,9 @@ fn sgx_saturday_partial_trading_from_friday_wrap() {
 
 #[test]
 fn futures_venues_sunday_morning_closed() {
-    let sunday = chrono::NaiveDate::from_ymd_opt(2026, 4, 26).unwrap();
+    let sunday = date_opt(2026, 4, 26).unwrap();
     for &exch in &[Exchange::Eurex, Exchange::Sgx] {
-        let h = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let h = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(
             h.is_closed_all_day_on(sunday, SessionKind::Both),
             "{exch:?} should be closed all Sunday"
@@ -214,7 +192,7 @@ fn futures_venues_sunday_morning_closed() {
 
 #[test]
 fn futures_venues_sunday_has_sessions() {
-    let sunday = chrono::NaiveDate::from_ymd_opt(2026, 4, 26).unwrap();
+    let sunday = date_opt(2026, 4, 26).unwrap();
     for &exch in &[
         Exchange::Cme,
         Exchange::Comex,
@@ -223,10 +201,7 @@ fn futures_venues_sunday_has_sessions() {
         Exchange::Iceeu,
         Exchange::Cfe,
     ] {
-        let h = hours_for_exchange(
-            exch,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let h = hours_for_exchange(exch, PROFILE_INSTANT);
         assert!(
             !h.is_closed_all_day_on(sunday, SessionKind::Both),
             "{exch:?} has Sunday evening sessions"

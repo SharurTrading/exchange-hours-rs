@@ -2,7 +2,7 @@
 
 //! Binance USDⓈ-M perpetual futures normal availability.
 
-use chrono_tz::UTC;
+use crate::calendar::time_zones::{SelectionInstant, UTC};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -54,10 +54,10 @@ const LAUNCH_UNIX_SECONDS: i64 = 1_568_347_200;
 // Dated boundary 2019-09-14: docs/evidence/binance_futures.md
 const LAUNCH_DAY_END_UNIX_SECONDS: i64 = 1_568_419_200;
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    if as_of.timestamp() < LAUNCH_UNIX_SECONDS {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
+    if as_of.instant.as_second() < LAUNCH_UNIX_SECONDS {
         &CLOSED
-    } else if as_of.timestamp() < LAUNCH_DAY_END_UNIX_SECONDS {
+    } else if as_of.instant.as_second() < LAUNCH_DAY_END_UNIX_SECONDS {
         &LAUNCH_DAY
     } else {
         &CURRENT

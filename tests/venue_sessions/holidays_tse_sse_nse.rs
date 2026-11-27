@@ -25,22 +25,23 @@
 //! the session layer answers from the sourced normal week, the holiday layer
 //! stays absent, and the metadata reports the residual.
 
-use chrono::{Days, TimeDelta};
-use chrono_tz::Asia;
+use crate::support::zones::{KOLKATA, SHANGHAI, TOKYO};
+use crate::support::{date_opt, elapsed_days};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, EvidenceTier, Exchange,
-    ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarCoverage, CalendarQueryErrorKind, CoverageGapReason, DateCoverage, EvidenceTier,
+    Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
+use jiff::SignedDuration;
 
 use super::prelude::zoned;
 
-fn day(year: i32, month: u32, date: u32) -> chrono::NaiveDate {
-    chrono::NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> jiff::civil::Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 /// The reason an identity's metadata reports for `date`, taken from the
 /// reported gap spans.
-fn gap_reason_on(coverage: CalendarCoverage, date: chrono::NaiveDate) -> Option<CoverageGapReason> {
+fn gap_reason_on(coverage: CalendarCoverage, date: jiff::civil::Date) -> Option<CoverageGapReason> {
     coverage
         .gaps()
         .find(|gap| gap.range().contains(date))
@@ -53,14 +54,14 @@ fn gap_reason_on(coverage: CalendarCoverage, date: chrono::NaiveDate) -> Option<
 /// it, which sits outside the audited window (or below the 2010 support
 /// floor), so the query refuses there — the same shape the CFE fence
 /// documents for its New Year row.
-fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &str, label: &str) {
+fn assert_closure(calendar: ExchangeCalendar, date: (i16, i8, i8), document: &str, label: &str) {
     assert_closure_at(calendar, date, document, EvidenceTier::T1, label);
 }
 
 /// The same fence at an explicit tier (the NSE 2023-2024 rows are T2).
 fn assert_closure_at(
     calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
+    date: (i16, i8, i8),
     document: &str,
     tier: EvidenceTier,
     label: &str,
@@ -89,12 +90,15 @@ fn assert_closure_at(
     // contract is to refuse naming the day the scan needed: accepted only when
     // the error names a day before the window or the floor, or a day the table
     // withholds. Everywhere else the date must answer shut.
-    match calendar.is_closed_trade_date(trade_date, SessionKind::Both) {
+    match calendar
+        .is_closed_trade_date(trade_date, SessionKind::Both)
+        .map_err(|error| error.kind())
+    {
         Ok(closed) => assert!(
             closed,
             "{label}: {trade_date} has no session in either phase"
         ),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) => {
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) => {
             let first = calendar
                 .holiday_coverage()
                 .map(exchange_hours::HolidayCoverage::first)
@@ -105,7 +109,7 @@ fn assert_closure_at(
                  exits the window start may refuse"
             );
         }
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) => {
+        Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) => {
             let withheld = calendar
                 .holiday_on(date)
                 .map(Holiday::kind)
@@ -115,7 +119,7 @@ fn assert_closure_at(
                 "{label}: {trade_date} refused naming {date}, which the table does not withhold"
             );
         }
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) => {
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) => {
             let first = calendar
                 .holiday_coverage()
                 .map(exchange_hours::HolidayCoverage::first)
@@ -135,19 +139,14 @@ fn assert_closure_at(
 /// Asserts the date refuses as an `Unsourced` gap: the row exists, the metadata
 /// names the date unresolved, and the date-aware queries refuse rather than
 /// answer from the normal week.
-fn assert_unsourced(
-    calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
-    document: &str,
-    label: &str,
-) {
+fn assert_unsourced(calendar: ExchangeCalendar, date: (i16, i8, i8), document: &str, label: &str) {
     assert_unsourced_at(calendar, date, document, EvidenceTier::T1, label);
 }
 
 /// The same withholding fence at an explicit tier (the NSE 2023-2024 rows are T2).
 fn assert_unsourced_at(
     calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
+    date: (i16, i8, i8),
     document: &str,
     tier: EvidenceTier,
     label: &str,
@@ -175,8 +174,10 @@ fn assert_unsourced_at(
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(trade_date, SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_closed_trade_date(trade_date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ),
         "{label}: {trade_date} must refuse, never answer a closure or an open day"
     );
@@ -187,12 +188,12 @@ fn assert_unsourced_at(
 /// end-exclusive), and the trade date resolves to the venue-local day.
 fn assert_ordinary_weekday(
     calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
+    date: (i16, i8, i8),
     final_close: (u32, u32),
     label: &str,
 ) {
-    let close = zoned(calendar.tz(), date, (final_close.0, final_close.1, 0));
-    let mid_session = zoned(calendar.tz(), date, (10, 0, 0));
+    let close = zoned(&calendar.tz(), date, (final_close.0, final_close.1, 0));
+    let mid_session = zoned(&calendar.tz(), date, (10, 0, 0));
     assert!(
         calendar
             .is_open(mid_session)
@@ -201,7 +202,7 @@ fn assert_ordinary_weekday(
     );
     assert!(
         calendar
-            .is_open(close - TimeDelta::nanoseconds(1))
+            .is_open(close - SignedDuration::from_nanos(1))
             .expect("{label}: the coverage contract must answer a covered date"),
         "{label}: the instant before the final close is open"
     );
@@ -1389,17 +1390,17 @@ fn the_unrecovered_2018_year_is_a_bridged_residual_and_2012_was_recovered() {
 /// per-date partition fence in `coverage_metadata.rs` holds every record to
 /// the per-date accessor, so merging equal-verdict neighbours here cannot
 /// hide a verdict change.
-fn bridged_spans(coverage: CalendarCoverage) -> Vec<(chrono::NaiveDate, chrono::NaiveDate)> {
-    let mut records: Vec<(chrono::NaiveDate, chrono::NaiveDate)> = coverage
+fn bridged_spans(coverage: CalendarCoverage) -> Vec<(jiff::civil::Date, jiff::civil::Date)> {
+    let mut records: Vec<(jiff::civil::Date, jiff::civil::Date)> = coverage
         .gaps()
         .filter(|gap| gap.reason() == CoverageGapReason::HolidayWindowsBridged)
         .map(|gap| (gap.range().first(), gap.range().last()))
         .collect();
     records.sort();
-    let mut merged: Vec<(chrono::NaiveDate, chrono::NaiveDate)> = Vec::new();
+    let mut merged: Vec<(jiff::civil::Date, jiff::civil::Date)> = Vec::new();
     for (first, last) in records {
         match merged.last_mut() {
-            Some((_, open_last)) if first.pred_opt() == Some(*open_last) => *open_last = last,
+            Some((_, open_last)) if first.yesterday().ok() == Some(*open_last) => *open_last = last,
             _ => merged.push((first, last)),
         }
     }
@@ -1466,12 +1467,12 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
 
     // The published 2026 special Sunday does not change adjacent normal days.
     assert!(
-        nse.is_open(zoned(Asia::Kolkata, (2026, 11, 9), (10, 0, 0)))
+        nse.is_open(zoned(&KOLKATA, (2026, 11, 9), (10, 0, 0)))
             .expect("the Monday session opens on the sourced day"),
         "the Monday after the Muhurat Sunday answers inside its own session"
     );
     assert!(
-        !nse.is_open(zoned(Asia::Kolkata, (2026, 11, 7), (10, 0, 0)))
+        !nse.is_open(zoned(&KOLKATA, (2026, 11, 7), (10, 0, 0)))
             .expect("2026-11-07 is an audited weekend and must answer"),
         "the Saturday before the Muhurat Sunday is an ordinary weekend"
     );
@@ -1527,44 +1528,44 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
     // 18:00-18:07 with the random-closure tail to the 18:15 open tradeable,
     // Normal Market 18:15-19:15, Closing 19:25-19:35. End-exclusive at the
     // printed closes; the daytime and the 19:15-19:25 gap answer shut.
-    let sat = Asia::Kolkata;
+    let sat = KOLKATA;
     assert!(
-        nse.is_open(zoned(sat, (2020, 11, 14), (17, 45, 0)))
+        nse.is_open(zoned(&sat, (2020, 11, 14), (17, 45, 0)))
             .expect("the block-deal session opens"),
         "the block-deal session trades from 17:45 on the Muhurat Saturday"
     );
     assert!(
-        nse.is_order_entry_only(zoned(sat, (2020, 11, 14), (18, 2, 0)))
+        nse.is_order_entry_only(zoned(&sat, (2020, 11, 14), (18, 2, 0)))
             .expect("the pre-open queue is order entry"),
         "18:02 sits in the pre-open order-entry leg"
     );
     assert!(
-        !nse.is_order_entry_only(zoned(sat, (2020, 11, 14), (18, 8, 0)))
+        !nse.is_order_entry_only(zoned(&sat, (2020, 11, 14), (18, 8, 0)))
             .expect("the auction tail is tradeable"),
         "the random-closure tail to the open prints, so it is not order entry"
     );
     assert!(
-        nse.is_open(zoned(sat, (2020, 11, 14), (19, 14, 59)))
+        nse.is_open(zoned(&sat, (2020, 11, 14), (19, 14, 59)))
             .expect("the close is end-exclusive"),
         "19:14:59 still trades inside the Normal Market block"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2020, 11, 14), (19, 15, 0)))
+        !nse.is_open(zoned(&sat, (2020, 11, 14), (19, 15, 0)))
             .expect("the close answers"),
         "19:15 sharp is closed: closes are end-exclusive"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2020, 11, 14), (19, 20, 0)))
+        !nse.is_open(zoned(&sat, (2020, 11, 14), (19, 20, 0)))
             .expect("the 19:15-19:25 gap answers"),
         "the gap between the Normal Market and the Closing Session is shut"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2020, 11, 14), (19, 35, 0)))
+        !nse.is_open(zoned(&sat, (2020, 11, 14), (19, 35, 0)))
             .expect("the Closing Session close is end-exclusive"),
         "19:35 sharp is closed"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2020, 11, 14), (10, 0, 0)))
+        !nse.is_open(zoned(&sat, (2020, 11, 14), (10, 0, 0)))
             .expect("the daytime answers"),
         "the Muhurat Saturday has no daytime session"
     );
@@ -1573,22 +1574,22 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
     // period at 17:45-17:53, so the leg stops at 17:52 and the tail to the
     // 18:00 open trades.
     assert!(
-        nse.is_order_entry_only(zoned(sat, (2024, 11, 1), (17, 50, 0)))
+        nse.is_order_entry_only(zoned(&sat, (2024, 11, 1), (17, 50, 0)))
             .expect("the 2024 pre-open queue is order entry"),
         "17:50 sits in the 17:45-17:52 order-entry leg"
     );
     assert!(
-        nse.is_open(zoned(sat, (2024, 11, 1), (17, 55, 0)))
+        nse.is_open(zoned(&sat, (2024, 11, 1), (17, 55, 0)))
             .expect("the 2024 auction tail is tradeable"),
         "17:52-18:00 is the tradeable random-closure tail"
     );
     assert!(
-        nse.is_open_regular(zoned(sat, (2024, 11, 1), (18, 30, 0)))
+        nse.is_open_regular(zoned(&sat, (2024, 11, 1), (18, 30, 0)))
             .expect("the 2024 Normal Market answers"),
         "18:30 trades in the 18:00-19:00 Normal Market"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2024, 11, 1), (19, 20, 0)))
+        !nse.is_open(zoned(&sat, (2024, 11, 1), (19, 20, 0)))
             .expect("the 2024 close is end-exclusive"),
         "19:20 sharp is closed"
     );
@@ -1596,27 +1597,27 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
     // 2025-10-21 (a Tuesday): the whole day runs to the circular's printed
     // midday schedule; the ordinary daytime grid is replaced outright.
     assert!(
-        nse.is_open(zoned(sat, (2025, 10, 21), (13, 15, 0)))
+        nse.is_open(zoned(&sat, (2025, 10, 21), (13, 15, 0)))
             .expect("the 2025 block-deal session opens"),
         "the block-deal session trades from 13:15"
     );
     assert!(
-        nse.is_open(zoned(sat, (2025, 10, 21), (14, 44, 59)))
+        nse.is_open(zoned(&sat, (2025, 10, 21), (14, 44, 59)))
             .expect("the 2025 Normal Market close is end-exclusive"),
         "14:44:59 still trades"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2025, 10, 21), (14, 45, 0)))
+        !nse.is_open(zoned(&sat, (2025, 10, 21), (14, 45, 0)))
             .expect("the 2025 close answers"),
         "14:45 sharp is closed: closes are end-exclusive"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2025, 10, 21), (9, 30, 0)))
+        !nse.is_open(zoned(&sat, (2025, 10, 21), (9, 30, 0)))
             .expect("the ordinary daytime grid answers"),
         "the ordinary 09:15-15:30 grid is replaced: 09:30 is shut"
     );
     assert!(
-        !nse.is_open(zoned(sat, (2025, 10, 21), (15, 5, 0)))
+        !nse.is_open(zoned(&sat, (2025, 10, 21), (15, 5, 0)))
             .expect("the 2025 Closing Session close is end-exclusive"),
         "15:05 sharp is closed"
     );
@@ -1647,7 +1648,7 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
         "the announced Sunday session is a session: the date does not settle closed"
     );
     assert!(
-        !nse.is_maintenance(zoned(sat, (2020, 11, 14), (18, 30, 0)))
+        !nse.is_maintenance(zoned(&sat, (2020, 11, 14), (18, 30, 0)))
             .expect("the Normal Market answers its state"),
         "inside the Muhurat Normal Market is a session, not maintenance"
     );
@@ -1680,7 +1681,7 @@ fn nse_muhurat_2026_preserves_published_phases_and_weekend_trade_date() {
         ((15, 59, 59), (true, false, false)),
         ((16, 0, 0), (false, false, false)),
     ] {
-        let at = zoned(Asia::Kolkata, date, time);
+        let at = zoned(&KOLKATA, date, time);
         assert_eq!(
             (
                 nse.is_open(at).expect("the published date answers"),
@@ -1700,7 +1701,7 @@ fn nse_muhurat_2026_preserves_published_phases_and_weekend_trade_date() {
     }
     for time in [(13, 50, 0), (14, 20, 0), (15, 50, 0)] {
         assert_eq!(
-            nse.trade_date(zoned(Asia::Kolkata, date, time))
+            nse.trade_date(zoned(&KOLKATA, date, time))
                 .expect("the Sunday session has a sourced trade date"),
             Some(day(2026, 11, 8))
         );
@@ -1710,7 +1711,7 @@ fn nse_muhurat_2026_preserves_published_phases_and_weekend_trade_date() {
             .expect("the Sunday has published sessions")
     );
     assert!(
-        !nse.is_open(zoned(Asia::Kolkata, date, (16, 15, 0)))
+        !nse.is_open(zoned(&KOLKATA, date, (16, 15, 0)))
             .expect("the modification cutoff is outside trading")
     );
 }
@@ -1720,39 +1721,39 @@ fn nse_muhurat_2026_preserves_published_phases_and_weekend_trade_date() {
 /// Normal/RDM/Odd Lot 18:15-19:00, Closing Session 19:20-19:30 — no
 /// block-deal session exists in 2010. End-exclusive at the printed closes.
 fn the_recovered_2010_muhurat_schedule_probes(nse: ExchangeCalendar) {
-    let ist = Asia::Kolkata;
+    let ist = KOLKATA;
     assert!(
-        nse.is_order_entry_only(zoned(ist, (2010, 11, 5), (18, 2, 0)))
+        nse.is_order_entry_only(zoned(&ist, (2010, 11, 5), (18, 2, 0)))
             .expect("the 2010 pre-open queue is order entry"),
         "18:02 sits in the 18:00-18:07 order-entry leg"
     );
     assert!(
-        nse.is_open(zoned(ist, (2010, 11, 5), (18, 10, 0)))
+        nse.is_open(zoned(&ist, (2010, 11, 5), (18, 10, 0)))
             .expect("the 2010 auction tail is tradeable"),
         "18:07-18:15 is the tradeable random-closure tail"
     );
     assert!(
-        nse.is_open_regular(zoned(ist, (2010, 11, 5), (18, 30, 0)))
+        nse.is_open_regular(zoned(&ist, (2010, 11, 5), (18, 30, 0)))
             .expect("the 2010 Normal Market answers"),
         "18:30 trades in the 18:15-19:00 Normal Market"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 0, 0)))
+        !nse.is_open(zoned(&ist, (2010, 11, 5), (19, 0, 0)))
             .expect("the 2010 Normal Market close answers"),
         "19:00 sharp is closed: closes are end-exclusive"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 10, 0)))
+        !nse.is_open(zoned(&ist, (2010, 11, 5), (19, 10, 0)))
             .expect("the 2010 19:00-19:20 gap answers"),
         "the gap before the Closing Session is shut"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 30, 0)))
+        !nse.is_open(zoned(&ist, (2010, 11, 5), (19, 30, 0)))
             .expect("the 2010 Closing Session close is end-exclusive"),
         "19:30 sharp is closed"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2010, 11, 5), (13, 0, 0)))
+        !nse.is_open(zoned(&ist, (2010, 11, 5), (13, 0, 0)))
             .expect("the 2010 daytime answers"),
         "the ordinary 09:15-15:30 grid is replaced: 13:00 is shut"
     );
@@ -1764,69 +1765,69 @@ fn the_recovered_2010_muhurat_schedule_probes(nse: ExchangeCalendar) {
 /// on): Pre Open 18:15-18:22, Normal Market/LPM 18:30-19:30, Closing Session
 /// 19:40-19:50.
 fn the_recovered_2015_and_2016_muhurat_schedule_probes(nse: ExchangeCalendar) {
-    let ist = Asia::Kolkata;
+    let ist = KOLKATA;
     assert!(
-        nse.is_order_entry_only(zoned(ist, (2015, 11, 11), (17, 33, 0)))
+        nse.is_order_entry_only(zoned(&ist, (2015, 11, 11), (17, 33, 0)))
             .expect("the 2015 pre-open queue is order entry"),
         "17:33 sits in the 17:30-17:37 order-entry leg"
     );
     assert!(
-        nse.is_open(zoned(ist, (2015, 11, 11), (17, 40, 0)))
+        nse.is_open(zoned(&ist, (2015, 11, 11), (17, 40, 0)))
             .expect("the 2015 auction tail is tradeable"),
         "17:37-17:45 is the tradeable random-closure tail"
     );
     assert!(
-        nse.is_open_regular(zoned(ist, (2015, 11, 11), (18, 0, 0)))
+        nse.is_open_regular(zoned(&ist, (2015, 11, 11), (18, 0, 0)))
             .expect("the 2015 Normal Market answers"),
         "18:00 trades in the 17:45-18:45 Normal Market"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2015, 11, 11), (18, 45, 0)))
+        !nse.is_open(zoned(&ist, (2015, 11, 11), (18, 45, 0)))
             .expect("the 2015 Normal Market close is end-exclusive"),
         "18:45 sharp is closed"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2015, 11, 11), (18, 50, 0)))
+        !nse.is_open(zoned(&ist, (2015, 11, 11), (18, 50, 0)))
             .expect("the 2015 18:45-18:55 gap answers"),
         "the gap before the Closing Session is shut"
     );
     assert!(
-        nse.is_open(zoned(ist, (2015, 11, 11), (19, 4, 59)))
+        nse.is_open(zoned(&ist, (2015, 11, 11), (19, 4, 59)))
             .expect("the 2015 Closing Session still trades"),
         "19:04:59 still trades inside the Closing Session"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2015, 11, 11), (10, 0, 0)))
+        !nse.is_open(zoned(&ist, (2015, 11, 11), (10, 0, 0)))
             .expect("the 2015 daytime answers"),
         "the ordinary 09:15-15:30 grid is replaced: 10:00 is shut"
     );
     assert!(
-        nse.is_order_entry_only(zoned(ist, (2016, 10, 30), (18, 18, 0)))
+        nse.is_order_entry_only(zoned(&ist, (2016, 10, 30), (18, 18, 0)))
             .expect("the 2016 pre-open queue is order entry"),
         "18:18 sits in the 18:15-18:22 order-entry leg"
     );
     assert!(
-        nse.is_open(zoned(ist, (2016, 10, 30), (18, 26, 0)))
+        nse.is_open(zoned(&ist, (2016, 10, 30), (18, 26, 0)))
             .expect("the 2016 auction tail is tradeable"),
         "18:22-18:30 is the tradeable random-closure tail"
     );
     assert!(
-        nse.is_open_regular(zoned(ist, (2016, 10, 30), (19, 0, 0)))
+        nse.is_open_regular(zoned(&ist, (2016, 10, 30), (19, 0, 0)))
             .expect("the 2016 Normal Market answers"),
         "19:00 trades in the 18:30-19:30 Normal Market"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2016, 10, 30), (19, 30, 0)))
+        !nse.is_open(zoned(&ist, (2016, 10, 30), (19, 30, 0)))
             .expect("the 2016 Normal Market close is end-exclusive"),
         "19:30 sharp is closed"
     );
     assert!(
-        nse.is_open(zoned(ist, (2016, 10, 30), (19, 45, 0)))
+        nse.is_open(zoned(&ist, (2016, 10, 30), (19, 45, 0)))
             .expect("the 2016 Closing Session trades"),
         "19:45 trades inside the 19:40-19:50 Closing Session"
     );
     assert!(
-        !nse.is_open(zoned(ist, (2016, 10, 30), (12, 0, 0)))
+        !nse.is_open(zoned(&ist, (2016, 10, 30), (12, 0, 0)))
             .expect("the 2016 daytime answers"),
         "the ordinary weekend stays shut outside the announced session"
     );
@@ -1845,11 +1846,11 @@ fn the_recovered_2015_and_2016_muhurat_schedule_probes(nse: ExchangeCalendar) {
 /// a year or dropped breaks the count; the per-row fence above pins where.
 #[test]
 fn the_window_counts_are_the_printed_lists_counts() {
-    fn count_by_year(calendar: ExchangeCalendar) -> Vec<(i32, usize, usize, usize)> {
+    fn count_by_year(calendar: ExchangeCalendar) -> Vec<(i16, usize, usize, usize)> {
         let coverage = calendar
             .holiday_coverage()
             .expect("each of these venues ships a table");
-        let mut out: Vec<(i32, usize, usize, usize)> = Vec::new();
+        let mut out: Vec<(i16, usize, usize, usize)> = Vec::new();
         let mut date = coverage.first();
         while date <= coverage.last() {
             let year = date.year();
@@ -1870,13 +1871,11 @@ fn the_window_counts_are_the_printed_lists_counts() {
                 None => {}
             }
             date = date
-                .succ_opt()
+                .tomorrow()
                 .expect("the window stays inside the representable calendar");
         }
         out
     }
-
-    use chrono::Datelike as _;
 
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::Tse)),
@@ -2020,14 +2019,15 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "2024-12-31 is the printed Dec. 31 Market Holiday of the 2024 page"
     );
     assert!(
-        !tse.is_open(zoned(Asia::Tokyo, (2024, 12, 31), (10, 0, 0)))
+        !tse.is_open(zoned(&TOKYO, (2024, 12, 31), (10, 0, 0)))
             .expect("2024-12-31 is inside the audited window and must answer"),
         "the printed year-end holiday answers shut"
     );
     assert!(
         matches!(
-            tse.is_open(zoned(Asia::Tokyo, (2028, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            tse.is_open(zoned(&TOKYO, (2028, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "a 2028 weekday is past the published schedule and must be refused"
     );
@@ -2040,8 +2040,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     assert_eq!(sse_coverage.last(), day(2026, 12, 31));
     assert!(
         matches!(
-            sse.is_open(zoned(Asia::Shanghai, (2027, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            sse.is_open(zoned(&SHANGHAI, (2027, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "2027 is unpublished by SSE and the identity must refuse it outright"
     );
@@ -2050,14 +2051,14 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     // bridged-residual ruling, #296) while the holiday-table classification
     // refuses, because nothing witnesses the 2010 holiday layer.
     assert_eq!(
-        sse.is_open(zoned(Asia::Shanghai, (2010, 12, 31), (10, 0, 0))),
+        sse.is_open(zoned(&SHANGHAI, (2010, 12, 31), (10, 0, 0))),
         Ok(true),
         "the 2010-12-31 Thursday answers the sourced normal week beside the          one-flank bridged residual"
     );
     assert!(
         matches!(
-            sse.is_closed_trade_date(day(2010, 12, 31), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 12, 31)
+            sse.is_closed_trade_date(day(2010, 12, 31), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2010, 12, 31)
         ),
         "the 2010 classification refuses: no audited window brackets the date"
     );
@@ -2081,8 +2082,9 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     );
     assert!(
         matches!(
-            nse.is_open(zoned(Asia::Kolkata, (2027, 1, 4), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            nse.is_open(zoned(&KOLKATA, (2027, 1, 4), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
@@ -2092,7 +2094,7 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     // never an audited normal, never a fabricated closure. The recovered 2012
     // beside it answers inside its own window.
     assert_eq!(
-        nse.is_open(zoned(Asia::Kolkata, (2018, 6, 15), (10, 0, 0))),
+        nse.is_open(zoned(&KOLKATA, (2018, 6, 15), (10, 0, 0))),
         Ok(true),
         "2018-06-15 answers its normal-week session state beside the disclosed \
          bridged residual"
@@ -2110,16 +2112,12 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
 
     // Pre-floor instants refuse naming their venue-local pre-2010 day, on all
     // three, whatever the window does.
-    for (calendar, tz) in [
-        (&tse, Asia::Tokyo),
-        (&sse, Asia::Shanghai),
-        (&nse, Asia::Kolkata),
-    ] {
-        let instant = zoned(tz, (2009, 12, 31), (10, 0, 0));
+    for (calendar, tz) in [(&tse, TOKYO), (&sse, SHANGHAI), (&nse, KOLKATA)] {
+        let instant = zoned(&tz, (2009, 12, 31), (10, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(instant),
-                Err(CalendarQueryError::BeforeSupportFloor { date, .. })
+                calendar.is_open(instant).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. })
                     if date == day(2009, 12, 31)
             ),
             "{:?}: the pre-floor weekday must refuse naming its local day",
@@ -2135,7 +2133,7 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
 #[test]
 fn weekends_inside_the_window_stay_weekends_except_where_withheld() {
     let sse = calendar_for_exchange(Exchange::Sse);
-    let saturday = zoned(Asia::Shanghai, (2025, 10, 4), (10, 0, 0));
+    let saturday = zoned(&SHANGHAI, (2025, 10, 4), (10, 0, 0));
     assert!(
         !sse.is_open(saturday)
             .expect("the coverage contract must answer a covered date"),
@@ -2143,7 +2141,7 @@ fn weekends_inside_the_window_stay_weekends_except_where_withheld() {
     );
 
     let tse = calendar_for_exchange(Exchange::Tse);
-    let sunday = zoned(Asia::Tokyo, (2026, 5, 3), (10, 0, 0));
+    let sunday = zoned(&TOKYO, (2026, 5, 3), (10, 0, 0));
     assert_eq!(
         tse.holiday_on(day(2026, 5, 3)),
         None,
@@ -2167,7 +2165,7 @@ fn detaching_the_table_restores_the_normal_week() {
         // table would have clipped or refused.
         assert!(
             detached
-                .is_open(zoned(calendar.tz(), (2026, 2, 24), (10, 0, 0)))
+                .is_open(zoned(&calendar.tz(), (2026, 2, 24), (10, 0, 0)))
                 .expect("a detached snapshot claims no coverage and answers the normal week"),
             "the detached Tuesday trades on the pure normal week"
         );
@@ -2185,9 +2183,7 @@ fn detaching_the_table_restores_the_normal_week() {
 /// and assert the exact dates that carry the withheld kind.
 #[test]
 fn the_only_unsourced_rows_are_the_muhurat_dates() {
-    use chrono::Datelike as _;
-
-    const MUHURAT: [(i32, u32, u32); 6] = [
+    const MUHURAT: [(i16, i8, i8); 6] = [
         (2011, 10, 26),
         (2012, 11, 13),
         (2013, 11, 3),
@@ -2214,7 +2210,7 @@ fn the_only_unsourced_rows_are_the_muhurat_dates() {
                 );
             }
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the window stays inside the representable calendar");
         }
     }

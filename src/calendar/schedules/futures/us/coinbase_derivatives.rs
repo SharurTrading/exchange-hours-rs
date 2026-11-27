@@ -5,7 +5,7 @@
 //! Narrative evidence, sources and residual risks:
 //! `docs/evidence/coinbase_derivatives.md` (LAW-EVIDENCE-FILES).
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_ONLY, MON_THU, SUN_PLUS_MON_THU};
@@ -90,7 +90,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
 // launch is not a venue-local-midnight revision.
 // Dated boundary 2021-06-28: docs/evidence/coinbase_derivatives.md
 const LAUNCH_UNIX_SECONDS: i64 = 1_624_885_200;
-const FIRST_FULL_DAY: chrono::NaiveDate = effective_date(2021, 6, 29);
+const FIRST_FULL_DAY: jiff::civil::Date = effective_date(2021, 6, 29);
 
 // Knowledge-bound row, dated at the UTC date of the review that verified the
 // 16:50 Pre-Open (LAW-UTC-DATES). It adds only that queue, makes no onset claim,
@@ -108,9 +108,9 @@ static REVISIONS: &[Revision] = revisions![
     )
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Chicago);
-    if as_of.timestamp() < LAUNCH_UNIX_SECONDS {
+    if as_of.instant.as_second() < LAUNCH_UNIX_SECONDS {
         &CLOSED
     } else if day < FIRST_FULL_DAY {
         &LAUNCH_DAY

@@ -1,14 +1,24 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Date-aware behavior at Chrono's representational edges.
+//! Date-aware behavior at Jiff's representational edges.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use crate::support::elapsed_days;
+use crate::support::utc_datetime;
+use crate::support::zones::NEW_YORK;
+use crate::support::zones::TORONTO;
+use crate::support::zones::UTC;
+use exchange_hours::CalendarQueryErrorKind;
+use jiff::SignedDuration;
+use jiff::Timestamp;
+use jiff::civil::{Time, Weekday};
 
 #[test]
-fn date_aware_queries_are_total_at_chrono_bounds() {
+fn date_aware_queries_are_total_at_timestamp_bounds() {
     for &exchange in Exchange::ALL {
         let calendar = calendar_for_exchange(exchange);
-        for instant in [DateTime::<Utc>::MIN_UTC, DateTime::<Utc>::MAX_UTC] {
+        for instant in [Timestamp::MIN, Timestamp::MAX] {
             let result = std::panic::catch_unwind(|| {
                 let snapshot = hours_for_exchange(exchange, instant);
                 let fixed_open = snapshot.is_open(instant);
@@ -18,8 +28,7 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let _fixed_start = candle_start(&snapshot, instant, CalendarResolution::Monthly);
                 let _fixed_seconds = candle_end(&snapshot, instant, CalendarResolution::Seconds(1));
                 let _fixed_maintenance = snapshot.is_maintenance(instant);
-                let _fixed_closed =
-                    snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
+                let _fixed_closed = snapshot.is_closed_all_day_at(instant, &UTC, SessionKind::Both);
                 let open = calendar.is_open(instant);
                 let bounds = calendar.session_bounds(instant);
                 let _next = calendar.next_session_after(instant);
@@ -29,20 +38,19 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let _start = calendar.candle_start(instant, CalendarResolution::Monthly);
                 let _seconds = calendar.candle_end(instant, CalendarResolution::Seconds(1));
                 let _maintenance = calendar.is_maintenance(instant);
-                let _closed =
-                    calendar.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
+                let _closed = calendar.is_closed_all_day_at(instant, &UTC, SessionKind::Both);
                 let _week = calendar.normal_week_open_seconds_containing(instant);
 
                 (fixed_open, fixed_bounds, open, bounds)
             });
             let (fixed_open, fixed_bounds, open, bounds) = result
-                .unwrap_or_else(|_| panic!("{exchange:?} panicked at chrono bound {instant}"));
+                .unwrap_or_else(|_| panic!("{exchange:?} panicked at timestamp bound {instant}"));
             assert_eq!(
                 fixed_open,
                 fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
                 "{exchange:?} fixed query fence failed at {instant}"
             );
-            // The calendar may refuse a chrono bound (it is far below the floor),
+            // The calendar may refuse a timestamp bound (it is far below the floor),
             // and that refusal is total: it must not be a panic, and it must be a
             // coverage refusal rather than a fabricated answer. Where it does
             // answer, the containment agreement is asserted exactly as before.
@@ -63,20 +71,15 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
 }
 
 /// The open/bounds pair each surface returns for the caller to fence.
-type OpenAndBounds = (bool, Option<(DateTime<Utc>, DateTime<Utc>)>);
+type OpenAndBounds = (bool, Option<(Timestamp, Timestamp)>);
 
 /// Runs one query under a label, so a panic names the entry point that failed.
-fn total<T>(
-    key: MarketHoursKey,
-    instant: DateTime<Utc>,
-    query: &str,
-    call: impl FnOnce() -> T,
-) -> T {
+fn total<T>(key: MarketHoursKey, instant: Timestamp, query: &str, call: impl FnOnce() -> T) -> T {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(call))
-        .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at chrono bound {instant}"))
+        .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at timestamp bound {instant}"))
 }
 
-/// Asserts a chrono-bound query returns **totally**.
+/// Asserts a timestamp-bound query returns **totally**.
 ///
 /// This is the totality claim at the representable bounds after Stage 2B: the
 /// query must return — not panic, not hang — and if it refuses, the refusal must
@@ -87,24 +90,24 @@ fn total<T>(
 /// probe so a panic is reported with this query's name.
 fn assert_refuses_totally<T: core::fmt::Debug>(
     key: MarketHoursKey,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     query: &str,
     call: impl Fn() -> Result<T, exchange_hours::CalendarQueryError>,
 ) {
     let answer = std::panic::catch_unwind(std::panic::AssertUnwindSafe(&call))
         .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at {instant}"));
-    match answer {
-        // A coverage refusal and an answer are both total. The claim at a chrono
+    match answer.map_err(|error| error.kind()) {
+        // A coverage refusal and an answer are both total. The claim at a timestamp
         // bound is **totality**, not refusal: most identities have no sourced
         // answer there, but a profile that genuinely holds at the bound (the
         // always-open key, for instance) may answer — and what this fence
         // requires is that it returns rather than panicking, hanging, or
         // fabricating a degenerate session.
         Err(
-            exchange_hours::CalendarQueryError::BeforeSupportFloor { .. }
-            | exchange_hours::CalendarQueryError::OutsideCoveredRange { .. }
-            | exchange_hours::CalendarQueryError::UnresolvedGap { .. }
-            | exchange_hours::CalendarQueryError::SearchExhausted { .. },
+            CalendarQueryErrorKind::BeforeSupportFloor { .. }
+            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
+            | CalendarQueryErrorKind::UnresolvedGap { .. }
+            | CalendarQueryErrorKind::SearchExhausted { .. },
         )
         | Ok(_) => {}
         // Any other error is not a coverage verdict, so it is a defect.
@@ -115,7 +118,7 @@ fn assert_refuses_totally<T: core::fmt::Debug>(
 /// Every resolution on both surfaces, each named individually.
 fn exercise_every_resolution(
     key: MarketHoursKey,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     snapshot: &MarketHours,
     calendar: ExchangeCalendar,
 ) {
@@ -155,7 +158,7 @@ fn exercise_every_resolution(
 /// The fixed-snapshot surface. Returns the open/bounds pair the caller fences.
 fn exercise_fixed_surface(
     key: MarketHoursKey,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     snapshot: &MarketHours,
 ) -> OpenAndBounds {
     let open = total(key, instant, "MarketHours::is_open", || {
@@ -182,7 +185,7 @@ fn exercise_fixed_surface(
             key,
             instant,
             &format!("MarketHours::is_closed_all_day_at({kind:?})"),
-            || snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, kind),
+            || snapshot.is_closed_all_day_at(instant, &UTC, kind),
         );
     }
     (open, bounds)
@@ -191,7 +194,7 @@ fn exercise_fixed_surface(
 /// The dated-calendar surface. Returns the open/bounds pair the caller fences.
 fn exercise_calendar_surface(
     key: MarketHoursKey,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     calendar: ExchangeCalendar,
 ) -> OpenAndBounds {
     assert_refuses_totally(key, instant, "ExchangeCalendar::is_open", || {
@@ -231,7 +234,7 @@ fn exercise_calendar_surface(
             &format!("ExchangeCalendar::is_closed_all_day_at({kind:?})"),
             || {
                 calendar
-                    .is_closed_all_day_at(instant, chrono_tz::UTC, kind)
+                    .is_closed_all_day_at(instant, &UTC, kind)
                     .unwrap_or(false)
             },
         );
@@ -242,7 +245,7 @@ fn exercise_calendar_surface(
 /// The same totality contract, over `MarketHoursKey` rather than `Exchange`.
 ///
 /// The test above iterates `Exchange::ALL` only, so until this existed **no
-/// product-family key was covered at Chrono's edges** — not the ones added
+/// product-family key was covered at Jiff's edges** — not the ones added
 /// recently and not the original twenty-odd either. `LAW-PANIC` is a promise
 /// about every public entry point, and `calendar_for_market_hours_key` is one,
 /// so the gap was in the fence rather than in the engine.
@@ -252,10 +255,10 @@ fn exercise_calendar_surface(
 /// kinds failed — and pointing at the one that did is the whole value here.
 /// The surfaces are split into helpers to stay inside the 100-line limit.
 #[test]
-fn date_aware_key_queries_are_total_at_chrono_bounds() {
+fn date_aware_key_queries_are_total_at_timestamp_bounds() {
     for &key in MarketHoursKey::ALL {
         let calendar = calendar_for_market_hours_key(key);
-        for instant in [DateTime::<Utc>::MIN_UTC, DateTime::<Utc>::MAX_UTC] {
+        for instant in [Timestamp::MIN, Timestamp::MAX] {
             let snapshot = total(key, instant, "hours_for_market_hours_key", || {
                 hours_for_market_hours_key(key, instant)
             });
@@ -278,29 +281,34 @@ fn date_aware_key_queries_are_total_at_chrono_bounds() {
 }
 
 #[test]
-fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
+fn synthetic_always_open_utc_profile_has_exact_timestamp_edge_sessions() {
     let calendar = calendar_for_exchange(Exchange::Unknown);
-    let fixed = hours_for_exchange(
-        Exchange::Unknown,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let minimum = DateTime::<Utc>::MIN_UTC;
-    let next_midnight = minimum
-        .checked_add_signed(Duration::days(1))
-        .expect("one day after chrono minimum is representable");
+    let fixed = hours_for_exchange(Exchange::Unknown, PROFILE_INSTANT);
+    let minimum = Timestamp::MIN;
+    let first_day = UTC.to_datetime(minimum).date().tomorrow().unwrap();
+    let first_midnight = utc_datetime(first_day.to_datetime(Time::midnight()));
+    let next_midnight = utc_datetime(first_day.tomorrow().unwrap().to_datetime(Time::midnight()));
 
-    assert!(fixed.is_open(minimum));
-    assert!(
-        calendar.is_open(minimum).is_err(),
-        "a chrono-bound query refuses rather than answering"
-    );
+    // The UTC day containing MIN has an opening outside the timestamp domain.
+    // The next full session still resolves with both of its real endpoints.
+    assert!(!fixed.is_open(minimum));
     assert_eq!(
         session_bounds(&fixed, minimum),
-        Some((minimum, next_midnight))
+        Some((first_midnight, next_midnight))
+    );
+    assert_eq!(
+        next_session_after(&fixed, minimum),
+        Some((first_midnight, next_midnight))
+    );
+    assert!(fixed.is_open(first_midnight));
+    assert!(calendar.is_open(minimum).is_err());
+    assert_eq!(
+        session_bounds(&fixed, first_midnight),
+        Some((first_midnight, next_midnight))
     );
     assert!(
         calendar.session_bounds(minimum).is_err(),
-        "a chrono-bound session-bounds query refuses rather than answering"
+        "a timestamp-bound session-bounds query refuses rather than answering"
     );
     for resolution in [
         CalendarResolution::Daily,
@@ -311,17 +319,17 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
         assert_eq!(candle_end(&fixed, minimum, resolution), None);
         assert!(
             calendar.candle_start(minimum, resolution).is_err(),
-            "a chrono-bound candle start refuses rather than answering"
+            "a timestamp-bound candle start refuses rather than answering"
         );
         assert!(
             calendar.candle_end(minimum, resolution).is_err(),
-            "a chrono-bound candle end refuses rather than answering"
+            "a timestamp-bound candle end refuses rather than answering"
         );
     }
 
-    let near_maximum = DateTime::<Utc>::MAX_UTC
-        .checked_sub_signed(Duration::days(1))
-        .expect("one day before chrono maximum is representable");
+    let near_maximum = Timestamp::MAX
+        .checked_sub(elapsed_days(1))
+        .expect("one day before timestamp maximum is representable");
     assert!(fixed.is_open(near_maximum));
     assert!(
         calendar
@@ -331,38 +339,38 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
 }
 
 #[test]
-fn negative_offset_scan_keeps_the_first_session_at_chrono_minimum() {
-    let minimum = DateTime::<Utc>::MIN_UTC;
-    let day = NaiveDate::MIN;
-    let open = America::New_York
-        .from_local_datetime(
-            &day.and_hms_opt(9, 30, 0)
-                .expect("NYSE open is representable on Chrono's minimum date"),
-        )
-        .single()
-        .expect("NYSE minimum-date open has one local mapping")
-        .with_timezone(&Utc);
-    let close = America::New_York
-        .from_local_datetime(
-            &day.and_hms_opt(16, 0, 0)
-                .expect("NYSE close is representable on Chrono's minimum date"),
-        )
-        .single()
-        .expect("NYSE minimum-date close has one local mapping")
-        .with_timezone(&Utc);
+fn negative_offset_scan_keeps_the_first_session_at_timestamp_minimum() {
+    let minimum = Timestamp::MIN;
+    let mut day = NEW_YORK
+        .to_datetime(minimum)
+        .date()
+        .tomorrow()
+        .expect("the first full local day fits");
+    while matches!(day.weekday(), Weekday::Saturday | Weekday::Sunday) {
+        day = day.tomorrow().expect("the first full trading day fits");
+    }
+    let open = NEW_YORK
+        .to_ambiguous_timestamp(day.at(9, 30, 0, 0))
+        .unambiguous()
+        .expect("NYSE minimum-date open has one local mapping");
+    let close = NEW_YORK
+        .to_ambiguous_timestamp(day.at(16, 0, 0, 0))
+        .unambiguous()
+        .expect("NYSE minimum-date close has one local mapping");
     let expected = Some((open, close));
     let fixed = hours_for_exchange(Exchange::Nyse, minimum);
     let calendar = calendar_for_exchange(Exchange::Nyse);
 
     assert_eq!(next_session_after(&fixed, minimum), expected);
     assert_eq!(session_bounds(&fixed, minimum), expected);
+    assert_eq!(session_bounds(&fixed, open), expected);
     assert!(
         calendar.next_session_after(minimum).is_err(),
-        "a chronon-bound forward scan refuses rather than answering"
+        "a timestamp-bound forward scan refuses rather than answering"
     );
     assert!(
         calendar.session_bounds(minimum).is_err(),
-        "a chrono-bound session-bounds query refuses rather than answering"
+        "a timestamp-bound session-bounds query refuses rather than answering"
     );
     assert_eq!(
         candle_end(&fixed, minimum, CalendarResolution::Daily),
@@ -372,15 +380,15 @@ fn negative_offset_scan_keeps_the_first_session_at_chrono_minimum() {
         calendar
             .candle_end(minimum, CalendarResolution::Daily)
             .is_err(),
-        "a chrono-bound daily close refuses rather than answering"
+        "a timestamp-bound daily close refuses rather than answering"
     );
 }
 
 #[test]
 fn maximum_hour_resolution_clamps_without_losing_a_bar() {
-    let tz = America::Toronto;
-    let instant = local(tz, (2026, 8, 19), (10, 12, 0));
-    let close = local(tz, (2026, 8, 19), (16, 0, 0));
+    let tz = TORONTO;
+    let instant = local(&tz, (2026, 8, 19), (10, 12, 0));
+    let close = local(&tz, (2026, 8, 19), (16, 0, 0));
     let resolution = CalendarResolution::Hours(u32::MAX);
     let fixed = hours_for_exchange(Exchange::Tsx, instant);
     let calendar = calendar_for_exchange(Exchange::Tsx);
@@ -390,7 +398,7 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
     // The identity-backed calendar clamps exactly as the fixed snapshot does:
     // the bar bounds resolve from the self-dated session the instant lands in
     // (a session opening on its own day is dated by that day), so no date
-    // outside the audited window is needed and the chrono-bound clamp answers
+    // outside the audited window is needed and the timestamp-bound clamp answers
     // the same bar the fixed snapshot states.
     assert_eq!(
         calendar.candle_start(instant, resolution),
@@ -400,58 +408,143 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
 }
 
 #[test]
-fn dynamic_period_walks_keep_the_last_close_near_chrono_maximum() {
+fn dynamic_period_walks_keep_the_last_close_near_timestamp_maximum() {
     let calendar = calendar_for_exchange(Exchange::Nyse);
-    let maximum = DateTime::<Utc>::MAX_UTC;
-    let max_day = maximum.date_naive();
+    let maximum = Timestamp::MAX;
+    let max_day = UTC.to_datetime(maximum).date();
     let final_week_start = max_day
-        .checked_sub_signed(Duration::days(i64::from(
-            max_day.weekday().num_days_from_monday(),
+        .checked_sub(elapsed_days(i64::from(
+            max_day.weekday().to_monday_zero_offset(),
         )))
-        .expect("the final ISO week starts inside chrono's range");
-    let instant = Utc.from_utc_datetime(
-        &final_week_start
-            .and_hms_opt(0, 0, 0)
-            .expect("midnight is representable"),
-    );
+        .expect("the final ISO week starts inside Jiff's range");
+    let instant = utc_datetime(final_week_start.at(0, 0, 0, 0));
 
-    // At the far end of the representable range the daily-close search is
-    // exhausted rather than answered, so the walk asserts the refusal and stops.
-    let Ok(Some(mut last_close)) = calendar.candle_end(instant, CalendarResolution::Daily) else {
-        return;
-    };
-    for _ in 0..8 {
-        let Some(probe) = last_close.checked_add_signed(Duration::nanoseconds(1)) else {
-            break;
-        };
-        let Some(next) = calendar
-            .candle_end(probe, CalendarResolution::Daily)
-            .expect("the coverage contract must answer a covered date")
-        else {
+    // The detached normal-week rules can still resolve the final available
+    // closes. The identity's holiday horizon produces a typed refusal.
+    let fixed = hours_for_exchange(Exchange::Nyse, instant);
+    let mut last_close = candle_end(&fixed, instant, CalendarResolution::Daily)
+        .expect("at least one trading day fits in the last ISO week");
+    for _ in 0..7 {
+        let probe = last_close
+            .checked_add(SignedDuration::from_nanos(1))
+            .unwrap();
+        let Some(next) = candle_end(&fixed, probe, CalendarResolution::Daily) else {
             break;
         };
         assert!(next > last_close);
         last_close = next;
     }
-    assert!(
-        last_close
-            .checked_add_signed(Duration::nanoseconds(1))
-            .is_none_or(|probe| calendar
-                .candle_end(probe, CalendarResolution::Daily)
-                .expect("the coverage contract must answer a covered date")
-                .is_none())
+    let probe = last_close
+        .checked_add(SignedDuration::from_nanos(1))
+        .unwrap();
+    assert_eq!(candle_end(&fixed, probe, CalendarResolution::Daily), None);
+    for resolution in [CalendarResolution::Weekly, CalendarResolution::Monthly] {
+        assert_eq!(candle_end(&fixed, instant, resolution), Some(last_close));
+        assert!(matches!(
+            calendar
+                .candle_end(instant, resolution)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
+        ));
+    }
+}
+
+#[test]
+fn a_civil_day_beyond_the_utc_timestamp_range_keeps_a_typed_coverage_refusal() {
+    let calendar = calendar_for_exchange(Exchange::Nyse);
+    let fixed = hours_for_exchange(Exchange::Nyse, PROFILE_INSTANT);
+    let unrepresentable = jiff::civil::Date::MAX;
+    assert!(fixed.is_closed_all_day_in_calendar(unrepresentable, &UTC, SessionKind::Both));
+    assert!(matches!(
+        calendar.is_closed_all_day_in_calendar(unrepresentable, &UTC, SessionKind::Both).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == unrepresentable
+    ));
+}
+
+#[test]
+fn an_early_close_beyond_the_timestamp_limit_keeps_a_representable_session() {
+    use exchange_hours::{DayOverride, StaticDayPolicy};
+
+    let calendar = calendar_for_exchange(Exchange::Nyse).with_last_known_week();
+    let day = NEW_YORK.to_datetime(Timestamp::MAX).date();
+    let at = |hour, minute| NEW_YORK.to_timestamp(day.at(hour, minute, 0, 0)).unwrap();
+    let probe = at(12, 0);
+    let expected = Some((at(9, 30), at(16, 0)));
+    let overrides =
+        [DayOverride::early_close(day, 20 * 3_600).expect("the fixture boundary must be valid")];
+    let policy = StaticDayPolicy::new(&overrides).expect("valid early-close override");
+
+    assert!(NEW_YORK.to_timestamp(day.at(20, 0, 0, 0)).is_err());
+    assert_eq!(
+        calendar.session_bounds_with(probe, SessionKind::Regular),
+        Ok(expected)
     );
+    assert_eq!(
+        calendar
+            .with_day_policy(&policy)
+            .session_bounds_with(probe, SessionKind::Regular),
+        Ok(expected)
+    );
+}
+
+#[test]
+fn an_early_close_beyond_the_timestamp_limit_keeps_a_representable_replacement() {
+    use exchange_hours::{
+        DayOverride, ExceptionBlock, SessionExceptionRecord, StaticDayPolicy,
+        StaticSessionExceptions,
+    };
+
+    let calendar = calendar_for_exchange(Exchange::Nyse).with_last_known_week();
+    let day = NEW_YORK.to_datetime(Timestamp::MAX).date();
+    let at = |hour| NEW_YORK.to_timestamp(day.at(hour, 0, 0, 0)).unwrap();
+    let blocks = [ExceptionBlock::regular(0, 10 * 3_600, 14 * 3_600)];
+    let records = [SessionExceptionRecord::replace_sessions(day, &blocks)];
+    let exceptions = StaticSessionExceptions::new(calendar.source(), day, day, &records)
+        .expect("valid replacement session");
+    let overrides =
+        [DayOverride::early_close(day, 20 * 3_600).expect("the fixture boundary must be valid")];
+    let policy = StaticDayPolicy::new(&overrides).expect("valid early-close override");
 
     assert_eq!(
         calendar
-            .candle_end(instant, CalendarResolution::Weekly)
-            .expect("the coverage contract must answer a covered date"),
-        Some(last_close)
+            .with_session_exceptions(&exceptions)
+            .expect("same calendar source")
+            .with_day_policy(&policy)
+            .session_bounds_with(at(12), SessionKind::Regular),
+        Ok(Some((at(10), at(14))))
     );
+}
+
+#[test]
+fn an_earlier_replacement_can_belong_to_a_trade_date_beyond_the_timestamp_limit() {
+    use exchange_hours::{ExceptionBlock, SessionExceptionRecord, StaticSessionExceptions};
+    use jiff::civil::Date;
+
+    let calendar = calendar_for_exchange(Exchange::Nyse).with_last_known_week();
+    let trade_date = Date::MAX;
+    let day = trade_date.yesterday().expect("the opening day fits");
+    let at = |hour, minute| NEW_YORK.to_timestamp(day.at(hour, minute, 0, 0)).unwrap();
+    let blocks = [ExceptionBlock::regular(-1, 7 * 3_600, 8 * 3_600)];
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date, &blocks,
+    )];
+    let exceptions =
+        StaticSessionExceptions::new(calendar.source(), trade_date, trade_date, &records)
+            .expect("valid replacement session");
+    let overlaid = calendar
+        .with_session_exceptions(&exceptions)
+        .expect("same calendar source");
+    let probe = at(7, 30);
+
+    assert!(NEW_YORK.to_timestamp(trade_date.at(0, 0, 0, 0)).is_err());
+    assert_eq!(overlaid.is_open_regular(probe), Ok(true));
     assert_eq!(
-        calendar
-            .candle_end(instant, CalendarResolution::Monthly)
-            .expect("the coverage contract must answer a covered date"),
-        Some(last_close)
+        overlaid.session_bounds_with(probe, SessionKind::Regular),
+        Ok(Some((at(7, 0), at(8, 0))))
+    );
+    assert_eq!(overlaid.trade_date(probe), Ok(Some(trade_date)));
+    assert_eq!(
+        overlaid.is_closed_trade_date(trade_date, SessionKind::Regular),
+        Ok(false)
     );
 }

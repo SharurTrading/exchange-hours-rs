@@ -9,12 +9,12 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: executable** — the uncertainty touches a window where trades print, so this row's history is served conservatively and the basis below says how. Cotton No. 2 (`CT`) only. Current 21:00→14:20 NY wrap sourced, with dated 2014-02-03 and 2018-10-08 revisions. Partial because no ICE document names Sunday for Cotton. The 2026-08-31 review strengthened the basis for that omission from silence to contrast: both the AUGUST 2011 and JANUARY 2, 2013 master tables mark Cotton "21:00*" where `*` is "Trading commences on previous business day", while the Grains, Russell, USDX and currency rows carry `**` ("…and on Sunday evenings only trading commences at 18:00") and the energy rows `***`. ICE drew the Sunday distinction explicitly at two dated points and did not extend it to Cotton, so the Sunday evening open and its pre-open stay omitted. The tradeable week runs Monday 21:00 through Friday 14:20; the sourced Friday 14:50–18:00 post-close pre-open stays as the week's final order-entry window, feeding Monday's session. Its January 2010 to August 2011 baseline carries the same document-availability bound as the other ICE Futures U.S. rows: the 2026-09-01 review found no hours provision in any product rulebook chapter, so these hours are set administratively and the master hours table — earliest surviving edition August 2011 — is the only source.
+**Gap: executable.** The normal-week horizon remains August 2011. ICE's March 2009 notice witnesses the same opening clock earlier, but the intervening amendments through the floor have not been established. The holiday audit starts in 2025.
 
 ## Revision rows
 
-- 2014-02-03 — T1 — ICE ExNot 012714 hours — daily close moves from 14:30 to 14:20 NY; the 21:00 open on the previous day is unchanged.
-- 2018-10-08 — T1 — ICE PCPO notice 20180920 — post-close pre-open added, 14:50-18:00 NY.
+- 2014-02-02 — T1 — ICE ExNot 012714 hours — the Sunday opening starts the first session ending at 14:20 NY on trade date Monday 2014-02-03. The previous close was 14:30.
+- 2018-10-05 — T1 — ICE PCPO notice 20180920 — Friday 14:50–18:00 NY is the first post-close pre-open, for Monday 2018-10-08.
 
 ## Holidays
 
@@ -28,6 +28,13 @@ Every artifact below is saved in the research store, and each row's own section 
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `IFUS-COTTON-2009` | 2009-03-29 opening | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot031909aghours.pdf> | retrieved live from the operator, 2026-11-27 01:34:50 UTC | T1 | `ee9455593273f98046e9254b3d9215029b1a4221468c7e6d7505034444739d5e` |
+| `ICE ExNot 012714 hours` | 2014-02-02 opening | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf> | retrieved live from the operator, 2026-11-27 01:36:03 UTC | T1 | `95c48deb127cb55cd1c60734c1a545c9a25289dc963d91bac90c60b92552a299` |
+| `ICE PCPO notice 20180920` | 2018-10-05 opening | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf> | retrieved live from the operator, 2026-10-31 22:23:50 UTC | T1 | `42a4e0ec45f59fae316924a8421bbdd779a3ee6e8b47aea08ad5944caa27b21d` |
+| `IFUS-REGULAR-HOURS-2026-09` | September 2026 edition | <https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> | retrieved live from the operator, 2026-10-31 22:23:50 UTC | T1 | `381c04fcb4d5b4093f72463246652ac8e24c3ca7b89283dfe86f736497c13ed2` |
+| `IFUS-COTTON-PRODUCT` | current normal week | <https://www.ice.com/products/254/cotton-no-2-futures> | retrieved live from the operator, 2026-11-27 01:35:42 UTC | T1 | `3d214889bb0f37f1376d259b982dd3b2b0143443c5b8a1b7150f551cec41639c` |
+| `IFUS-NOTICE-2025-NEWYEAR` | 2024-12-31 .. 2025-01-02 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025NewYearHoliday_20241015.pdf> | retrieved live from the operator, 2026-11-27 01:48:20 UTC | T1 | `83df4bd0d66c474fc58dedc5200c2ad281bc7baaee5abf3dadab8759ee6057b5` |
+| `IFUS-NOTICE-2026-NEWYEAR` | 2025-12-31 .. 2026-01-02 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_NewYearHoliday_20251107.pdf> | retrieved live from the operator, 2026-09-26 07:21:21 UTC | T1 | `dbe530fd8933783b9779d237b2f7118fe3c6517d7cfddfd76197f12788ca2b98` |
 | `IFUS-CAL-2025` | 2025-01-01 .. 2026-01-01 | <https://web.archive.org/web/20250523135551id_/https://www.ice.com/publicdocs/futures/IFUS_Trading_Hours_Holiday_Calendar.pdf> | Wayback `id_` replay of capture `20250523135551`, 2026-09-26 07:16:50 UTC | T1 | `0add2b10e7d6cb2a35b727db654e4ea87ed30970ec637f53e62dd044f553d049` |
 | `IFUS-NOTICE-2025-MLK` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250213182737id_/https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025MLKDay_Holiday_20241203.pdf> | Wayback `id_` replay of capture `20250213182737`, 2026-09-26 07:16:29 UTC | T1 | `d6e7a3c0672fee4364cd610c88e861f5175de1494a7bebd1d8df43a790ef0364` |
 | `IFUS-NOTICE-2025-PRESIDENTS` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250225071405id_/https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025PresidentsDay_Holiday.pdf> | Wayback `id_` replay of capture `20250225071405`, 2026-09-26 07:16:30 UTC | T1 | `9c5946b286419b3670147e35c8dd752634b050cccd26fc564bccbf3f3fdf57b1` |
@@ -39,6 +46,8 @@ Every artifact below is saved in the research store, and each row's own section 
 | `IFUS-NOTICE-2025-INDEPENDENCE` | 2025-01-01 .. 2025-12-31 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_IndDayHoliday_20250508.pdf> | retrieved live from the operator, 2026-10-09 23:49 UTC | T1 | `74b89e65fd51405d0df0fc4809785e470f8ed2823c18bd119fe6fd21d637cbe2` |
 | `IFUS-NOTICE-2025-CHRISTMAS` | 2025-01-01 .. 2025-12-31 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf> | retrieved live from the operator, 2026-10-09 23:49 UTC | T1 | `b5e92b1abf47947bef85e290f2efc16c9fcd9288ce40830d293c71aca1007809` |
 | `IFUS-CAL-2026` | 2026-01-01 .. 2026-12-31 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_Exchange_Notice_2026_Holiday_Calendar_20260609.pdf> | retrieved 2026-09-12 07:47 UTC | T1 | `b9723d9afa1c20a0792b628de36c7d3726add58ea3d94972a1e7cefd3e50bf4e` |
+| `IFUS-NOTICE-2026-MLK` | trade dates 2026-01-16 .. 2026-01-20 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_MLKDay_Holiday_20251203.pdf> | retrieved live from the operator, 2026-10-09 23:49 UTC | T1 | `1cab5d8d23084cce002098769fa472aa8795bd410fc30a2e43850ec319030780` |
+| `IFUS-NOTICE-2026-PRESIDENTS` | trade dates 2026-02-13 .. 2026-02-17 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_Presidents_Day_Holiday_20251223.pdf> | retrieved live from the operator, 2026-10-09 23:49 UTC | T1 | `961d3a35f54f13477ab927610e75e445cc9acefa2c3dd2d7b5340f0a9080e76b` |
 | `IFUS-CAL-2027` | 2027-01-01 .. 2028-01-03 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_Exchange_Notice-2027_Holiday_Calendar_20260604.pdf> | retrieved 2026-09-12 04:20 UTC | T1 | `d2e39a2db2a26e0578ad0d09b36f51dfdad8502635020fe79d66303c09c1a040` |
 | `IFUS-NOTICE-2026-GOODFRIDAY` | 2026-01-01 .. 2026-12-31 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_GoodFridayHoliday_20260202.pdf> | retrieved 2026-09-12 04:20 UTC | T1 | `0a38abd0c9c8b0f904e9701999ac56466610c46437bdfe0109f88e67da35d181` |
 | `IFUS-NOTICE-2026-MEMORIAL` | 2026-01-01 .. 2026-12-31 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_Memorial_DayHoliday_20260310.pdf> | retrieved 2026-09-12 04:20 UTC | T1 | `3dfe2a49babece024ce3cd91948e4fb27740abe31282fd9121097bd8433298f9` |
@@ -49,6 +58,8 @@ Every artifact below is saved in the research store, and each row's own section 
 | `IFUS-NOTICE-2026-CHRISTMAS` | trade dates 2026-12-24 .. 2026-12-28 | <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2026_Christmas_Holiday_20261022.pdf> | retrieved live from the operator, 2026-10-23 23:21 UTC | T1 | `a7658155b57c51085cd3b36abc9ff6b91f3ca353cda88365a06459ebb40f0801` |
 
 **Notes on the documents.**
+- The New Year timetables are saved as `normal-weeks/ice-us-cotton-2026-11-27/ICE_Futures_US_2025NewYearHoliday_20241015.pdf` and `holidays/raw/iceus-2025-2027/IFUS_2026_NewYearHoliday_20251107.pdf`. Both state regular Cotton trading on December 31 and January 2 and closure on January 1. The first supplies the pre-window queue for January 2 without extending pre-2025 holiday classification.
+- The 2009 notice, 2014 reminder and product specification are saved under `normal-weeks/ice-us-cotton-2026-11-27/` as `ICE-2009-03-24-COTTON.pdf`, `ICE-2014-01-27.pdf` and `product.html`. The 2018 PCPO notice and September 2026 master are `ICE_PCPO_2018.pdf` and `ICE_Regular_Hours.pdf` in `reviews/2026-10-31-future-update/independent-final-us-review/`.
 - `IFUS-CAL-2026` resolves to the Exchange-Notice copy, whose labels the rows follow; the Holiday-Hours-hub copy <https://www.ice.com/publicdocs/futures/IFUS_Trading_Hours_Holiday_Calendar.pdf> (retrieved 2026-09-12 04:19 UTC, sha256 `da97503545a3fb7607948367d30896685e220b36abed24aa02bbe1a21acb2817`) carries the earlier product-group headers with every `open` / `closed` / `open1` status cell identical.
 - `IFUS-CAL-2027` is an unconditional published future, which LAW-NO-FABRICATED-DATES permits encoding ahead of its effective days.
 - The 2026 equity-index companion notice of the same date (sha256 `6f07e49c36c70ef0c81cf028c3c7f539339b03092c81b22cf9c583f9f0c6b9e2`) is last-trade-day and final-settlement content only and keys nothing here (LAW-SESSION-NOT-EXPIRY).
@@ -57,69 +68,98 @@ Every artifact below is saved in the research store, and each row's own section 
 
 ### 2025
 
-The 2025 block is the `July 5, 2024` — `2025 Trading Holiday Calendar`'s own day-level spine, ICE's per-holiday Exchange Notices for the holidays it issued one for, the **revised** Thanksgiving notice that adds Friday 2025-11-28, and the two London-bank-holiday “Delayed Opens” notices that carry dates the calendar does not list. Every row below was read from the cited artifact's own bytes.
+The 2025 block is the `July 5, 2024` — `2025 Trading Holiday Calendar`'s own day-level spine, ICE's per-holiday Exchange Notices for the holidays it issued one for, the **revised** Thanksgiving notice that adds Friday 2025-11-28, and the two London-bank-holiday “Delayed Opens” notices that carry dates the calendar does not list. The dated rows use each notice or calendar together with the standing PCPO rule to derive the receiving trade date.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `closed` — no instant printed | `IFUS-CAL-2025` | T1 | ICE calendar date 2025-01-01, “New Year’s Day”; the softs column prints `closed` |
+| 2025-01-02 | replacement blocks | 2024-12-31 queue 14:50–18:00, prior evening 19:30–21:00, matching 21:00–14:20 NY | `IFUS-NOTICE-2025-NEWYEAR` | T1 | the prior Cotton business day is two dates back because the intervening day is closed. |
 | 2025-01-20 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-MLK` | T1 | notice date Mon, Jan 20, group line “Sugar No. 11® and 16, Coffee “C” ®, Cotton No. 2®, Cocoa and FCOJ Contracts” |
+| 2025-01-21 | replacement blocks | 2025-01-17 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2025-MLK` | T1 | Cotton is closed on 2025-01-20. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-02-17 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-PRESIDENTS` | T1 | notice date Mon, Feb 17; the same notice's group line also names Canola, which no crate identity models |
+| 2025-02-18 | replacement blocks | 2025-02-14 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2025-PRESIDENTS` | T1 | Cotton is closed on 2025-02-17. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-04-18 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-GOODFRIDAY` | T1 | notice date Fri, Apr 18, the shared softs/Canola group line |
+| 2025-04-21 | replacement blocks | 2025-04-17 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2025-GOODFRIDAY` | T1 | Cotton is closed on 2025-04-18. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-05-26 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-MEMORIAL` | T1 | notice date Mon, May 26, the softs group line |
+| 2025-05-27 | replacement blocks | 2025-05-23 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2025-MEMORIAL` | T1 | Cotton is closed on 2025-05-26. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-06-19 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-JUNETEENTH` | T1 | notice date Thu, June 19 |
+| 2025-06-20 | replacement blocks | 2025-06-18 queue 14:50–18:00, prior evening 19:30–21:00, matching 21:00–14:20 NY | `IFUS-NOTICE-2025-JUNETEENTH` | T1 | the prior Cotton business day is two dates back because the intervening day is closed. |
 | 2025-07-04 | closed | `closed` — no instant printed | `IFUS-CAL-2025` | T1 | ICE calendar date 2025-07-04, “Independence Day”; the softs column prints `closed` |
-| 2025-07-07 | late open | `Late Open for Cotton: 8:00 am` / `Regular open times for all other contracts, and Regular close times for all contracts` — 08:00 NY | `IFUS-NOTICE-2025-INDEPENDENCE` | T1 | notice date Mon, July 7; the notice's own line names Cotton alone, the same shape as 2026-07-06 |
+| 2025-07-07 | replacement blocks | 2025-07-03 post-close queue 14:50–18:00 NY; 08:00–14:20 matching NY | `IFUS-NOTICE-2025-INDEPENDENCE` | T1 | Cotton is closed on 2025-07-04. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-09-01 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-LABORDAY` | T1 | notice date Mon, Sep 1 |
+| 2025-09-02 | replacement blocks | 2025-08-29 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2025-LABORDAY` | T1 | Cotton is closed on 2025-09-01. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2025-11-27 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2025-THANKSGIVING` | T1 | revised notice, Thu, Nov 27 |
-| 2025-11-28 | late open and early close | `Late Open for Cotton - 8:00 am` / `Early Close for Cotton and FCOJ - 1:30 pm` — 08:00 and 13:30 ET | `IFUS-NOTICE-2025-THANKSGIVING` | T1 | revised notice, Fri, Nov 28; Cotton's trading day opens that morning because the prior evening is the Thanksgiving closure |
+| 2025-11-28 | replacement blocks | Wednesday 14:50–18:00 NY; Friday 08:00–13:30 NY | `IFUS-NOTICE-2025-THANKSGIVING` | T1 | Wednesday regular, Thursday closed, Friday 08:00 late open and 13:30 early close; Wednesday’s post-close queue feeds Friday. |
+| 2025-12-01 | replacement blocks | Friday 14:00–15:30, Sunday 19:30–21:00, matching Sunday 21:00 to Monday 14:20 NY | `IFUS-NOTICE-2025-THANKSGIVING` | T1 | Friday post-close queue runs from 30 minutes after the 13:30 close to 15:30; the standing rule assigns it to Monday. |
 | 2025-12-24 | early close | `Early Close at 1:05 pm for Cotton, Coffee “C”, Cocoa and FCOJ.` (TAS trading for Cotton ends 1:00 pm) — 13:05 NY | `IFUS-NOTICE-2025-CHRISTMAS` | T1 | notice date Wed, Dec 24; the notice also starts that eve's Post-Close Pre-Open order entry 30 minutes after each product's close and ends it at 3:30 pm — an order-entry instant this paragraph records beside the row, and not a session boundary |
 | 2025-12-25 | closed | `closed` — no instant printed | `IFUS-CAL-2025` | T1 | ICE calendar date 2025-12-25, “Christmas Day”; the softs column prints `closed` |
-| 2025-12-26 | late open | `Late Open for Coffee “C”, Cocoa, Cotton No. 2 and Sugar 11 - 7:30 am` — 07:30 NY | `IFUS-NOTICE-2025-CHRISTMAS` | T1 | notice date Fri, Dec 26; the notice's own line names Cotton No. 2 and prints `Regular Close Times for all products` |
+| 2025-12-26 | replacement blocks | Wednesday 13:35–15:30; Friday 07:30–14:20 NY | `IFUS-NOTICE-2025-CHRISTMAS` | T1 | The Christmas Eve note begins the queue 30 minutes after the 13:05 close, and ends it at 15:30. Friday has a 07:30 late open and regular close. |
 
 **Gaps, 2025:** **The 2025 Independence Day and Christmas notices were retrieved on 2026-10-09 UTC**, live from the operator through its own notices listing service (the machine channel behind the client-side notices page), closing the #168 channel — and both moved Cotton rows, exactly where the earlier record said they would. The Independence Day notice gives Cotton its own Monday late open: `Late Open for Cotton: 8:00 am` on Mon, July 7, with `Regular open times for all other contracts` — the 2025 twin of 2026-07-06 — and that row is above. The Christmas notice gives Cotton the 1:05 pm Christmas-eve early close (with the Post-Close Pre-Open ending at 3:30 pm, recorded beside the row) and names Cotton No. 2 in Boxing Day's 07:30 late open; both rows are above. **Canola** and **`Daily Gold and Silver`** are product groups on ICE's calendar with no crate identity in this block. **2025-12-31 is normal, not unsourced:** the 2026 New Year's notice's `Wed, Dec 31` column prints `Regular Hours` for the group that names Cotton No. 2.
 
-**Interpretive steps, 2025:** Cotton shares the softs group line on every 2025 notice and is the only family the revised Thanksgiving notice gives a late open to: `Late Open for Cotton - 8:00 am`. It takes no Easter Monday row — the Good Friday notice names “Sugar No. 11, Coffee “C” and Cocoa” and adds “Regular Hours for all other contracts” — and no London-bank-holiday row, because those notices name the same three softs and state that “All other Exchange products will follow their regular trading schedules”. Cotton is a wrapping contract: the session for trade date D commences 21:00 NY on D-1, so the 2025-11-28 row's late open is the observable deletion of the Thanksgiving-evening leg and its early close ends the Friday session at 13:30.
+**Interpretive steps, 2025:** Cotton shares the softs group line on every 2025 notice and is the only family the revised Thanksgiving notice gives a late open to: `Late Open for Cotton - 8:00 am`. Its normal matching open applies on Easter Monday — the Good Friday notice names “Sugar No. 11, Coffee “C” and Cocoa” and adds “Regular Hours for all other contracts” — and the family takes no London-bank-holiday row because those notices name the same three softs and state that “All other Exchange products will follow their regular trading schedules”. Cotton is a wrapping contract: the session for trade date D commences 21:00 NY on D-1, so the 2025-11-28 row's late open is the observable deletion of the Thanksgiving-evening leg and its early close ends the Friday session at 13:30.
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-01-01, “New Year's Day” |
+| 2026-01-02 | replacement blocks | 2025-12-31 queue 14:50–18:00, prior evening 19:30–21:00, matching 21:00–14:20 NY | `IFUS-NOTICE-2026-NEWYEAR` | T1 | the prior Cotton business day is two dates back because the intervening day is closed. |
 | 2026-01-19 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-01-19, “Martin Luther King Day” |
+| 2026-01-20 | replacement blocks | 2026-01-16 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-MLK` | T1 | Cotton is closed on 2026-01-19. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-02-16 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-02-16, “Presidents Day” |
+| 2026-02-17 | replacement blocks | 2026-02-13 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-PRESIDENTS` | T1 | Cotton is closed on 2026-02-16. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-04-03 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2026-GOODFRIDAY` | T1 | notice date Fri, Apr 3 |
+| 2026-04-06 | replacement blocks | 2026-04-02 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-GOODFRIDAY` | T1 | Cotton is closed on 2026-04-03. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-05-25 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2026-MEMORIAL` | T1 | notice date Mon, May 25 |
+| 2026-05-26 | replacement blocks | 2026-05-22 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-MEMORIAL` | T1 | Cotton is closed on 2026-05-25. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-06-19 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2026-JUNETEENTH` | T1 | notice date Fri, June 19 |
+| 2026-06-22 | replacement blocks | 2026-06-18 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-JUNETEENTH` | T1 | Cotton is closed on 2026-06-19. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-07-03 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2026-INDEPENDENCE` | T1 | notice date Fri, July 3 |
-| 2026-07-06 | late open | `Late Open for Cotton: 8:00 am / Regular open times for all other contracts, and Regular close times for all contracts` — 08:00 ET | `IFUS-NOTICE-2026-INDEPENDENCE` | T1 | notice date Mon, July 6 |
+| 2026-07-06 | replacement blocks | 2026-07-02 post-close queue 14:50–18:00 NY; 08:00–14:20 matching NY | `IFUS-NOTICE-2026-INDEPENDENCE` | T1 | Cotton is closed on 2026-07-03. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-09-07 | closed | `Closed`; SETTLEMENT WINDOWS `None` | `IFUS-NOTICE-2026-LABORDAY` | T1 | notice date Mon, Sep 7 |
-| 2026-11-27 | late open and early close | `Late Open for Cotton - 8:00 am`; `Early Close for Cotton and FCOJ - 1:30 pm` — 08:00 open, 13:30 close NY | `IFUS-NOTICE-2026-THANKSGIVING` | T1 | notice dated September 23, 2026, group line “Sugar No. 11® and 16, Coffee “C” ®, Coffee "C"® Metric, Cotton No. 2®, Cocoa and FCOJ”: Thu, Nov 26 `Closed`, Fri, Nov 27 late open and early close, `Regular Hours for Sugar, Coffee and Cocoa`; each family's session runs inside one New York civil day, so the trade date is the identity |
+| 2026-09-08 | replacement blocks | 2026-09-04 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-NOTICE-2026-LABORDAY` | T1 | Cotton is closed on 2026-09-07. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2026-11-26 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-11-26, “Thanksgiving Day” |
+| 2026-11-27 | replacement blocks | Wednesday 14:50–18:00 NY; Friday 08:00–13:30 NY | `IFUS-NOTICE-2026-THANKSGIVING` | T1 | Wednesday regular, Thursday closed, Friday 08:00 late open and 13:30 early close; Wednesday’s post-close queue feeds Friday. |
+| 2026-11-30 | replacement blocks | Friday 14:00–15:30, Sunday 19:30–21:00, matching Sunday 21:00 to Monday 14:20 NY | `IFUS-NOTICE-2026-THANKSGIVING` | T1 | Friday post-close queue runs from 30 minutes after the 13:30 close to 15:30; the standing rule assigns it to Monday. |
 | 2026-12-24 | early close | `Early Close for Coffee “C”, Coffee “C”® Metric, Cotton, Cocoa and FCOJ - 1:05 pm` — 13:05 NY; the Post-Close Pre-Open starts 30 minutes after close and ends at 3:30 pm | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | notice dated October 22, 2026, Thu, Dec 24 column of the softs group line plus its NOTE |
 | 2026-12-25 | closed | `closed` — no instant printed | `IFUS-CAL-2026` | T1 | ICE calendar date 2026-12-25, “Christmas Day” |
 | 2026-12-28 | replacement blocks | matching 08:00–14:20 NY; prior Thursday queue 13:35–15:30 NY | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | the 2026-12-24 post-close queue is carried at offset -4 to the session it feeds; FCOJ's Monday open is regular |
-| 2026-12-29 | replacement blocks | Monday queues 14:50–18:00 and 19:30–21:00 NY, then matching 21:00–14:20 NY | `IFUS-NOTICE-2026-CHRISTMAS` | T1 | the ordinary Tuesday day is restated to remove its raw Christmas-Friday queue; current PCPO and matching grid supply the unchanged boundaries |
 
-**Gaps, 2026:** **The 2026 MLK and Presidents Day notices exist** — the earlier record that none did was an archive-channel failure, corrected on 2026-10-09 UTC when the operator's own notices listing service named both (issued 2025-12-03 and 2025-12-23, retrieved live the same day). Both print `Closed` for the softs group on the holiday, which the calendar rows above already stated; neither adds a Cotton row, and the softs tables carry none for those dates. **The 2026 Christmas notice issued on October 22, 2026 and was retrieved live 2026-10-23 UTC** (`IFUS-NOTICE-2026-CHRISTMAS`): its Christmas-eve column gives Cotton the 1:05 pm early close — the Post-Close Pre-Open starts 30 minutes after the close and ends at 3:30 pm, an order-entry instant recorded beside the row — and its Boxing Day column names Cotton No. 2 in the 8:00 am late open; both rows are above. The 2026-12-28 row is now a complete replacement: it creates the stated Monday 08:00–14:20 NY matching session even though the normal grid has no Sunday leg, and preserves the shortened Christmas-eve queue as described in the 2026-10-31 correction below. The separate 2026-07-06 scalar limitation remains unchanged. The 2026 Thanksgiving notice issued on 2026-09-23 and is read below; the DST-end notice of 2026-09-25 is read above. **`Daily Gold and Silver` may close on further days** the calendar does not name, by the operator's own admission, but that product group has no crate key. **Canola** is on ICE's calendar and has no crate identity in this block. Each gap is closed by the corresponding Exchange Notice.
+**Gaps, 2026:** **The 2026 MLK and Presidents Day notices exist** — the earlier record that none did was an archive-channel failure, corrected on 2026-10-09 UTC when the operator's own notices listing service named both (issued 2025-12-03 and 2025-12-23, retrieved live the same day). Both print `Closed` for the softs group on the holiday, which the calendar rows above already stated; the following Tuesday rows carry the preceding Friday’s PCPO. **The 2026 Christmas notice issued on October 22, 2026 and was retrieved live 2026-10-23 UTC** (`IFUS-NOTICE-2026-CHRISTMAS`): its Christmas-eve column gives Cotton the 1:05 pm early close — the Post-Close Pre-Open starts 30 minutes after the close and ends at 3:30 pm, an order-entry instant recorded beside the row — and its Boxing Day column names Cotton No. 2 in the 8:00 am late open; both rows are above. The 2026-12-28 replacement combines the Thursday queue with the Monday 08:00–14:20 session. The 2026 Thanksgiving notice issued on 2026-09-23 and is read below; the DST-end notice of 2026-09-25 is read above. **`Daily Gold and Silver` may close on further days** the calendar does not name, by the operator's own admission, but that product group has no crate key. **Canola** is on ICE's calendar and has no crate identity in this block. Each gap is closed by the corresponding Exchange Notice.
 
-**Interpretive steps, 2026:** ICE's calendars key one line per product group, not per contract, and the group “Cocoa, Coffee “C”®, Coffee "C"® Metric, Cotton No 2®, FCOJ, Sugar No. 11 and No. 16 Contracts” is the line this family sits on; the per-holiday notices restate the same set as “Sugar No. 11® and 16, Coffee “C”®, Coffee "C"® Metric, Cotton No. 2®, Cocoa and FCOJ”. Where a notice names a subset — Easter Monday's “Sugar No. 11, Coffee “C” and Cocoa”, and 2026-07-06's “Cotton” — only the named families take the row and the notice's own “Regular Hours for all other contracts” is the positive statement of normality for the rest. 2026-10-12 is normal for the same reason. Cotton's session does **not** run inside one New York civil day — it opens at 21:00 NY on D-1 and closes at 14:20 NY on D — but ICE names the civil date on which the affected session closes, and that closing date is the crate's trade date, so the conversion from ICE's civil date to the crate's trade date is still the identity. Cotton is **not** part of the 2026-04-06 late open. Its own 2026-07-06 late open is recorded because ICE states it, but it changes no answer: the crate's Cotton grid opens for trade date D at 21:00 NY on D-1 and names no Sunday, so there is no modelled trade date 2026-07-06 for the row to clip. That limitation is the profile's, recorded under **Gaps and residual risks**, not the holiday table's. **The 2026 Thanksgiving Friday.** The notice gives Friday 2026-11-27 a late open at 08:00 and an early close at 13:30 NY, and also states: “Post-Close Pre-Open order entry sessions for these contracts on the afternoon of Friday November 27 will start 30 minutes after the close of trading and end at 3:30 pm.” The row states both executable boundaries exactly; the PCPO end at 15:30 NY is an order-entry instant the crate's scalar row cannot carry, so it is recorded here beside the row it concerns — the profile's normal 14:50-18:00 rule overstates that day's queue by two and a half hours, an `order_entry` window where no trade can print, and the same sentence shape in the 2025 revised Thanksgiving notice stands behind the shipped 2025-11-28 scalar row.
+**Interpretive steps, 2026:** ICE's calendars key one line per product group, not per contract, and the group “Cocoa, Coffee “C”®, Coffee "C"® Metric, Cotton No 2®, FCOJ, Sugar No. 11 and No. 16 Contracts” is the line this family sits on; the per-holiday notices restate the same set as “Sugar No. 11® and 16, Coffee “C”®, Coffee "C"® Metric, Cotton No. 2®, Cocoa and FCOJ”. Where a notice names a subset — Easter Monday's “Sugar No. 11, Coffee “C” and Cocoa”, and 2026-07-06's “Cotton” — only the named families take the row and the notice's own “Regular Hours for all other contracts” is the positive statement of normality for the rest. 2026-10-12 is normal for the same reason. Cotton's session does **not** run inside one New York civil day — it opens at 21:00 NY on D-1 and closes at 14:20 NY on D — but ICE names the civil date on which the affected session closes, and that closing date is the crate's trade date, so the conversion from ICE's civil date to the crate's trade date is still the identity. Cotton is **not** part of the 2026-04-06 late open. The July notices move Monday matching to 08:00 NY. Both Thanksgiving notices leave Wednesday regular, close Thursday and give Friday matching at 08:00–13:30 NY. Their Friday post-close order-entry window begins 30 minutes after matching ends and ends at 15:30. The following Monday's replacement owns Friday 14:00–15:30, the ordinary Sunday 19:30–21:00 pre-open and the overnight session ending Monday 14:20.
 
 ### 2027
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2027-01-01 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-01-01 |
+| 2027-01-04 | replacement blocks | 2026-12-31 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-01-01. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-01-18 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-01-18 |
+| 2027-01-19 | replacement blocks | 2027-01-15 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-01-18. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-02-15 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-02-15 |
+| 2027-02-16 | replacement blocks | 2027-02-12 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-02-15. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-03-26 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-03-26 |
+| 2027-03-29 | replacement blocks | 2027-03-25 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-03-26. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-05-31 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-05-31 |
+| 2027-06-01 | replacement blocks | 2027-05-28 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-05-31. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-06-18 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-06-18 |
+| 2027-06-21 | replacement blocks | 2027-06-17 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-06-18. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-07-05 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-07-05 |
+| 2027-07-06 | replacement blocks | 2027-07-02 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-07-05. Standing PCPO rule dates the prior business day’s queue to this session. |
 | 2027-09-06 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-09-06 |
+| 2027-09-07 | replacement blocks | 2027-09-03 post-close queue 14:50–18:00 NY; 19:30–21:00 pre-open and 21:00–14:20 matching NY | `IFUS-CAL-2027` | T1 | Cotton is closed on 2027-09-06. Standing PCPO rule dates the prior business day’s queue to this session. |
+| 2027-11-24 | unsourced | holiday timetable unpublished | `IFUS-CAL-2027` | T1 | the annual gives the closure date; the operator’s holiday timetable is needed to determine the post-close queue and its receiving session |
 | 2027-11-25 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-11-25 |
+| 2027-11-26 | unsourced | holiday timetable unpublished | `IFUS-CAL-2027` | T1 | the annual gives the closure date; the operator’s holiday timetable is needed to determine the post-close queue and its receiving session |
+| 2027-11-29 | unsourced | prior Cotton post-close queue timetable unpublished | `IFUS-CAL-2027` | T1 | the queue feeding this trade date depends on the preceding holiday hours; the annual does not state its boundaries. |
+| 2027-12-23 | unsourced | holiday timetable unpublished | `IFUS-CAL-2027` | T1 | the annual gives the closure date; the operator’s holiday timetable is needed to determine the post-close queue and its receiving session |
 | 2027-12-24 | closed | `closed` — no instant printed | `IFUS-CAL-2027` | T1 | ICE calendar date 2027-12-24 |
+| 2027-12-27 | unsourced | holiday timetable unpublished | `IFUS-CAL-2027` | T1 | the annual gives the closure date; the operator’s holiday timetable is needed to determine the post-close queue and its receiving session |
+| 2027-12-28 | unsourced | prior Cotton post-close queue timetable unpublished | `IFUS-CAL-2027` | T1 | the queue feeding this trade date depends on the preceding holiday hours; the annual does not state its boundaries. |
 
-**Gaps, 2027:** **Every 2027 `open1` date carries no instant by construction.** ICE announces those hours “in advance of the respective holiday via Exchange Notices”, and none had issued at retrieval, so the 2027 rows are the calendar's `open`/`closed`/`open1` statuses only. Closed by the 2027 per-holiday Exchange Notices as they are issued. Coverage ends 2028-01-03, the last trade date the 2027 calendar names. Its last two dates are audited normal on the calendar itself: 2027-12-31 is not on ICE's 2027 calendar at all, and on 2028-01-03 — New Year's Day observed, since 2028-01-01 is a Saturday — every product group a crate identity routes to prints `open` and only Canola, which no crate identity models, prints `closed`; so neither date carries a row.
+**Gaps, 2027:** **Every 2027 `open1` date carries no instant by construction.** ICE announces those hours “in advance of the respective holiday via Exchange Notices”, and none had issued at retrieval, so the annual calendar establishes the printed statuses. The standing PCPO rule determines the receiving trade date wherever the adjacent Cotton clocks are known. Closed by the 2027 per-holiday Exchange Notices as they are issued. Coverage ends 2028-01-03, the last trade date the 2027 calendar names. Its last two dates are audited normal on the calendar itself: 2027-12-31 is not on ICE's 2027 calendar at all, and on 2028-01-03 — New Year's Day observed, since 2028-01-01 is a Saturday — every product group a crate identity routes to prints `open` and only Canola, which no crate identity models, prints `closed`; so neither date carries a row.
 
 ## Sources
 
@@ -145,158 +185,27 @@ as each source is re-verified.
 - <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_GoodFridayHoliday20250210.pdf> — ICE 2025 Good Friday holiday notice — Cotton "Regular Hours" on the Monday.
 - <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf> — ICE 2025 Christmas holiday notice.
 
+## Normal week and holiday queues
+
+ICE’s 24 March 2009 notice, page 1, applies its Cotton electronic session from Sunday 29 March for Monday 30 March, at 21:00–14:30 New York time. Page 2 explicitly sets the Cotton pre-open at 19:30 on that Sunday. The August 2011 and January 2013 regular-hours tables repeat 21:00–14:30. The 2014 reminder keeps the open and advances the close to 14:20 starting with the Monday trade date. The September 2026 master retains 21:00–14:20. The master’s single asterisk identifies the previous business day. The double and triple asterisks specify *different Sunday start times* for other products. Cotton’s own effective notice gives its Sunday time directly.
+
+The current product specification gives 19:30 pre-open, 21:00 open, 14:20 close and `closeNextDay: true` for New York. The 2025 and 2026 Good Friday notices both close Cotton on Friday and assign regular hours to Cotton on Easter Monday, which corroborates Sunday evening as the opening day of the Monday session. The executable week has five opens, Sunday through Thursday. Rule 4.22 limits the regular pre-trading phase to order entry before the opening match. Cotton publishes no separate extended matching hours. The trade date follows the final matching close; settlement and TAS do not supply its boundary.
+
+ICE’s 20 September 2018 PCPO notice puts the post-close queue on the prior Exchange business day, beginning 30 minutes after the contract ends trading and ending at 18:00 NY. Its example places Monday 8 October’s queue on Friday 5 October. The normal Cotton close therefore gives 14:50–18:00. The queue accepts GTD, GTC and GTD&T orders and amendments. A Day order entered then is killed at its end. Sunday’s 19:30 regular pre-open is a separate order-entry window.
+
+For the holiday rows, the trade-date assignment is derived from that standing rule and the cited Cotton holiday schedule. After a normal Thursday followed by a closed Friday, Thursday’s queue feeds Monday. Before a closed Monday, the ordinary Friday queue feeds Tuesday; that Monday evening can still open Tuesday’s session. Source times for a shortened post-close queue take precedence. Each replacement states the complete matching session and its queues. The 2027 annual calendar explicitly closes the named Cotton trade dates, and its softs column does not carry the financial groups’ `open1` qualification. Unlisted adjacent trade dates use the published ordinary clock within the audited window, subject to later date-specific notices. The 2027 Thanksgiving Friday and observed Boxing Day arrangements need those notices. The annual does not give the changed matching or queue clocks. The receiving trade dates 2027-11-26 and 2027-12-27, and the 2027-11-24 and 2027-12-23 lead-in dates whose post-close queues cannot yet be attached to complete sessions, are withheld as whole dates until ICE publishes the holiday hours. The following trade dates, 2027-11-29 and 2027-12-28, also own a queue with unpublished boundaries. The holiday table withholds the complete trade date even when its overnight matching window would otherwise follow the ordinary grid. The explicit last-known-week policy can provide that grid. The intervening holiday closures remain in the table.
+
+For example, the strict calendar refuses an order-entry query at 14:50 New York
+time on November 25, 2027, because it needs the unpublished queue arrangement.
+A caller selecting `with_last_known_week()` can see the ordinary Thursday
+queue at that instant, assigned to November 26. The same selection can place
+a Friday queue on December 24 for December 27. These times come from the
+caller-selected weekly profile. ICE’s annual calendar establishes that the
+November 25 and December 24 trade dates are closed.
+
 ## Gaps and residual risks
 
-- **executable** — the Sunday evening open and its pre-open are omitted, so the documented weekend boundary is Friday 14:20 to Monday 19:30 NY. A Sunday 21:00 open is the only reading consistent with the holiday notices, but no ICE sentence states it, and under LAW-PRIMARY-SOURCES an unasserted phase is omitted. The omission is positive evidence rather than mere silence: ICE marks Cotton "21:00*" at two dated points while the grains, Russell, USDX and currency rows carry "**" ("...and on Sunday evenings only trading commences at 18:00") and the energy rows "***". Closing condition: an ICE document naming Sunday for Cotton No. 2. Dormant identity, so recorded here rather than opened as an issue.
-- **executable** — January 2010 to August 2011 is unsourced. ICE Futures U.S. sets these hours administratively, not by rule: the product rulebook chapters captured December 2011 carry no hours provision at all and chapter 4 is trade-practice rules, so no SEC or CFTC filing fixes an ICE Futures U.S. trading hour and the master hours table is the only source. Its earliest surviving edition is AUGUST 2011 (captured 2011-12-12), enumerated exhaustively in the 2026-08-31 review. The gap is bounded by document availability rather than by an unfinished search, so the August-2011 carry-back is the terminal answer. Closing condition: an earlier edition of ICE's master hours table surfacing in a public archive. Dormant identity, so the gap is recorded here rather than opened as an issue (LAW-SERVICE-TIERS).
-- **horizon precision** — the AUGUST 2011 edition of the master table is month-dated by ICE and carries no day, so the ledger horizon is written as `2011-08-01`, the first day of the edition's own month. No ICE document states a day-level date for that edition.
-- **order-entry** — no primary ICE document inside the modelled window states a Cotton pre-open time earlier than the 19:30 on the product page and in the 2018 notice table, so the 19:30-21:00 pre-open is carried back unchanged rather than given an invented cutover.
-
-## Module narrative (moved from src/calendar/schedules/futures/us/ice_cotton.rs on 2026-09-12 UTC)
-
-Cotton No. 2 is a wrapping contract: the session for trade date D commences at
-21:00 NY on calendar day D-1 and closes at 14:20 NY on D. The ICE master hours
-table states the row verbatim as "Cotton No. 2(R)   21:00* - 14:20" with the
-footnote "*Trading commences on previous business day."; the product page
-carries the same 21:00 open, 14:20 close and `closeNextDay` true on
-America/New_York. Rulebook Rule 4.25(c)(ii) puts the last-trading-day close at
-the same clock ("for Cotton No. 2 Futures at 2:20 PM") and Rule 4.25(b)(iii)
-puts the daily settlement window at 14:14 - 14:15, so 14:20 is the session end
-on every trade date, not just ordinary ones.
-
-SUNDAY EVENING — A KNOWN GAP, NOT A MODELLED PHASE. The master-table row
-"*Trading commences on previous business day." pins Monday-Thursday
-evening opens: each of those evenings is the previous business day of the
-next trade date. No ICE primary document names Sunday in connection with
-Cotton No. 2 — the product page carries no day names, and the master
-table's explicit Sunday footnotes ("**... on Sunday evenings only trading
-commences at 18:00", "*** ... 17:50") belong to other products. A Sunday
-21:00 open is the only reading consistent with the holiday notices (the
-2021 Labor Day notice runs "Mon, Sep 6 Closed / Tue, Sep 7 Regular Hours",
-and the 2025 Good Friday notice gives Cotton "Regular Hours" on the Monday
-while the morning-opening softs take a late open), but that reading is
-assembled from indirect material rather than stated by any ICE sentence.
-
-2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
-sets these hours administratively, not by rule. Its product rulebook chapters
-- Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured
-December 2011 - contain no hours provision at all, and chapter 4 is
-trade-practice rules. No SEC or CFTC filing therefore fixes an ICE Futures
-U.S. trading hour, and the master hours table is the only source; its earliest
-surviving edition is August 2011. This interval is bounded by document
-availability, not by an unfinished search, so the carry-back above is the
-terminal answer unless an earlier edition surfaces.
-https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
-https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
-https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
-https://web.archive.org/web/20111120214154id_/https://www.theice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf
-Confirmed independently on 2026-08-31: the JANUARY 2, 2013 edition of the
-master table repeats the same contrast - "Cotton No. 2(R)  21:00* - 14:30"
-against "Grains and Oilseeds", "Russell Index", "USDX(R)" and the currency
-rows all carrying "**", and the energy rows "***". ICE therefore drew the
-Sunday distinction explicitly at two independent dated points and did not
-extend it to Cotton, which is positive evidence for the omission rather than
-mere silence.
-Dated editions of ICE's own master table, official origin
-https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-delivered via
-https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-Under LAW-PRIMARY-SOURCES an unasserted phase is omitted, so the Sunday
-evening open and its pre-open are modelled as closed; the documented
-weekend boundary is therefore Friday 14:20 to Monday 19:30 NY.
-
-WEEKEND WRAP: the tradeable week runs Monday 21:00 open through Friday
-14:20 close, with Monday-Thursday 19:30 pre-opens. There is no
-Friday-evening open, because a Friday 21:00 open would belong to a
-Saturday trade date, which does not exist. The Friday 14:50-18:00 PCPO is
-retained: the product-page footnote and the 2018 notice's worked example
-state it on the prior Exchange business day, so it remains the week's
-final order-entry window, feeding Monday's session — orders accepted
-there wait for the modelled Monday 21:00 open instead of the unsourced
-Sunday one.
-
-https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-https://www.ice.com/products/254/cotton-no-2-futures
-https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
-https://www.ice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf
-https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2021LaborDay_Holiday_20210713.pdf
-https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_GoodFridayHoliday20250210.pdf
-https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf
-
----
-
-Two order-entry-only phases, neither of them executable.
-
-The regular Pre-Open / Pre-Trading Session runs 19:30 - 21:00 NY immediately
-before each open, so it carries the same opening-day mask as the executable
-session. The product page gives Pre-Open "7:30 PM" / "19:30",
-and the 2018 PCPO notice's own table lists Cotton No. 2 with Pre-Open Start
-7:30 PM and End 9:00 PM. Only Limit orders are accepted (Rule 4.22(a):
-"Prior to the opening of a trading session for an Exchange Commodity
-Contract, there will be a Pre-Trading Session designated by the Exchange
-during which time only Limit orders may be entered."), with an Opening Match
-uncrossing between the Pre-Open and the open (Rules 4.22(b), 4.23).
-
-The Post-Close Pre-Open ("PCPO") runs 14:50 - 18:00 NY, 30 minutes after the
-14:20 close, "on the prior Exchange business day" - product page footnote
-verbatim: "**In addition to the Pre-Open start time shown above, there will be
-a Post-Close Pre-Open order entry session from 2:50 pm to 6:00 pm NY time on
-the prior Exchange business day." Every Monday-Friday business day is the
-prior business day of some trading day, so the mask is MON_FRI. The Friday leg
-is stated rather than inferred: the 2018 notice's own worked example places
-the PCPO for trade date Monday 8 October 2018 on Friday 5 October, making the
-Friday PCPO the last order-entry window of the week. The PCPO accepts GTC /
-GTD / GTD&T entry and amendment only; Day orders entered in it are killed at
-its end.
-
-https://www.ice.com/products/254/cotton-no-2-futures
-https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
-CLASSIFICATION. Both phases are order_entry, not extended. Rule 4.22(a)
-restricts the Pre-Trading Session to Limit order entry and puts the Opening
-Match at the open, so no trade prints between 19:30 and 21:00; the PCPO is an
-order entry/amendment window whose own Day orders are killed at its end, so
-no trade prints between 14:50 and 18:00 either. Cotton No. 2 publishes no
-tradeable phase outside its executable session, which leaves the extended
-slice empty.
-
-https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
-
----
-
-Baseline before 2014-02-03. The January 2014 notice moved only the close, from
-14:30 to 14:20 NY, and left the 21:00 open on the previous day untouched, so
-the baseline regular grid is the current one with the older close.
-
-The notice does not address order entry at all, and no primary ICE document
-inside the modelled window states a pre-open time for Cotton earlier than the
-19:30 on the product page and in the 2018 notice table. The 19:30 - 21:00
-Pre-Open is therefore carried back unchanged rather than inventing an earlier
-cutover for it; if ICE moved it at some point before 2014, no primary source
-dates that move.
-
-https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
-
----
-
-2014-02-03: ICE Futures U.S. Exchange Notice, originally issued 6 January
-  2014, "Changes to Daily Trading Hours": "Effective with the start of trading
-  for trade date Monday, February 3, 2014, the Exchange will implement changes
-  to daily trading hours for Sugar No. 11, Coffee "C", Cocoa, Cotton No. 2 and
-  Sugar No. 16 futures and options contracts." Cotton's row moves the close
-  from 14:30 to 14:20; the 21:00 open on the previous day is unchanged.
-  https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
-2018-10-08: ICE Futures U.S. Notice, 20 September 2018, "EXTENSION OF THE
-  PRE-OPEN ORDER ENTRY SESSION FOR COFFEE "C", COTTON NO. 2, COCOA, FCOJ,
-  SUGAR NO. 11 AND SUGAR NO. 16 FUTURES CONTRACTS": "Commencing for trade date
-  Monday, October 8, 2018, the pre-open order entry session for Coffee "C",
-  Cotton No. 2, Cocoa, FCOJ, Sugar No. 11 and Sugar No. 16 futures contracts
-  will be enhanced by the addition of a new post-close pre-open ("PCPO")
-  session that will start at 30 minutes after the end of trading for the
-  contract and end at 6:00 pm on the Exchange business day prior to each
-  trading day." For Cotton the 14:20 close puts that start at 14:50.
-  https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
-Evidence: docs/evidence/ice_us_cotton.md
+The August 2011 master is month-dated, so 2011-08-01 identifies the month of the earlier audited normal week. No exchange cutover is inferred on that day. The 2009 notice also witnesses this Sunday opening clock, but complete continuity from the 2010 floor to August 2011 remains unverified. A period-specific schedule or the intervening amendments would close that historical gap. ICE sets hours administratively; the contemporary Cotton rulebook and Chapter 4 do not supply a trading-hours table. Holiday classification before 2025 remains unaudited.
 
 ## 2026-10-31 UTC post-close queue correction
 
@@ -317,10 +226,7 @@ queue is 13:35–15:30 NY on Thursday 2026-12-24. It is order entry only.
 
 The next matching session is Monday 2026-12-28, 08:00–14:20 NY. The
 notice expressly gives FCOJ its regular open and the other four modelled
-softs an 08:00 late open, and keeps every regular close. For Cotton this
-creates a Monday daytime session even though its normal grid has no Sunday
-evening leg. A scalar late-open clip cannot create that session or preserve
-the Thursday queue. A complete `ReplacementBlocks` row therefore states the
+softs an 08:00 late open, and keeps every regular close. The complete replacement states the
 Thursday queue at offset -4 and the Monday matching block. The queue carries
 2026-12-28, the trade date of the session it feeds, under the charter's
 Post-Close convention; no matching on the closed 2026-12-25 is invented.
@@ -331,15 +237,7 @@ The two new exception dates are forward publications confirmed against the
 operator on 2026-10-31 UTC. The source is sufficiently specified for the
 blocks above; the published 2027 `open1` dates remain withheld.
 
-**Cotton's following normal date, 2026-12-29.** The baseline has no Monday
-matching session, so its Friday afternoon queue would be assigned to Tuesday
-2026-12-29 even after the new Monday session is supplied. A second complete
-replacement restates the normal Tuesday day: Monday 2026-12-28 PCPO
-14:50–18:00 NY, Monday Pre-Open 19:30–21:00 NY, then Monday 21:00 through
-Tuesday 14:20 matching. Those are the unchanged current-profile boundaries
-sourced in the Normal week record above. The replacement removes the raw
-2026-12-25 Friday queue that otherwise survives the closed Christmas Day.
-It adds no new Tuesday clock and preserves Monday's own queue and wrap.
+**2026-11-27 UTC review.** With the Sunday opening restored, Christmas Friday’s raw queue belongs to the 28 December replacement and is suppressed there. Tuesday 2026-12-29 follows the ordinary week, including both Monday queues. It needs no holiday row.
 
 **Forward confirmation completed — 2026-10-31 23:21:52 UTC:** The publication check
 tracked in [#374](https://github.com/SharurTrading/exchange-hours-rs/issues/374)
@@ -347,7 +245,7 @@ was completed before its 2026-12-23 confirm-by date. A fresh live retrieval of
 `IFUS-NOTICE-2026-CHRISTMAS` at 2026-10-31 23:19:44 UTC has SHA-256
 `a7658155b57c51085cd3b36abc9ff6b91f3ca353cda88365a06459ebb40f0801`,
 identical to the original Documents-table artifact. Original retrieval history
-is retained. Cotton keeps the 13:05 NY Christmas-eve close; its 13:35–15:30 queue feeds the 28 December 08:00–14:20 session. The dependent 29 December replacement restates the unchanged Monday queues and overnight matching day.
+is retained. Cotton keeps the 13:05 NY Christmas-eve close; its 13:35–15:30 queue feeds the 28 December 08:00–14:20 session. The ordinary week supplies the 29 December session and both Monday queues.
 
 The current ICE notices listing was also retrieved at 2026-10-31 23:19:44 UTC;
 no superseding Christmas-hours notice was identified among its latest ten

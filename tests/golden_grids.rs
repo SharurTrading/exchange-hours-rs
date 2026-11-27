@@ -20,6 +20,9 @@
 //! ```
 //! then read the diff line by line against the primary source before committing.
 
+mod support;
+
+use crate::support::PROFILE_INSTANT;
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
@@ -55,7 +58,7 @@ fn render_rules(out: &mut String, identity: &str, kind: &str, rules: &[SessionRu
         return;
     }
     for rule in rules {
-        let wrap = if rule.close_ssm <= rule.open_ssm {
+        let wrap = if rule.close_ssm() <= rule.open_ssm() {
             " +1d"
         } else {
             ""
@@ -63,9 +66,9 @@ fn render_rules(out: &mut String, identity: &str, kind: &str, rules: &[SessionRu
         let _ = writeln!(
             out,
             "{identity} | {kind} | {} | {}-{}{wrap}",
-            day_mask(rule.days),
-            clock(rule.open_ssm),
-            clock(rule.close_ssm),
+            day_mask(rule.days()),
+            clock(rule.open_ssm()),
+            clock(rule.close_ssm()),
         );
     }
 }
@@ -75,7 +78,10 @@ fn render(identity: &str, hours: &MarketHours) -> String {
     let _ = writeln!(
         out,
         "{identity} | tz {} | week_open_seconds {}",
-        hours.tz,
+        hours
+            .tz
+            .iana_name()
+            .expect("a built-in grid has an IANA zone"),
         hours.normal_week_open_seconds()
     );
     render_rules(&mut out, identity, "regular ", &hours.regular);
@@ -96,11 +102,7 @@ fn render_all() -> String {
     for exchange in Exchange::ALL {
         out.push_str(&render(
             exchange.as_str(),
-            &hours_for_exchange(
-                *exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            ),
+            &hours_for_exchange(*exchange, PROFILE_INSTANT),
         ));
     }
 
@@ -108,11 +110,7 @@ fn render_all() -> String {
     for key in MarketHoursKey::ALL {
         out.push_str(&render(
             key.as_str(),
-            &hours_for_market_hours_key(
-                *key,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            ),
+            &hours_for_market_hours_key(*key, PROFILE_INSTANT),
         ));
     }
     out

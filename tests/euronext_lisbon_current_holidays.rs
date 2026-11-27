@@ -2,20 +2,21 @@
 
 //! Lisbon cash-calendar arrangements published for 2026.
 
-use chrono::{DateTime, NaiveDate, Utc};
 use exchange_hours::{
-    CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, HolidayKind, SessionKind,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
-fn date(text: &str) -> NaiveDate {
+fn date(text: &str) -> Date {
     text.parse().expect("valid date")
 }
-fn utc(text: &str) -> DateTime<Utc> {
+fn utc(text: &str) -> Timestamp {
     text.parse().expect("valid UTC instant")
 }
 
 #[test]
-fn lisbon_2026_closures_remove_the_executable_day() {
+fn lisbon_published_closures_remove_the_executable_day() {
     let calendar = ExchangeCalendar::new(Exchange::EuronextLisbon);
     for day in [
         "2026-01-01",
@@ -23,6 +24,7 @@ fn lisbon_2026_closures_remove_the_executable_day() {
         "2026-04-06",
         "2026-05-01",
         "2026-12-25",
+        "2027-01-01",
     ] {
         assert_eq!(
             calendar
@@ -30,24 +32,15 @@ fn lisbon_2026_closures_remove_the_executable_day() {
                 .map(exchange_hours::Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        if day == "2026-12-25" {
-            assert!(
-                calendar
-                    .is_closed_trade_date(date(day), SessionKind::Both)
-                    .is_err()
-            );
-        } else {
-            assert_eq!(
-                calendar.is_closed_trade_date(date(day), SessionKind::Both),
-                Ok(true)
-            );
-        }
-        if day != "2026-12-25" {
-            assert_eq!(
-                calendar.is_open(utc(&format!("{day}T12:00:00Z"))),
-                Ok(false)
-            );
-        }
+        assert_eq!(
+            calendar.is_closed_trade_date(date(day), SessionKind::Both),
+            Ok(true),
+            "{day}: the market's column states a full closure"
+        );
+        assert_eq!(
+            calendar.is_open(utc(&format!("{day}T12:00:00Z"))),
+            Ok(false)
+        );
     }
 }
 
@@ -82,7 +75,7 @@ fn lisbon_normal_phases_and_dst_remain_the_named_profile() {
 }
 
 #[test]
-fn lisbon_unpublished_half_days_and_other_years_remain_typed() {
+fn lisbon_unpublished_half_days_and_pre_window_classification_remain_typed() {
     let calendar = ExchangeCalendar::new(Exchange::EuronextLisbon);
     for day in ["2026-12-24", "2026-12-31"] {
         assert_eq!(
@@ -91,19 +84,32 @@ fn lisbon_unpublished_half_days_and_other_years_remain_typed() {
                 .map(exchange_hours::Holiday::kind),
             Some(HolidayKind::Unsourced)
         );
+        let gap = CalendarQueryErrorKind::UnresolvedGap {
+            source: calendar.source(),
+            date: date(day),
+        };
         assert_eq!(
-            calendar.is_open(utc(&format!("{day}T12:00:00Z"))),
-            Err(CalendarQueryError::UnresolvedGap {
-                source: CalendarSource::Exchange(Exchange::EuronextLisbon),
-                date: date(day)
-            })
+            calendar
+                .is_open(utc(&format!("{day}T12:00:00Z")))
+                .map_err(|error| error.kind()),
+            Err(gap)
         );
-    }
-    for day in ["2025-12-31", "2027-01-01"] {
-        assert!(
+        assert_eq!(
             calendar
                 .is_closed_trade_date(date(day), SessionKind::Both)
-                .is_err()
+                .map_err(|error| error.kind()),
+            Err(gap)
         );
     }
+
+    let pre_window = date("2025-12-31");
+    assert_eq!(
+        calendar
+            .is_closed_trade_date(pre_window, SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap {
+            source: calendar.source(),
+            date: pre_window,
+        })
+    );
 }

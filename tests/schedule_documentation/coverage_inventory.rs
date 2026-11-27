@@ -29,12 +29,13 @@
 
 use super::VERIFICATION;
 use super::evidence_files::revision_blocks;
-use chrono::{Datelike as _, NaiveDate, TimeZone as _, Utc, Weekday};
-use chrono_tz::US::Central;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
     CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
     MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::civil::{Date, Weekday};
 use std::fs;
 use std::path::Path;
 
@@ -46,17 +47,17 @@ const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 /// audited window and is not a withheld date. The eight scopes activated on
 /// 2026-10-12 whose holiday windows start later explicitly deny this sample;
 /// the sample audit below pins that list and its negative completeness verdicts.
-const SAMPLE: (i32, u32, u32) = (2025, 6, 10);
+const SAMPLE: (i16, i8, i8) = (2025, 6, 10);
 
 /// The support floor LAW-COVERAGE fixes at 2010-01-01 (the 2026-09-27
 /// amendment moved it back from the 2026-09-21 draft's 2025-01-01).
-fn floor() -> NaiveDate {
-    NaiveDate::from_ymd_opt(2010, 1, 1).expect("2010-01-01 is a valid date")
+fn floor() -> Date {
+    date_opt(2010, 1, 1).expect("2010-01-01 is a valid date")
 }
 
 /// The sample date the `Complete?` cells are compared against.
-fn sample() -> NaiveDate {
-    NaiveDate::from_ymd_opt(SAMPLE.0, SAMPLE.1, SAMPLE.2).expect("the sample is a valid date")
+fn sample() -> Date {
+    date_opt(SAMPLE.0, SAMPLE.1, SAMPLE.2).expect("the sample is a valid date")
 }
 
 /// Splits one Markdown table row into trimmed cells.
@@ -126,7 +127,7 @@ fn calendar_for(name: &str) -> Option<ExchangeCalendar> {
 /// A date outside every coverage window and a date inside one that was audited
 /// normal both answer `None`, so the walk counts rows without needing to know
 /// where the windows fall.
-fn count_from_floor(calendar: ExchangeCalendar, last: NaiveDate) -> (usize, usize) {
+fn count_from_floor(calendar: ExchangeCalendar, last: Date) -> (usize, usize) {
     let (mut dated, mut unsourced) = (0_usize, 0_usize);
     let mut date = floor();
     while date <= last {
@@ -136,7 +137,7 @@ fn count_from_floor(calendar: ExchangeCalendar, last: NaiveDate) -> (usize, usiz
                 unsourced += 1;
             }
         }
-        match date.succ_opt() {
+        match date.tomorrow().ok() {
             Some(next) => date = next,
             None => break,
         }
@@ -295,7 +296,7 @@ fn the_iceus_findings_paragraphs_derive_their_counts_from_the_shipped_tables() {
                 unsourced_2025 += 1;
             }
         }
-        match date.succ_opt() {
+        match date.tomorrow().ok() {
             Some(next) => date = next,
             None => break,
         }
@@ -357,7 +358,7 @@ fn the_iceus_findings_paragraphs_derive_their_counts_from_the_shipped_tables() {
         (2026, 10, 30),
         (2026, 11, 27),
     ] {
-        let named = NaiveDate::from_ymd_opt(year, month, day).expect("a valid section-2 date");
+        let named = date_opt(year, month, day).expect("a valid section-2 date");
         assert!(
             withheld(calendar, named),
             "the findings name {named}, which the shipped table must withhold as Unsourced"
@@ -558,7 +559,7 @@ fn the_ice_us_module_shape_prose_derives_from_the_shipped_tables() {
     );
     assert!(
         note.contains(&format!(
-            "{module_rows} rows where the served identity answers for {venue_rows} dates"
+            "{module_rows} rows where the served identity has {venue_rows} holiday rows"
         )),
         "the routed-table note must state the module total ({module_rows}) and the served \
          identity's own count ({venue_rows})"
@@ -791,7 +792,7 @@ fn verdict_of(name: &str, cell: &str) -> Verdict {
 }
 
 /// Whether this scope's built-in table withholds `date` as `Unsourced`.
-fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
+fn withheld(calendar: ExchangeCalendar, date: Date) -> bool {
     calendar
         .holiday_on(date)
         .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
@@ -875,7 +876,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // 43 since the 2026-10-23 Christmas notice (42 at HEAD): the notice
         // resolved the 2026-12-28 `open1` withholding onto family rows and
         // shipped 2026-12-24 as one new disagreement date to the intersection.
-        ("iceus", 44),
+        ("iceus", 70),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.
@@ -996,7 +997,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
                         )),
                         "{name} is listed as scoped-incomplete but declares no date-scoped gap"
                     );
-                    day.weekday() != Weekday::Sun
+                    day.weekday() != Weekday::Sunday
                 } else {
                     false
                 }
@@ -1281,14 +1282,14 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         let nothing_survives = all_every_day
             && calendar.holiday_coverage().is_some_and(|audited| {
                 audited.windows().iter().all(|(first, last)| {
-                    let mut spans: Vec<(NaiveDate, NaiveDate)> = coverage
+                    let mut spans: Vec<(Date, Date)> = coverage
                         .phase_gaps()
                         .iter()
                         .map(|gap| {
                             (
                                 gap.applies_since().unwrap_or(*first),
                                 gap.applies_until()
-                                    .and_then(|until| until.pred_opt())
+                                    .and_then(|until| until.yesterday().ok())
                                     .unwrap_or(*last),
                             )
                         })
@@ -1300,7 +1301,7 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
                             return false;
                         }
                         if end >= cursor
-                            && let Some(next) = end.succ_opt()
+                            && let Some(next) = end.tomorrow().ok()
                         {
                             cursor = next;
                         }
@@ -1363,44 +1364,36 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
 /// 16:05 or 16:20 CT on Sunday 2025-06-08, the instants the quarter-hour probe
 /// uses: 16:05 falls inside CME's disputed 16:00-16:15 CT window and 16:20
 /// inside the sourced 16:15-17:00 intersection it is served from.
-fn chicago(hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+fn chicago(hour: u32, minute: u32) -> jiff::Timestamp {
     // A Sunday inside the residual span 2012-05-28..2016-01-02: Sundays from
     // 2016-01-03 serve the witnessed 16:00:00 CT onset (the 2026-10-16
     // market-data sweep), so the #79 intersection survives there alone.
-    Central
-        .with_ymd_and_hms(2015, 6, 7, hour, minute, 0)
-        .single()
+    local_opt(&US_CENTRAL, (2015, 6, 7), (hour, minute, 0))
         .expect("2015-06-07 is a Sunday with one 16:05/16:20 CT instant")
-        .with_timezone(&Utc)
 }
 
 /// 16:05 CT on one venue-local date, for the era probe below.
-fn chicago_on(date: NaiveDate) -> chrono::DateTime<Utc> {
-    Central
-        .from_local_datetime(
-            &date
-                .and_hms_opt(16, 5, 0)
-                .expect("16:05 is a valid local time"),
-        )
-        .single()
+fn chicago_on(date: Date) -> jiff::Timestamp {
+    US_CENTRAL
+        .to_ambiguous_timestamp(date.at(16, 5, 0, 0))
+        .unambiguous()
         .expect("the era probe uses Sundays with one 16:05 CT instant")
-        .with_timezone(&Utc)
 }
 
 /// A venue-local date for the era probe.
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("the era probe uses valid dates")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("the era probe uses valid dates")
 }
 
 /// The Sundays from `first` through `last`, inclusive.
-fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
+fn sundays_between(first: Date, last: Date) -> Vec<Date> {
     let mut sundays = Vec::new();
     let mut date = first;
     while date <= last {
-        if date.weekday() == Weekday::Sun {
+        if date.weekday() == Weekday::Sunday {
             sundays.push(date);
         }
-        date = date.succ_opt().expect("the probe window is bounded");
+        date = date.tomorrow().expect("the probe window is bounded");
     }
     assert_eq!(
         sundays.first(),
@@ -1474,7 +1467,7 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             assert!(
                 calendar
                     .coverage()
-                    .is_complete_on(inside.with_timezone(&Central).date_naive()),
+                    .is_complete_on(inside.to_zoned_datetime(US_CENTRAL).date()),
                 "{name}'s bracket-era Sunday is complete under the residual convention"
             );
             carrying_residual.push(name);
@@ -1586,7 +1579,7 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
 fn inventory_sample_date_is_inside_every_scopes_audit() {
     let day = sample();
     assert_eq!(
-        day.format("%A").to_string(),
+        day.strftime("%A").to_string(),
         "Tuesday",
         "the sample must not be a weekend"
     );
@@ -1658,12 +1651,12 @@ struct QuarterHourEra {
     name: &'static str,
     /// The first date the module's current profile governs — the last date its
     /// dated profile does not.
-    bound: (i32, u32, u32),
+    bound: (i16, i8, i8),
     /// The last Sunday before `bound`, when the dated profile withholds the
     /// quarter-hour.
-    dated_sunday: (i32, u32, u32),
+    dated_sunday: (i16, i8, i8),
     /// The first Sunday at or after `bound`, when the current profile serves it.
-    current_sunday: (i32, u32, u32),
+    current_sunday: (i16, i8, i8),
 }
 
 /// The seven scopes that withhold CME's Sunday 16:00-16:15 CT quarter-hour.

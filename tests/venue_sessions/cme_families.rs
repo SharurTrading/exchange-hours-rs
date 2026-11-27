@@ -3,6 +3,8 @@
 //! CME Group product-family current and historical contracts.
 
 use super::prelude::*;
+use crate::support::{PROFILE_INSTANT, date_opt};
+use jiff::SignedDuration;
 
 #[test]
 fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
@@ -211,10 +213,7 @@ fn grains_queues_and_pcp_begin_on_the_sourced_2013_opening_day() {
 #[test]
 fn livestock_current_profile_is_the_weekday_day_session() {
     let profile = session_profile(MarketHoursKey::GlobexLivestock);
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexLivestock,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexLivestock, PROFILE_INSTANT);
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
 
     // Livestock has a day session plus queues and no electronic overnight
@@ -245,7 +244,7 @@ fn livestock_current_profile_is_the_weekday_day_session() {
             .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 4, 20), (13, 5, 0))),
     );
-    let saturday = chrono::NaiveDate::from_ymd_opt(2026, 4, 25).expect("valid fixture date");
+    let saturday = date_opt(2026, 4, 25).expect("valid fixture date");
     assert!(
         calendar
             .is_closed_all_day_on(saturday, SessionKind::Both)
@@ -255,33 +254,21 @@ fn livestock_current_profile_is_the_weekday_day_session() {
 
 #[test]
 fn fixed_current_cme_families_include_operator_published_order_phases() {
-    let equity = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEquityIndex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let equity = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, PROFILE_INSTANT);
     assert!(!equity.is_open(ct((2026, 4, 19), (15, 59, 59))));
     assert!(equity.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(equity.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
     assert!(equity.is_open_extended(ct((2026, 4, 20), (15, 15, 0))));
 
-    let energy = hours_for_market_hours_key(
-        MarketHoursKey::GlobexEnergy,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let energy = hours_for_market_hours_key(MarketHoursKey::GlobexEnergy, PROFILE_INSTANT);
     assert!(energy.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(energy.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
 
-    let fx = hours_for_market_hours_key(
-        MarketHoursKey::GlobexFx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let fx = hours_for_market_hours_key(MarketHoursKey::GlobexFx, PROFILE_INSTANT);
     assert!(fx.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(fx.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
 
-    let grains = hours_for_market_hours_key(
-        MarketHoursKey::GlobexGrains,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let grains = hours_for_market_hours_key(MarketHoursKey::GlobexGrains, PROFILE_INSTANT);
     assert!(grains.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(!grains.is_open(ct((2026, 4, 20), (7, 59, 59))));
     assert!(grains.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))));
@@ -299,10 +286,7 @@ fn dated_cme_calendars_expose_the_undated_phase_limit_without_inventing_cutovers
         MarketHoursKey::GlobexFx,
         MarketHoursKey::GlobexInterestRates,
     ] {
-        let fixed = hours_for_market_hours_key(
-            key,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let fixed = hours_for_market_hours_key(key, PROFILE_INSTANT);
         let dated = calendar_for_market_hours_key(key);
         let sunday_queue = ct((2026, 4, 19), (16, 30, 0));
         assert!(
@@ -403,10 +387,7 @@ fn livestock_dated_preopen_begins_at_the_sourced_2020_revision() {
 #[test]
 fn cryptocurrency_current_profile_preserves_exact_open_state() {
     let profile = session_profile(MarketHoursKey::GlobexCryptocurrency);
-    let hours = hours_for_market_hours_key(
-        MarketHoursKey::GlobexCryptocurrency,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency, PROFILE_INSTANT);
 
     assert_eq!(profile.regular, []);
     assert!(!profile.has_weekend_close);
@@ -432,7 +413,7 @@ fn cryptocurrency_current_profile_preserves_exact_open_state() {
 #[test]
 fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
-    let monday = chrono::NaiveDate::from_ymd_opt(2026, 6, 8).expect("valid fixture date");
+    let monday = date_opt(2026, 6, 8).expect("valid fixture date");
     let first_block = (ct((2026, 6, 5), (16, 2, 0)), ct((2026, 6, 6), (2, 0, 0)));
     let second_block = (ct((2026, 6, 6), (4, 0, 0)), ct((2026, 6, 8), (16, 0, 0)));
 
@@ -505,10 +486,7 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
             .is_maintenance(ct((2026, 6, 6), (3, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
     );
-    let fixed = hours_for_market_hours_key(
-        MarketHoursKey::GlobexCryptocurrency,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let fixed = hours_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency, PROFILE_INSTANT);
     assert_eq!(
         fixed.session_state(ct((2026, 6, 6), (3, 0, 0))),
         SessionState::Maintenance,
@@ -689,7 +667,7 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
         );
         let reopen = ct(saturday, (reopen_hour, reopen_minute, 0));
         assert!(
-            !temporary.is_open(reopen - chrono::Duration::seconds(1)),
+            !temporary.is_open(reopen - SignedDuration::from_secs(1)),
             "{saturday:?}"
         );
         assert!(
@@ -716,7 +694,7 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
         let (next_hour, next_minute) = next_reopen;
         assert!(
             !restored.is_open(
-                ct(next_saturday, (next_hour, next_minute, 0)) - chrono::Duration::seconds(1)
+                ct(next_saturday, (next_hour, next_minute, 0)) - SignedDuration::from_secs(1)
             ),
             "{next_saturday:?}"
         );
@@ -784,19 +762,19 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
         calendar
             .trade_date(ct((2026, 10, 3), (6, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(zoned(US::Central, (2026, 10, 5), (0, 0, 0)).date_naive())
+        Some(date_opt(2026, 10, 5).expect("valid fixture date"))
     );
     assert_eq!(
         calendar
             .trade_date(ct((2026, 10, 24), (16, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(zoned(US::Central, (2026, 10, 26), (0, 0, 0)).date_naive())
+        Some(date_opt(2026, 10, 26).expect("valid fixture date"))
     );
     assert_eq!(
         calendar
             .trade_date(ct((2026, 10, 31), (6, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(zoned(US::Central, (2026, 11, 2), (0, 0, 0)).date_naive())
+        Some(date_opt(2026, 11, 2).expect("valid fixture date"))
     );
 }
 

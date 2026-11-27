@@ -39,12 +39,14 @@
 //! page publishes no country-scope section at all for 2027-2030, so the
 //! extension years carry the Eurex-wide set alone.
 
-use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::Europe;
+use crate::support::zones::BERLIN;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
     SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
 fn identities() -> [(&'static str, ExchangeCalendar); 3] {
     [
@@ -78,16 +80,12 @@ fn benchmark_identities() -> [(&'static str, ExchangeCalendar); 2] {
     ]
 }
 
-fn cet(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Europe::Berlin
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Berlin instant")
-        .with_timezone(&Utc)
+fn cet(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&BERLIN, date, time).expect("fixture must be an unambiguous Berlin instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 /// The 93 closures the Trading Calendar editions state for 2010-2024, in
@@ -100,7 +98,7 @@ fn day(year: i32, month: u32, date: u32) -> NaiveDate {
 /// distinction only becomes load-bearing with the 2027-2030 page table, whose
 /// weekend-falling entries key no row — fenced in
 /// `the_regulations_table_keys_2027_through_2030` below.)
-const CALENDAR_EDITION_CLOSURES: [(i32, u32, u32); 93] = [
+const CALENDAR_EDITION_CLOSURES: [(i16, i8, i8); 93] = [
     (2010, 1, 1),
     (2010, 4, 2),
     (2010, 4, 5),
@@ -200,14 +198,14 @@ const CALENDAR_EDITION_CLOSURES: [(i32, u32, u32); 93] = [
 /// probes.
 struct GermanClosure {
     /// The closure day the edition states.
-    closure: (i32, u32, u32),
+    closure: (i16, i8, i8),
     /// The last session day before it, whose fixed-income evening leg carries
     /// the closure's trade date.
-    eve: (i32, u32, u32),
+    eve: (i16, i8, i8),
     /// An ordinary control whose own evening leg survives.
-    control: (i32, u32, u32),
+    control: (i16, i8, i8),
     /// The first session day after the closure.
-    successor: (i32, u32, u32),
+    successor: (i16, i8, i8),
 }
 
 /// The eight dated German-scope closures the 2014, 2016, 2017 and 2018
@@ -377,7 +375,7 @@ fn trading_resumes_on_the_first_open_day_after_the_christmas_block() {
             .expect("the coverage contract must answer a covered date")
             .expect("a reopening must exist inside the bounded search");
         assert_eq!(
-            next.0.with_timezone(&Europe::Berlin).date_naive(),
+            next.0.to_zoned_datetime(BERLIN).date(),
             day(2026, 12, 28),
             "{name} must reopen on 28 December"
         );
@@ -437,7 +435,7 @@ fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
             calendar.holiday_on(
                 coverage
                     .first()
-                    .checked_sub_days(Days::new(1))
+                    .checked_sub(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -450,7 +448,7 @@ fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
             calendar.holiday_on(
                 coverage
                     .last()
-                    .checked_add_days(Days::new(1))
+                    .checked_add(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -464,8 +462,8 @@ fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
         let outside = cet((2031, 1, 1), (12, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(outside),
-                Err(CalendarQueryError::OutsideCoveredRange {
+                calendar.is_open(outside).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::OutsideCoveredRange {
                     date,
                     ..
                 }) if date == day(2031, 1, 1)
@@ -485,12 +483,7 @@ fn the_window_stops_at_2030_and_the_indicative_years_beyond_refuse() {
 /// One extension year's page dates: the weekday entries that ship, the
 /// weekend-falling entries that key no row, and the document id every row of
 /// the year cites (the one multi-year id, `EUREX-HOLREG-2027-2030`).
-type ExtensionYear = (
-    i32,
-    &'static [(u32, u32)],
-    &'static [(u32, u32)],
-    &'static str,
-);
+type ExtensionYear = (i16, &'static [(i8, i8)], &'static [(i8, i8)], &'static str);
 
 /// The regulations page's `Non-trading days at Eurex 2026 - 2030` table keys
 /// 2027-2030: every weekday entry ships, every weekend-falling entry keys no
@@ -597,7 +590,7 @@ fn the_regulations_table_keys_2027_through_2030() {
             .expect("the coverage contract must answer a covered date")
             .expect("a reopening must exist inside the bounded search");
         assert_eq!(
-            next.0.with_timezone(&Europe::Berlin).date_naive(),
+            next.0.to_zoned_datetime(BERLIN).date(),
             day(2030, 1, 2),
             "{name} must reopen on 2 January 2030"
         );
@@ -1129,8 +1122,8 @@ fn the_window_reaches_the_floor_and_refuses_below_it() {
         let below = cet((2009, 12, 31), (12, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(below),
-                Err(CalendarQueryError::BeforeSupportFloor {
+                calendar.is_open(below).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::BeforeSupportFloor {
                     date,
                     ..
                 }) if date == day(2009, 12, 31)

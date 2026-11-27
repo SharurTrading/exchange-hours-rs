@@ -2,31 +2,31 @@
 
 //! Date-aware normal-week duration over the shared query engine.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
-use super::ExchangeCalendar;
+use super::ZonedExchangeCalendar;
 use crate::calendar::CalendarQueryError;
 use crate::calendar::query::{QueryContext, week};
 
-impl ExchangeCalendar {
+impl ZonedExchangeCalendar<'_> {
     /// Returns distinct scheduled open seconds in the venue-local week that
     /// contains `instant`, selecting each session by its actual opening day.
     ///
     /// # Errors
     ///
-    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// Returns [`crate::CalendarQueryErrorKind::BeforeSupportFloor`] when the venue-local
     /// day this query is addressed to precedes
     /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
-    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// [`crate::CalendarQueryErrorKind::OutsideCoveredRange`] when the identity has no
     /// sourced answer for a day the query depends on,
-    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// [`crate::CalendarQueryErrorKind::UnresolvedGap`] when that day is one the identity
     /// withholds as `Unsourced`, and
-    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// [`crate::CalendarQueryErrorKind::SearchExhausted`] when a bounded forward search
     /// runs out of window on a day it cannot establish. An error is never
     /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn normal_week_open_seconds_containing(
         self,
-        instant: DateTime<Utc>,
+        instant: Timestamp,
     ) -> Result<u64, CalendarQueryError> {
         let context = QueryContext::date_aware(self);
         context.require_floor_at(instant)?;

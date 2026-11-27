@@ -41,32 +41,33 @@
 //! fails that walk.
 
 use super::prelude::*;
+use crate::support::zones::{
+    AUCKLAND, ISTANBUL, LONDON, PARIS, RIYADH, SAO_PAULO, SINGAPORE, SYDNEY, TORONTO,
+};
+use crate::support::{date_opt, local_opt};
+use jiff::SignedDuration;
+use jiff::civil::Date;
+use jiff::tz::TimeZone;
 
-use chrono::{Datelike as _, TimeDelta, TimeZone as _, Utc};
-use chrono_tz::{America, Asia, Australia, Europe, Pacific};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
+    CalendarQueryErrorKind, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
     ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
-fn sao_paulo(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    local(America::Sao_Paulo, date, time)
+fn sao_paulo(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local(&SAO_PAULO, date, time)
 }
 
-fn riyadh(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    Asia::Riyadh
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Riyadh instant")
-        .with_timezone(&chrono::Utc)
+fn riyadh(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&RIYADH, date, time).expect("fixture must be an unambiguous Riyadh instant")
 }
 
-fn istanbul(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    local(Europe::Istanbul, date, time)
+fn istanbul(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local(&ISTANBUL, date, time)
 }
 
 fn calendar_for(exchange: Exchange) -> ExchangeCalendar {
@@ -75,7 +76,7 @@ fn calendar_for(exchange: Exchange) -> ExchangeCalendar {
 
 /// The instant constructor one section uses, threaded through the helpers so
 /// every probe stays in the venue's own zone.
-type At = dyn Fn((i32, u32, u32), (u32, u32, u32)) -> chrono::DateTime<chrono::Utc>;
+type At = dyn Fn((i16, i8, i8), (u32, u32, u32)) -> jiff::Timestamp;
 
 /// Asserts a closure row on `date`: the kind, no session in either phase, and
 /// the whole venue-local day shut.
@@ -84,7 +85,7 @@ type At = dyn Fn((i32, u32, u32), (u32, u32, u32)) -> chrono::DateTime<chrono::U
 /// the derivation reads behind the query's bounds, and for 2025-01-01 that
 /// reads 2024-12-31, outside every audited window, so every identity-backed
 /// probe on the day refuses rather than answers.
-fn assert_closed(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str, at: &At) {
+fn assert_closed(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str, at: &At) {
     assert_eq!(
         calendar
             .holiday_on(day(date.0, date.1, date.2))
@@ -93,39 +94,27 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str,
         "{label}: {date:?} carries a closure row"
     );
     let covered = day(date.0, date.1, date.2);
+    assert_eq!(
+        calendar.is_closed_trade_date(covered, SessionKind::Both),
+        Ok(true),
+        "{label}: {date:?} has no session in either phase"
+    );
     let coverage = calendar
         .holiday_coverage()
         .expect("these venues ship built-in tables");
     if coverage.first() == covered {
-        // The window's first closure is special exactly as the CFE suite
-        // states it: the derivation reads behind the query's bounds — the day
-        // before the window, outside every audited window — so the
-        // identity-backed probes on the day refuse rather than answer.
-        assert!(
-            calendar
-                .is_closed_trade_date(covered, SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
-                )),
-            "{label}: the derivation behind {date:?} reads outside the audited windows"
-        );
+        // An instant query can depend on an opening day before the window
+        // even when the trade-date classification answers from its own row.
         assert!(
             calendar
                 .is_open(at(date, (11, 0, 0)))
                 .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
+                    error.kind(),
+                    CalendarQueryErrorKind::OutsideCoveredRange { .. }
                 )),
             "{label}: probes on {date:?} refuse while the derivation reaches behind the window"
         );
     } else {
-        assert!(
-            calendar
-                .is_closed_trade_date(covered, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
-            "{label}: {date:?} has no session in either phase"
-        );
         assert!(
             !calendar
                 .is_open(at(date, (11, 0, 0)))
@@ -139,7 +128,7 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str,
 /// the end-exclusive close both ways.
 fn assert_ordinary_weekday(
     calendar: ExchangeCalendar,
-    date: (i32, u32, u32),
+    date: (i16, i8, i8),
     open: (u32, u32),
     close: (u32, u32),
     instant_of: &At,
@@ -157,7 +146,7 @@ fn assert_ordinary_weekday(
     );
     assert!(
         calendar
-            .is_open(close_at - chrono::TimeDelta::nanoseconds(1))
+            .is_open(close_at - SignedDuration::from_nanos(1))
             .expect("a covered date answers"),
         "{date:?} is open one nanosecond before its close"
     );
@@ -169,25 +158,18 @@ fn assert_ordinary_weekday(
 
 /// One nanosecond before a venue-local wall-clock instant, for end-exclusive
 /// bounds.
-fn before(
-    tz: chrono_tz::Tz,
-    date: (i32, u32, u32),
-    time: (u32, u32, u32),
-) -> chrono::DateTime<Utc> {
-    tz.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous local instant")
-        .with_timezone(&Utc)
-        - TimeDelta::nanoseconds(1)
+fn before(tz: &TimeZone, date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(tz, date, time).expect("fixture must be an unambiguous local instant")
+        - SignedDuration::from_nanos(1)
 }
 
 /// One walked row: its venue-local date as a triple, its kind label, and the
 /// scalar instant the kind states when it states one.
-type WalkedRow = ((i32, u32, u32), String, Option<u32>);
+type WalkedRow = ((i16, i8, i8), String, Option<u32>);
 
 /// Asserts `date` is a printed closure: the row kind, no session in either
 /// phase, and a shut envelope at intraday probes.
-fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str) {
+fn assert_closure(calendar: ExchangeCalendar, date: (i16, i8, i8), label: &str) {
     let d = day(date.0, date.1, date.2);
     assert_eq!(
         calendar.holiday_on(d).map(Holiday::kind),
@@ -235,13 +217,13 @@ fn rows_per_year(calendar: ExchangeCalendar) -> Vec<WalkedRow> {
             rows.push(((date.year(), date.month(), date.day()), kind, instant));
         }
         date = date
-            .succ_opt()
+            .tomorrow()
             .expect("the windows stay inside the representable calendar");
     }
     rows
 }
 
-fn tally(rows: &[WalkedRow], year: i32) -> (usize, usize, usize) {
+fn tally(rows: &[WalkedRow], year: i16) -> (usize, usize, usize) {
     let mut closed = 0;
     let mut early = 0;
     let mut replacement = 0;
@@ -263,7 +245,7 @@ fn tally(rows: &[WalkedRow], year: i32) -> (usize, usize, usize) {
 /// withholds: an operator era can leave a date inside its window printed by
 /// nothing (`Unsourced`), and a walk that panicked on that kind could not
 /// fence a table that ships it.
-fn census(rows: &[WalkedRow], year: i32) -> (usize, usize, usize, usize) {
+fn census(rows: &[WalkedRow], year: i16) -> (usize, usize, usize, usize) {
     let mut closed = 0;
     let mut early = 0;
     let mut replacement = 0;
@@ -289,7 +271,7 @@ fn census(rows: &[WalkedRow], year: i32) -> (usize, usize, usize, usize) {
 // ---------------------------------------------------------------------------
 
 /// One operator year's weekday closure list and the label its probes carry.
-type B3YearClosures<'a> = (&'a [(i32, u32, u32)], &'a str);
+type B3YearClosures<'a> = (&'a [(i16, i8, i8)], &'a str);
 
 /// The weekday closure rows per calendar year, exactly as the operator's own
 /// artifacts print them: the yearly announcements (2011, 2012, 2015), the
@@ -796,7 +778,7 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
     assert_eq!(coverage.first(), day(2011, 1, 1));
     assert_eq!(coverage.last(), day(2026, 12, 31));
     assert_eq!(
-        calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
+        calendar.holiday_on(coverage.first().yesterday().expect("representable")),
         None,
         "no answer below the window: 2010 is the unaudited span"
     );
@@ -812,8 +794,8 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2010, 6, 2), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 6, 2)
+            calendar.is_closed_trade_date(day(2010, 6, 2), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2010, 6, 2)
         ),
         "the 2010 classification refuses: no audited window brackets the date"
     );
@@ -821,14 +803,14 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
     // refuses the date rather than claiming a normal Monday.
     let outside = sao_paulo((2027, 1, 5), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 5)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 5)
     ));
     // Pre-floor refusal.
     let ancient = sao_paulo((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -850,7 +832,7 @@ fn b3_window_ships_only_closures_and_one_late_open_shape() {
                 panic!("{date} ships a kind B3's calendars do not state: {other:?}")
             }
         }
-        date = date.succ_opt().expect("the window stays representable");
+        date = date.tomorrow().expect("the window stays representable");
     }
     assert_eq!(
         (closed, late_opens),
@@ -868,7 +850,7 @@ fn b3_window_ships_only_closures_and_one_late_open_shape() {
         ) {
             late_dates.push((date.year(), date.month(), date.day()));
         }
-        date = date.succ_opt().expect("the window stays representable");
+        date = date.tomorrow().expect("the window stays representable");
     }
     assert_eq!(
         late_dates,
@@ -1167,12 +1149,12 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
     assert_eq!(coverage.first(), day(2021, 1, 1));
     assert_eq!(coverage.last(), day(2029, 4, 29));
     assert_eq!(
-        calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
+        calendar.holiday_on(coverage.first().yesterday().expect("representable")),
         None,
         "no answer below the window: 2013-2020 is the unaudited span"
     );
     assert_eq!(
-        calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
+        calendar.holiday_on(coverage.last().tomorrow().expect("representable")),
         None
     );
     // A 2020 probe sits in the unaudited span below the first window: the
@@ -1187,16 +1169,16 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2020, 12, 15), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2020, 12, 15)
+            calendar.is_closed_trade_date(day(2020, 12, 15), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2020, 12, 15)
         ),
         "the 2020 classification refuses: no audited window brackets the date"
     );
     // Pre-floor refusal.
     let ancient = riyadh((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -1216,7 +1198,7 @@ fn tadawul_window_ships_only_closures() {
             Some(HolidayKind::Unsourced) => unsourced += 1,
             Some(kind) => panic!("{date} ships a kind Tadawul's calendar does not state: {kind:?}"),
         }
-        date = date.succ_opt().expect("the window stays representable");
+        date = date.tomorrow().expect("the window stays representable");
     }
     assert_eq!(closed, 98, "closures, Tadawul 2021-2029-04-26");
     assert_eq!(unsourced, 3, "the 2028/2029 page-gap dates withhold");
@@ -1242,13 +1224,19 @@ fn tadawul_page_gap_dates_refuse_rather_than_claim() {
         assert!(
             calendar
                 .is_open(riyadh(date, (11, 0, 0)))
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "tadawul {date:?}: is_open must refuse rather than claim"
         );
         assert!(
             calendar
                 .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                .is_err_and(|error| matches!(
+                    error.kind(),
+                    CalendarQueryErrorKind::UnresolvedGap { .. }
+                )),
             "tadawul {date:?}: the closure question must refuse"
         );
     }
@@ -1266,7 +1254,7 @@ fn tadawul_page_gap_dates_refuse_rather_than_claim() {
 // ---------------------------------------------------------------------------
 
 /// One operator year's weekday closure list and the label its probes carry.
-type BistYearClosures<'a> = (&'a [(i32, u32, u32)], &'a str);
+type BistYearClosures<'a> = (&'a [(i16, i8, i8)], &'a str);
 
 /// The weekday closure rows per calendar year, exactly as the operator's
 /// `Resmi Tatil Günleri` page (2025-2026: with the annex) prints them. A date
@@ -1696,7 +1684,7 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
     assert_eq!(coverage.first(), day(2012, 3, 2));
     assert_eq!(coverage.last(), day(2026, 12, 31));
     assert_eq!(
-        calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
+        calendar.holiday_on(coverage.last().tomorrow().expect("representable")),
         None,
         "no answer past the window: 2027 is unpublished"
     );
@@ -1714,22 +1702,22 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
     );
     assert!(
         matches!(
-            calendar.is_closed_trade_date(day(2012, 2, 20), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2012, 2, 20)
+            calendar.is_closed_trade_date(day(2012, 2, 20), SessionKind::Both).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { date, .. }) if date == day(2012, 2, 20)
         ),
         "the 2012 classification refuses: no audited window brackets the date"
     );
     // 2027-01-02 is inside 2027 and outside the audited window.
     let outside = istanbul((2027, 1, 4), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
+        calendar.is_open(outside).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
     ));
     // Pre-floor refusal.
     let ancient = istanbul((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
-        calendar.is_open(ancient),
-        Err(CalendarQueryError::BeforeSupportFloor { .. })
+        calendar.is_open(ancient).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
     ));
 }
 
@@ -1753,7 +1741,7 @@ fn borsa_istanbul_window_ships_only_closures_and_half_days() {
                 panic!("{date} ships a kind Borsa Istanbul's tables do not state: {other:?}")
             }
         }
-        date = date.succ_opt().expect("the window stays representable");
+        date = date.tomorrow().expect("the window stays representable");
     }
     assert_eq!(
         (closed, half_days),
@@ -1797,12 +1785,8 @@ mod nzx {
         calendar_for_exchange(Exchange::Nzx)
     }
 
-    fn akl(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        Pacific::Auckland
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous Auckland instant")
-            .with_timezone(&Utc)
+    fn akl(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&AUCKLAND, date, time).expect("fixture must be an unambiguous Auckland instant")
     }
 
     #[test]
@@ -1970,7 +1954,7 @@ mod nzx {
     #[test]
     fn the_pre_2025_abbreviated_days_restate_their_era_grid() {
         let calendar = nzx();
-        let blocks_of = |date: (i32, u32, u32)| match calendar
+        let blocks_of = |date: (i16, i8, i8)| match calendar
             .holiday_on(day(date.0, date.1, date.2))
             .map(Holiday::kind)
         {
@@ -2098,7 +2082,7 @@ mod nzx {
         );
         assert!(
             calendar
-                .is_open(before(Pacific::Auckland, (2025, 7, 15), (17, 0, 30)))
+                .is_open(before(&AUCKLAND, (2025, 7, 15), (17, 0, 30)))
                 .expect("covered")
         );
         assert!(
@@ -2175,14 +2159,18 @@ mod nzx {
         );
         // Before the support floor.
         assert!(matches!(
-            calendar.is_open(akl((2009, 12, 31), (11, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(akl((2009, 12, 31), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // Past the operator's horizon: 2027-01-05 is a Tuesday NZX has not
         // published, so the identity refuses rather than claiming normal.
         assert!(matches!(
-            calendar.is_open(akl((2027, 1, 5), (11, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_open(akl((2027, 1, 5), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         // 2027-01-04 itself is the horizon day and is a printed closure.
         assert!(
@@ -2293,12 +2281,8 @@ mod asx {
         calendar_for_exchange(Exchange::Asx)
     }
 
-    fn syd(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        Australia::Sydney
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous Sydney instant")
-            .with_timezone(&Utc)
+    fn syd(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&SYDNEY, date, time).expect("fixture must be an unambiguous Sydney instant")
     }
 
     #[test]
@@ -2372,7 +2356,7 @@ mod asx {
         // Open to the last instant before the printed cessation ...
         assert!(
             calendar
-                .is_open(before(Australia::Sydney, (2025, 12, 24), (14, 10, 0)))
+                .is_open(before(&SYDNEY, (2025, 12, 24), (14, 10, 0)))
                 .expect("covered")
         );
         // ... and closed at it: closes are end-exclusive.
@@ -2430,7 +2414,7 @@ mod asx {
         );
         assert!(
             calendar
-                .is_open(before(Australia::Sydney, (2025, 7, 15), (16, 21, 30)))
+                .is_open(before(&SYDNEY, (2025, 7, 15), (16, 21, 30)))
                 .expect("covered")
         );
         assert!(
@@ -2447,8 +2431,10 @@ mod asx {
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 12, 31));
         assert!(matches!(
-            calendar.is_open(syd((2009, 12, 31), (11, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(syd((2009, 12, 31), (11, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // ASX publishes the full 2027 sheet, so the last trading day of the
         // window — a half day, `CLOSE EARLY` — answers rather than refuses.
@@ -2626,12 +2612,8 @@ mod sgx_securities {
         calendar_for_exchange(Exchange::SgxSecurities)
     }
 
-    fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        Asia::Singapore
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous Singapore instant")
-            .with_timezone(&Utc)
+    fn sgt(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&SINGAPORE, date, time).expect("fixture must be an unambiguous Singapore instant")
     }
 
     #[test]
@@ -2744,7 +2726,7 @@ mod sgx_securities {
         );
         assert!(
             calendar
-                .is_open(before(Asia::Singapore, (2026, 2, 16), (12, 16, 0)))
+                .is_open(before(&SINGAPORE, (2026, 2, 16), (12, 16, 0)))
                 .expect("covered")
         );
         assert!(
@@ -2800,7 +2782,7 @@ mod sgx_securities {
         );
         assert!(
             calendar
-                .is_open(before(Asia::Singapore, (2025, 7, 15), (17, 16, 0)))
+                .is_open(before(&SINGAPORE, (2025, 7, 15), (17, 16, 0)))
                 .expect("covered")
         );
         assert!(
@@ -2817,8 +2799,10 @@ mod sgx_securities {
         assert_eq!(coverage.first(), day(2014, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
         assert!(matches!(
-            calendar.is_open(sgt((2009, 12, 31), (10, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(sgt((2009, 12, 31), (10, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // The 2020-2024 capture gap sits between two audited windows, so the
         // charter's bridged residual (#296) answers the session question from
@@ -2856,8 +2840,8 @@ mod sgx_securities {
         // audited. The detached snapshot still answers the pure normal week.
         let outside = sgt((2027, 1, 4), (10, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar
@@ -3030,12 +3014,8 @@ mod lse {
         calendar_for_exchange(Exchange::Lse)
     }
 
-    fn london(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        Europe::London
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous London instant")
-            .with_timezone(&Utc)
+    fn london(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&LONDON, date, time).expect("fixture must be an unambiguous London instant")
     }
 
     #[test]
@@ -3362,7 +3342,7 @@ mod lse {
         // The closing-uncross envelope runs to the 16:40 CPX end, end-exclusive.
         assert!(
             calendar
-                .is_open(before(Europe::London, (2026, 6, 10), (16, 40, 0)))
+                .is_open(before(&LONDON, (2026, 6, 10), (16, 40, 0)))
                 .expect("covered")
         );
         assert!(
@@ -3395,8 +3375,10 @@ mod lse {
         );
         // Before the support floor.
         assert!(matches!(
-            calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(london((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // Past the audited window: 2029-01-02 is one day past the rolling
         // table's last print, so the identity refuses rather than answering
@@ -3404,8 +3386,8 @@ mod lse {
         // the pure normal week.
         let outside = london((2029, 1, 2), (12, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar
@@ -3424,7 +3406,7 @@ mod lse {
             195,
             "157 closures, 38 half days, no withheld dates — one audited window, 2010-2029"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 20] = [
+        let expected: [(i16, (usize, usize, usize, usize)); 20] = [
             (2010, (8, 2, 0, 0)),
             (2011, (9, 2, 0, 0)),
             (2012, (9, 2, 0, 0)),
@@ -3464,7 +3446,7 @@ mod lse {
                 assert_eq!(*instant, None, "{date:?} states no scalar instant");
             }
         }
-        let half_days: Vec<(i32, u32, u32)> = rows
+        let half_days: Vec<(i16, i8, i8)> = rows
             .iter()
             .filter(|(_, kind, _)| kind == "early close")
             .map(|(date, _, _)| *date)
@@ -3523,12 +3505,8 @@ mod euronext_paris {
         calendar_for_exchange(Exchange::EuronextParis)
     }
 
-    fn paris_time(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        Europe::Paris
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous Paris instant")
-            .with_timezone(&Utc)
+    fn paris_time(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&PARIS, date, time).expect("fixture must be an unambiguous Paris instant")
     }
 
     #[test]
@@ -3538,9 +3516,7 @@ mod euronext_paris {
         // releases and notice for 2010-2012, the 2012 Info-Flash for 2013,
         // the cash-markets calendars of 2014-2021, the 2025 column of the
         // 2025-12-06 page capture and the 2026 column of the live page and
-        // its INFO-FLASH. 2026-12-25 is fenced separately: its derivation
-        // reads 2026-12-24, the announced-but-unstated eve, so the closure
-        // question refuses.
+        // its INFO-FLASH and 2027 calendar.
         let closed = [
             (2011, 4, 22),
             (2011, 4, 25),
@@ -3573,34 +3549,14 @@ mod euronext_paris {
             (2026, 4, 3),
             (2026, 4, 6),
             (2026, 5, 1),
+            (2026, 12, 25),
+            (2027, 1, 1),
             (2027, 3, 26),
             (2027, 3, 29),
         ];
         for date in closed {
             assert_closed(calendar, date, "euronext_paris", &paris_time);
         }
-        // 2027-01-01 is fenced separately: the row itself answers Closed, but
-        // its behind-derivation reads 2026-12-31 — the announced-but-unstated
-        // 2026 eve — so the trade-date question refuses while noon answers
-        // shut from the Closed row, exactly as 2026-12-25 does behind the
-        // withheld 2026-12-24.
-        assert_eq!(
-            calendar.holiday_on(day(2027, 1, 1)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "2027-01-01 carries the printed closure row"
-        );
-        assert!(
-            calendar
-                .is_closed_trade_date(day(2027, 1, 1), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-            "the 2027-01-01 closure question must refuse on the unresolved 2026 eve"
-        );
-        assert!(
-            !calendar
-                .is_open(paris_time((2027, 1, 1), (12, 0, 0)))
-                .expect("the closed day answers from its own row"),
-            "the withheld 2026 eve cannot reach the closed 2027 day"
-        );
         // The 2010 rows sit inside the span the 2026-10-05 no-changes
         // verification sourced from the floor, so the holiday rows and the
         // session questions agree: each printed closure deletes the day.
@@ -3901,33 +3857,23 @@ mod euronext_paris {
     }
 
     #[test]
-    fn the_unresolved_eve_shadows_the_following_christmas_derivation() {
+    fn the_unpublished_eve_hours_still_refuse_their_own_trade_dates() {
         let calendar = paris();
-        // The row for 2026-12-25 itself still answers Closed.
-        assert_eq!(
-            calendar.holiday_on(day(2026, 12, 25)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "2026-12-25 carries the printed closure row"
-        );
-        // But the trade-date question reads behind the query's bounds —
-        // 2026-12-24, whose half-day hours are announced and unstated — so it
-        // refuses as an unresolved gap. The intraday question does not: the
-        // Closed row removes 12-25's own sessions, and no Paris session
-        // wraps, so nothing from the withheld eve can reach the closed day
-        // and noon answers shut. 2024-12-25 no longer refuses either: its
-        // eve's instant has been recovered from the 2024 end-of-year appendix.
-        assert!(
-            calendar
-                .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-            "the 2026-12-25 closure question must refuse on the unresolved eve"
-        );
-        assert!(
-            !calendar
-                .is_open(paris_time((2026, 12, 25), (12, 0, 0)))
-                .expect("the closed day answers from its own row"),
-            "the withheld eve cannot reach the closed day, so noon answers shut"
-        );
+        for eve in [day(2026, 12, 24), day(2026, 12, 31)] {
+            assert_eq!(
+                calendar.holiday_on(eve).map(Holiday::kind),
+                Some(HolidayKind::Unsourced)
+            );
+            assert_eq!(
+                calendar
+                    .is_closed_trade_date(eve, SessionKind::Both)
+                    .map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::UnresolvedGap {
+                    source: calendar.source(),
+                    date: eve,
+                }),
+            );
+        }
         // 2024-12-31 now ships the appendix's printed 14:05 close.
         assert_eq!(
             calendar.holiday_on(day(2024, 12, 31)).map(Holiday::kind),
@@ -3993,13 +3939,19 @@ mod euronext_paris {
             assert!(
                 calendar
                     .is_open(paris_time(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                    .is_err_and(|error| matches!(
+                        error.kind(),
+                        CalendarQueryErrorKind::UnresolvedGap { .. }
+                    )),
                 "paris {date:?}: is_open must refuse rather than claim"
             );
             assert!(
                 calendar
                     .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                    .is_err_and(|error| matches!(
+                        error.kind(),
+                        CalendarQueryErrorKind::UnresolvedGap { .. }
+                    )),
                 "paris {date:?}: the trade-date closure question must refuse"
             );
         }
@@ -4050,7 +4002,7 @@ mod euronext_paris {
         // end; closes are end-exclusive.
         assert!(
             calendar
-                .is_open(before(Europe::Paris, (2026, 6, 10), (17, 40, 0)))
+                .is_open(before(&PARIS, (2026, 6, 10), (17, 40, 0)))
                 .expect("covered")
         );
         assert!(
@@ -4092,8 +4044,10 @@ mod euronext_paris {
             Some(HolidayKind::Closed)
         );
         assert!(matches!(
-            calendar.is_open(paris_time((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(paris_time((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // 2027 publishes with the 06 November 2026 notice, so the year is
         // covered; the New Year closure deletes the day. The detached snapshot
@@ -4118,7 +4072,7 @@ mod euronext_paris {
     fn every_shipped_row_matches_the_sheets_per_year() {
         let rows = rows_per_year(paris());
         assert_eq!(rows.len(), 113, "86 closures, 23 half days, four gaps");
-        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
+        let expected: [(i16, (usize, usize, usize, usize)); 18] = [
             (2010, (3, 2, 0, 0)),
             (2011, (3, 2, 0, 0)),
             (2012, (5, 2, 0, 0)),
@@ -4180,12 +4134,8 @@ mod tsx {
         calendar_for_exchange(Exchange::Tsx)
     }
 
-    fn toronto(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
-        America::Toronto
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("fixture must be an unambiguous Toronto instant")
-            .with_timezone(&Utc)
+    fn toronto(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+        local_opt(&TORONTO, date, time).expect("fixture must be an unambiguous Toronto instant")
     }
 
     #[test]
@@ -4526,7 +4476,7 @@ mod tsx {
         // end; closes are end-exclusive.
         assert!(
             calendar
-                .is_open(before(America::Toronto, (2026, 6, 10), (17, 0, 0)))
+                .is_open(before(&TORONTO, (2026, 6, 10), (17, 0, 0)))
                 .expect("covered")
         );
         assert!(
@@ -4588,7 +4538,7 @@ mod tsx {
             calendar
                 .is_closed_all_day_at(
                     toronto((2012, 1, 2), (12, 0, 0)),
-                    America::Toronto,
+                    &TORONTO,
                     SessionKind::Both
                 )
                 .expect("covered"),
@@ -4662,15 +4612,17 @@ mod tsx {
             );
         }
         assert!(matches!(
-            calendar.is_open(toronto((2009, 12, 31), (12, 0, 0))),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
+            calendar
+                .is_open(toronto((2009, 12, 31), (12, 0, 0)))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. })
         ));
         // 2028 is not published: TMX adds the next year in Q4, so queries past
         // 2027-12-31 refuse rather than answer from an unaudited normal week.
         let outside = toronto((2028, 1, 3), (12, 0, 0));
         assert!(matches!(
-            calendar.is_open(outside),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar.is_open(outside).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
         assert!(
             calendar
@@ -4690,7 +4642,7 @@ mod tsx {
             "179 closures and thirteen Christmas Eve closes — the 2011 in-lieu \
              rows and 2012 New Year in-lieu key the 2011-12-12 schedule"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
+        let expected: [(i16, (usize, usize, usize, usize)); 18] = [
             (2010, (9, 1, 0, 0)),
             (2011, (10, 0, 0, 0)),
             (2012, (10, 1, 0, 0)),

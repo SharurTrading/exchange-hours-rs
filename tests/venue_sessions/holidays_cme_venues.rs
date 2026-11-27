@@ -27,13 +27,15 @@
 //! The per-family rows themselves are fenced beside the families that own them
 //! (`holidays_globex_*.rs`); nothing here re-tests a family's instants.
 
-use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
+    CalendarQueryErrorKind, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
 
@@ -79,22 +81,18 @@ const VENUES: [(Exchange, MarketHoursKey, &[MarketHoursKey]); 4] = [
     ),
 ];
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid CT instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be a valid CT instant")
 }
 
 /// The holiday layer's own answer for one venue, as a kind per trade date.
 ///
 /// `None` means the date is inside the window and audited normal.
-fn venue_layer(calendar: ExchangeCalendar) -> Vec<(NaiveDate, Option<HolidayKind>)> {
+fn venue_layer(calendar: ExchangeCalendar) -> Vec<(Date, Option<HolidayKind>)> {
     let coverage = calendar
         .holiday_coverage()
         .expect("every venue in this module ships a table");
@@ -103,7 +101,7 @@ fn venue_layer(calendar: ExchangeCalendar) -> Vec<(NaiveDate, Option<HolidayKind
     while date <= coverage.last() {
         rows.push((date, calendar.holiday_on(date).map(Holiday::kind)));
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the scan stays inside the representable calendar");
     }
     rows
@@ -125,7 +123,7 @@ enum Joint {
 
 /// The clock family's layer over its whole audited span, computed from its
 /// public `holiday_on` answers.
-fn clock_layer(clock: MarketHoursKey) -> Vec<(NaiveDate, Joint)> {
+fn clock_layer(clock: MarketHoursKey) -> Vec<(Date, Joint)> {
     let calendar = calendar_for_market_hours_key(clock);
     let coverage = calendar
         .holiday_coverage()
@@ -139,7 +137,7 @@ fn clock_layer(clock: MarketHoursKey) -> Vec<(NaiveDate, Joint)> {
         };
         rows.push((date, joint));
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the scan stays inside the representable calendar");
     }
     rows
@@ -185,7 +183,7 @@ fn the_venue_table_is_its_clock_families_table() {
 /// venue row carries: 2010-2012, 2016-2018, 2019-2021 and 2022-2024 are T1
 /// (CME's own published schedules, except the two 2024 dates the trading-hours
 /// service answers), and 2025-2027 is T2 (that service).
-const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 47] = [
+const UNANIMOUS_CLOSURES: [((i16, i8, i8), EvidenceTier); 47] = [
     // 2010-2012: the six Globex full closures CME published for those years
     ((2010, 1, 1), EvidenceTier::T1),
     ((2010, 12, 24), EvidenceTier::T1),
@@ -249,7 +247,7 @@ const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 47] = [
 /// The energy family's own extra closures: a six-family venue cannot state
 /// them, and `Exchange::Comex`/`Nymex` can. Good Friday 2015 and 2021 join the
 /// two 2010-2012 Good Fridays and 2026-04-03.
-const ENERGY_ONLY_CLOSURES: [(i32, u32, u32); 5] = [
+const ENERGY_ONLY_CLOSURES: [(i16, i8, i8); 5] = [
     (2010, 4, 2),
     (2012, 4, 6),
     (2015, 4, 3),
@@ -298,10 +296,10 @@ fn a_closed_venue_row_is_the_clocks_closure() {
                 Ok(closed) => assert!(closed, "{exchange:?}: {closure} closes the trading day"),
                 Err(error) => assert!(
                     matches!(
-                        error,
-                        CalendarQueryError::BeforeSupportFloor { .. }
-                            | CalendarQueryError::UnresolvedGap { .. }
-                            | CalendarQueryError::OutsideCoveredRange { .. }
+                        error.kind(),
+                        CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                            | CalendarQueryErrorKind::UnresolvedGap { .. }
+                            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
                     ),
                     "{exchange:?}: {closure} may refuse only as below-floor, withheld or \
                      outside the audited windows; got {error:?}"
@@ -344,7 +342,7 @@ fn a_closed_venue_row_is_the_clocks_closure() {
                 unsigned += 1;
             }
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the scan stays inside the representable calendar");
         }
         assert_eq!(unsigned, 0, "{exchange:?}: unsourced row count");
@@ -388,7 +386,7 @@ fn the_energy_venues_carry_the_family_table_unchanged() {
                 "{exchange:?}: {date} must carry the family's own tier"
             );
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the scan stays inside the representable calendar");
         }
 
@@ -521,11 +519,8 @@ fn a_closure_on_a_non_session_day_changes_nothing() {
     // carries no holiday layer at all and still states the ordinary
     // normal-week answers the row must not move.
     let detached = venue.without_holidays();
-    let start = US::Central
-        .with_ymd_and_hms(2025, 11, 29, 0, 0, 0)
-        .single()
-        .expect("fixture must be a valid CT midnight")
-        .with_timezone(&Utc);
+    let start = local_opt(&US_CENTRAL, (2025, 11, 29), (0, 0, 0))
+        .expect("fixture must be a valid CT midnight");
     // The ordinary schedule the row must not move: the next session after
     // Saturday is the Sunday-evening leg that opens 2025-11-30 17:00 CT and
     // closes 2025-12-01 08:30 CT.
@@ -540,7 +535,7 @@ fn a_closure_on_a_non_session_day_changes_nothing() {
         "the venue's ordinary schedule is in force across the closed Saturday"
     );
     for step in 0..48 {
-        let probe = start + chrono::TimeDelta::minutes(30 * step);
+        let probe = start + SignedDuration::from_mins(30 * step);
         assert!(
             !venue
                 .is_open(probe)
@@ -614,8 +609,8 @@ fn an_unsourced_venue_row_is_reported_and_clips_nothing() {
 fn era_mirror(
     exchange: Exchange,
     clock: MarketHoursKey,
-    first: NaiveDate,
-    last: NaiveDate,
+    first: Date,
+    last: Date,
 ) -> (usize, usize) {
     let venue = calendar_for_exchange(exchange);
     let clock_cal = calendar_for_market_hours_key(clock);
@@ -640,7 +635,7 @@ fn era_mirror(
             }
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the era walk stays bounded");
     }
     (rows, unsigned)
@@ -661,11 +656,11 @@ fn every_venue_answers_only_inside_its_own_window() {
 
         let before = coverage
             .first()
-            .checked_sub_days(Days::new(1))
+            .checked_sub(elapsed_days(1))
             .expect("the probe stays representable");
         let after = coverage
             .last()
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the probe stays representable");
         assert_eq!(venue.holiday_on(before), None, "{exchange:?}");
         assert_eq!(venue.holiday_on(after), None, "{exchange:?}");
@@ -791,7 +786,7 @@ fn wave2_venue_era_counts_match_the_families_they_route() {
                 rows += 1;
             }
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the era is representable");
         }
         assert_eq!(rows, expected, "{exchange:?}: 2016-2018 rows");
@@ -809,7 +804,7 @@ fn wave2_venue_era_counts_match_the_families_they_route() {
                 "{exchange:?} {date}"
             );
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the era is representable");
         }
     }
@@ -878,7 +873,7 @@ fn wave3_venue_rows_cite_a_family_row_on_the_same_date() {
                 );
             }
             date = date
-                .checked_add_days(Days::new(1))
+                .checked_add(elapsed_days(1))
                 .expect("the era is representable");
         }
     }
@@ -1063,9 +1058,9 @@ fn wave3_energy_early_close_instants_are_the_familys_own() {
 /// of one contiguous 2010-2027 claim.
 #[test]
 fn every_venue_window_is_the_union_of_its_families_windows() {
-    fn union(windows: &mut Vec<(NaiveDate, NaiveDate)>) -> Vec<(NaiveDate, NaiveDate)> {
+    fn union(windows: &mut Vec<(Date, Date)>) -> Vec<(Date, Date)> {
         windows.sort_unstable();
-        let mut merged: Vec<(NaiveDate, NaiveDate)> = Vec::new();
+        let mut merged: Vec<(Date, Date)> = Vec::new();
         for (first, last) in windows.drain(..) {
             match merged.last_mut() {
                 Some((_, open_last)) if first <= *open_last => {
@@ -1169,19 +1164,24 @@ fn wave5_venue_era_early_closes_are_end_exclusive() {
                 // exercised on the covered era by
                 // `holidays_globex_energy.rs`. What is no longer claimable here
                 // is an `is_open`/`trade_date` value on these dates.
-                let before_the_close = venue.is_open(cutoff - Duration::seconds(1));
-                assert_refuses_before_floor(before_the_close, venue, cutoff - Duration::seconds(1));
+                let before_the_close = venue.is_open(cutoff - SignedDuration::from_secs(1));
+                assert_refuses_before_floor(
+                    before_the_close,
+                    venue,
+                    cutoff - SignedDuration::from_secs(1),
+                );
                 let at_the_close = venue.is_open(cutoff);
                 assert_refuses_before_floor(at_the_close, venue, cutoff);
-                let trade_date_at_the_close = venue.trade_date(cutoff - Duration::seconds(1));
+                let trade_date_at_the_close =
+                    venue.trade_date(cutoff - SignedDuration::from_secs(1));
                 assert_refuses_before_floor(
                     trade_date_at_the_close,
                     venue,
-                    cutoff - Duration::seconds(1),
+                    cutoff - SignedDuration::from_secs(1),
                 );
                 probes += 1;
             }
-            date = date.succ_opt().expect("the era ends well before the bound");
+            date = date.tomorrow().expect("the era ends well before the bound");
         }
         assert_eq!(probes, 24, "{exchange:?}: the era's early closes");
     }
@@ -1274,7 +1274,7 @@ fn the_cbot_withheld_date_is_the_clocks_marker() {
             Some(HolidayKind::Closed) => closed += 1,
             Some(_) => rows += 1,
         }
-        date = date.succ_opt().expect("the census stays representable");
+        date = date.tomorrow().expect("the census stays representable");
     }
     assert_eq!(withheld, 0, "the cbot table's withheld census");
     assert!(
@@ -1340,7 +1340,7 @@ fn venue_module_header_counts_match_the_public_tables() {
             let mut rows = 0;
             while date < end {
                 rows += usize::from(calendar.holiday_on(date).is_some());
-                date = date.succ_opt().expect("fixture remains representable");
+                date = date.tomorrow().expect("fixture remains representable");
             }
             era_total += rows;
             assert!(
@@ -1359,7 +1359,7 @@ fn venue_module_header_counts_match_the_public_tables() {
                 let mut date = *start;
                 while date <= *end {
                     rows += usize::from(calendar.holiday_on(date).is_some());
-                    date = date.succ_opt().expect("fixture remains representable");
+                    date = date.tomorrow().expect("fixture remains representable");
                 }
                 rows
             })

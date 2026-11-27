@@ -444,8 +444,9 @@ do not restart historical backfill below 2025.
    **no** row: that leg belongs to the holiday's trade date, which the
    neighbouring closure already deletes.
 3. **Encode.** Invoke `holidays!` with a `coverage:` window and ascending
-   `rows:`, each `(year, month, day, kind, tier, "<document id>")`. The macro's
-   constant-evaluation fences reject an out-of-order, out-of-window, uncited,
+   `rows:`, each `(year, month, day, kind, tier, "<document id>")`. The macro
+   builds the holiday lookup index from these same rows. Its compile-time
+   fences reject an out-of-order, out-of-window, uncited,
    sub-T2 or out-of-range row at compile time. Only what the scalar vocabulary
    states may currently be a scalar row — closed, early close at an instant,
    late open at an instant, or both. After #93, encode other sourced arrangements

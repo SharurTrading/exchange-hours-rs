@@ -11,12 +11,18 @@
 //! These tests pin the separation itself, so it cannot quietly erode as rules
 //! are reclassified venue by venue.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
+mod support;
+
+use crate::support::zones::UTC;
+use crate::support::{PROFILE_INSTANT, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, DayOverride, Exchange, ExchangeCalendar,
-    MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_exchange,
-    calendar_for_market_hours_key, hours_for_exchange, hours_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, DayOverride,
+    Exchange, ExchangeCalendar, MarketHoursKey, SessionState, StaticDayPolicy,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
+    hours_for_market_hours_key,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
 /// Asserts a refusal is exactly the one `calendar` publishes for the day the
 /// query named, so a query verdict and the identity's own coverage metadata can
@@ -29,7 +35,7 @@ use exchange_hours::{
 /// per-date verdict — a bounded walk ran out — so it is checked for the identity
 /// and for the documented shape of its report (`date` is the day the walk
 /// stopped on, and `bound` equals it).
-fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+fn assert_published_refusal(error: &CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
     assert_eq!(
         error.source(),
         calendar.source(),
@@ -52,15 +58,15 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
         "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
     );
     let declared = match verdict {
-        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryErrorKind::OutsideCoveredRange {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date,
         }),
@@ -68,23 +74,22 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     };
     match declared {
         Some(expected) => assert_eq!(
-            error, expected,
+            error.kind(),
+            expected,
             "{label}: the query must state the coverage verdict its identity publishes"
         ),
         None => assert!(
             matches!(
-                error,
-                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+                error.kind(),
+                CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. } if stopped == bound
             ),
             "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
         ),
     }
 }
 
-fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
-    Utc.with_ymd_and_hms(year, month, day, hour, minute, 0)
-        .single()
-        .unwrap_or(DateTime::UNIX_EPOCH)
+fn utc(year: i16, month: i8, day: i8, hour: u32, minute: u32) -> Timestamp {
+    local_opt(&UTC, (year, month, day), (hour, minute, 0)).unwrap_or(Timestamp::UNIX_EPOCH)
 }
 
 /// A recent Monday-to-Sunday week, sampled every fifteen minutes.
@@ -94,8 +99,8 @@ fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc>
 /// between two different schedules rather than between two views of the same
 /// one - NSE India, for instance, genuinely moved its post-close window during
 /// 2026, so the two legitimately disagree in June and agree in August.
-fn week_samples() -> impl Iterator<Item = DateTime<Utc>> {
-    (17..=23u32).flat_map(|day| {
+fn week_samples() -> impl Iterator<Item = Timestamp> {
+    (17..=23i8).flat_map(|day| {
         (0..24u32).flat_map(move |hour| {
             (0..60u32)
                 .step_by(15)
@@ -108,10 +113,7 @@ fn week_samples() -> impl Iterator<Item = DateTime<Utc>> {
 fn open_and_order_entry_only_are_mutually_exclusive() {
     // A caller must be able to branch on these without ordering care.
     for exchange in Exchange::ALL {
-        let hours = hours_for_exchange(
-            *exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(*exchange, PROFILE_INSTANT);
         for instant in week_samples() {
             assert!(
                 !(hours.is_open(instant) && hours.is_order_entry_only(instant)),
@@ -121,10 +123,7 @@ fn open_and_order_entry_only_are_mutually_exclusive() {
         }
     }
     for key in MarketHoursKey::ALL {
-        let hours = hours_for_market_hours_key(
-            *key,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_market_hours_key(*key, PROFILE_INSTANT);
         for instant in week_samples() {
             assert!(
                 !(hours.is_open(instant) && hours.is_order_entry_only(instant)),
@@ -140,10 +139,7 @@ fn accepting_orders_is_a_superset_of_open() {
     // Anything tradeable is necessarily order-accepting. The reverse does not
     // hold, which is the entire point of the phase.
     for exchange in Exchange::ALL {
-        let hours = hours_for_exchange(
-            *exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(*exchange, PROFILE_INSTANT);
         for instant in week_samples() {
             if hours.is_open(instant) {
                 assert!(
@@ -155,10 +151,7 @@ fn accepting_orders_is_a_superset_of_open() {
         }
     }
     for key in MarketHoursKey::ALL {
-        let hours = hours_for_market_hours_key(
-            *key,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_market_hours_key(*key, PROFILE_INSTANT);
         for instant in week_samples() {
             if hours.is_open(instant) {
                 assert!(
@@ -188,7 +181,7 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
             let state = match calendar.session_state(instant) {
                 Ok(state) => state,
                 Err(error) => {
-                    assert_published_refusal(error, calendar, &label);
+                    assert_published_refusal(&error, calendar, &label);
                     continue;
                 }
             };
@@ -271,8 +264,7 @@ fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
     // remove the complete trading day - including the queue - exactly as it
     // removes the tradeable session itself, instead of reporting an
     // order-entry window for a day that will not trade.
-    const MONDAY: NaiveDate =
-        NaiveDate::from_ymd_opt(2026, 8, 24).expect("fixture must be a valid calendar date");
+    const MONDAY: Date = Date::constant(2026, 8, 24);
     static OVERRIDES: [DayOverride; 1] = [DayOverride::closed(MONDAY)];
     let policy =
         StaticDayPolicy::new(&OVERRIDES).expect("a single closed-date record must be valid");
@@ -371,10 +363,7 @@ fn the_calendar_never_accepts_orders_the_fixed_profile_rejects() {
     // more, or a consumer would be told it can work an order the venue would
     // reject.
     for exchange in Exchange::ALL {
-        let hours = hours_for_exchange(
-            *exchange,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let hours = hours_for_exchange(*exchange, PROFILE_INSTANT);
         let calendar = calendar_for_exchange(*exchange);
         for instant in week_samples() {
             if calendar.hours_at(instant).is_accepting_orders(instant) {

@@ -18,8 +18,8 @@
 
 use std::borrow::Cow;
 
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
+use jiff::{Timestamp, civil::Date};
 
 use super::exchange_calendar::CalendarSource;
 use super::query::gate::answered;
@@ -47,7 +47,7 @@ pub struct MarketHours {
     /// the crate's own 24x7-fallback sentinel.
     pub source: CalendarSource,
     /// Exchange’s local time zone (used to interpret `SessionRule`s and handle DST).
-    pub tz: Tz,
+    pub tz: TimeZone,
     /// Primary/pit ("regular") trading sessions (e.g., RTH for equities/futures).
     /// Uses Cow so callers can borrow from static tables without allocation.
     pub regular: Cow<'static, [SessionRule]>,
@@ -89,7 +89,7 @@ impl MarketHours {
     #[must_use]
     pub fn new(
         source: impl Into<CalendarSource>,
-        tz: Tz,
+        tz: TimeZone,
         regular: Cow<'static, [SessionRule]>,
         extended: Cow<'static, [SessionRule]>,
         order_entry: Cow<'static, [SessionRule]>,
@@ -115,7 +115,7 @@ impl MarketHours {
     /// session is running. A venue that publishes no order-entry phase returns
     /// the same answer as `is_open`.
     #[must_use]
-    pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_accepting_orders(&self, t: Timestamp) -> bool {
         self.is_open(t) || self.is_order_entry_only(t)
     }
 
@@ -124,7 +124,7 @@ impl MarketHours {
     /// False whenever a tradeable session is running, so the two states are
     /// mutually exclusive: a caller can branch on them without ordering care.
     #[must_use]
-    pub fn is_order_entry_only(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_order_entry_only(&self, t: Timestamp) -> bool {
         !self.is_open(t)
             && self
                 .order_entry_view()
@@ -139,7 +139,7 @@ impl MarketHours {
     fn order_entry_view(&self) -> Self {
         Self {
             source: self.source,
-            tz: self.tz,
+            tz: self.tz.clone(),
             regular: self.order_entry.clone(),
             extended: Cow::Borrowed(&[]),
             order_entry: Cow::Borrowed(&[]),
@@ -184,12 +184,12 @@ impl MarketHours {
     /// excluded because [`MarketHours`] is a normal-week profile.
     #[must_use]
     pub fn normal_week_open_seconds(&self) -> u64 {
-        week::fixed_normal_week_open_seconds(self)
+        week::fixed_normal_week_open_seconds(self.into())
     }
 
     /// True if **any** (regular or extended) session is open at `t`.
     #[must_use]
-    pub fn is_open(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_open(&self, t: Timestamp) -> bool {
         self.is_open_with(t, SessionKind::Both)
     }
 
@@ -201,7 +201,7 @@ impl MarketHours {
     /// overlay; use a date-aware calendar with a caller-supplied
     /// [`DayPolicy`](super::DayPolicy) when day-level overrides are required.
     #[must_use]
-    pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
+    pub fn is_open_with(&self, t: Timestamp, kind: SessionKind) -> bool {
         // A detached fixed snapshot carries no identity, so no day can be
         // refused: `answered` consumes the engine's `Result<_, Infallible>`,
         // whose error side is not representable on this path (issue #245;
@@ -215,7 +215,7 @@ impl MarketHours {
     /// Shorthand for [`is_open_with`](Self::is_open_with) with
     /// [`SessionKind::Regular`]; extended/overnight sessions are ignored.
     #[must_use]
-    pub fn is_open_regular(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_open_regular(&self, t: Timestamp) -> bool {
         self.is_open_with(t, SessionKind::Regular)
     }
 
@@ -224,7 +224,7 @@ impl MarketHours {
     /// Shorthand for [`is_open_with`](Self::is_open_with) with
     /// [`SessionKind::Extended`]; regular sessions are ignored.
     #[must_use]
-    pub fn is_open_extended(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_open_extended(&self, t: Timestamp) -> bool {
         self.is_open_with(t, SessionKind::Extended)
     }
 
@@ -242,7 +242,7 @@ impl MarketHours {
     /// This crate deliberately derives breaks from adjacent sourced sessions
     /// rather than inserting synthetic maintenance rules.
     #[must_use]
-    pub fn is_maintenance(&self, t: DateTime<Utc>) -> bool {
+    pub fn is_maintenance(&self, t: Timestamp) -> bool {
         // See `is_open_with` and `answered`: a fixed snapshot has no
         // coverage verdict to fail.
         answered(status::is_maintenance(&QueryContext::fixed(self), t))
@@ -255,30 +255,25 @@ impl MarketHours {
     /// retains operator-designated short maintenance inside one trade date;
     /// same-trade-date gaps and longer closures are [`SessionState::Closed`].
     #[must_use]
-    pub fn session_state(&self, t: DateTime<Utc>) -> SessionState {
+    pub fn session_state(&self, t: Timestamp) -> SessionState {
         // See `is_open_with` and `answered`: a fixed snapshot has no
         // coverage verdict to fail.
         answered(status::session_state(&QueryContext::fixed(self), t))
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`
-    /// interpreted in `calendar_tz`. This checks whether *any* session (of `kind`)
-    /// intersects the `[day@00:00, next_day@00:00)` window.
+    /// interpreted in `calendar_tz`. This checks whether any instant in a session
+    /// of `kind` belongs to that date in the supplied time zone.
     ///
-    /// `calendar_tz` need not be the exchange time zone: a venue can be open for
-    /// part of a day defined in another zone, so the answer is decided strictly
-    /// by session overlap with that window, never by a weekday shortcut.
-    ///
-    /// A skipped local midnight (some zones start DST at 00:00) resolves to the
-    /// first representable instant of the day via the crate's shared local-time
-    /// resolver. A wholly skipped civil date has an empty window and is closed.
-    /// If `day` is the maximum representable `NaiveDate`, the window end
-    /// saturates to the far future rather than failing.
+    /// A calendar in a different zone can classify the same instant under a
+    /// different date. A rollback across midnight can split the date into
+    /// multiple UTC intervals, all of which count. A wholly skipped day is
+    /// closed, and at the timestamp limits only representable instants count.
     #[must_use]
     pub fn is_closed_all_day_in_calendar(
         &self,
-        day: NaiveDate,
-        calendar_tz: Tz,
+        day: Date,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> bool {
         // See `is_open_with` and `answered`: a fixed snapshot has no
@@ -295,8 +290,8 @@ impl MarketHours {
     /// `is_closed_all_day_on` did).
     #[inline]
     #[must_use]
-    pub fn is_closed_all_day_on(&self, local_day: NaiveDate, kind: SessionKind) -> bool {
-        self.is_closed_all_day_in_calendar(local_day, self.tz, kind)
+    pub fn is_closed_all_day_on(&self, local_day: Date, kind: SessionKind) -> bool {
+        self.is_closed_all_day_in_calendar(local_day, &self.tz, kind)
     }
 
     /// Convenience: starting from a UTC timestamp, use a chosen calendar TZ to define “the day”.
@@ -304,8 +299,8 @@ impl MarketHours {
     #[must_use]
     pub fn is_closed_all_day_at(
         &self,
-        ts_utc: DateTime<Utc>,
-        calendar_tz: Tz,
+        ts_utc: Timestamp,
+        calendar_tz: &TimeZone,
         kind: SessionKind,
     ) -> bool {
         // See `is_open_with` and `answered`: a fixed snapshot has no

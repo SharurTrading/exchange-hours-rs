@@ -1,154 +1,23 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME Nikkei 225 Dollar (`NKD`) holiday and early-close rows, 2010-2012,
-//! 2013-2015, 2016-2018, 2019-2021, 2022-2024, 2025-2027 and the split 2028 windows (2028-01-17..2028-01-18, 2028-02-21..2028-02-22, 2028-04-13..2028-04-14).
+//! CME Nikkei 225 Dollar holiday sessions.
 //!
-//! Keyed by the crate's own venue-local trade date in `America/Chicago`
-//! (design memo D1). The conversion is never the identity here: the family
-//! runs one wrapped envelope per trade date — 17:00 CT on the previous evening
-//! to 16:00 CT on the trade date — so CME's event-date records for a holiday
-//! and its eve collapse into one row keyed to the day the session's final
-//! close falls on, and the eve record is evidence for that row rather than a
-//! row of its own.
-//!
-//! The rows come from CME's trading-hours service — the endpoint
-//! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
-//! so the 2025-2027 block is **T2** under LAW-PRIMARY-SOURCES. From Thanksgiving
-//! 2025 the service publishes `NKD` and `NIY` as their own line; through
-//! 2025-09-02 it does not, and those nine rows plus the five 2025 merged trade
-//! dates' rows are taken from the Equity Index line of the same capture — the
-//! `ES` events on each pre-holiday Sunday or Wednesday evening print the merged
-//! trade date in their own `tradingDate` field. That interpretive step (no
-//! `NKD`/`NIY` event exists for those windows; the family's grid is elsewhere in
-//! the crate the same CME shared grid, per the #153 venue-clock decision), the
-//! three Saturday sessions this table now states as complete-day replacement
-//! rows, and the one sourced intraday-topology day are recorded in
-//! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
-//! From 2022 through 2024 the service answered for ten representative products
-//! and no `NKD` or `NIY` line, so the service supplies no scheduling answer for
-//! a 2024 date; the 2024-01-01 row is the one exception, and it is T1 from the
-//! operator's own New Year's one-pager rather than from the service.
-//!
-//! **2011-2012 and 2013-2015.** The era's rows are **T1**, CME's own published
-//! Globex holiday schedules — the same per-holiday one-pager PDFs the 2016-2018
-//! era's predecessor publications use — and no sheet in either era prints any
-//! Nikkei line at all, so the `Equity Products` line governs every row, the
-//! same interpretive step the 2016-2018 rows carry. From 2010-04-11 that line
-//! governs by dated grid identity: CME's own Globex notice of 2010-04-05
-//! expanded the Nikkei 225 (Dollar) futures' electronic hours effective
-//! Sunday, April 11, 2010 to exactly the served grid — `trading on CME Globex
-//! will begin Sundays at 17:00 through 15:15 CT the following day, with
-//! trading Monday–Friday from 15:30 through 15:15 the next day (closing at
-//! 15:15 Friday, with a daily maintenance shutdown between 16:30-17:00)` —
-//! the 2011-01-12 trading-hours capture reads NKD's boundaries byte-identical
-//! to the equity-index row on the same page, and SER-6465, SER-6554R and CME
-//! Globex Notice #20150817 each put NKD and the equity index family through
-//! the same revision on the same day. The 62 rows of 2011-2015 carry the same
-//! shape and instants as `globex_equity_index`'s own 2011-2015 windows:
-//! twelve closures, forty-four early closes — 10:30 CT on the 2011 through
-//! 2014-02 Monday and Thursday holidays, 12:00 CT from 2014-05 on, and 12:15
-//! CT on the eve, Thanksgiving-Friday and year-end half-days — and six late
-//! opens at 05:00 CT on the trade date after New Year's, Christmas 2011 and
-//! Christmas 2012.
-//!
-//! **2010-04-11..2010-12-31, added 2026-09-30 UTC (#225).** The six 2010 rows
-//! are **T1** from the same per-holiday sheets, read per sheet: the Memorial
-//! Day, Fourth of July and Labor Day sheets print the Monday-holiday line the
-//! 2011 sheets print (`1030 CT – Trading halt` with `1700 CT – Halted
-//! products resume trading`), the Thanksgiving sheet prints the Thursday halt
-//! and the Friday `1215 CT – Early CME Globex close`, and the Christmas sheet
-//! prints `Friday, Dec 24: CME Globex is closed` identically in both of its
-//! revisions. Columbus Day and Veterans Day print the ordinary flow for the
-//! equity class and ship no row, and the 2011 New Year sheet prints a regular
-//! 15:15 close for Friday 2010-12-31, so no year-end row ships either.
-//!
-//! **2010-01-01..2010-04-10, added 2026-09-30 UTC (#225's remainder).** Those
-//! dates sit on the old daytime-anchored grid the operator's own equities-hours
-//! page states (CDT 03:00-15:15 reopening 15:30-16:30 and 17:00-18:00, Sunday
-//! `Opens 17:00-18:00`; CST 02:00-15:15 reopening 15:30-16:30 closing 16:30,
-//! no Sunday hours), which the crate now models from the 2010-04-02 capture
-//! with the two profiles the page's DST spellings name. The only closure any
-//! 2010 sheet states inside the span is the New Year one: `CME Globex is
-//! closed` on Friday 2010-01-01 under every product class, so the old grid's
-//! Friday sessions do not run and one `Closed` row keys it. The era's other
-//! three sheets name no Nikkei line at all except the President's Day sheet,
-//! which carves the contract out of the equity pattern twice — `Exception: USD
-//! & JY denominated Nikkei will open at their regularly scheduled times of
-//! 02:00 & 05:00 Monday morning.` and the `Tuesday morning` twin — so on that
-//! Monday holiday the contract traded its own regular CST grid (the 02:00
-//! instant is its own; 05:00 is the yen contract's) and ships no row, and the
-//! Martin Luther King and Good Friday sheets' equity lines govern nothing here
-//! because no NKD statement includes it and its own page states the regular
-//! grid (the residual risk is recorded in the evidence file).
-//!
-//! **2016-2018.** The era's rows are **T1**, CME's own published Globex holiday
-//! schedules, and the grid is the wrapped `17:00 CT -> 16:00 CT` leg: an early
-//! close is the printed final close on the trade date it ends, a closure
-//! removes the trade date with its prior-evening leg, and every stated re-open
-//! at the ordinary 17:00 CT evening open ships no row. The thirty-four rows
-//! carry the same shape and instants as `globex_equity_index`'s own 2016-2018
-//! window: nine closures, twenty-four early closes — 12:00 CT on the eighteen
-//! Monday and Thursday holidays and 12:15 CT on the three Thanksgiving Fridays
-//! and three year-end half-days — and one late open.
-//!
-//! **2022-2024.** The era's grid is the same wrapped `17:00 CT -> 16:00 CT`
-//! leg, so its conversions are the two above. Thirty-four rows: seven closures,
-//! twenty-seven early closes — 12:00 CT on twenty-one holidays (every Monday
-//! and Thursday holiday plus Wednesday-observed Juneteenth 2024), 08:15 CT on
-//! Good Friday 2023, and 12:15 CT on 2022-11-25, 2023-07-03, 2023-11-24,
-//! 2024-11-29 and 2024-12-24 — no late open, and 2024-07-03 and 2024-12-31
-//! audited normal (no row). The 2022 rows and the 2023 rows CME published a
-//! holiday schedule for are **T1**; the sixteen dates no operator document
-//! covered — 2022-05-30, 2023-02-20, 2023-04-07 and the thirteen 2024
-//! dates — are **T2 `MARKET-DATA`**: their exact sessions (halt instants,
-//! final closes, the two full closures, and the two ordinary dates) are
-//! confirmed with market data, retained privately, under the maintainer's
-//! 2026-10-15 direction that extended the 2023-01-16 convention to the
-//! remaining withholdings. Every 12:00 CT row halts at exactly 12:00:00 with
-//! the 17:00 CT re-open present, every 12:15 CT row is a final close with no
-//! re-open, and the ordinary-grid controls between the holidays match the
-//! served week.
-//!
-//! Three shapes for the family: `Closed` on a full Globex closure,
-//! `EarlyClose` on the half-days, and — in 2016-2018 alone — a **late open** at
-//! 15:30 CT on 2018-12-26. That one is the CME Christmas sheet's own printed
-//! pair, `Pre-opening 15:15; Open 15:30`, which is the era's routine
-//! extended-session grid printed as one pair rather than a disagreement between
-//! sources. Neither the 2022-2024 nor the 2025-2027 window has a late open,
-//! because every CME re-open there is the grid's own 17:00 CT evening open.
+//! Audited 2010–2012, 2013–2015, 2016–2018, 2019–2021, 2022–2024, 2025–2027,
+//! and selected January, February and April 2028 trade dates.
+//! See the [evidence](../../../../docs/evidence/globex_nikkei_225_dollar.md).
 
 use super::fences::{early_close, late_open};
 use crate::calendar::exceptions::ExceptionBlock;
 
-/// The same merged day, for the one trade date where the operator publishes a
-/// second Pre-Open: the day-after-Thanksgiving Friday 2025-11-28.
-///
-/// `NKD` and `NIY` themselves publish `07:00 preopen`, `07:30 open` and
-/// `12:15 closed` on eventDate 2025-11-28 with trade date 2025-11-28, so the
-/// trade date's matching runs in two pieces with a 30-minute order-entry queue
-/// between them. Carried as one continuous `extended` run the queue answered
-/// `is_open = true`, a window CME defines as "No order matching", so the queue
-/// is an `order_entry` block and matching resumes at its `07:30 open`.
-///
-/// The 2026 and 2027 Thanksgiving Fridays publish the `12:15 closed` line alone
-/// and keep [`MERGED_SESSION_EARLY_CLOSE_BLOCKS`], which this row would
-/// otherwise overstate.
-///
-/// - offset `-2`, 16:45-17:00 CT: the Wednesday Pre-Open queue.
-/// - offset `-2`, 17:00 CT to offset `-1` 12:00 CT: the matching session.
-/// - offset `-1`, 12:00-17:00 CT: the holiday's own Pre-Open queue, this
-///   family's published holiday `12:00` rather than the weekday `16:45`.
-/// - offset `-1`, 17:00 CT to the trade date's 12:15 CT close: the matching run,
-///   split at local midnight into the two pieces below so the trade date's own
-///   07:00 queue can be stated without overlapping it. The block list is
-///   non-decreasing by opening day then open time, which the table fence
-///   enforces at compile time.
-/// - offset `0`, 00:00-07:00 CT: the tail of that overnight run. It restates the
-///   wrapped block's own span, which is what keeps the run's envelope whole.
-/// - offset `0`, 07:00-07:30 CT: the trade date's morning Pre-Open queue.
-/// - offset `0`, 07:30 CT to the trade date's 12:15 CT close: the day session.
-///
-/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+// 2018-12-26 — T1 — 2018-christmas-holiday-schedule.xls, Equity Products.
+static CHRISTMAS_2018_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::regular(-1, 17 * 3_600, 15 * 3_600 + 15 * 60),
+    ExceptionBlock::order_entry(0, 15 * 3_600 + 15 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 15 * 3_600 + 30 * 60, 16 * 3_600),
+];
+
+/// Thanksgiving 2025 with the Friday morning pre-open before matching resumes.
 // `0 * 3_600 + 0 * 60` is midnight, written in the table fence's own grammar
 // (`h * 3_600 + m * 60`); a bare `0` is rejected by
 // `tests/schedule_documentation/evidence_files.rs`, so the zero product is
@@ -169,27 +38,7 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28: [ExceptionBlock;
     ExceptionBlock::regular(0, 7 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
 ];
 
-/// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
-/// dates, which CME states a Saturday session on.
-///
-/// CME published all five of the trading day's phases for each of these dates,
-/// so the row states the day rather than the Saturday alone. Stating only the
-/// Saturday would delete the Thursday-evening and Sunday-evening sessions that
-/// belong to the same trade date, because a replacement row replaces the
-/// **complete** trade date.
-///
-/// - offset `-4`, Thursday 16:45-17:00 CT: the Pre-Open queue.
-/// - offset `-4`, Thursday 17:00 CT to Friday 12:00 CT: the session ending at
-///   the Friday holiday's early close.
-/// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
-/// - offset `-1`, Sunday 16:00-17:00 CT: the Pre-Open queue, which no trade
-///   matches.
-/// - offset `-1`, Sunday 17:00 CT to Monday 16:00 CT: the matching session,
-///   wrapping one local midnight.
-///
-/// `NKD` and `NIY` are published in CME's second product set, not the headline
-/// one, so these instants come from that set's windows. Evidence:
-/// `docs/evidence/globex_nikkei_225_dollar.md`.
+/// Merged trade date with a Saturday matching session.
 pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60, 17 * 3_600),
     ExceptionBlock::regular(-4, 17 * 3_600, 12 * 3_600),
@@ -197,80 +46,28 @@ pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
 ];
-/// The complete trading day of the trade dates CME merges with the session
-/// before them, on a Monday holiday.
-///
-/// The holiday publishes no final close of its own: the queue and evening
-/// session that would carry it are printed against the next business day
-/// instead, so the whole span from Sunday evening through the following
-/// afternoon carries one trade date.
-///
-/// - offset `-2`, 16:00-17:00 CT: the Sunday Pre-Open queue.
-/// - offset `-2`, 17:00 CT to the holiday's own `12:00` CT early close: the
-///   matching session, which the holiday's T1 schedule ends there.
-/// - offset `-1`, **12:00**-17:00 CT: the holiday's own Pre-Open queue. CME
-///   publishes `12:00 preopen` for `NKD` and `NIY` on these dates, not the
-///   ordinary weekday `16:45`.
-/// - offset `-1`, 17:00 CT to trade date 16:00 CT: the matching session.
-///
-/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+/// Merged trade date opening after the Sunday queue.
 pub(crate) static MERGED_SESSION_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
 ];
-/// The same merged day when the trade date is the day-after-Thanksgiving
-/// Friday, whose session this family ends at `12:15` CT — not the `13:45` the
-/// CME equity and energy families use.
-///
-/// Its `-2` day is a Wednesday, so that queue is the ordinary weekday `16:45`.
-///
-/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+/// Merged Thanksgiving trade date ending at the Friday early close.
 pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
     ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
 ];
-/// The same merged day when the holiday falls midweek, so the eve before it is
-/// an ordinary weekday carrying the `16:45` CT Pre-Open queue, and the merged
-/// trade date ends at the ordinary `16:00` CT close. Juneteenth on a Thursday —
-/// trade date 2025-06-20 — is the instance; [`MERGED_SESSION_BLOCKS`]'s `-2`
-/// day is a Sunday and states the `16:00` queue that Sunday prints, and
-/// [`MERGED_SESSION_EARLY_CLOSE_BLOCKS`] ends the day at this family's
-/// Thanksgiving-Friday `12:15` CT, so neither states this shape.
-///
-/// - offset `-2`, 16:45-17:00 CT: the Wednesday Pre-Open queue, the ordinary
-///   weekday one.
-/// - offset `-2`, 17:00 CT to the holiday's own `12:00` CT early close: the
-///   matching session, which the holiday's schedule ends there.
-/// - offset `-1`, **12:00**-17:00 CT: the holiday's own Pre-Open queue.
-/// - offset `-1`, 17:00 CT to trade date 16:00 CT: the matching session,
-///   wrapping one local midnight into the trade date's ordinary close.
-///
-/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+/// Merged trade date opening after the weekday queue.
 pub(crate) static MERGED_SESSION_WEEKDAY_EVE_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
     ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
 ];
-/// The complete trading day of the two trade dates whose prior local day is a
-/// full closure, and whose Pre-Open therefore opens at the 17:00 CT session's
-/// own 16:00 CT boundary rather than at the weekday `16:45`.
-///
-/// CME prints `16:00 preopen /TD <this date>; 17:00 open /TD <this date>` on the
-/// closed day itself, so the queue belongs to this trade date rather than to the
-/// holiday, and the holiday's own `Closed` row would otherwise delete it. The
-/// 17:00-16:00 CT envelope is one `regular` block, matching `NKD_REGULAR_CURRENT`,
-/// because on these two dates the normal week's own `regular` occurrence is
-/// what is being restated. Every block set in this table spells the envelope
-/// `regular` since #176 — this family's whole tradeable envelope is its
-/// `regular` session, so a block row must not flip `is_open_regular` on the
-/// dates it covers.
-///
-/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+/// Evening pre-open and matching session after a closed trade date.
 pub(crate) static NO_PRIOR_EVENING_LEG_BLOCKS: [ExceptionBlock; 2] = [
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
@@ -281,20 +78,7 @@ use super::{
     HolidayTable, holidays,
 };
 
-/// The family's built-in holiday rows and the windows they were audited over.
-///
-/// Six audited eras: 2010-04-11..2012 at T1 (the dated 2010-04-05 notice
-/// starts the first window), 2013-2015 at T1, 2016-2018 at T1,
-/// 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2.
-/// Nothing before 2010-04-11 has a table at all: that interval lies
-/// outside every window, so `holiday_on` has no answer there rather than
-/// reporting a normal date.
-///
-/// Coverage runs through 2027-12-31, and three captured 2028 holiday windows —
-/// 2028-01-17..18, 2028-02-21..22 and 2028-04-13..14 — extend it to 2028-04-14;
-/// the spans between them are unaudited and refuse as covered gaps. CME's
-/// 2028-01-01 record is a Saturday outside every window and ships no row.
-/// Inside a window a date with no row is audited normal.
+/// The family’s holiday rows and audited trade-date windows.
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31), (2028, 1, 17) ..= (2028, 1, 18), (2028, 2, 21) ..= (2028, 2, 22), (2028, 4, 13) ..= (2028, 4, 14)],
@@ -503,8 +287,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2018, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - late open 15:30 CT: no prior-evening leg.
-        (2018, 12, 26, late_open(15 * 3_600 + 30 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - two trading segments and both Pre-Open queues.
+        (2018, 12, 26, ReplacementBlocks(&CHRISTMAS_2018_BLOCKS), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - CME prints no session running through this date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.

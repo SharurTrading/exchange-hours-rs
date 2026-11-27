@@ -16,11 +16,11 @@
 //!
 //! Every boundary is optional. `None` means no advancing bar exists: the
 //! selected session kind has no rule in the bounded horizon, the interval is
-//! zero, or Chrono has no later representable instant. The same private engine
+//! zero, or the timestamp range has no later instant. The same private engine
 //! serves fixed [`MarketHours`] values and date-aware
 //! [`ExchangeCalendar`](crate::ExchangeCalendar) values.
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::query::gate::answered;
 use super::query::{QueryContext, candles};
@@ -44,10 +44,10 @@ use super::{CalendarResolution, MarketHours, SessionKind};
 #[must_use]
 pub fn candle_end_with(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
+) -> Option<Timestamp> {
     // A detached snapshot carries no identity, so no day can be refused;
     // `answered` consumes the engine's `Result<_, Infallible>`, whose error
     // side is not representable on this path (issue #245; LAW-COVERAGE governs
@@ -64,9 +64,9 @@ pub fn candle_end_with(
 #[must_use]
 pub fn candle_end(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     resolution: CalendarResolution,
-) -> Option<DateTime<Utc>> {
+) -> Option<Timestamp> {
     candle_end_with(hours, instant, resolution, SessionKind::Both)
 }
 
@@ -79,10 +79,10 @@ pub fn candle_end(
 #[must_use]
 pub fn candle_start_with(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
+) -> Option<Timestamp> {
     // See `candle_end_with` and `answered`: a fixed snapshot has no coverage
     // verdict to fail.
     answered(candles::candle_start_with(
@@ -100,9 +100,9 @@ pub fn candle_start_with(
 #[must_use]
 pub fn candle_start(
     hours: &MarketHours,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     resolution: CalendarResolution,
-) -> Option<DateTime<Utc>> {
+) -> Option<Timestamp> {
     candle_start_with(hours, instant, resolution, SessionKind::Both)
 }
 
@@ -111,6 +111,6 @@ pub fn candle_start(
 /// This is an alias for [`candle_end`] with
 /// [`CalendarResolution::Daily`].
 #[must_use]
-pub fn time_end_of_day(hours: &MarketHours, instant: DateTime<Utc>) -> Option<DateTime<Utc>> {
+pub fn time_end_of_day(hours: &MarketHours, instant: Timestamp) -> Option<Timestamp> {
     candle_end(hours, instant, CalendarResolution::Daily)
 }

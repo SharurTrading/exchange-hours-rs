@@ -2,7 +2,7 @@
 
 //! Allocation-free exception providers backed by caller-owned static records.
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::{
     BlockViolation, DateException, ExceptionBlock, ExceptionCoverage, SessionExceptionSource,
@@ -19,7 +19,7 @@ use crate::calendar::exchange_calendar::CalendarSource;
 /// to [`DayPolicy`](crate::DayPolicy), which overlays this layer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SessionExceptionRecord<'a> {
-    trade_date: NaiveDate,
+    trade_date: Date,
     state: RecordState<'a>,
 }
 
@@ -38,7 +38,7 @@ impl<'a> SessionExceptionRecord<'a> {
     /// [`DateException::KnownNormal`]. They document an audit that found
     /// nothing.
     #[must_use]
-    pub const fn known_normal(trade_date: NaiveDate) -> Self {
+    pub const fn known_normal(trade_date: Date) -> Self {
         Self {
             trade_date,
             state: RecordState::KnownNormal,
@@ -47,7 +47,7 @@ impl<'a> SessionExceptionRecord<'a> {
 
     /// Records that no session belongs to `trade_date`.
     #[must_use]
-    pub const fn closed(trade_date: NaiveDate) -> Self {
+    pub const fn closed(trade_date: Date) -> Self {
         Self {
             trade_date,
             state: RecordState::Closed,
@@ -60,7 +60,7 @@ impl<'a> SessionExceptionRecord<'a> {
     /// non-empty, ordered by opening day then open time, and every block must
     /// hold the [`ExceptionBlock`] domain invariants.
     #[must_use]
-    pub const fn replace_sessions(trade_date: NaiveDate, blocks: &'a [ExceptionBlock]) -> Self {
+    pub const fn replace_sessions(trade_date: Date, blocks: &'a [ExceptionBlock]) -> Self {
         Self {
             trade_date,
             state: RecordState::ReplaceSessions(blocks),
@@ -69,7 +69,7 @@ impl<'a> SessionExceptionRecord<'a> {
 
     /// Returns the venue-local trade date this record describes.
     #[must_use]
-    pub const fn trade_date(self) -> NaiveDate {
+    pub const fn trade_date(self) -> Date {
         self.trade_date
     }
 
@@ -102,14 +102,14 @@ impl<'a> SessionExceptionRecord<'a> {
 /// # Example
 ///
 /// ```
-/// use chrono::NaiveDate;
+/// use jiff::civil::Date;
 /// use exchange_hours::{
 ///     CalendarSource, DateException, Exchange, ExceptionBlock, SessionExceptionRecord,
 ///     SessionExceptionSource, StaticSessionExceptions,
 /// };
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let day = |d| NaiveDate::from_ymd_opt(2011, 11, d).ok_or("invalid date");
+/// let day = |d| Date::new(2011, 11, d);
 ///
 /// // A regular-only early close: extended trading continues past 13:00 local.
 /// static BLOCKS: [ExceptionBlock; 2] = [
@@ -144,8 +144,7 @@ impl<'a> StaticSessionExceptions<'a> {
     /// inside it with no record are [`DateException::KnownNormal`], and dates
     /// outside it are [`DateException::OutOfCoverage`]. An empty record slice
     /// is valid and asserts that the whole window was audited and found normal.
-    /// This is a `const fn`, so a caller can validate while constructing a
-    /// constant or static table.
+    /// The constructor validates the borrowed records at runtime.
     ///
     /// Validation scans left to right, checking the coverage bounds, then each
     /// record's ordering and window membership, then each replacement block's
@@ -159,37 +158,22 @@ impl<'a> StaticSessionExceptions<'a> {
     /// replacement block that is out of order, carries an offset outside
     /// [`ExceptionBlock::MIN_DAY_OFFSET`]`..=`[`ExceptionBlock::MAX_DAY_OFFSET`],
     /// opens outside `0..86_400`, or closes outside `0..=86_400`.
-    pub const fn new(
+    pub fn new(
         source: CalendarSource,
-        first_covered: NaiveDate,
-        last_covered: NaiveDate,
+        first_covered: Date,
+        last_covered: Date,
         records: &'a [SessionExceptionRecord<'a>],
     ) -> Result<Self, StaticSessionExceptionsError> {
-        if last_covered.signed_duration_since(first_covered).num_days() < 0 {
+        if last_covered < first_covered {
             return Err(StaticSessionExceptionsError::CoverageBoundsInverted);
         }
         let mut index = 0;
         while index < records.len() {
             let current = records[index];
-            if index > 0
-                && current
-                    .trade_date
-                    .signed_duration_since(records[index - 1].trade_date)
-                    .num_days()
-                    <= 0
-            {
+            if index > 0 && current.trade_date <= records[index - 1].trade_date {
                 return Err(StaticSessionExceptionsError::DatesNotStrictlyIncreasing { index });
             }
-            if current
-                .trade_date
-                .signed_duration_since(first_covered)
-                .num_days()
-                < 0
-                || last_covered
-                    .signed_duration_since(current.trade_date)
-                    .num_days()
-                    < 0
-            {
+            if current.trade_date < first_covered || current.trade_date > last_covered {
                 return Err(StaticSessionExceptionsError::RecordOutsideCoverage { index });
             }
             if let RecordState::ReplaceSessions(blocks) = current.state
@@ -227,7 +211,7 @@ impl<'a> StaticSessionExceptions<'a> {
     /// date outside the coverage window still returns its record if one was
     /// supplied, which validation makes impossible.
     #[must_use]
-    pub fn record_on(self, trade_date: NaiveDate) -> Option<SessionExceptionRecord<'a>> {
+    pub fn record_on(self, trade_date: Date) -> Option<SessionExceptionRecord<'a>> {
         self.records
             .binary_search_by_key(&trade_date, |record| record.trade_date)
             .ok()
@@ -236,7 +220,7 @@ impl<'a> StaticSessionExceptions<'a> {
 
     /// Returns what this table knows about `trade_date`.
     #[must_use]
-    pub fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+    pub fn exception_on(self, trade_date: Date) -> DateException<'a> {
         if !self.coverage.contains(trade_date) {
             return DateException::OutOfCoverage;
         }
@@ -302,7 +286,7 @@ impl SessionExceptionSource for StaticSessionExceptions<'_> {
         Some(StaticSessionExceptions::coverage(*self))
     }
 
-    fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_> {
+    fn exception_on(&self, trade_date: Date) -> DateException<'_> {
         StaticSessionExceptions::exception_on(*self, trade_date)
     }
 
@@ -312,7 +296,7 @@ impl SessionExceptionSource for StaticSessionExceptions<'_> {
     /// window, which is what makes it a true no-op on the engine's hot path
     /// (issue #127): the engine must not derive a trading day — and refuse on
     /// a day that derivation reaches — for a provider that can move nothing.
-    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    fn may_affect(&self, first: Date, last: Date) -> bool {
         let start = self
             .records
             .partition_point(|record| record.trade_date < first);

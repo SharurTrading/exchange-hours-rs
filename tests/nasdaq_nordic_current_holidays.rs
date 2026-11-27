@@ -2,8 +2,10 @@
 
 //! Nordic principal-share calendar scopes and current/future half-day boundaries.
 
-use chrono::{NaiveDate, TimeZone};
-use chrono_tz::Europe::Stockholm;
+mod support;
+
+use crate::support::zones::STOCKHOLM;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{Exchange, HolidayKind, SessionKind, calendar_for_exchange};
 
 #[test]
@@ -15,44 +17,32 @@ fn cash_calendars_keep_their_own_closures_and_publication_horizon() {
     ] {
         let cal = calendar_for_exchange(exchange);
         let mut observed = 0;
-        let mut date = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
-        let end = NaiveDate::from_ymd_opt(2027, 12, 31).unwrap();
+        let mut date = date_opt(2026, 1, 1).unwrap();
+        let end = date_opt(2027, 12, 31).unwrap();
         while date <= end {
             if cal.holiday_on(date).is_some() {
                 observed += 1;
             }
-            date = date.succ_opt().unwrap();
+            date = date.tomorrow().ok().unwrap();
         }
         assert_eq!(observed, count);
         for (y, m, d) in [(2026, 4, 3), (2027, 3, 26), extra] {
-            let date = NaiveDate::from_ymd_opt(y, m, d).unwrap();
+            let date = date_opt(y, m, d).unwrap();
             assert_eq!(cal.holiday_on(date).unwrap().kind(), HolidayKind::Closed);
             assert_eq!(cal.is_closed_trade_date(date, SessionKind::Both), Ok(true));
         }
         assert!(
-            cal.is_closed_trade_date(
-                NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-                SessionKind::Both
-            )
-            .is_err()
+            cal.is_closed_trade_date(date_opt(2025, 12, 31).unwrap(), SessionKind::Both)
+                .is_err()
         );
         assert!(
-            cal.is_closed_trade_date(
-                NaiveDate::from_ymd_opt(2028, 1, 3).unwrap(),
-                SessionKind::Both
-            )
-            .is_err()
+            cal.is_closed_trade_date(date_opt(2028, 1, 3).unwrap(), SessionKind::Both)
+                .is_err()
         );
     }
     let sto = calendar_for_exchange(Exchange::NasdaqStockholm);
-    assert!(
-        sto.holiday_on(NaiveDate::from_ymd_opt(2027, 12, 6).unwrap())
-            .is_none()
-    );
-    assert!(
-        sto.holiday_on(NaiveDate::from_ymd_opt(2026, 6, 5).unwrap())
-            .is_none()
-    );
+    assert!(sto.holiday_on(date_opt(2027, 12, 6).unwrap()).is_none());
+    assert!(sto.holiday_on(date_opt(2026, 6, 5).unwrap()).is_none());
 }
 
 #[test]
@@ -70,16 +60,9 @@ fn stockholm_half_days_end_their_own_phases_at_operator_boundaries() {
         (2027, 5, 5),
         (2027, 11, 5),
     ] {
-        let at = |h, min, sec| {
-            Stockholm
-                .with_ymd_and_hms(y, m, d, h, min, sec)
-                .unwrap()
-                .to_utc()
-        };
+        let at = |h, min, sec| local_opt(&STOCKHOLM, (y, m, d), (h, min, sec)).unwrap();
         assert!(matches!(
-            cal.holiday_on(NaiveDate::from_ymd_opt(y, m, d).unwrap())
-                .unwrap()
-                .kind(),
+            cal.holiday_on(date_opt(y, m, d).unwrap()).unwrap().kind(),
             HolidayKind::ReplacementBlocks(_)
         ));
         assert_eq!(cal.is_open(at(7, 59, 59)), Ok(false));
@@ -96,12 +79,7 @@ fn stockholm_half_days_end_their_own_phases_at_operator_boundaries() {
     }
     // A fixed-income-only half day cannot change the principal-share clock.
     assert_eq!(
-        cal.is_open(
-            Stockholm
-                .with_ymd_and_hms(2026, 6, 18, 15, 0, 0)
-                .unwrap()
-                .to_utc()
-        ),
+        cal.is_open(local_opt(&STOCKHOLM, (2026, 6, 18), (15, 0, 0)).unwrap()),
         Ok(true)
     );
 }

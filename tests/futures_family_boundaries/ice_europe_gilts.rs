@@ -5,31 +5,27 @@
 //! the 12:15 and 13:00 half-day closes, the announced-but-untimed eves that
 //! ship `Unsourced`, and the typed refusals the windowed history owes.
 
-use chrono::{Datelike as _, TimeZone as _};
-use chrono_tz::Europe;
+use crate::support::zones::LONDON;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, HolidayKind, MarketHoursKey, SessionKind, SessionState,
+    CalendarQueryErrorKind, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
 const GILTS: MarketHoursKey = MarketHoursKey::IceEuropeGilts;
 
-fn london(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    Europe::London
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous London instant")
-        .with_timezone(&chrono::Utc)
+fn london(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&LONDON, date, time).expect("fixture must be an unambiguous London instant")
 }
 
-fn day(date: (i32, u32, u32)) -> chrono::NaiveDate {
-    chrono::NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> jiff::civil::Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn regular_bounds(instant: chrono::DateTime<chrono::Utc>) -> (u32, u32) {
+fn regular_bounds(instant: jiff::Timestamp) -> (u32, u32) {
     let hours = hours_for_market_hours_key(GILTS, instant);
     let rule = hours.regular.first().expect("one regular rule per era");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
 /// The pre-change grid, exactly as the operator's product pages print it:
@@ -66,16 +62,10 @@ fn the_shared_grid_serves_the_product_page_print() {
 /// cutover day serves 01:00-21:00 with the circular's 00:45 pre-open.
 #[test]
 fn the_2026_split_flips_at_london_local_midnight() {
-    let last_shared = Europe::London
-        .with_ymd_and_hms(2026, 7, 5, 23, 59, 59)
-        .single()
-        .expect("an unambiguous London instant")
-        .with_timezone(&chrono::Utc);
-    let first_split = Europe::London
-        .with_ymd_and_hms(2026, 7, 6, 0, 0, 0)
-        .single()
-        .expect("an unambiguous London instant")
-        .with_timezone(&chrono::Utc);
+    let last_shared =
+        local_opt(&LONDON, (2026, 7, 5), (23, 59, 59)).expect("an unambiguous London instant");
+    let first_split =
+        local_opt(&LONDON, (2026, 7, 6), (0, 0, 0)).expect("an unambiguous London instant");
 
     assert_eq!(regular_bounds(last_shared), (8 * 3600, 18 * 3600));
     assert_eq!(regular_bounds(first_split), (3600, 21 * 3600));
@@ -134,8 +124,10 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
         );
         assert!(
             matches!(
-                calendar.is_closed_trade_date(date, SessionKind::Both),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
+                calendar
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
             ),
             "{date} is below the carried horizon and refuses typed"
         );
@@ -204,8 +196,10 @@ fn the_holiday_rows_answer_closures_half_days_and_unsourced_eves() {
             "{date}"
         );
         assert!(matches!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 
@@ -328,24 +322,26 @@ fn the_windowed_history_refuses_typed_and_bridges_the_gaps() {
     // `holiday_on` (asserted in the holiday test above).
     for date in [day((2010, 6, 15)), day((2018, 6, 12)), day((2022, 12, 23))] {
         assert!(matches!(
-            calendar.is_open(london((date.year(), date.month(), date.day()), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { date: refused, .. }) if refused == date
+            calendar.is_open(london((date.year(), date.month(), date.day()), (10, 0, 0))).map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { date: refused, .. }) if refused == date
         ));
         assert!(matches!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ));
     }
 
     // Below the support floor and above the last window.
     assert!(matches!(
-        calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
+        calendar.is_open(london((2009, 12, 31), (12, 0, 0))).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
     ));
     let above = london((2027, 1, 4), (10, 0, 0));
     assert!(matches!(
-        calendar.is_open(above),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
+        calendar.is_open(above).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
     ));
     assert!(
         calendar

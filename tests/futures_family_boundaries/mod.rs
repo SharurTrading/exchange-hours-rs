@@ -18,6 +18,7 @@ mod holidays_globex_energy;
 mod holidays_globex_equity_index;
 mod holidays_globex_grains;
 mod ice;
+mod ice_cotton;
 mod ice_europe_gilts;
 mod sgx_equity_index;
 mod sgx_equity_index_eras;

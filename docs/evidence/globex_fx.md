@@ -191,14 +191,14 @@ Every interval from 2010-01-01 through 2027-12-31 is declared; the 2028 split wi
 | 2011-11-24 | early close | `12:00 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Nov 24` above it, and the year comes from the document's own identity |
 | 2011-11-25 | early close | `12:15 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 25` above it, and the year comes from the document's own identity |
 | 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2011-12-27 | late open | `16:00 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | `16:00 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2011-12-27 | late open | `0500 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | The CME Group FX Products section prints the trade date’s 05:00 CT open and 16:00 CT regular close. |
 
 ### 2012
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2012-01-03 | late open | `16:00 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | `16:00 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-01-03 | late open | `0500 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | The CME Group FX Products section prints the trade date’s 05:00 CT open and 16:00 CT regular close. |
 | 2012-01-13 | early close | `15:15 CT` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Jan 13` above it, and the year comes from the document's own identity |
 | 2012-01-16 | early close | `12:00 CT` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Jan 16` above it, and the year comes from the document's own identity |
 | 2012-02-17 | early close | `15:15 CT` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Feb 17` above it, and the year comes from the document's own identity |
@@ -214,7 +214,7 @@ Every interval from 2010-01-01 through 2027-12-31 is declared; the 2028 split wi
 | 2012-11-23 | early close | `12:15 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 23` above it, and the year comes from the document's own identity |
 | 2012-12-24 | early close | `12:15 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Dec 24` above it, and the year comes from the document's own identity |
 | 2012-12-25 | closed | `CME Globex is closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | CME prints `Dec 25` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2012-12-26 | late open | `16:00 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `16:00 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-12-26 | late open | `0500 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | The CME Group FX Products section prints the trade date’s 05:00 CT open and 16:00 CT regular close. |
 
 ### 2013
 

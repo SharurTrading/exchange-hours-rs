@@ -9,33 +9,29 @@
 //! so its Friday-to-Monday pair distinguishes the 09:00-open and 08:00-open
 //! grids at the same wall clock.
 
-use chrono::TimeZone as _;
-use chrono_tz::Europe;
+use crate::support::zones::MADRID;
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryError, HolidayKind, MarketHoursKey, SessionKind, SessionState,
+    CalendarQueryErrorKind, HolidayKind, MarketHoursKey, SessionKind, SessionState,
     calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
 const IBEX: MarketHoursKey = MarketHoursKey::BmeIbex;
 
-fn madrid(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    Europe::Madrid
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Madrid instant")
-        .with_timezone(&chrono::Utc)
+fn madrid(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&MADRID, date, time).expect("fixture must be an unambiguous Madrid instant")
 }
 
-fn day(date: (i32, u32, u32)) -> chrono::NaiveDate {
-    chrono::NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> jiff::civil::Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
 /// The regular-session bounds the dated selector serves at `instant`'s
 /// Madrid local day, read off the fixed rule slice.
-fn regular_bounds(instant: chrono::DateTime<chrono::Utc>) -> (u32, u32) {
+fn regular_bounds(instant: jiff::Timestamp) -> (u32, u32) {
     let hours = hours_for_market_hours_key(IBEX, instant);
     let rule = hours.regular.first().expect("one regular rule per era");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
 /// The floor grid is the operator's own 2010-06-18 product-page print:
@@ -76,16 +72,10 @@ fn the_floor_grid_serves_the_2010_product_page_print() {
 /// midnight on the 23rd to the 08:00-open grid.
 #[test]
 fn the_2017_cutover_flips_at_madrid_local_midnight() {
-    let last_floor = Europe::Madrid
-        .with_ymd_and_hms(2017, 1, 22, 23, 59, 59)
-        .single()
-        .expect("an unambiguous Madrid instant")
-        .with_timezone(&chrono::Utc);
-    let first_new = Europe::Madrid
-        .with_ymd_and_hms(2017, 1, 23, 0, 0, 0)
-        .single()
-        .expect("an unambiguous Madrid instant")
-        .with_timezone(&chrono::Utc);
+    let last_floor =
+        local_opt(&MADRID, (2017, 1, 22), (23, 59, 59)).expect("an unambiguous Madrid instant");
+    let first_new =
+        local_opt(&MADRID, (2017, 1, 23), (0, 0, 0)).expect("an unambiguous Madrid instant");
 
     assert_eq!(regular_bounds(last_floor), (9 * 3600, 17 * 3600 + 35 * 60));
     assert_eq!(regular_bounds(first_new), (8 * 3600, 20 * 3600));
@@ -111,16 +101,10 @@ fn the_2017_cutover_flips_at_madrid_local_midnight() {
 /// whole 2017 grid still serves straight through June 2025.
 #[test]
 fn the_2025_close_extension_flips_at_madrid_local_midnight() {
-    let last_20 = Europe::Madrid
-        .with_ymd_and_hms(2025, 6, 22, 23, 59, 59)
-        .single()
-        .expect("an unambiguous Madrid instant")
-        .with_timezone(&chrono::Utc);
-    let first_22 = Europe::Madrid
-        .with_ymd_and_hms(2025, 6, 23, 0, 0, 0)
-        .single()
-        .expect("an unambiguous Madrid instant")
-        .with_timezone(&chrono::Utc);
+    let last_20 =
+        local_opt(&MADRID, (2025, 6, 22), (23, 59, 59)).expect("an unambiguous Madrid instant");
+    let first_22 =
+        local_opt(&MADRID, (2025, 6, 23), (0, 0, 0)).expect("an unambiguous Madrid instant");
 
     assert_eq!(regular_bounds(last_20), (8 * 3600, 20 * 3600));
     assert_eq!(regular_bounds(first_22), (8 * 3600, 22 * 3600));
@@ -221,8 +205,8 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
 
     // Below the support floor.
     assert!(matches!(
-        calendar.is_open(madrid((2009, 12, 31), (12, 0, 0))),
-        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
+        calendar.is_open(madrid((2009, 12, 31), (12, 0, 0))).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor { date, .. }) if date == day((2009, 12, 31))
     ));
 
     // The bridged 2012-2013 span (two flanks): sessions answer from the
@@ -244,8 +228,8 @@ fn the_partial_history_refuses_typed_and_bridges_the_2012_2013_span() {
     // Above the last audited window nothing is asserted.
     let above = madrid((2027, 1, 4), (10, 0, 0));
     assert!(matches!(
-        calendar.is_open(above),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
+        calendar.is_open(above).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { date, .. }) if date == day((2027, 1, 4))
     ));
     assert!(
         calendar

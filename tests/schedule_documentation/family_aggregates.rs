@@ -35,10 +35,11 @@
 //! message, which is the fence telling the editor exactly what the tables
 //! derive.
 
-use chrono::{Datelike as _, NaiveDate};
+use crate::support::date_opt;
 use exchange_hours::{
     EvidenceTier, ExchangeCalendar, HolidayKind, MarketHoursKey, calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
 
 use super::number_words;
 
@@ -111,7 +112,7 @@ struct WindowCounts {
 /// coverage windows and the prose both state. A kind or tier the census does
 /// not classify fails here rather than passing one fence later as a number
 /// that silently dropped out of every total.
-fn window_counts(calendar: ExchangeCalendar, first: NaiveDate, last: NaiveDate) -> WindowCounts {
+fn window_counts(calendar: ExchangeCalendar, first: Date, last: Date) -> WindowCounts {
     let mut counts = WindowCounts::default();
     let mut date = first;
     while date <= last {
@@ -138,7 +139,7 @@ fn window_counts(calendar: ExchangeCalendar, first: NaiveDate, last: NaiveDate) 
                 ),
             }
         }
-        date = date.succ_opt().expect("the window walk stays bounded");
+        date = date.tomorrow().expect("the window walk stays bounded");
     }
     counts
 }
@@ -208,10 +209,10 @@ fn era_window(
     family: &str,
     coverage: &exchange_hours::HolidayCoverage,
     years: (i32, i32),
-) -> (NaiveDate, NaiveDate) {
+) -> (Date, Date) {
     let (first_year, last_year) = years;
-    let first = NaiveDate::from_ymd_opt(first_year, 1, 1).expect("January 1st is a valid date");
-    let last = NaiveDate::from_ymd_opt(last_year, 12, 31).expect("December 31st is a valid date");
+    let first = date_opt(first_year, 1, 1).expect("January 1st is a valid date");
+    let last = date_opt(last_year, 12, 31).expect("December 31st is a valid date");
     coverage
         .windows()
         .iter()
@@ -350,17 +351,14 @@ fn the_whole_table_sentences_derive_from_the_shipped_tables() {
                     .windows()
                     .iter()
                     .filter(|(_, last)| {
-                        *last
-                            <= NaiveDate::from_ymd_opt(2027, 12, 31)
-                                .expect("the 2027 edge is a valid date")
+                        *last <= date_opt(2027, 12, 31).expect("the 2027 edge is a valid date")
                     })
                     .copied()
                     .collect();
                 assert!(
-                    pre_2028.first().map(|(first, _)| *first)
-                        == NaiveDate::from_ymd_opt(2010, 1, 1)
+                    pre_2028.first().map(|(first, _)| *first) == date_opt(2010, 1, 1)
                         && pre_2028.windows(2).all(|pair| {
-                            pair[0].1.succ_opt().expect("a window end has a successor") == pair[1].0
+                            pair[0].1.tomorrow().expect("a window end has a successor") == pair[1].0
                         }),
                     "{family}: the 2019-2021 paragraph claims every interval from 2010-01-01 \
                      through 2027-12-31 is inside a declared window"
@@ -390,10 +388,10 @@ fn capitalized(word: &str) -> String {
 
 /// The `Unsourced` trade dates one calendar year ships, walked from the
 /// shipped table.
-fn unsourced_dates(calendar: ExchangeCalendar, year: i32) -> Vec<NaiveDate> {
+fn unsourced_dates(calendar: ExchangeCalendar, year: i32) -> Vec<Date> {
     let mut dates = Vec::new();
-    let mut date = NaiveDate::from_ymd_opt(year, 1, 1).expect("January 1st is a valid date");
-    let last = NaiveDate::from_ymd_opt(year, 12, 31).expect("December 31st is a valid date");
+    let mut date = date_opt(year, 1, 1).expect("January 1st is a valid date");
+    let last = date_opt(year, 12, 31).expect("December 31st is a valid date");
     while date <= last {
         if calendar
             .holiday_on(date)
@@ -401,7 +399,7 @@ fn unsourced_dates(calendar: ExchangeCalendar, year: i32) -> Vec<NaiveDate> {
         {
             dates.push(date);
         }
-        date = date.succ_opt().expect("the year walk stays bounded");
+        date = date.tomorrow().expect("the year walk stays bounded");
     }
     dates
 }
@@ -445,8 +443,8 @@ fn the_nikkei_aggregate_sentences_derive_from_the_shipped_tables() {
     // into the 2010-01-01 venue-wide closure plus the post-changeover rows.
     let share_2011_2015 = window_counts(
         calendar,
-        NaiveDate::from_ymd_opt(2011, 1, 1).expect("January 1st is a valid date"),
-        NaiveDate::from_ymd_opt(2015, 12, 31).expect("December 31st is a valid date"),
+        date_opt(2011, 1, 1).expect("January 1st is a valid date"),
+        date_opt(2015, 12, 31).expect("December 31st is a valid date"),
     );
     assert_eq!(
         share_2011_2015.unsourced, 0,
@@ -456,11 +454,11 @@ fn the_nikkei_aggregate_sentences_derive_from_the_shipped_tables() {
         share_2011_2015.t1, share_2011_2015.rows,
         "{family}: the 2011-2015 sentence claims every one at T1"
     );
-    let floor_day = NaiveDate::from_ymd_opt(2010, 1, 1).expect("the floor is a valid date");
+    let floor_day = date_opt(2010, 1, 1).expect("the floor is a valid date");
     let era_2010 = window_counts(
         calendar,
         floor_day,
-        NaiveDate::from_ymd_opt(2010, 12, 31).expect("December 31st is a valid date"),
+        date_opt(2010, 12, 31).expect("December 31st is a valid date"),
     );
     assert!(
         calendar
@@ -656,7 +654,7 @@ fn the_wave_paragraphs_derive_from_the_shipped_tables() {
             {
                 unsourced_2023 += 1;
             }
-            date = date.succ_opt().expect("the 2023 walk stays bounded");
+            date = date.tomorrow().expect("the 2023 walk stays bounded");
         }
         let (verb, noun) = if counts.unsourced == 1 {
             ("is", "date")

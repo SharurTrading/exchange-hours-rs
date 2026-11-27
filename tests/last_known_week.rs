@@ -5,19 +5,23 @@
 //! the default calendar would refuse, while every audited row keeps its
 //! arrangement and only the support floor still refuses (LAW-COVERAGE).
 
-use chrono::{DateTime, Duration, NaiveDate, Utc};
+mod support;
+
+use crate::support::{date_opt, elapsed_days, utc_datetime};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
-    ExchangeCalendar, HolidayContract, HolidayKind, MarketHoursKey, SUPPORT_FLOOR,
-    SessionExceptionRecord, SessionKind, StaticDayPolicy, StaticSessionExceptions,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CoverageGapReason,
+    DateCoverage, Exchange, ExchangeCalendar, HolidayContract, HolidayKind, MarketHoursKey,
+    SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, StaticDayPolicy, StaticSessionExceptions,
 };
 use exchange_hours::{DayOverride, ExceptionBlock};
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
-fn utc(text: &str) -> DateTime<Utc> {
+fn utc(text: &str) -> Timestamp {
     text.parse().expect("fixture must be an RFC 3339 instant")
 }
 
@@ -38,10 +42,7 @@ fn nyse() -> ExchangeCalendar {
 
 /// Every instant-addressed answer one calendar gives, rendered so two views can
 /// be compared and a refusal stays visible as a refusal.
-fn answers(
-    calendar: ExchangeCalendar,
-    at: DateTime<Utc>,
-) -> [Result<String, CalendarQueryError>; 12] {
+fn answers(calendar: ExchangeCalendar, at: Timestamp) -> [Result<String, CalendarQueryError>; 12] {
     fn text<T: core::fmt::Debug>(
         answer: Result<T, CalendarQueryError>,
     ) -> Result<String, CalendarQueryError> {
@@ -59,7 +60,7 @@ fn answers(
         text(calendar.candle_start(at, CalendarResolution::Monthly)),
         text(calendar.is_accepting_orders(at)),
         text(calendar.is_order_entry_only(at)),
-        text(calendar.is_closed_all_day_at(at, calendar.tz(), SessionKind::Both)),
+        text(calendar.is_closed_all_day_at(at, &calendar.tz(), SessionKind::Both)),
     ]
 }
 
@@ -67,8 +68,8 @@ fn answers(
 fn the_default_calendar_keeps_refusing_above_the_last_window() {
     let at = utc("2029-03-01T15:00:00Z");
     assert_eq!(
-        nyse().is_open(at),
-        Err(CalendarQueryError::OutsideCoveredRange {
+        nyse().is_open(at).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange {
             source: nyse().source(),
             date: date(2029, 3, 1),
         })
@@ -131,8 +132,10 @@ fn audited_rows_keep_their_arrangement() {
 #[test]
 fn a_search_crossing_the_last_window_answers_from_the_week_beyond_it() {
     assert!(matches!(
-        nyse().next_session_open_after(utc("2028-12-29T20:30:00Z")),
-        Err(CalendarQueryError::OutsideCoveredRange { .. })
+        nyse()
+            .next_session_open_after(utc("2028-12-29T20:30:00Z"))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     ));
     assert_eq!(
         nyse()
@@ -147,8 +150,9 @@ fn a_search_crossing_the_last_window_keeps_the_audited_row_it_starts_from() {
     let ibex = ExchangeCalendar::for_market_hours_key(MarketHoursKey::BmeIbex);
     let at = utc("2026-12-31T10:00:00Z");
     assert!(matches!(
-        ibex.candle_end(at, CalendarResolution::Monthly),
-        Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ibex.candle_end(at, CalendarResolution::Monthly)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     ));
     assert_eq!(
         ibex.with_last_known_week()
@@ -164,19 +168,15 @@ fn the_view_agrees_with_the_default_wherever_the_default_answers() {
             continue;
         };
         let view = calendar.with_last_known_week();
-        let end = coverage
-            .last()
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc();
-        let mut at = end - Duration::days(21);
-        while at < end + Duration::days(5) {
+        let end = utc_datetime(coverage.last().at(12, 0, 0, 0));
+        let mut at = end - elapsed_days(21);
+        while at < end + elapsed_days(5) {
             for (bare, seen) in answers(calendar, at).iter().zip(answers(view, at).iter()) {
                 if bare.is_ok() {
                     assert_eq!(bare, seen, "{:?} at {at}", calendar.source());
                 }
             }
-            at += Duration::hours(19);
+            at += SignedDuration::from_hours(19);
         }
     }
 }
@@ -189,14 +189,9 @@ fn well_above_the_last_window_the_view_answers_exactly_the_normal_week() {
         };
         let view = calendar.with_last_known_week();
         let detached = calendar.without_holidays();
-        let start = coverage
-            .last()
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc()
-            + Duration::days(60);
+        let start = utc_datetime(coverage.last().at(12, 0, 0, 0)) + elapsed_days(60);
         for step in 0..21 {
-            let at = start + Duration::hours(step * 11);
+            let at = start + SignedDuration::from_hours(step * 11);
             assert_eq!(
                 answers(view, at),
                 answers(detached, at),
@@ -212,8 +207,8 @@ fn an_identity_with_no_table_answers_its_normal_week() {
     let iex = ExchangeCalendar::new(Exchange::Iex);
     let at = utc("2026-11-02T15:00:00Z");
     assert_eq!(
-        iex.is_open(at),
-        Err(CalendarQueryError::OutsideCoveredRange {
+        iex.is_open(at).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange {
             source: iex.source(),
             date: date(2026, 11, 2),
         })
@@ -232,8 +227,8 @@ fn a_withheld_date_reads_the_normal_week() {
     let paris = ExchangeCalendar::new(Exchange::EuronextParis);
     let at = utc("2026-12-24T10:00:00Z");
     assert_eq!(
-        paris.is_open(at),
-        Err(CalendarQueryError::UnresolvedGap {
+        paris.is_open(at).map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap {
             source: paris.source(),
             date: date(2026, 12, 24),
         })
@@ -274,18 +269,15 @@ fn a_carried_era_reads_the_earliest_known_week() {
         let Some(sourced_from) = calendar.coverage().normal_week_sourced_from() else {
             continue;
         };
-        if sourced_from <= SUPPORT_FLOOR + Duration::days(3) {
+        if sourced_from <= SUPPORT_FLOOR + elapsed_days(3) {
             continue;
         }
-        let carried = sourced_from - Duration::days(3);
-        let at = carried
-            .and_hms_opt(12, 0, 0)
-            .expect("noon exists")
-            .and_utc();
+        let carried = sourced_from - elapsed_days(3);
+        let at = utc_datetime(carried.at(12, 0, 0, 0));
         assert!(
             matches!(
-                calendar.is_open(at),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
+                calendar.is_open(at).map_err(|error| error.kind()),
+                Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
             ),
             "{:?}",
             calendar.source()
@@ -317,14 +309,14 @@ fn at_or_above_the_floor_the_view_never_refuses_a_date() {
             for answer in answers(view, at) {
                 assert!(
                     matches!(
-                        answer,
-                        Ok(_) | Err(CalendarQueryError::SearchExhausted { .. })
+                        answer.as_ref().map_err(CalendarQueryError::kind),
+                        Ok(_) | Err(CalendarQueryErrorKind::SearchExhausted { .. })
                     ),
                     "{:?} at {at}: {answer:?}",
                     view.source()
                 );
             }
-            at += Duration::hours(24 * 41 + 7);
+            at += SignedDuration::from_hours(24 * 41 + 7);
         }
     }
 }
@@ -340,7 +332,7 @@ fn every_withheld_date_answers_under_the_view() {
                 .holiday_on(day)
                 .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
             {
-                let at = day.and_hms_opt(12, 0, 0).expect("noon exists").and_utc();
+                let at = utc_datetime(day.at(12, 0, 0, 0));
                 assert_eq!(
                     view.is_open(at),
                     Ok(view.hours_at(at).is_open(at)),
@@ -349,7 +341,7 @@ fn every_withheld_date_answers_under_the_view() {
                 );
                 checked += 1;
             }
-            day = day.succ_opt().expect("fixture dates are representable");
+            day = day.tomorrow().expect("fixture dates are representable");
         }
     }
     assert!(checked > 0, "no identity withholds a date to check");
@@ -373,8 +365,9 @@ fn a_declared_phase_gap_reads_the_normal_week_under_the_view() {
 fn a_date_below_the_floor_stays_refused() {
     let view = nyse().with_last_known_week();
     assert_eq!(
-        view.is_open(utc("2009-12-31T16:00:00Z")),
-        Err(CalendarQueryError::BeforeSupportFloor {
+        view.is_open(utc("2009-12-31T16:00:00Z"))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::BeforeSupportFloor {
             source: view.source(),
             date: date(2009, 12, 31),
         })
@@ -485,7 +478,7 @@ fn the_reported_spans_agree_with_the_verdict_date_by_date() {
                     coverage.identity()
                 );
             }
-            day = day.succ_opt().expect("fixture dates are representable");
+            day = day.tomorrow().expect("fixture dates are representable");
         }
     }
 }
@@ -504,10 +497,10 @@ fn a_date_the_view_calls_answered_is_never_refused_for_another_answered_date() {
                 )
             };
             if answered(day) {
-                let at = day.and_hms_opt(14, 7, 0).expect("14:07 exists").and_utc();
+                let at = utc_datetime(day.at(14, 7, 0, 0));
                 for answer in answers(view, at) {
                     if let Err(error) = answer
-                        && !matches!(error, CalendarQueryError::SearchExhausted { .. })
+                        && !matches!(error.kind(), CalendarQueryErrorKind::SearchExhausted { .. })
                     {
                         assert!(
                             !answered(error.date()),
@@ -518,7 +511,7 @@ fn a_date_the_view_calls_answered_is_never_refused_for_another_answered_date() {
                     }
                 }
             }
-            day += Duration::days(9);
+            day += elapsed_days(9);
         }
     }
 }
@@ -536,7 +529,7 @@ fn every_identity_with_no_table_answers_above_its_sourced_week() {
             utc("2028-03-01T03:00:00Z"),
             utc("2030-10-12T12:00:00Z"),
         ] {
-            let day = at.date_naive();
+            let day = jiff::tz::TimeZone::UTC.to_datetime(at).date();
             if day < view.coverage().sourced_normal_week().first() {
                 continue;
             }

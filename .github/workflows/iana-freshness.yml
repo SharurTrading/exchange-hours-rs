@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT-0
+name: IANA freshness
+
+on:
+  schedule:
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  embedded:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare the compiled version with IANA
+        run: cargo run --locked --quiet --package xtask -- verify-embedded-tzdb

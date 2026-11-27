@@ -3,7 +3,7 @@
 //! ICE Futures Europe gilt futures family (Long, Medium, Short and Ultra
 //! Long Gilt), London.
 
-use chrono_tz::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -83,7 +83,7 @@ static ICE_EUROPE_GILTS_REVISIONS: &[Revision] = revisions![(
 
 /// Selects the gilt-family profile in force at `as_of` (London local day).
 pub(crate) fn ice_europe_gilts_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
+    as_of: SelectionInstant<'_>,
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Europe::London),

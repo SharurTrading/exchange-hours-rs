@@ -5,7 +5,7 @@
 //! Narrative evidence, sources and residual risks: `docs/evidence/cfe.md` and
 //! `docs/evidence/cfe_vix.md` (LAW-EVIDENCE-FILES).
 
-use chrono_tz::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
@@ -271,7 +271,7 @@ static CFE_REVISIONS: &[Revision] = revisions![
     (2021, 12, 6, &CFE_PROFILE, "Cboe C2021102603"),
 ];
 
-pub(crate) fn cfe_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn cfe_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, US::Central),
         &CFE_PROFILE_AT_2010_FLOOR,

@@ -5,13 +5,17 @@
 //! 2010-2011 era, 12:00 in the 2012-2015 Phase-Two era, 12:10 in the CAS era).
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::HONG_KONG;
+use jiff::Timestamp;
+use jiff::civil::Date;
 
-fn hk(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    local(Asia::Hong_Kong, date, time)
+fn hk(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local(&HONG_KONG, date, time)
 }
 
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 fn calendar() -> ExchangeCalendar {
@@ -46,7 +50,7 @@ fn every_printed_2025_row_ships() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2025, 1, 1),
             day(2025, 1, 29),
@@ -70,7 +74,7 @@ fn every_printed_2025_row_ships() {
         assert_early_close(
             "hkex",
             calendar,
-            Asia::Hong_Kong,
+            &HONG_KONG,
             eve,
             12 * 3_600 + 10 * 60,
             "HKEX-TC-2025",
@@ -86,7 +90,7 @@ fn every_printed_2026_row_ships() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2026, 1, 1),
             day(2026, 2, 17),
@@ -108,7 +112,7 @@ fn every_printed_2026_row_ships() {
         assert_early_close(
             "hkex",
             calendar,
-            Asia::Hong_Kong,
+            &HONG_KONG,
             eve,
             12 * 3_600 + 10 * 60,
             "HKEX-TC-2026-2027",
@@ -132,7 +136,7 @@ fn every_printed_2027_row_ships() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2027, 1, 1),
             day(2027, 2, 8),
@@ -153,7 +157,7 @@ fn every_printed_2027_row_ships() {
         assert_early_close(
             "hkex",
             calendar,
-            Asia::Hong_Kong,
+            &HONG_KONG,
             eve,
             12 * 3_600 + 10 * 60,
             "HKEX-TC-2026-2027",
@@ -199,7 +203,7 @@ fn the_lunar_new_year_block_reopens_on_the_first_open_day() {
         .expect("the coverage contract must answer a covered date")
         .expect("a reopening must exist inside the bounded search");
     assert_eq!(
-        next.0.with_timezone(&Asia::Hong_Kong).date_naive(),
+        next.0.to_zoned_datetime(HONG_KONG).date(),
         day(2026, 2, 20),
         "hkex must reopen on 20 February 2026"
     );
@@ -231,7 +235,7 @@ fn every_printed_2010_row_ships_with_the_era_half_day_close() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2010, 1, 1),
             day(2010, 2, 15),
@@ -265,7 +269,7 @@ fn every_printed_2011_row_ships_and_the_lunar_eve_is_the_era_half_day() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2011, 2, 3),
             day(2011, 2, 4),
@@ -321,7 +325,7 @@ fn the_2012_2015_half_day_eves_close_at_the_phase_two_morning_edge() {
         assert_early_close(
             "hkex",
             calendar,
-            Asia::Hong_Kong,
+            &HONG_KONG,
             (year, month, day_of_month),
             12 * 3_600,
             document,
@@ -358,7 +362,7 @@ fn every_printed_2012_row_ships_including_labour_day() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2012, 1, 2),
             day(2012, 1, 23),
@@ -394,7 +398,7 @@ fn every_printed_2016_closure_ships_and_2016_names_no_half_day() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2016, 1, 1),
             day(2016, 2, 8),
@@ -423,7 +427,7 @@ fn every_printed_2017_row_ships_with_the_cas_era_half_day() {
     assert_closed(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         &[
             day(2017, 1, 2),
             day(2017, 1, 30),
@@ -445,7 +449,7 @@ fn every_printed_2017_row_ships_with_the_cas_era_half_day() {
     assert_early_close(
         "hkex",
         calendar,
-        Asia::Hong_Kong,
+        &HONG_KONG,
         (2017, 1, 27),
         12 * 3_600 + 10 * 60,
         "HKEX-TC-2017",
@@ -485,7 +489,7 @@ fn the_2018_2024_page_editions_ship_their_rows() {
         assert_early_close(
             "hkex",
             calendar,
-            Asia::Hong_Kong,
+            &HONG_KONG,
             eve,
             12 * 3_600 + 10 * 60,
             match eve.0 {

@@ -4,6 +4,8 @@
 //! default that shares the FX clock.
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::{BERLIN, NEW_YORK};
 
 // ---------------------------------------------------------------------------
 // oanda_fx — Sunday 17:05 through Friday 16:59 New York time, six-minute
@@ -53,7 +55,7 @@ fn oanda_fx_daily_break_is_six_minutes_and_end_exclusive() {
         h.is_open(et((2026, 6, 10), (17, 5, 0))),
         "the evening reopen"
     );
-    assert_eq!(h.tz, America::New_York);
+    assert_eq!(h.tz, NEW_YORK);
 }
 
 #[test]
@@ -108,7 +110,7 @@ fn oanda_fx_trade_date_is_the_closing_day_and_sunday_opens_the_week() {
             .trade_date(et((2026, 6, 10), (12, 0, 0)))
             .expect("a covered date answers")
             .expect("a containing session has a trade date"),
-        chrono::NaiveDate::from_ymd_opt(2026, 6, 10).expect("valid date"),
+        date_opt(2026, 6, 10).expect("valid date"),
     );
 }
 
@@ -116,7 +118,7 @@ fn oanda_fx_trade_date_is_the_closing_day_and_sunday_opens_the_week() {
 fn oanda_fx_holiday_rows_close_their_trade_dates() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
     for day in [(2025, 1, 1), (2025, 12, 25), (2026, 1, 1)] {
-        let date = chrono::NaiveDate::from_ymd_opt(day.0, day.1, day.2).expect("valid date");
+        let date = date_opt(day.0, day.1, day.2).expect("valid date");
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
@@ -129,7 +131,7 @@ fn oanda_fx_holiday_rows_close_their_trade_dates() {
     assert!(
         !calendar
             .is_closed_trade_date(
-                chrono::NaiveDate::from_ymd_opt(2025, 12, 24).expect("valid date"),
+                date_opt(2025, 12, 24).expect("valid date"),
                 SessionKind::Both,
             )
             .expect("inside the audited window the holiday layer answers"),
@@ -143,7 +145,7 @@ fn oanda_fx_refuses_dates_outside_its_sourced_and_audited_spans() {
     // surface refuses rather than answering on carried data.
     assert_refused(
         calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2021, 11, 15).expect("valid date"),
+            date_opt(2021, 11, 15).expect("valid date"),
             SessionKind::Both,
         ),
         DateCoverage::OutsideCoveredRange,
@@ -153,7 +155,7 @@ fn oanda_fx_refuses_dates_outside_its_sourced_and_audited_spans() {
     // Beyond the audited holiday window (2026-10-30) the table has no answer.
     assert_refused(
         calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2026, 12, 25).expect("valid date"),
+            date_opt(2026, 12, 25).expect("valid date"),
             SessionKind::Both,
         ),
         DateCoverage::OutsideCoveredRange,
@@ -253,10 +255,8 @@ fn oanda_fx_witnessed_history_refuses_its_holiday_classification() {
         "Wednesday 2023-06-07 midday trades on the legacy grid"
     );
     assert_refused_variant(
-        &calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2023, 6, 7).expect("valid date"),
-            SessionKind::Both,
-        ),
+        &calendar
+            .is_closed_trade_date(date_opt(2023, 6, 7).expect("valid date"), SessionKind::Both),
         DateCoverage::UnresolvedGap,
         "the witnessed span below the first audited window has no holiday bracket",
     );
@@ -265,7 +265,7 @@ fn oanda_fx_witnessed_history_refuses_its_holiday_classification() {
 #[test]
 fn oanda_fx_2024_new_years_eve_has_audited_holiday_classification() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
-    let new_years_eve = chrono::NaiveDate::from_ymd_opt(2024, 12, 31).expect("valid date");
+    let new_years_eve = date_opt(2024, 12, 31).expect("valid date");
     assert!(
         calendar
             .is_open(et((2024, 12, 31), (12, 0, 0)))
@@ -287,10 +287,7 @@ fn oanda_fx_2024_new_years_eve_has_audited_holiday_classification() {
     // is inside the sourced span, so no resolution edge reaches it.
     assert!(
         calendar
-            .is_closed_trade_date(
-                chrono::NaiveDate::from_ymd_opt(2025, 1, 1).expect("valid date"),
-                SessionKind::Both,
-            )
+            .is_closed_trade_date(date_opt(2025, 1, 1).expect("valid date"), SessionKind::Both,)
             .expect("inside the audited window the holiday layer answers"),
     );
 }
@@ -339,7 +336,7 @@ fn oanda_try_fx_closes_for_the_weekend_and_carries_dst_in_the_zone() {
         utc((2026, 7, 13), (6, 0, 0)),
         "the zone anchors the summer session"
     );
-    assert_eq!(h.tz, Europe::Berlin);
+    assert_eq!(h.tz, BERLIN);
 }
 
 #[test]
@@ -349,7 +346,7 @@ fn oanda_try_fx_refuses_its_carried_history() {
     // day is carried and the date-aware surface refuses it.
     assert_refused(
         calendar.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2026, 6, 10).expect("valid date"),
+            date_opt(2026, 6, 10).expect("valid date"),
             SessionKind::Both,
         ),
         DateCoverage::OutsideCoveredRange,
@@ -402,10 +399,7 @@ fn oanda_wire_forms_are_snake_case_and_stable() {
 fn oanda_2024_christmas_and_thanksgiving_preserve_literal_broker_bounds() {
     let fx = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
     assert_eq!(
-        fx.is_closed_trade_date(
-            chrono::NaiveDate::from_ymd_opt(2024, 12, 25).unwrap(),
-            SessionKind::Both
-        ),
+        fx.is_closed_trade_date(date_opt(2024, 12, 25).unwrap(), SessionKind::Both),
         Ok(true)
     );
     assert_eq!(fx.is_open(et((2024, 12, 25), (17, 4, 59))), Ok(false));

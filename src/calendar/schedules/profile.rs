@@ -4,25 +4,52 @@
 
 use std::borrow::Cow;
 
-use chrono_tz::{America, Tz, UTC};
+use crate::calendar::time_zones::{America, UTC, ZoneId, ZoneSelection};
 
 use crate::calendar::exchange_calendar::CalendarSource;
 use crate::calendar::rule::ALL_DAYS;
 use crate::calendar::{MarketHours, SessionRule};
 
-/// A venue's normal-week schedule in fully static form.
-///
-/// Rule slices stay borrowed when converted to [`MarketHours`], so resolving a
-/// current or historical venue schedule never allocates.
+/// The selected rules required by the query engine. Its context already
+/// carries the resolved venue clock.
 #[derive(Clone, Copy)]
+pub(crate) struct HoursProfile<'a> {
+    pub(crate) regular: &'a [SessionRule],
+    pub(crate) extended: &'a [SessionRule],
+    pub(crate) order_entry: &'a [SessionRule],
+    pub(crate) has_daily_close: bool,
+}
+
+/// A built-in grid names its clock independently of the selected IANA release.
 pub(crate) struct StaticHoursProfile {
-    pub(crate) tz: Tz,
+    pub(crate) tz: ZoneId,
     pub(crate) regular: &'static [SessionRule],
     pub(crate) extended: &'static [SessionRule],
-    /// Order-entry-only phases in which no trade can match.
     pub(crate) order_entry: &'static [SessionRule],
     pub(crate) has_daily_close: bool,
     pub(crate) has_weekend_close: bool,
+}
+
+impl From<&'static StaticHoursProfile> for HoursProfile<'static> {
+    fn from(profile: &'static StaticHoursProfile) -> Self {
+        Self {
+            regular: profile.regular,
+            extended: profile.extended,
+            order_entry: profile.order_entry,
+            has_daily_close: profile.has_daily_close,
+        }
+    }
+}
+
+impl<'a> From<&'a MarketHours> for HoursProfile<'a> {
+    fn from(hours: &'a MarketHours) -> Self {
+        Self {
+            regular: &hours.regular,
+            extended: &hours.extended,
+            order_entry: &hours.order_entry,
+            has_daily_close: hours.has_daily_close,
+        }
+    }
 }
 
 pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =
@@ -60,10 +87,11 @@ pub(crate) static ALWAYS_OPEN_PROFILE: StaticHoursProfile = StaticHoursProfile {
 pub(crate) fn from_profile(
     source: impl Into<CalendarSource>,
     profile: &'static StaticHoursProfile,
+    zones: ZoneSelection<'_>,
 ) -> MarketHours {
     MarketHours {
         source: source.into(),
-        tz: profile.tz,
+        tz: zones.resolve(profile.tz).clone(),
         regular: Cow::Borrowed(profile.regular),
         extended: Cow::Borrowed(profile.extended),
         order_entry: Cow::Borrowed(profile.order_entry),

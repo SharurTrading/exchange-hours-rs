@@ -3,15 +3,9 @@
 //! The pre-2020 eras of the SGX Japan, China and Singapore equity-index
 //! grids, and the dated 2024 Japan era.
 //!
-//! Every profile here is a session-bound grid SGX itself published, read from
-//! the retired portal's archived pages, SGX's own product pages and content
-//! API, the calendar editions that are still served, or a circular. The
-//! narrative that orders these states, the law each row rests on and the
-//! residual risks live in the anchor evidence file,
-//! `docs/evidence/sgx_equity_index_japan.md`, which holds what the sibling
-//! modules carried in comments until it moved there on 2026-10-01 UTC.
+//! Evidence: `docs/evidence/sgx_equity_index_japan.md`.
 
-use chrono_tz::Asia;
+use crate::calendar::time_zones::Asia;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;

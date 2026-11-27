@@ -1,23 +1,20 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The [`SessionRule`] domain contract: what [`SessionRule::new`] and
-//! [`SessionRule::validate`] accept and reject.
-//!
-//! The SSM domain is `open_ssm in 0..86_400`, `close_ssm in 0..=86_400` (the
-//! `86_400` sentinel closes a same-day session exactly at next local
-//! midnight — the shape the 24×7 profile uses), and at least one enabled
-//! weekday. Equal endpoints encode one complete local-day span. Struct-literal
-//! and serde construction bypass the checks by design; `validate` is the
-//! recheck for those paths.
+//! Construction and deserialization share the session-rule contract. The open
+//! is in `0..86_400` and the close in `0..=86_400`. The weekday mask enables
+//! at least one day. Equal endpoints span one complete local day.
 
+mod support;
+
+use crate::support::zones::{APIA, NEW_YORK, UTC};
+use crate::support::{PROFILE_INSTANT, date_opt, local_datetime, local_earliest, local_opt};
+use jiff::SignedDuration;
 use std::borrow::Cow;
 
-use chrono::{Duration, NaiveDate, TimeZone, Utc};
-use chrono_tz::{America, Pacific};
 use exchange_hours::{
     CalendarResolution, Exchange, MarketHours, SessionKind, SessionRule, SessionRuleError,
     calendar_for_exchange, candle_end, candle_start, hours_for_exchange, next_session_after,
-    session_bounds,
+    session_bounds, session_bounds_with,
 };
 
 const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
@@ -26,9 +23,9 @@ const NO_DAYS: [bool; 7] = [false; 7];
 #[test]
 fn new_accepts_a_same_day_rule() {
     let rule = SessionRule::new(MON_FRI, 9 * 3600 + 30 * 60, 16 * 3600).expect("valid rule");
-    assert_eq!(rule.open_ssm, 9 * 3600 + 30 * 60);
-    assert_eq!(rule.close_ssm, 16 * 3600);
-    assert_eq!(rule.days, MON_FRI);
+    assert_eq!(rule.open_ssm(), 9 * 3600 + 30 * 60);
+    assert_eq!(rule.close_ssm(), 16 * 3600);
+    assert_eq!(rule.days(), MON_FRI);
     assert!(!rule.wraps_to_next_day());
 }
 
@@ -65,8 +62,8 @@ fn new_rejects_an_out_of_range_close() {
 #[test]
 fn new_accepts_equal_endpoints_as_a_complete_local_day() {
     let rule = SessionRule::new(MON_FRI, 3600, 3600).expect("complete local-day rule is valid");
-    assert_eq!(rule.open_ssm, 3600);
-    assert_eq!(rule.close_ssm, 3600);
+    assert_eq!(rule.open_ssm(), 3600);
+    assert_eq!(rule.close_ssm(), 3600);
     assert_eq!(rule.validate(), Ok(()));
     assert!(rule.wraps_to_next_day());
 }
@@ -80,28 +77,36 @@ fn new_rejects_an_all_disabled_mask() {
 }
 
 #[test]
-fn validate_rechecks_a_literal_or_deserialized_rule() {
-    // `SessionRule` is `#[non_exhaustive]`, so an out-of-crate struct literal no
-    // longer compiles and `new` cannot be bypassed that way. Deserialization is
-    // the remaining route that skips `new`, so that is what `validate` must
-    // still recheck - exercised below.
+fn valid_wire_rules_round_trip_with_the_original_field_names() {
+    for (open, close) in [(34_200, 57_600), (3_600, 3_600), (0, 86_400)] {
+        let wire = serde_json::json!({ "days": MON_FRI, "open_ssm": open, "close_ssm": close });
+        let rule: SessionRule = serde_json::from_value(wire.clone()).expect("valid persisted rule");
+        assert_eq!(rule, SessionRule::new(MON_FRI, open, close).unwrap());
+        assert_eq!(serde_json::to_value(rule).unwrap(), wire);
+    }
+}
 
-    let deserialized: SessionRule = serde_json::from_str(
-        r#"{"days":[true,true,true,true,true,false,false],"open_ssm":34200,"close_ssm":57600}"#,
-    )
-    .expect("valid JSON shape");
-    assert_eq!(deserialized.validate(), Ok(()));
-
-    // Serde does not enforce the domain; `validate` is the recheck that must
-    // reject an out-of-domain payload.
-    let out_of_domain_wire: SessionRule = serde_json::from_str(
-        r#"{"days":[true,true,true,true,true,false,false],"open_ssm":86400,"close_ssm":3600}"#,
-    )
-    .expect("serde accepts the shape regardless of domain");
-    assert_eq!(
-        out_of_domain_wire.validate(),
-        Err(SessionRuleError::OpenOutOfRange { open_ssm: 86_400 })
-    );
+#[test]
+fn invalid_wire_rules_are_rejected_during_deserialization() {
+    for (days, open, close, error) in [
+        (
+            MON_FRI,
+            86_400,
+            3_600,
+            SessionRuleError::OpenOutOfRange { open_ssm: 86_400 },
+        ),
+        (
+            MON_FRI,
+            0,
+            86_401,
+            SessionRuleError::CloseOutOfRange { close_ssm: 86_401 },
+        ),
+        (NO_DAYS, 0, 86_400, SessionRuleError::NoEnabledDays),
+    ] {
+        let wire = serde_json::json!({ "days": days, "open_ssm": open, "close_ssm": close });
+        let rejected = serde_json::from_value::<SessionRule>(wire).unwrap_err();
+        assert_eq!(rejected.to_string(), error.to_string());
+    }
 }
 
 #[test]
@@ -124,19 +129,15 @@ fn equal_endpoints_span_one_local_day_across_dst_transitions() {
     let rule = SessionRule::new(sunday, 0, 0).expect("complete local-day rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
     );
-    let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
-        America::New_York
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid New York fixture")
-            .with_timezone(&Utc)
+    let et = |date: (i16, i8, i8), time: (u32, u32, u32)| {
+        local_opt(&NEW_YORK, date, time).expect("valid New York fixture")
     };
 
     for (day, next_day, elapsed_hours) in [
@@ -146,8 +147,8 @@ fn equal_endpoints_span_one_local_day_across_dst_transitions() {
         let open = et(day, (0, 0, 0));
         let close = et(next_day, (0, 0, 0));
         assert_eq!(session_bounds(&hours, open), Some((open, close)));
-        assert_eq!(close - open, Duration::hours(elapsed_hours));
-        assert!(hours.is_open(close - Duration::nanoseconds(1)));
+        assert_eq!(close - open, SignedDuration::from_hours(elapsed_hours));
+        assert!(hours.is_open(close - SignedDuration::from_nanos(1)));
         assert!(
             !hours.is_open(close),
             "the local-day close is end-exclusive"
@@ -162,19 +163,15 @@ fn a_rule_collapsed_by_a_dst_gap_is_not_a_session_or_candle() {
         .expect("valid Sunday rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
     );
-    let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
-        America::New_York
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid New York fixture")
-            .with_timezone(&Utc)
+    let et = |date: (i16, i8, i8), time: (u32, u32, u32)| {
+        local_opt(&NEW_YORK, date, time).expect("valid New York fixture")
     };
 
     let before_gap = et((2025, 3, 9), (1, 0, 0));
@@ -193,10 +190,9 @@ fn a_rule_collapsed_by_a_dst_gap_is_not_a_session_or_candle() {
         Some(next_open)
     );
     assert!(next_open < next_close);
-    assert!(hours.is_closed_all_day_on(
-        NaiveDate::from_ymd_opt(2025, 3, 9).expect("valid date"),
-        SessionKind::Both,
-    ));
+    assert!(
+        hours.is_closed_all_day_on(date_opt(2025, 3, 9).expect("valid date"), SessionKind::Both,)
+    );
 }
 
 #[test]
@@ -206,19 +202,15 @@ fn a_dst_gap_cannot_invert_a_session_or_calendar_candle() {
         .expect("valid Sunday rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
     );
-    let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
-        America::New_York
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid New York fixture")
-            .with_timezone(&Utc)
+    let et = |date: (i16, i8, i8), time: (u32, u32, u32)| {
+        local_opt(&NEW_YORK, date, time).expect("valid New York fixture")
     };
 
     let before_gap = et((2025, 3, 9), (1, 0, 0));
@@ -246,7 +238,7 @@ fn a_partially_skipped_rule_opens_at_the_first_real_second() {
         .expect("valid second-granularity rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
@@ -254,11 +246,7 @@ fn a_partially_skipped_rule_opens_at_the_first_real_second() {
         true,
     );
     let et = |time: (u32, u32, u32)| {
-        America::New_York
-            .with_ymd_and_hms(2025, 3, 9, time.0, time.1, time.2)
-            .single()
-            .expect("valid New York fixture")
-            .with_timezone(&Utc)
+        local_opt(&NEW_YORK, (2025, 3, 9), time).expect("valid New York fixture")
     };
 
     let first_real_second = et((3, 0, 0));
@@ -268,7 +256,7 @@ fn a_partially_skipped_rule_opens_at_the_first_real_second() {
         session_bounds(&hours, first_real_second),
         Some((first_real_second, close))
     );
-    assert!(!hours.is_open_regular(first_real_second - Duration::nanoseconds(1)));
+    assert!(!hours.is_open_regular(first_real_second - SignedDuration::from_nanos(1)));
 }
 
 #[test]
@@ -278,7 +266,7 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
         .expect("valid second-granularity rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
@@ -286,11 +274,7 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
         true,
     );
     let et = |time: (u32, u32, u32)| {
-        America::New_York
-            .with_ymd_and_hms(2025, 3, 9, time.0, time.1, time.2)
-            .single()
-            .expect("valid New York fixture")
-            .with_timezone(&Utc)
+        local_opt(&NEW_YORK, (2025, 3, 9), time).expect("valid New York fixture")
     };
 
     let open = et((1, 30, 0));
@@ -299,18 +283,55 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
         session_bounds(&hours, open),
         Some((open, first_real_second))
     );
-    assert!(hours.is_open_regular(first_real_second - Duration::nanoseconds(1)));
+    assert!(hours.is_open_regular(first_real_second - SignedDuration::from_nanos(1)));
     assert!(!hours.is_open_regular(first_real_second));
 }
 
 #[test]
-fn a_wholly_skipped_civil_date_has_an_empty_closed_window() {
-    let always_open = hours_for_exchange(
+fn a_half_hour_dst_gap_snaps_both_session_boundaries_to_the_transition() {
+    let sunday = [false, false, false, false, false, false, true];
+    let inside_gap = 2 * 3_600 + 15 * 60;
+    let regular = SessionRule::new(sunday, 3_600 + 45 * 60, inside_gap).expect("valid Sunday rule");
+    let extended = SessionRule::new(sunday, inside_gap, 3 * 3_600).expect("valid Sunday rule");
+    let hours = MarketHours::new(
         Exchange::Unknown,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        jiff::tz::get!("Australia/Lord_Howe"),
+        Cow::Owned(vec![regular]),
+        Cow::Owned(vec![extended]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
     );
+    // 02:00 jumps to 02:30 on Sunday 2025-10-05 in Lord Howe. The
+    // in-gap 02:15 close and open both resolve to the transition itself.
+    let utc = |hour, minute| {
+        local_opt(&UTC, (2025, 10, 4), (hour, minute, 0)).expect("valid UTC fixture")
+    };
+    let regular_open = utc(15, 15);
+    let transition = utc(15, 30);
+    let extended_close = utc(16, 0);
+    let before = transition - SignedDuration::from_nanos(1);
+
+    assert_eq!(
+        session_bounds_with(&hours, before, SessionKind::Regular),
+        Some((regular_open, transition))
+    );
+    assert!(hours.is_open_regular(before));
+    assert!(!hours.is_open_extended(before));
+    assert!(!hours.is_open_regular(transition));
+    assert!(hours.is_open_extended(transition));
+    assert_eq!(
+        session_bounds_with(&hours, transition, SessionKind::Extended),
+        Some((transition, extended_close))
+    );
+    assert!(!hours.is_open_extended(extended_close));
+}
+
+#[test]
+fn a_wholly_skipped_civil_date_has_an_empty_closed_window() {
+    let always_open = hours_for_exchange(Exchange::Unknown, PROFILE_INSTANT);
     let calendar = calendar_for_exchange(Exchange::Unknown);
-    let day = |day| NaiveDate::from_ymd_opt(2011, 12, day).expect("valid Apia fixture date");
+    let day = |day| date_opt(2011, 12, day).expect("valid Apia fixture date");
 
     // The whole claim is stated by the identity-erased fixed snapshot, which
     // carries no coverage verdict: 2011-12-29 and 2011-12-31 are ordinary days
@@ -320,29 +341,23 @@ fn a_wholly_skipped_civil_date_has_an_empty_closed_window() {
     // identity-backed calendar answers these 2011 dates too and agrees with
     // the snapshot (the skipped civil date has no session to close).
     for existing_day in [day(29), day(31)] {
-        assert!(!always_open.is_closed_all_day_in_calendar(
-            existing_day,
-            Pacific::Apia,
-            SessionKind::Both,
-        ));
+        assert!(
+            !always_open.is_closed_all_day_in_calendar(existing_day, &APIA, SessionKind::Both,)
+        );
         assert_eq!(
             calendar
-                .is_closed_all_day_in_calendar(existing_day, Pacific::Apia, SessionKind::Both)
+                .is_closed_all_day_in_calendar(existing_day, &APIA, SessionKind::Both)
                 .expect("the synthetic identity answers its own domain"),
-            always_open.is_closed_all_day_in_calendar(
-                existing_day,
-                Pacific::Apia,
-                SessionKind::Both
-            ),
+            always_open.is_closed_all_day_in_calendar(existing_day, &APIA, SessionKind::Both),
             "an existing civil date"
         );
     }
-    assert!(always_open.is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both,));
+    assert!(always_open.is_closed_all_day_in_calendar(day(30), &APIA, SessionKind::Both,));
     assert_eq!(
         calendar
-            .is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both)
+            .is_closed_all_day_in_calendar(day(30), &APIA, SessionKind::Both)
             .expect("the synthetic identity answers its own domain"),
-        always_open.is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both),
+        always_open.is_closed_all_day_in_calendar(day(30), &APIA, SessionKind::Both),
         "the skipped civil date"
     );
 }
@@ -354,33 +369,29 @@ fn a_fall_back_session_spans_both_copies_of_the_repeated_hour() {
         SessionRule::new(sunday, 3600 + 30 * 60, 3600 + 45 * 60).expect("valid Sunday fold rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
     );
-    let utc = |time: (u32, u32, u32)| {
-        Utc.with_ymd_and_hms(2025, 11, 2, time.0, time.1, time.2)
-            .single()
-            .expect("valid UTC fixture")
-    };
+    let utc =
+        |time: (u32, u32, u32)| local_opt(&UTC, (2025, 11, 2), time).expect("valid UTC fixture");
     let expected = Some((utc((5, 30, 0)), utc((6, 45, 0))));
     assert_eq!(
-        America::New_York
-            .with_ymd_and_hms(2025, 11, 2, 1, 30, 0)
-            .earliest()
-            .expect("ambiguous open has an earliest mapping")
-            .with_timezone(&Utc),
+        local_earliest(&NEW_YORK, (2025, 11, 2), (1, 30, 0))
+            .expect("ambiguous open has an earliest mapping"),
         utc((5, 30, 0))
     );
     assert_eq!(
-        America::New_York
-            .with_ymd_and_hms(2025, 11, 2, 1, 45, 0)
-            .latest()
-            .expect("ambiguous close has a latest mapping")
-            .with_timezone(&Utc),
+        NEW_YORK
+            .to_ambiguous_timestamp(
+                local_datetime((2025, 11, 2), (1, 45, 0))
+                    .expect("valid fixture civil date and time")
+            )
+            .later()
+            .expect("ambiguous close has a latest mapping"),
         utc((6, 45, 0))
     );
 
@@ -399,17 +410,15 @@ fn a_wrapping_session_uses_the_latest_fall_back_close() {
         SessionRule::new(saturday, 23 * 3600, 3600 + 30 * 60).expect("valid Saturday wrap rule");
     let hours = MarketHours::new(
         Exchange::Unknown,
-        America::New_York,
+        NEW_YORK,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
     );
-    let utc = |date: (i32, u32, u32), time: (u32, u32, u32)| {
-        Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid UTC fixture")
+    let utc = |date: (i16, i8, i8), time: (u32, u32, u32)| {
+        local_opt(&UTC, date, time).expect("valid UTC fixture")
     };
     let open = utc((2025, 11, 2), (3, 0, 0));
     let close = utc((2025, 11, 2), (6, 30, 0));

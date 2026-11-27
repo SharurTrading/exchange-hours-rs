@@ -3,13 +3,14 @@
 //! Date-aware scans across recurring profile transitions.
 
 use super::prelude::*;
+use crate::support::zones::MEXICO_CITY;
 
 #[test]
 fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
     let calendar = calendar_for_exchange(Exchange::Bmv);
-    let tz = America::Mexico_City;
+    let tz = MEXICO_CITY;
 
-    let spring_friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
+    let spring_friday_close = local(&tz, (2024, 3, 8), (15, 20, 0));
     // BMV is a dormant identity whose scope ships no date-aware coverage for
     // 2024, so the forward scan refuses rather than naming the Monday reopen.
     // The fixed snapshot still states the grid the refused answer would have
@@ -29,7 +30,7 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
         "the kind-aware forward scan refuses as well"
     );
 
-    let fall_friday_close = local(tz, (2024, 11, 1), (14, 20, 0));
+    let fall_friday_close = local(&tz, (2024, 11, 1), (14, 20, 0));
     assert!(
         calendar.next_session_after(fall_friday_close).is_err(),
         "a dormant identity refuses this probe"
@@ -45,8 +46,8 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
 #[test]
 fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
     let calendar = calendar_for_exchange(Exchange::Bmv);
-    let tz = America::Mexico_City;
-    let friday = local(tz, (2024, 3, 8), (14, 0, 0));
+    let tz = MEXICO_CITY;
+    let friday = local(&tz, (2024, 3, 8), (14, 0, 0));
     let friday_snapshot = hours_for_exchange(Exchange::Bmv, friday);
 
     assert_eq!(calendar.hours_at(friday), friday_snapshot);
@@ -60,7 +61,7 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
         "the fixed snapshot states the pre-close grid the refusal withholds"
     );
 
-    let monday = local(tz, (2024, 3, 11), (7, 45, 0));
+    let monday = local(&tz, (2024, 3, 11), (7, 45, 0));
     assert!(
         calendar.is_open_regular(monday).is_err(),
         "a dormant identity refuses the date-aware surface"
@@ -70,13 +71,13 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
         "the fixed snapshot states the pre-open grid the refusal withholds"
     );
 
-    let friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
+    let friday_close = local(&tz, (2024, 3, 8), (15, 20, 0));
     assert!(
         calendar.next_session_open_after(friday_close).is_err(),
         "a dormant identity refuses this probe"
     );
     assert_eq!(
         next_session_after(&friday_snapshot, friday_close).map(|(open, _close)| open),
-        Some(local(tz, (2024, 3, 11), (8, 0, 0)))
+        Some(local(&tz, (2024, 3, 11), (8, 0, 0)))
     );
 }

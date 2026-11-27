@@ -2,30 +2,24 @@
 
 //! The two concrete profile sources consumed by the query engine.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc};
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
+use jiff::{Timestamp, civil::Date};
 
 use crate::calendar::exceptions::{DateException, ExceptionBlock, SessionExceptionSource};
-use crate::calendar::exchange_calendar::ExchangeCalendar;
+use crate::calendar::exchange_calendar::ZonedExchangeCalendar;
 use crate::calendar::hours::MarketHours;
-use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
-use crate::calendar::policy::DayPolicy;
+use crate::calendar::local_time::{
+    clip_local_close, clip_local_open, mk_local_close, mk_local_open,
+};
+use crate::calendar::policy::{DayPolicy, DayPolicyOutcome};
 use crate::calendar::rule::{SessionKind, SessionRule};
+use crate::calendar::schedules::HoursProfile;
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
+use crate::calendar::time_zones::ZoneSelection;
 use crate::calendar::{CalendarResolution, CalendarSource};
 
 use super::gate::{FixedSnapshot, Identified, SourceGate};
 use super::{candles, identity, replacement};
-
-// Sessions opening on a civil day are governed by the profile in force at the
-// end of that opening day. Midnight-keyed revisions select the same profile
-// at any post-midnight anchor, so this only distinguishes sourced intraday
-// cutovers: one that lands in an intraday gap after noon (ICE Canada's 18:30
-// CT pre-open move) must govern the sessions opening later that day. The last
-// second of the local day exists in every zone — DST transitions never
-// collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
-// ambiguity regardless.
-const SECONDS_PER_DAY: u32 = 86_400;
 
 /// Which of a profile's rule sets a scan consults.
 ///
@@ -57,7 +51,7 @@ pub(super) enum RuleSet {
 #[derive(Clone, Copy)]
 pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     source: G::Source<'a>,
-    tz: Tz,
+    tz: &'a TimeZone,
     holidays: Option<&'static HolidayTable>,
     policy: Option<&'a dyn DayPolicy>,
     exceptions: Option<&'a dyn SessionExceptionSource>,
@@ -75,7 +69,7 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     /// to resolve the sourced normal week without re-entering them, and the
     /// coverage verdict is a fact about the whole source state that must
     /// survive that narrowing unchanged.
-    coverage: G::Coverage,
+    coverage: G::Coverage<'a>,
     /// Whether some attached layer can supply a replacement trading day.
     ///
     /// Resolved once here rather than asked per scan. The caller's provider is
@@ -92,8 +86,9 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     /// all. A context with a caller's provider and a table of scalar rows has
     /// `replacement_layer == true` and `builtin_blocks == false`, and must not
     /// pay a `holiday_on` binary search per occurrence to discover that its
-    /// table has nothing to add. Every table the crate ships answers `false`.
+    /// table has nothing to add.
     builtin_blocks: bool,
+    sourced_week_anchors: bool,
 }
 
 /// The scalar trade-date clip one layer contributes.
@@ -105,11 +100,6 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
 #[derive(Clone, Copy)]
 struct DayClip {
     closed: bool,
-    /// A layer stated a boundary outside its documented range, which makes the
-    /// trade date unavailable rather than clipping it. Only a caller's
-    /// [`DayPolicy`] can set this; a built-in row's instants are fenced during
-    /// constant evaluation.
-    unavailable: bool,
     early_close_ssm: Option<u32>,
     late_open_ssm: Option<u32>,
 }
@@ -118,17 +108,13 @@ impl DayClip {
     /// The clip that changes nothing.
     const NONE: Self = Self {
         closed: false,
-        unavailable: false,
         early_close_ssm: None,
         late_open_ssm: None,
     };
 
     /// Returns whether this clip leaves the normal trading day untouched.
     const fn is_none(self) -> bool {
-        !self.closed
-            && !self.unavailable
-            && self.early_close_ssm.is_none()
-            && self.late_open_ssm.is_none()
+        !self.closed && self.early_close_ssm.is_none() && self.late_open_ssm.is_none()
     }
 
     /// Composes two clips by tightening, never by widening.
@@ -139,9 +125,18 @@ impl DayClip {
     fn tighten(self, other: Self) -> Self {
         Self {
             closed: self.closed || other.closed,
-            unavailable: self.unavailable || other.unavailable,
             early_close_ssm: min_option(self.early_close_ssm, other.early_close_ssm),
             late_open_ssm: max_option(self.late_open_ssm, other.late_open_ssm),
+        }
+    }
+}
+
+impl From<DayPolicyOutcome> for DayClip {
+    fn from(policy: DayPolicyOutcome) -> Self {
+        Self {
+            closed: policy.is_closed(),
+            early_close_ssm: policy.early_close_ssm(),
+            late_open_ssm: policy.late_open_ssm(),
         }
     }
 }
@@ -173,20 +168,6 @@ const fn table_can_replace(holidays: Option<&HolidayTable>) -> bool {
     }
 }
 
-pub(in crate::calendar) enum ResolvedHours<'a> {
-    Borrowed(&'a MarketHours),
-    Selected(MarketHours),
-}
-
-impl AsRef<MarketHours> for ResolvedHours<'_> {
-    fn as_ref(&self) -> &MarketHours {
-        match self {
-            Self::Borrowed(hours) => hours,
-            Self::Selected(hours) => hours,
-        }
-    }
-}
-
 impl<'a> QueryContext<'a, FixedSnapshot> {
     /// Builds a context over a detached fixed snapshot.
     ///
@@ -197,35 +178,37 @@ impl<'a> QueryContext<'a, FixedSnapshot> {
     pub(in crate::calendar) fn fixed(hours: &'a MarketHours) -> Self {
         Self {
             source: hours,
-            tz: hours.tz,
+            tz: &hours.tz,
             holidays: None,
             policy: None,
             exceptions: None,
             coverage: (),
             replacement_layer: false,
             builtin_blocks: false,
+            sourced_week_anchors: false,
         }
     }
 }
 
 impl<'a> QueryContext<'a, Identified> {
-    pub(in crate::calendar) fn date_aware(calendar: ExchangeCalendar) -> Self {
+    pub(in crate::calendar) fn date_aware(calendar: ZonedExchangeCalendar<'a>) -> Self {
         let holidays = calendar.holiday_table();
         let builtin_blocks = table_can_replace(holidays);
         Self {
             source: calendar,
-            tz: calendar.tz(),
+            tz: calendar.zone(),
             holidays,
             policy: None,
             exceptions: None,
             coverage: calendar.coverage(),
             replacement_layer: builtin_blocks,
             builtin_blocks,
+            sourced_week_anchors: false,
         }
     }
 
     pub(in crate::calendar) fn overlay(
-        calendar: ExchangeCalendar,
+        calendar: ZonedExchangeCalendar<'a>,
         policy: Option<&'a dyn DayPolicy>,
         exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
@@ -233,18 +216,26 @@ impl<'a> QueryContext<'a, Identified> {
         let builtin_blocks = table_can_replace(holidays);
         Self {
             source: calendar,
-            tz: calendar.tz(),
+            tz: calendar.zone(),
             holidays,
             policy,
             exceptions,
             coverage: calendar.coverage(),
             replacement_layer: exceptions.is_some() || builtin_blocks,
             builtin_blocks,
+            sourced_week_anchors: false,
         }
     }
 }
 
 impl<'a, G: SourceGate> QueryContext<'a, G> {
+    /// Uses sourced normal-week coverage only for raw cutoff anchoring.
+    /// The opening day's own coverage and the effective layers stay attached.
+    pub(super) const fn with_sourced_week_anchors(mut self) -> Self {
+        self.sourced_week_anchors = true;
+        self
+    }
+
     /// Drops every day-level layer, leaving the sourced normal week.
     ///
     /// The overlay paths resolve a normal trading day first and then modify it,
@@ -253,31 +244,38 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// two layers: it is a day-level modification of that normal week, and a
     /// baseline that kept it would recurse.
     ///
-    /// The coverage metadata is **not** dropped: it describes the source state
-    /// rather than a day-level layer, and the days a baseline walk touches are
-    /// the same days the enclosing query already had to answer for.
-    pub(super) const fn baseline(self) -> Self {
+    /// Ordinary queries keep their attached coverage. The prior-day forward
+    /// search can retry the anchors with sourced normal-week coverage to prove
+    /// an apparent dependency on a withheld holiday cannot affect its answer.
+    pub(super) fn baseline(self) -> Self {
         Self {
             source: self.source,
             tz: self.tz,
             holidays: None,
             policy: None,
             exceptions: None,
-            coverage: self.coverage,
+            coverage: if self.sourced_week_anchors {
+                G::normal_week_coverage(self.coverage)
+            } else {
+                self.coverage
+            },
             // The baseline drops every layer that could supply a replacement, so
             // the gate must drop with them or a baseline walk would re-enter the
             // layer it exists to avoid.
             replacement_layer: false,
             builtin_blocks: false,
+            sourced_week_anchors: false,
         }
     }
 
-    pub(super) const fn tz(self) -> Tz {
+    pub(super) const fn tz(self) -> &'a TimeZone {
         self.tz
     }
 
-    pub(super) const fn policy(self) -> Option<&'a dyn DayPolicy> {
-        self.policy
+    pub(super) fn policy_outcome(self, trade_date: Date) -> DayPolicyOutcome {
+        self.policy.map_or(DayPolicyOutcome::Normal, |policy| {
+            policy.outcome_on(trade_date)
+        })
     }
 
     /// Returns whether any day-level layer is attached.
@@ -296,29 +294,26 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// LAW-COVERAGE): every identity-backed query resolves the venue-local
     /// days it depends on through it, while a [`FixedSnapshot`] context's
     /// gate is total and cannot refuse.
-    pub(super) fn require_answerable(self, date: NaiveDate) -> Result<(), G::Error> {
+    pub(super) fn require_answerable(self, date: Date) -> Result<(), G::Error> {
         G::require_answerable(self.coverage, date)
     }
 
     /// The instant floor gate ([`SourceGate::require_floor_at`]): the floor is
     /// decided from the caller's own instant's venue-local day.
-    pub(in crate::calendar) fn require_floor_at(
-        self,
-        instant: DateTime<Utc>,
-    ) -> Result<(), G::Error> {
+    pub(in crate::calendar) fn require_floor_at(self, instant: Timestamp) -> Result<(), G::Error> {
         G::require_floor_at(self.coverage, self.tz, instant)
     }
 
     /// The day floor gate ([`SourceGate::require_floor`]): a fact about the
     /// **queried** day, never about every day a scan walks over.
-    pub(super) fn require_floor(self, date: NaiveDate) -> Result<(), G::Error> {
+    pub(super) fn require_floor(self, date: Date) -> Result<(), G::Error> {
         G::require_floor(self.coverage, date)
     }
 
     /// The withheld-phase gate ([`SourceGate::require_phase_coverage`]) for
     /// the entry points whose answer *is* the arrangement a declared phase gap
     /// withholds: the order-entry queue scans.
-    pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), G::Error> {
+    pub(super) fn require_phase_coverage(self, date: Date) -> Result<(), G::Error> {
         G::require_phase_coverage(self.coverage, date)
     }
 
@@ -326,13 +321,13 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// ([`SourceGate::require_holiday_classification`]): the classification
     /// entry points refuse a one-flank bridged date where the session queries
     /// on the same date answer (issue #296, the 2026-10-07 ruling).
-    pub(super) fn require_holiday_classification(self, date: NaiveDate) -> Result<(), G::Error> {
+    pub(super) fn require_holiday_classification(self, date: Date) -> Result<(), G::Error> {
         G::require_holiday_classification(self.coverage, date)
     }
 
     /// Whether the coverage metadata declares an unscoped refusing phase gap
     /// on `day` — the cheap half of the order-entry scan's gate.
-    pub(super) fn has_unscoped_refusing_phase_gap_on(self, day: NaiveDate) -> bool {
+    pub(super) fn has_unscoped_refusing_phase_gap_on(self, day: Date) -> bool {
         G::has_unscoped_refusing_phase_gap_on(self.coverage, day)
     }
 
@@ -340,7 +335,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// ([`SourceGate::search_exhausted`]): an identity-backed source
     /// attributes the exhaustion to itself, a detached snapshot keeps its
     /// exhaustive `None` absence.
-    pub(super) fn search_exhausted(self, day: NaiveDate) -> Result<(), G::Error> {
+    pub(super) fn search_exhausted(self, day: Date) -> Result<(), G::Error> {
         G::search_exhausted(self.coverage, day)
     }
 
@@ -348,8 +343,13 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     ///
     /// This reports the table alone; it is not the composed answer, which the
     /// caller's layers can tighten.
-    pub(in crate::calendar) fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+    pub(in crate::calendar) fn holiday_on(self, trade_date: Date) -> Option<Holiday> {
         self.holidays.and_then(|table| table.holiday_on(trade_date))
+    }
+
+    /// Returns whether the enabled built-in table closes the date after caller overrides.
+    pub(super) fn is_builtin_closed(self, trade_date: Date) -> bool {
+        self.builtin_clip(trade_date).closed
     }
 
     /// Returns the built-in clip for `trade_date`, if it is not suppressed.
@@ -366,63 +366,41 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// A built-in replacement-block row contributes **no** scalar clip: that
     /// row's trade date is governed by the replacement layer, and clipping it
     /// here as well would apply one row to its own date twice.
-    fn builtin_clip(self, trade_date: NaiveDate) -> DayClip {
+    fn builtin_clip(self, trade_date: Date) -> DayClip {
+        let Some(kind) = self.holiday_on(trade_date).map(Holiday::kind) else {
+            return DayClip::NONE;
+        };
         if matches!(
             self.caller_exception_on(trade_date),
             DateException::Closed | DateException::ReplaceSessions(_)
         ) {
             return DayClip::NONE;
         }
-        match self.holiday_on(trade_date).map(Holiday::kind) {
-            // Three kinds contribute no scalar clip, for two different reasons.
-            // `None` is a date the table says nothing about and `Unsourced` is
-            // one it expressly withholds; a replacement row states its whole
-            // arrangement through the replacement layer, so clipping the normal
-            // week here as well would apply one row to its own date twice.
-            None | Some(HolidayKind::Unsourced | HolidayKind::ReplacementBlocks(_)) => {
-                DayClip::NONE
-            }
-            Some(HolidayKind::Closed) => DayClip {
+        match kind {
+            // An unsourced date withholds its arrangement. Replacement blocks
+            // carry their complete arrangement through the replacement layer.
+            HolidayKind::Unsourced | HolidayKind::ReplacementBlocks(_) => DayClip::NONE,
+            HolidayKind::Closed => DayClip {
                 closed: true,
                 ..DayClip::NONE
             },
-            Some(HolidayKind::EarlyClose { close_ssm }) => DayClip {
+            HolidayKind::EarlyClose { close_ssm } => DayClip {
                 early_close_ssm: Some(close_ssm),
                 ..DayClip::NONE
             },
-            Some(HolidayKind::LateOpen { open_ssm }) => DayClip {
+            HolidayKind::LateOpen { open_ssm } => DayClip {
                 late_open_ssm: Some(open_ssm),
                 ..DayClip::NONE
             },
-            Some(HolidayKind::LateOpenAndEarlyClose {
+            HolidayKind::LateOpenAndEarlyClose {
                 open_ssm,
                 close_ssm,
-            }) => DayClip {
+            } => DayClip {
                 early_close_ssm: Some(close_ssm),
                 late_open_ssm: Some(open_ssm),
                 ..DayClip::NONE
             },
         }
-    }
-
-    /// Returns the caller's [`DayPolicy`] clip for `trade_date`.
-    ///
-    /// A boundary outside the trait's documented range makes the trade date
-    /// unavailable, which is not the same as closing it: an invalid record is
-    /// not evidence that the operator was shut, so it never feeds the
-    /// following-business-day roll.
-    fn policy_clip(self, trade_date: NaiveDate) -> DayClip {
-        self.policy.map_or(DayClip::NONE, |policy| {
-            let early_close_ssm = policy.early_close_ssm(trade_date);
-            let late_open_ssm = policy.late_open_ssm(trade_date);
-            DayClip {
-                closed: policy.is_closed(trade_date),
-                unavailable: early_close_ssm.is_some_and(|ssm| ssm > SECONDS_PER_DAY)
-                    || late_open_ssm.is_some_and(|ssm| ssm >= SECONDS_PER_DAY),
-                early_close_ssm,
-                late_open_ssm,
-            }
-        })
     }
 
     /// Returns whether the built-in table may hold a replacement block row on
@@ -437,7 +415,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// flip an answerable wrapped-queue probe into a coverage error whenever
     /// any layer is attached, which is exactly the overlay-neutrality the
     /// overlay contracts promise not to break.
-    fn builtin_block_may_exist_on(self, day: NaiveDate) -> bool {
+    fn builtin_block_may_exist_on(self, day: Date) -> bool {
         self.builtin_blocks
             && self
                 .holidays
@@ -461,7 +439,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// implementation that does not track its records defaults to `true` and
     /// keeps today's walk. The built-in table, whose rows the crate ships and
     /// fences, is asked over its block rows alone.
-    pub(super) fn replacement_blocks_may_reach(self, first: NaiveDate, last: NaiveDate) -> bool {
+    pub(super) fn replacement_blocks_may_reach(self, first: Date, last: Date) -> bool {
         if !self.replacement_layer {
             return false;
         }
@@ -495,7 +473,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// possibly relevant rather than trusted to return nothing: the trait
     /// documents that contract but cannot enforce it, and a missed exception
     /// is worse than a missed optimisation.
-    fn any_layer_may_affect(self, first: NaiveDate, last: NaiveDate) -> bool {
+    fn any_layer_may_affect(self, first: Date, last: Date) -> bool {
         if self
             .policy
             .is_some_and(|policy| policy.may_affect(first, last))
@@ -530,7 +508,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// excluded: [`Self::builtin_clip`] asks it whether the caller suppressed
     /// the built-in row, and the composed answer would report a built-in row's
     /// own blocks as if the caller had supplied them.
-    fn caller_exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+    fn caller_exception_on(self, trade_date: Date) -> DateException<'a> {
         self.exceptions
             .map_or(DateException::KnownNormal, |provider| {
                 provider.exception_on(trade_date)
@@ -552,17 +530,14 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// the crate's own table is sourced evidence about the date whether or not
     /// the caller's provider holds an opinion about it.
     ///
-    /// The table is consulted only when it actually carries a block row
-    /// ([`Self::builtin_blocks`]). Every table the crate ships answers `false`,
-    /// so this returns the caller's answer after one virtual call and no
-    /// lookup — which matters because the callers of this method sit in the
-    /// per-occurrence path. Without that guard a bare calendar would pay a
-    /// `holiday_on` binary search per occurrence for a row that cannot exist.
+    /// Only tables that carry a replacement row ([`Self::builtin_blocks`])
+    /// need a built-in lookup here. A scalar-only table returns the caller's
+    /// answer immediately.
     ///
     /// The `match` below lists every [`HolidayKind`] rather than falling through
     /// on a wildcard, so a sixth kind that needs built-in handling here is a
     /// build failure instead of a silent fall-through to the caller's answer.
-    pub(super) fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+    pub(super) fn exception_on(self, trade_date: Date) -> DateException<'a> {
         let caller = self.caller_exception_on(trade_date);
         if !self.builtin_blocks
             || matches!(
@@ -602,57 +577,28 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         self.replacement_layer
     }
 
-    /// Returns whether the exception layer replaces `trade_date` outright.
-    pub(super) fn trade_date_is_replaced(self, trade_date: NaiveDate) -> bool {
-        matches!(
-            self.exception_on(trade_date),
-            DateException::ReplaceSessions(_)
-        )
-    }
-
-    /// Returns whether any layer removes `trade_date` completely.
+    /// Resolves the explicit closures and policy used for a business-date roll.
     ///
-    /// The caller's exception layer answers first, the built-in family table
-    /// next, and the caller's [`DayPolicy`] last, overlaying whatever survives
-    /// exactly as it overlays a normal week.
-    pub(super) fn trade_date_is_closed(self, trade_date: NaiveDate) -> bool {
-        if matches!(self.exception_on(trade_date), DateException::Closed) {
-            return true;
+    /// The exception and holiday layers can close a weekday outright. Only an
+    /// explicit closure skips that weekday; a clip that removes the entire
+    /// session leaves the date's assignment alone.
+    pub(super) fn business_date_policy(self, trade_date: Date) -> DayPolicyOutcome {
+        if matches!(self.exception_on(trade_date), DateException::Closed)
+            || self.is_builtin_closed(trade_date)
+        {
+            return DayPolicyOutcome::Closed;
         }
-        self.builtin_clip(trade_date)
-            .tighten(self.policy_clip(trade_date))
-            .closed
+        self.policy_outcome(trade_date)
     }
 
     /// Assigns a resolved session block to its venue-local trade date.
     ///
     /// A replacement block carries its assignment explicitly, so it wins over
     /// every derived convention. Everything else falls through to
-    /// [`Self::normal_trade_date_for_bounds`].
-    pub(super) fn trade_date_for_bounds(
-        self,
-        open: DateTime<Utc>,
-        close: DateTime<Utc>,
-    ) -> NaiveDate {
+    /// the identity's normal assignment.
+    pub(super) fn trade_date_for_bounds(self, open: Timestamp, close: Timestamp) -> Date {
         replacement::replacement_trade_date(&self, open)
-            .unwrap_or_else(|| identity::assign_normal(&self, open, close))
-    }
-
-    /// Assigns bounds produced by a normal-week rule to their trade date.
-    ///
-    /// Most profiles use the local date of the final close. Identified
-    /// calendars retain three sourced exceptions: SET's after-midnight DR night
-    /// phase belongs to its prior local opening date, CBOT Rough Rice's
-    /// evening leg belongs to the following local date, and CME
-    /// cryptocurrency's weekend blocks carry the following business date. A
-    /// detached fixed snapshot has no identity with which to apply any of
-    /// them.
-    pub(super) fn normal_trade_date_for_bounds(
-        self,
-        open: DateTime<Utc>,
-        close: DateTime<Utc>,
-    ) -> NaiveDate {
-        identity::assign_normal(&self, open, close)
+            .unwrap_or_else(|| identity::assign_normal(&self, open, close).0)
     }
 
     /// Returns whether this identified calendar joins storage-only rule pieces.
@@ -663,49 +609,63 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         identity::joins_adjacent_same_kind(&self)
     }
 
-    pub(super) fn has_daily_close_at(self, instant: DateTime<Utc>) -> bool {
+    pub(super) fn has_daily_close_at(self, instant: Timestamp) -> bool {
         G::has_daily_close_at(self.source, instant)
     }
 
-    pub(super) fn has_weekend_close_at(self, instant: DateTime<Utc>) -> bool {
+    pub(super) fn has_weekend_close_at(self, instant: Timestamp) -> bool {
         G::has_weekend_close_at(self.source, instant)
     }
 
+    /// Finds a rule or replacement containing `instant`. Prefer its own
+    /// civil day's occurrences, then a wrapping occurrence from yesterday.
+    /// A rollback across midnight can leave a following opening day's
+    /// occurrence running after the clock has returned to `day`.
+    pub(super) fn containing_occurrence(
+        &self,
+        instant: Timestamp,
+        day: Date,
+        set: RuleSet,
+    ) -> Result<Option<(Timestamp, Timestamp)>, G::Error> {
+        let hit = |open: Timestamp, close: Timestamp| {
+            (open <= instant && instant < close).then_some((open, close))
+        };
+        if let Some(found) = find_occurrence(self, day, set, false, hit)? {
+            return Ok(Some(found));
+        }
+        // A day that cannot host a wrapping occurrence cannot refuse a
+        // lookback query at a coverage edge (#257). A known occurrence may
+        // still extend from before the support floor into an in-range query.
+        if let Ok(yesterday) = day.yesterday()
+            && self.wrapped_occurrence_possible(yesterday, set)
+            && let Some(found) = find_occurrence(self, yesterday, set, true, hit)?
+        {
+            return Ok(Some(found));
+        }
+        // Even a caller-supplied zone cannot jump back by more than the span
+        // between Jiff's extreme offsets, which is under three days.
+        let mut opening_day = day;
+        for _ in 0..3 {
+            let Ok(next) = opening_day.tomorrow() else {
+                break;
+            };
+            if mk_local_open(self.tz, next, 0).is_none_or(|midnight| midnight > instant) {
+                break;
+            }
+            if let Some(found) = find_occurrence(self, next, set, false, hit)? {
+                return Ok(Some(found));
+            }
+            opening_day = next;
+        }
+        Ok(None)
+    }
+
     /// True when `instant` falls in an order-entry-only phase occurrence.
-    ///
-    /// Resolves through the same opening-day-keyed selection as every session
-    /// query: today's occurrences from today's profile and wrapped occurrences
-    /// from yesterday's profile, so a phase is always answered by the profile
-    /// that owns its opening day even when a revision takes effect on the
-    /// following civil date. Both caller overlays apply as they do to tradeable
-    /// sessions: a closed trade date removes the complete trading day including
-    /// the queue that feeds it, and a replaced trade date serves only the
-    /// order-entry blocks the caller supplied for it.
-    pub(super) fn contains_order_entry(self, instant: DateTime<Utc>) -> Result<bool, G::Error> {
-        let day = bounded_utc(instant, self.tz)
-            .with_timezone(&self.tz)
-            .date_naive();
-        let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
-            (open <= instant && instant < close).then_some(())
-        };
-        if find_occurrence(&self, day, RuleSet::OrderEntry, false, hit)?.is_some() {
-            return Ok(true);
-        }
-        // A queue that opened yesterday can still be running, and the day it
-        // opened on is the day this answer depends on — so the probe is gated
-        // by the same rule as the one above rather than being read as a bare
-        // civil-date fact. But a yesterday that cannot host a queue still
-        // running — no wrapping rule of the set on its weekday, and no
-        // replacement layer that could supply one — yields `None` whatever
-        // its holiday layer held, so the answer does not read that day and it
-        // need not answer (#257).
-        let Some(yesterday) = day.pred_opt() else {
-            return Ok(false);
-        };
-        if !self.wrapped_occurrence_possible(yesterday, RuleSet::OrderEntry) {
-            return Ok(false);
-        }
-        Ok(find_occurrence(&self, yesterday, RuleSet::OrderEntry, true, hit)?.is_some())
+    pub(super) fn contains_order_entry(self, instant: Timestamp) -> Result<bool, G::Error> {
+        let day = self.tz.to_datetime(instant).date();
+        Ok(self
+            .containing_occurrence(instant, day, RuleSet::OrderEntry)?
+            .is_some())
     }
 
     /// Returns whether `day`'s grid — or a replacement layer standing in for
@@ -723,16 +683,38 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// nothing either and skipping the probe cannot move an answer
     /// (LAW-INVARIANT). The profile selection reads the same static timeline
     /// every query and every coverage walk reads.
-    pub(super) fn wrapped_occurrence_possible(self, day: NaiveDate, set: RuleSet) -> bool {
+    pub(super) fn wrapped_occurrence_possible(self, day: Date, set: RuleSet) -> bool {
         let block_reach_last = day
-            .checked_add_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))
+            .checked_add(jiff::SignedDuration::from_hours(
+                24 * (i64::from(-ExceptionBlock::MIN_DAY_OFFSET)),
+            ))
+            .ok()
             .is_none_or(|last| self.replacement_blocks_may_reach(day, last));
         if block_reach_last {
             return true;
         }
-        let weekday = day.weekday().num_days_from_monday() as usize;
+        let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
         let selected = self.profile_for_open_day(day);
-        rules(selected.as_ref(), set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
+        rules(selected, set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
+    }
+
+    /// Whether the effective arrangement can delay a wrapping occurrence's
+    /// open from the previous day into this one.
+    pub(super) fn has_late_open_on(self, day: Date) -> bool {
+        let builtin = self.builtin_clip(day);
+        if builtin.closed {
+            return false;
+        }
+        let policy = self
+            .policy
+            .filter(|policy| policy.may_affect(day, day))
+            .map_or(DayPolicyOutcome::Normal, |policy| policy.outcome_on(day));
+        let clip = builtin.tighten(policy.into());
+        // An explicit caller closure masks both scalar layers. A replacement
+        // masks the built-in clip but can still be delayed by caller policy.
+        !clip.closed
+            && clip.late_open_ssm.is_some()
+            && !matches!(self.caller_exception_on(day), DateException::Closed)
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.
@@ -742,7 +724,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// has no long weekend shutdown, but Friday 16:00 CT remains the final
     /// close of that trade-date week before Monday Pre-Open starts at 16:01.
     /// The identity-erased fixed snapshot cannot apply that convention.
-    pub(super) fn has_weekly_close_at(self, instant: DateTime<Utc>) -> bool {
+    pub(super) fn has_weekly_close_at(self, instant: Timestamp) -> bool {
         if self.has_weekend_close_at(instant) {
             return true;
         }
@@ -750,7 +732,9 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     }
 
     /// Selects a profile by the venue-local day on which a session opens.
-    pub(super) fn profile_for_open_day(self, day: NaiveDate) -> ResolvedHours<'a> {
+    /// The selected profile is the one in force at the end of that day so a
+    /// sourced intraday revision governs occurrences opening after it.
+    pub(super) fn profile_for_open_day(self, day: Date) -> HoursProfile<'a> {
         G::profile_for_open_day(self.source, self.tz, day)
     }
 }
@@ -773,17 +757,17 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
 /// block's trade date, which is issue #130.
 pub(super) fn find_occurrence<G: SourceGate, T>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
+    open_day: Date,
     set: RuleSet,
     wrapped_only: bool,
-    mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
+    mut probe: impl FnMut(Timestamp, Timestamp) -> Option<T>,
 ) -> Result<Option<T>, G::Error> {
     // The date-level gate sits ahead of the profile selection, not inside it:
     // resolving a profile reads the identity's zone through a post-floor epoch
     // snapshot, and the plan requires that resolution never be reached on a date
     // this identity cannot answer (LAW-COVERAGE).
     context.require_answerable(open_day)?;
-    let weekday = open_day.weekday().num_days_from_monday() as usize;
+    let weekday = usize::from(open_day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(open_day);
     // Only the order-entry scans read the phase a declared phase-level gap
     // withholds: a tradeable-session scan is answered by the sourced normal
@@ -802,13 +786,13 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
     // there would refuse an answer the identity has.
     if matches!(set, RuleSet::OrderEntry) && {
         context.has_unscoped_refusing_phase_gap_on(open_day)
-            || rules(selected.as_ref(), set)
+            || rules(selected, set)
                 .any(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
             || context.builtin_block_may_exist_on(open_day)
     } {
         context.require_phase_coverage(open_day)?;
     }
-    for rule in rules(selected.as_ref(), set)
+    for rule in rules(selected, set)
         .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
     {
         if let Some(bounds) = resolve_rule_bounds(context, open_day, set, rule)? {
@@ -860,23 +844,17 @@ pub(super) fn find_occurrence<G: SourceGate, T>(
 /// withholds, which is the conservative direction.
 pub(in crate::calendar) fn builtin_resolves_order_entry(
     source: CalendarSource,
-    date: NaiveDate,
+    zones: ZoneSelection<'_>,
+    date: Date,
     open_ssm: Option<u32>,
     close_ssm: u32,
 ) -> bool {
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => {
-            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
-        }
-        CalendarSource::MarketHoursKey(key) => {
-            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
-        }
-    };
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
     let context = QueryContext::date_aware(calendar);
-    let weekday = date.weekday().num_days_from_monday() as usize;
+    let weekday = usize::from(date.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(date);
     let mut unresolved = false;
-    for rule in rules(selected.as_ref(), RuleSet::OrderEntry) {
+    for rule in rules(selected, RuleSet::OrderEntry) {
         if !rule.days[weekday] || rule.close_ssm != close_ssm {
             continue;
         }
@@ -903,31 +881,25 @@ pub(in crate::calendar) fn builtin_resolves_order_entry(
 /// surface cannot disagree about which days carry rules.
 pub(in crate::calendar) fn builtin_has_tradeable_rule(
     source: CalendarSource,
-    day: NaiveDate,
+    zones: ZoneSelection<'_>,
+    day: Date,
 ) -> bool {
-    let calendar = match source {
-        CalendarSource::Exchange(exchange) => {
-            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
-        }
-        CalendarSource::MarketHoursKey(key) => {
-            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
-        }
-    };
+    let calendar = ZonedExchangeCalendar::from_source(source).with_zones(zones);
     let context = QueryContext::date_aware(calendar);
-    let weekday = day.weekday().num_days_from_monday() as usize;
+    let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
     let selected = context.profile_for_open_day(day);
-    rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)).any(|rule| rule.days[weekday])
+    rules(selected, RuleSet::Sessions(SessionKind::Both)).any(|rule| rule.days[weekday])
 }
 
 /// Resolves one scheduled occurrence and rejects civil-time collapses.
 pub(super) fn resolve_rule_bounds<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    open_day: NaiveDate,
+    open_day: Date,
     set: RuleSet,
     rule: &SessionRule,
 ) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, G::Error> {
     let close_day = if rule.wraps_to_next_day() {
-        open_day.succ_opt()
+        open_day.tomorrow().ok()
     } else {
         Some(open_day)
     };
@@ -935,8 +907,12 @@ pub(super) fn resolve_rule_bounds<G: SourceGate>(
         return Ok(None);
     };
     let tz = context.tz();
-    let raw_open = mk_local_open(tz, open_day, rule.open_ssm).with_timezone(&Utc);
-    let raw_close = mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc);
+    let (Some(raw_open), Some(raw_close)) = (
+        mk_local_open(tz, open_day, rule.open_ssm),
+        mk_local_close(tz, close_day, rule.close_ssm),
+    ) else {
+        return Ok(None);
+    };
     if raw_open >= raw_close {
         return Ok(None);
     }
@@ -981,27 +957,24 @@ pub(super) fn resolve_rule_bounds<G: SourceGate>(
         // own close as the trade-date anchor rather than inventing a date.
         None => raw_close,
     };
-    let trade_date = context.normal_trade_date_for_bounds(raw_open, final_close);
+    let (trade_date, policy) = identity::assign_normal(context, raw_open, final_close);
     // The exception layer resolves the trading day before anything clips it: a
     // replaced or closed trade date deletes its normal-week occurrences, and
     // the replacement blocks -- the caller's record or the built-in table's
     // row, whichever governs the date -- stand in their place.
     //
-    // The two probes run only when some layer can actually replace or close a
-    // date by record. `has_replacement_layer` false means neither a caller
-    // provider nor a block row is attached, and then `exception_on` can only
-    // answer `KnownNormal`, so both tests are already false. Skipping them keeps
-    // two virtual calls out of the per-occurrence path, which is where this
-    // function is called from.
+    // Probe only when a caller provider or built-in block row can replace or
+    // close a date by exception record.
     if context.has_replacement_layer()
-        && (context.trade_date_is_replaced(trade_date)
-            || matches!(context.exception_on(trade_date), DateException::Closed))
+        && matches!(
+            context.exception_on(trade_date),
+            DateException::ReplaceSessions(_) | DateException::Closed
+        )
     {
         return Ok(None);
     }
-    let clip = context
-        .builtin_clip(trade_date)
-        .tighten(context.policy_clip(trade_date));
+    let policy = policy.unwrap_or_else(|| context.policy_outcome(trade_date));
+    let clip = context.builtin_clip(trade_date).tighten(policy.into());
     if clip.closed {
         return Ok(None);
     }
@@ -1020,19 +993,18 @@ pub(super) fn resolve_rule_bounds<G: SourceGate>(
 fn clamp_to_clip<G: SourceGate>(
     context: &QueryContext<'_, G>,
     clip: DayClip,
-    trade_date: NaiveDate,
-    raw_open: DateTime<Utc>,
-    raw_close: DateTime<Utc>,
+    trade_date: Date,
+    raw_open: Timestamp,
+    raw_close: Timestamp,
 ) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, G::Error> {
-    if clip.unavailable {
-        return Ok(None);
-    }
     let tz = context.tz();
     let mut open = raw_open;
     let mut close = raw_close;
     if let Some(ssm) = clip.early_close_ssm {
-        let cutoff = mk_local_close(tz, trade_date, ssm).with_timezone(&Utc);
-        close = close.min(cutoff);
+        let Some(clipped) = clip_local_close(tz, trade_date, ssm, close) else {
+            return Ok(None);
+        };
+        close = clipped;
     }
     if let Some(ssm) = clip.late_open_ssm {
         // The trading day's own first open decides which local date a late-open
@@ -1051,26 +1023,31 @@ fn clamp_to_clip<G: SourceGate>(
             SessionKind::Both,
         )?
         .unwrap_or(raw_open);
-        let first_local = first_open.with_timezone(&tz);
-        let first_day = first_local.date_naive();
-        let first_ssm = first_local.time().num_seconds_from_midnight();
-        let cutoff_day = if first_day < trade_date && ssm >= first_ssm {
+        let first_local = tz.to_datetime(first_open);
+        let first_day = first_local.date();
+        let first_ssm = first_local
+            .time()
+            .duration_since(jiff::civil::Time::midnight())
+            .as_secs();
+        let cutoff_day = if first_day < trade_date && i64::from(ssm) >= first_ssm {
             first_day
         } else {
             trade_date
         };
-        let cutoff = mk_local_open(tz, cutoff_day, ssm).with_timezone(&Utc);
-        open = open.max(cutoff);
+        let Some(clipped) = clip_local_open(tz, cutoff_day, ssm, open) else {
+            return Ok(None);
+        };
+        open = clipped;
     }
     Ok((open < close).then_some((open, close)))
 }
 
-pub(super) fn rules(hours: &MarketHours, set: RuleSet) -> impl Iterator<Item = &SessionRule> {
+pub(super) fn rules(hours: HoursProfile<'_>, set: RuleSet) -> impl Iterator<Item = &SessionRule> {
     let (first, second): (&[SessionRule], &[SessionRule]) = match set {
-        RuleSet::Sessions(SessionKind::Regular) => (&hours.regular, &[]),
-        RuleSet::Sessions(SessionKind::Extended) => (&[], &hours.extended),
-        RuleSet::Sessions(SessionKind::Both) => (&hours.regular, &hours.extended),
-        RuleSet::OrderEntry => (&hours.order_entry, &[]),
+        RuleSet::Sessions(SessionKind::Regular) => (hours.regular, &[]),
+        RuleSet::Sessions(SessionKind::Extended) => (&[], hours.extended),
+        RuleSet::Sessions(SessionKind::Both) => (hours.regular, hours.extended),
+        RuleSet::OrderEntry => (hours.order_entry, &[]),
     };
     first.iter().chain(second)
 }

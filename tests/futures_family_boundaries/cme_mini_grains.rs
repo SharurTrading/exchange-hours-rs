@@ -10,31 +10,29 @@
 //! cutover test evaluates both sides of its revision at venue-local midnight,
 //! so a revision keyed one day early or late flips an assertion.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, MarketHoursKey, SessionState,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, MarketHoursKey, SessionState,
     calendar_for_market_hours_key, candle_end, hours_for_market_hours_key, next_session_open_after,
     session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const MINI: MarketHoursKey = MarketHoursKey::GlobexMiniGrains;
 const GRAINS: MarketHoursKey = MarketHoursKey::GlobexGrains;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
+fn hours_at(date: (i16, i8, i8)) -> exchange_hours::MarketHours {
     hours_for_market_hours_key(MINI, ct(date, (0, 0, 0)))
 }
 
@@ -48,7 +46,7 @@ fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
 /// `hours_for_market_hours_key` states it, so the boundary and classification
 /// assertions below keep their force through that surface; `assert_refused` is
 /// how the calendar-backed surface is asserted to refuse the same dates.
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(MINI, instant).session_state(instant)
 }
 
@@ -56,11 +54,11 @@ fn state_at(instant: DateTime<Utc>) -> SessionState {
 ///
 /// This is the trade date the close-date convention names: a wrapping leg
 /// belongs to the day its close falls on.
-fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>) -> NaiveDate {
+fn close_trade_date(hours: &exchange_hours::MarketHours, instant: Timestamp) -> Date {
     candle_end(hours, instant, CalendarResolution::Daily)
         .expect("the fixed snapshot states the daily close")
-        .with_timezone(&US::Central)
-        .date_naive()
+        .to_zoned_datetime(US_CENTRAL)
+        .date()
 }
 
 /// Asserts the answer a **dormant** identity's date-aware surface gives.
@@ -71,11 +69,12 @@ fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>)
 /// (LAW-COVERAGE), which is the fact these tests now state in place of the
 /// schedule they used to read back out of it.
 fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    let answer = answer.map_err(|error| error.kind());
     assert!(
         matches!(
             answer,
-            Err(CalendarQueryError::BeforeSupportFloor { .. }
-                | CalendarQueryError::OutsideCoveredRange { .. })
+            Err(CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                | CalendarQueryErrorKind::OutsideCoveredRange { .. })
         ),
         "{label}: a dormant identity must refuse, got {answer:?}"
     );
@@ -699,9 +698,9 @@ fn mini_grains_and_the_standard_grain_grid_disagree_outside_the_converged_eras()
             (20, 0),
         ] {
             let instant = ct((2026, 6, 14), (0, 0, 0))
-                + chrono::Duration::days(day_offset)
-                + chrono::Duration::hours(hour)
-                + chrono::Duration::minutes(minute);
+                + elapsed_days(day_offset)
+                + SignedDuration::from_hours(hour)
+                + SignedDuration::from_mins(minute);
             let mini = hours_for_market_hours_key(MINI, instant);
             let grains = hours_for_market_hours_key(GRAINS, instant);
             assert_eq!(

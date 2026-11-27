@@ -2,24 +2,17 @@
 
 //! BME's own cash calendar and principal-share half-day phases.
 
-use chrono::{NaiveDate, TimeZone};
-use chrono_tz::Europe::Madrid;
-use exchange_hours::{
-    CalendarQueryError, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
-};
+mod support;
 
-fn at(
-    year: i32,
-    month: u32,
-    day: u32,
-    hour: u32,
-    minute: u32,
-    second: u32,
-) -> chrono::DateTime<chrono::Utc> {
-    Madrid
-        .with_ymd_and_hms(year, month, day, hour, minute, second)
-        .unwrap()
-        .to_utc()
+use crate::support::zones::MADRID;
+use crate::support::{date_opt, local_opt};
+use exchange_hours::{
+    CalendarQueryErrorKind, EvidenceTier, Exchange, HolidayKind, SessionKind, calendar_for_exchange,
+};
+use jiff::SignedDuration;
+
+fn at(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> jiff::Timestamp {
+    local_opt(&MADRID, (year, month, day), (hour, minute, second)).unwrap()
 }
 
 #[test]
@@ -44,7 +37,7 @@ fn each_annual_cash_calendar_closes_its_own_good_friday() {
         (2025, 4, 18),
         (2026, 4, 3),
     ] {
-        let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
+        let date = date_opt(year, month, day).unwrap();
         let row = calendar.holiday_on(date).unwrap();
         assert_eq!(row.kind(), HolidayKind::Closed, "{date}");
         assert_eq!(row.tier(), EvidenceTier::T1);
@@ -56,7 +49,7 @@ fn each_annual_cash_calendar_closes_its_own_good_friday() {
     }
     for year in [2010, 2021] {
         for day in [24, 31] {
-            let date = NaiveDate::from_ymd_opt(year, 12, day).unwrap();
+            let date = date_opt(year, 12, day).unwrap();
             assert_eq!(
                 calendar.holiday_on(date).unwrap().kind(),
                 HolidayKind::Closed
@@ -71,7 +64,7 @@ fn detailed_half_days_replace_regular_and_auction_phases() {
     let calendar = calendar_for_exchange(Exchange::Bme);
     for year in [2012, 2013, 2014, 2015, 2018, 2019, 2020, 2024, 2025] {
         for day in [24, 31] {
-            let date = NaiveDate::from_ymd_opt(year, 12, day).unwrap();
+            let date = date_opt(year, 12, day).unwrap();
             assert!(matches!(
                 calendar.holiday_on(date).unwrap().kind(),
                 HolidayKind::ReplacementBlocks(_)
@@ -133,7 +126,7 @@ fn detailed_half_days_replace_regular_and_auction_phases() {
                 at(year, 12, day, 14, 0, 30)
             };
             assert_eq!(
-                calendar.is_open(close - chrono::Duration::seconds(1)),
+                calendar.is_open(close - SignedDuration::from_secs(1)),
                 Ok(true)
             );
             assert_eq!(calendar.is_open(close), Ok(false));
@@ -157,24 +150,28 @@ fn cash_calendar_has_no_invented_substitutes_and_keeps_2026_unknown() {
         (2023, 22),
         (2023, 29),
     ] {
-        let date = NaiveDate::from_ymd_opt(year, 12, day).unwrap();
+        let date = date_opt(year, 12, day).unwrap();
         assert_eq!(calendar.holiday_on(date), None);
         assert_eq!(calendar.is_open(at(year, 12, day, 16, 0, 0)), Ok(true));
     }
     for day in [24, 31] {
-        let date = NaiveDate::from_ymd_opt(2026, 12, day).unwrap();
+        let date = date_opt(2026, 12, day).unwrap();
         assert_eq!(
             calendar.holiday_on(date).unwrap().kind(),
             HolidayKind::Unsourced
         );
         assert!(matches!(
-            calendar.is_open(at(2026, 12, day, 12, 0, 0)),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            calendar
+                .is_open(at(2026, 12, day, 12, 0, 0))
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ));
     }
     assert!(matches!(
-        calendar.is_open(at(2027, 1, 4, 12, 0, 0)),
-        Err(CalendarQueryError::OutsideCoveredRange { .. })
+        calendar
+            .is_open(at(2027, 1, 4, 12, 0, 0))
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::OutsideCoveredRange { .. })
     ));
 }
 

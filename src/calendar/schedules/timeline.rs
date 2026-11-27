@@ -2,19 +2,18 @@
 
 //! Shared selection primitives for venue-local schedule histories.
 
-use chrono::{DateTime, NaiveDate, Offset, Utc};
-use chrono_tz::Tz;
+use crate::calendar::time_zones::{SelectionInstant, ZoneId};
+use jiff::civil::Date;
 
 use super::StaticHoursProfile;
-use crate::calendar::local_time::{bounded_utc, mk_local_open};
+use crate::calendar::local_time::{self, mk_local_open};
 
 /// The primary source that states a revision's day-level effective date.
 ///
 /// A short label naming the dated primary artifact — notice, circular, or
 /// rulebook filing — behind one [`Revision`] row. The full quotation and URL
-/// stay in the comment beside the table; this carries the identity of the
-/// evidence in the type itself, and [`revisions!`] rejects a row whose label
-/// is empty.
+/// live in the owner's evidence file. [`revisions!`] rejects a row whose
+/// citation label is empty.
 #[derive(Clone, Copy)]
 pub(crate) struct SourceRef(&'static str);
 
@@ -34,7 +33,7 @@ impl SourceRef {
 /// authority of `source`.
 #[derive(Clone, Copy)]
 pub(crate) struct Revision {
-    pub(crate) effective: NaiveDate,
+    pub(crate) effective: Date,
     pub(crate) profile: &'static StaticHoursProfile,
     pub(crate) source: SourceRef,
 }
@@ -52,7 +51,7 @@ pub(crate) struct Revision {
 /// - every row carries a non-empty [`SourceRef`] citation, so a revision can
 ///   never exist without a named primary source.
 ///
-/// The comment beside the invocation keeps the full quotations and URLs.
+/// The comment beside the invocation points to the owner's evidence file.
 macro_rules! revisions {
     (
         $( ($year:expr, $month:expr, $day:expr, $profile:expr, $citation:literal $(,)?) ),+ $(,)?
@@ -69,7 +68,7 @@ macro_rules! revisions {
             ),+
         ];
         const _: () = {
-            const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),+];
+            const DATES: &[(i16, i8, i8)] = &[$(($year, $month, $day)),+];
             $crate::calendar::schedules::timeline::assert_ascending(DATES);
             $crate::calendar::schedules::timeline::assert_cited(TIMELINE);
         };
@@ -117,7 +116,7 @@ pub(crate) use horizon;
 /// A duplicate date would be silently shadowed by `select_revision`'s
 /// partition-point search, and an out-of-order row would misroute every
 /// earlier lookup, so both are build failures rather than runtime hazards.
-pub(crate) const fn assert_ascending(rows: &[(i32, u32, u32)]) {
+pub(crate) const fn assert_ascending(rows: &[(i16, i8, i8)]) {
     let mut index = 1;
     while index < rows.len() {
         assert!(
@@ -143,31 +142,19 @@ pub(crate) const fn assert_cited(rows: &[Revision]) {
 
 /// Orders `(year, month, day)` as one comparable scalar for const evaluation;
 /// tuple `PartialOrd` is not const-callable.
-const fn day_key(year: i32, month: u32, day: u32) -> i64 {
+const fn day_key(year: i16, month: i8, day: i8) -> i64 {
     year as i64 * 10_000 + month as i64 * 100 + day as i64
 }
 
 /// Builds a hard-coded effective date during constant evaluation.
-#[expect(
-    clippy::panic,
-    reason = "const-eval only: an invalid sourced date must fail the build"
-)]
-pub(crate) const fn effective_date(year: i32, month: u32, day: u32) -> NaiveDate {
-    match NaiveDate::from_ymd_opt(year, month, day) {
-        Some(date) => date,
-        None => panic!("invalid hard-coded effective date"),
-    }
+pub(crate) const fn effective_date(year: i16, month: i8, day: i8) -> Date {
+    Date::constant(year, month, day)
 }
 
 /// Converts an instant to the calendar date used by a venue's rule table.
-///
-/// The instant is bounded to the venue zone first (see [`bounded_utc`]), so an
-/// otherwise-unrepresentable chrono edge degrades inward instead of
-/// misrouting the civil day. This is the one shared place every day-level
-/// selector's instant is normalized.
 #[inline]
-pub(crate) fn local_date(as_of: DateTime<Utc>, tz: Tz) -> NaiveDate {
-    bounded_utc(as_of, tz).with_timezone(&tz).date_naive()
+pub(crate) fn local_date(as_of: SelectionInstant<'_>, tz: ZoneId) -> Date {
+    local_time::local_date(as_of.zones.resolve(tz), as_of.instant)
 }
 
 /// Selects from an ascending, venue-local revision timeline.
@@ -177,7 +164,7 @@ pub(crate) fn local_date(as_of: DateTime<Utc>, tz: Tz) -> NaiveDate {
 /// Timelines built by [`revisions!`] guarantee the ascending-order
 /// precondition this partition-point search relies on.
 pub(crate) fn select_revision(
-    day: NaiveDate,
+    day: Date,
     baseline: &'static StaticHoursProfile,
     revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
@@ -190,10 +177,16 @@ pub(crate) fn select_revision(
 
 /// Returns `reference - venue` UTC-offset seconds on the venue's local day.
 ///
-/// Noon avoids civil-day boundary ambiguity. This is used only by published
-/// cross-zone regimes such as B3 and BMV; it does not read a clock.
-pub(crate) fn reference_delta_seconds(as_of: DateTime<Utc>, venue_tz: Tz, reference_tz: Tz) -> i32 {
-    let venue_noon = mk_local_open(venue_tz, local_date(as_of, venue_tz), 12 * 3600);
-    let reference_noon = venue_noon.with_timezone(&reference_tz);
-    reference_noon.offset().fix().local_minus_utc() - venue_noon.offset().fix().local_minus_utc()
+/// Sample at venue-local noon. If Jiff's timestamp range excludes that noon,
+/// sample at the caller's representable instant on the same venue-local date.
+pub(crate) fn reference_delta_seconds(
+    as_of: SelectionInstant<'_>,
+    venue_tz: ZoneId,
+    reference_tz: ZoneId,
+) -> i32 {
+    let day = local_date(as_of, venue_tz);
+    let venue_tz = as_of.zones.resolve(venue_tz);
+    let reference_tz = as_of.zones.resolve(reference_tz);
+    let sample = mk_local_open(venue_tz, day, 12 * 3600).unwrap_or(as_of.instant);
+    reference_tz.to_offset(sample).seconds() - venue_tz.to_offset(sample).seconds()
 }

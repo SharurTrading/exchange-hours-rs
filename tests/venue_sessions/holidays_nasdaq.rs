@@ -11,34 +11,32 @@
 //! 2026-10-08 UTC closed on 2026-10-09 UTC on the operator's own Equity
 //! Trader Alerts, so no date in the window refuses any more.
 
-use chrono::{Days, NaiveDate, TimeZone as _};
-use chrono_tz::America;
+use crate::support::zones::NEW_YORK;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
+    CalendarQueryErrorKind, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
     calendar_for_exchange,
 };
+use jiff::SignedDuration;
+use jiff::civil::Date;
 
 fn nasdaq() -> ExchangeCalendar {
     calendar_for_exchange(Exchange::Nasdaq)
 }
 
-fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<chrono::Utc> {
-    America::New_York
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous New York instant")
-        .with_timezone(&chrono::Utc)
+fn et(date: (i16, i8, i8), time: (u32, u32, u32)) -> jiff::Timestamp {
+    local_opt(&NEW_YORK, date, time).expect("fixture must be an unambiguous New York instant")
 }
 
-fn day(cell: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(cell.0, cell.1, cell.2).expect("fixture must be a valid date")
+fn day(cell: (i16, i8, i8)) -> Date {
+    date_opt(cell.0, cell.1, cell.2).expect("fixture must be a valid date")
 }
 
-fn row_of(cell: (i32, u32, u32)) -> Option<HolidayKind> {
+fn row_of(cell: (i16, i8, i8)) -> Option<HolidayKind> {
     nasdaq().holiday_on(day(cell)).map(Holiday::kind)
 }
 
-fn assert_closed(cell: (i32, u32, u32), label: &str) {
+fn assert_closed(cell: (i16, i8, i8), label: &str) {
     let calendar = nasdaq();
     let date = day(cell);
     assert_eq!(
@@ -62,7 +60,7 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
     );
 }
 
-fn assert_early_close(cell: (i32, u32, u32), label: &str) {
+fn assert_early_close(cell: (i16, i8, i8), label: &str) {
     let calendar = nasdaq();
     let cutoff = et(cell, (13, 0, 0));
     assert_eq!(
@@ -74,7 +72,7 @@ fn assert_early_close(cell: (i32, u32, u32), label: &str) {
     );
     assert!(
         calendar
-            .is_open(cutoff - chrono::TimeDelta::nanoseconds(1))
+            .is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("a covered early-close date answers"),
         "{label}: open one nanosecond before the close"
     );
@@ -225,7 +223,7 @@ fn every_scalar_early_close_is_the_printed_one_oclock() {
             None => {}
         }
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the walk stays representable");
     }
     assert_eq!(closed + early + unsourced, 194, "the table ships 194 rows");
@@ -245,7 +243,10 @@ fn the_window_ends_where_the_operator_stops_publishing() {
         .is_open(et((2027, 1, 4), (10, 0, 0)))
         .expect_err("2027-01-04 is outside the audited window");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
+        ),
         "the horizon refusal is OutsideCoveredRange, got {error:?}"
     );
 }

@@ -2,7 +2,7 @@
 
 //! ICE Futures U.S. Cocoa (`CC`) futures and options schedules.
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
@@ -104,9 +104,7 @@ pub(crate) static COCOA_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the Cocoa profile in force on `as_of`'s New York day.
-pub(crate) fn cocoa_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn cocoa_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &COCOA_BASELINE,

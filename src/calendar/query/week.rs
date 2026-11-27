@@ -2,16 +2,14 @@
 
 //! Normal-week open duration for fixed and date-aware schedules.
 
-use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
+use jiff::Timestamp;
 
 use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, find_occurrence, rules};
-use crate::calendar::hours::MarketHours;
-use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::{SECONDS_PER_NORMAL_WEEK, SessionKind, normal_week_rule_intervals};
+use crate::calendar::schedules::HoursProfile;
 
 const WEEK_SECONDS: i64 = SECONDS_PER_NORMAL_WEEK.cast_signed();
-const DAY_SECONDS: i64 = 86_400;
 
 fn union_seconds(mut intervals: Vec<(u64, u64)>) -> u64 {
     intervals.sort_unstable();
@@ -35,7 +33,7 @@ fn union_seconds(mut intervals: Vec<(u64, u64)>) -> u64 {
     total.min(SECONDS_PER_NORMAL_WEEK)
 }
 
-pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: &MarketHours) -> u64 {
+pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: HoursProfile<'_>) -> u64 {
     let intervals = rules(hours, RuleSet::Sessions(SessionKind::Both))
         .flat_map(normal_week_rule_intervals)
         .collect();
@@ -44,19 +42,25 @@ pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: &MarketHours) -
 
 pub(in crate::calendar) fn normal_week_open_seconds_containing<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<u64, G::Error> {
     let tz = context.tz();
-    let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
-    let weekday = i64::from(local_day.weekday().num_days_from_monday());
-    let Some(monday) = local_day.checked_sub_signed(Duration::days(weekday)) else {
+    let local_day = tz.to_datetime(instant).date();
+    let weekday = i64::from(local_day.weekday().to_monday_zero_offset());
+    let Some(monday) = local_day
+        .checked_sub(jiff::SignedDuration::from_hours(24 * (weekday)))
+        .ok()
+    else {
         let selected = context.profile_for_open_day(local_day);
-        return Ok(fixed_normal_week_open_seconds(selected.as_ref()));
+        return Ok(fixed_normal_week_open_seconds(selected));
     };
     let mut intervals = Vec::new();
 
     for offset in -1_i64..=6 {
-        let Some(open_day) = monday.checked_add_signed(Duration::days(offset)) else {
+        let Some(open_day) = monday
+            .checked_add(jiff::SignedDuration::from_hours(24 * (offset)))
+            .ok()
+        else {
             continue;
         };
         // The probe never stops the scan: it collects every occurrence, normal
@@ -67,20 +71,28 @@ pub(in crate::calendar) fn normal_week_open_seconds_containing<G: SourceGate>(
             RuleSet::Sessions(SessionKind::Both),
             false,
             |resolved_open, resolved_close| {
-                let local_open = resolved_open.with_timezone(&tz);
-                let local_close = resolved_close.with_timezone(&tz);
+                let local_open = tz.to_datetime(resolved_open);
+                let local_close = tz.to_datetime(resolved_close);
                 let start = local_open
-                    .date_naive()
-                    .signed_duration_since(monday)
-                    .num_days()
-                    .saturating_mul(DAY_SECONDS)
-                    .saturating_add(i64::from(local_open.time().num_seconds_from_midnight()));
+                    .date()
+                    .duration_since(monday)
+                    .as_secs()
+                    .saturating_add(
+                        local_open
+                            .time()
+                            .duration_since(jiff::civil::Time::midnight())
+                            .as_secs(),
+                    );
                 let end = local_close
-                    .date_naive()
-                    .signed_duration_since(monday)
-                    .num_days()
-                    .saturating_mul(DAY_SECONDS)
-                    .saturating_add(i64::from(local_close.time().num_seconds_from_midnight()));
+                    .date()
+                    .duration_since(monday)
+                    .as_secs()
+                    .saturating_add(
+                        local_close
+                            .time()
+                            .duration_since(jiff::civil::Time::midnight())
+                            .as_secs(),
+                    );
                 let clipped_start = start.max(0);
                 let clipped_end = end.min(WEEK_SECONDS);
                 if clipped_start < clipped_end

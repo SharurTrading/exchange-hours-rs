@@ -6,13 +6,18 @@
 //! 2010-2011), closures only.
 
 use super::prelude::*;
+use crate::support::date_opt;
+use crate::support::zones::ZURICH;
+use exchange_hours::CalendarQueryErrorKind;
+use jiff::Timestamp;
+use jiff::civil::Date;
 
-fn ch(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    local(Europe::Zurich, date, time)
+fn ch(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local(&ZURICH, date, time)
 }
 
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 fn calendar() -> ExchangeCalendar {
@@ -54,7 +59,7 @@ fn every_printed_2012_cell_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2012, 1, 2),
             day(2012, 4, 6),
@@ -87,7 +92,7 @@ fn the_2016_grid_marks_seven_weekday_holidays_and_no_weekend_fall() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2016, 1, 1),
             day(2016, 3, 25),
@@ -109,7 +114,7 @@ fn the_2022_grid_marks_six_weekday_holidays() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2022, 4, 15),
             day(2022, 4, 18),
@@ -145,7 +150,7 @@ fn every_2010_and_2011_market_holiday_mark_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2010, 1, 1),
             day(2010, 4, 2),
@@ -160,7 +165,7 @@ fn every_2010_and_2011_market_holiday_mark_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2011, 4, 22),
             day(2011, 4, 25),
@@ -232,7 +237,7 @@ fn every_2010_and_2011_market_holiday_mark_ships() {
         .expect("the coverage contract must answer a covered date")
         .expect("a reopening must exist inside the bounded search");
     assert_eq!(
-        next.0.with_timezone(&Europe::Zurich).date_naive(),
+        next.0.to_zoned_datetime(ZURICH).date(),
         day(2010, 12, 27),
         "six must reopen on Monday 27 December 2010"
     );
@@ -252,7 +257,7 @@ fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2018, 1, 1),
             day(2018, 1, 2),
@@ -272,7 +277,7 @@ fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2019, 1, 1),
             day(2019, 1, 2),
@@ -346,7 +351,10 @@ fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
         .is_open(ch((2028, 1, 3), (12, 0, 0)))
         .expect_err("a query beyond the 2027 schedule must refuse");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        matches!(
+            error.kind(),
+            CalendarQueryErrorKind::OutsideCoveredRange { .. }
+        ),
         "2028-01-03 must refuse with OutsideCoveredRange, got {error:?}"
     );
 }
@@ -357,7 +365,7 @@ fn every_printed_2024_cell_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2024, 1, 1),
             day(2024, 1, 2),
@@ -422,7 +430,7 @@ fn every_printed_2025_cell_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2025, 1, 1),
             day(2025, 1, 2),
@@ -454,7 +462,7 @@ fn every_printed_2026_cell_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2026, 1, 1),
             day(2026, 1, 2),
@@ -486,7 +494,7 @@ fn every_printed_2027_cell_ships() {
     assert_closed(
         "six",
         calendar,
-        Europe::Zurich,
+        &ZURICH,
         &[
             day(2027, 1, 1),
             day(2027, 3, 26),
@@ -559,7 +567,7 @@ fn the_christmas_block_reopens_on_the_first_open_day() {
         .expect("the coverage contract must answer a covered date")
         .expect("a reopening must exist inside the bounded search");
     assert_eq!(
-        next.0.with_timezone(&Europe::Zurich).date_naive(),
+        next.0.to_zoned_datetime(ZURICH).date(),
         day(2025, 12, 29),
         "six must reopen on 29 December 2025"
     );

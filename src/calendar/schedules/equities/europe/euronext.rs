@@ -9,7 +9,9 @@
 mod dublin;
 mod milan;
 
-use chrono_tz::{Europe, Tz};
+use crate::calendar::time_zones::{SelectionInstant, ZoneId};
+
+use crate::calendar::time_zones::Europe;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -233,23 +235,19 @@ static LISBON_REVISIONS: &[Revision] = revisions![(
 ),];
 
 fn phase_one_profile(
-    as_of: chrono::DateTime<chrono::Utc>,
-    tz: Tz,
+    as_of: SelectionInstant<'_>,
+    tz: ZoneId,
     baseline: &'static StaticHoursProfile,
     revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, tz), baseline, revisions)
 }
 
-pub(crate) fn paris_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn paris_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     phase_one_profile(as_of, Europe::Paris, &PARIS_LEGACY, PARIS_REVISIONS)
 }
 
-pub(crate) fn amsterdam_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn amsterdam_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     phase_one_profile(
         as_of,
         Europe::Amsterdam,
@@ -258,9 +256,7 @@ pub(crate) fn amsterdam_profile_at(
     )
 }
 
-pub(crate) fn brussels_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn brussels_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     phase_one_profile(
         as_of,
         Europe::Brussels,
@@ -269,8 +265,6 @@ pub(crate) fn brussels_profile_at(
     )
 }
 
-pub(crate) fn lisbon_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
+pub(crate) fn lisbon_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     phase_one_profile(as_of, Europe::Lisbon, &LISBON_LEGACY, LISBON_REVISIONS)
 }

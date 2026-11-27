@@ -2,26 +2,25 @@
 
 //! Daily, weekly, and monthly close discovery over a [`QueryContext`].
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
+use jiff::{SignedDuration, Timestamp, civil::Date};
 
 use super::gate::SourceGate;
 use super::identity;
 use super::replacement::{self, ExceptionDailyClose};
 use super::schedule::{QueryContext, RuleSet, resolve_rule_bounds, rules};
 use super::sessions::containing_session_with;
-use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const CLOSE_LOOKAHEAD_DAYS: i64 = 21;
 
 fn update_latest<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
+    day: Date,
     kind: SessionKind,
-    latest: &mut Option<DateTime<Utc>>,
-    candidate_open: DateTime<Utc>,
-    candidate: DateTime<Utc>,
-    ceiling: Option<DateTime<Utc>>,
+    latest: &mut Option<Timestamp>,
+    candidate_open: Timestamp,
+    candidate: Timestamp,
+    ceiling: Option<Timestamp>,
 ) -> Result<(), G::Error> {
     if context.trade_date_for_bounds(candidate_open, candidate) == day
         && containing_session_with(context, candidate, kind)?.is_none()
@@ -35,20 +34,15 @@ fn update_latest<G: SourceGate>(
 
 fn latest_close_for_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
+    day: Date,
     kind: SessionKind,
-    ceiling: Option<DateTime<Utc>>,
-) -> Result<Option<DateTime<Utc>>, G::Error> {
-    // This scan describes `day` from the identity's own tables, so a date
-    // those tables withhold refuses instead of being described (LAW-COVERAGE;
-    // see `daily_close_for_trade_date` for why the gate sits below the
-    // caller-record path).
-    context.require_answerable(day)?;
-    let weekday = day.weekday().num_days_from_monday() as usize;
+    ceiling: Option<Timestamp>,
+) -> Result<Option<Timestamp>, G::Error> {
+    let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
     let today = context.profile_for_open_day(day);
     let mut latest = None;
 
-    for rule in rules(today.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
+    for rule in rules(today, RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
         if let Some((open, close)) =
             resolve_rule_bounds(context, day, RuleSet::Sessions(kind), rule)?
         {
@@ -56,11 +50,12 @@ fn latest_close_for_trade_date<G: SourceGate>(
         }
     }
 
-    if let Some(yesterday) = day.pred_opt() {
-        let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
+    if let Ok(yesterday) = day.yesterday() {
+        let previous_weekday =
+            usize::from(yesterday.weekday().to_monday_zero_offset().cast_unsigned());
         let previous = context.profile_for_open_day(yesterday);
-        for rule in rules(previous.as_ref(), RuleSet::Sessions(kind))
-            .filter(|rule| rule.days[previous_weekday])
+        for rule in
+            rules(previous, RuleSet::Sessions(kind)).filter(|rule| rule.days[previous_weekday])
         {
             if let Some((open, close)) =
                 resolve_rule_bounds(context, yesterday, RuleSet::Sessions(kind), rule)?
@@ -69,12 +64,10 @@ fn latest_close_for_trade_date<G: SourceGate>(
             }
         }
     }
-    if let Some(tomorrow) = day.succ_opt() {
-        let next_weekday = tomorrow.weekday().num_days_from_monday() as usize;
+    if let Ok(tomorrow) = day.tomorrow() {
+        let next_weekday = usize::from(tomorrow.weekday().to_monday_zero_offset().cast_unsigned());
         let next = context.profile_for_open_day(tomorrow);
-        for rule in
-            rules(next.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday])
-        {
+        for rule in rules(next, RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday]) {
             if let Some((open, close)) =
                 resolve_rule_bounds(context, tomorrow, RuleSet::Sessions(kind), rule)?
             {
@@ -93,29 +86,21 @@ fn latest_close_for_trade_date<G: SourceGate>(
 /// one-day-either-side window cannot reach a block that opens several local
 /// days before its trade date.
 ///
-/// The day is gated at [`latest_close_for_trade_date`], the normal-week
-/// derivation, not here: a caller record for a withheld date states the day
-/// itself, and the overlay contracts keep that observable — the composed
-/// daily bar over a replaced `Unsourced` date answers from the record
-/// (`a_day_policy_clips_a_replaced_trading_day`). The derivation, by
-/// contrast, describes the date from the identity's own tables, so a date
-/// those tables withhold must refuse rather than let the neighbour scan
-/// describe its normal week (LAW-COVERAGE). That refusal used to be an
-/// accident of the derivation's containment probes reaching the day; the
-/// per-occurrence gate window (issue #107) legitimately stopped most
-/// resolves from consulting it, which would have let `is_closed_trade_date`
-/// answer a withheld Muhurat Sunday from its normal week — an unsourced gap
-/// reported as a plain closure is precisely the failure LAW-COVERAGE exists
-/// to prevent.
+/// A caller record for a withheld date supplies that day's arrangement. The
+/// neighbour scan describes the date from the identity's own tables and
+/// requires coverage for that date first (LAW-COVERAGE).
 pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
+    day: Date,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, G::Error> {
+) -> Result<Option<Timestamp>, G::Error> {
     match replacement::daily_close(context, day, kind) {
         ExceptionDailyClose::NoSession => Ok(None),
         ExceptionDailyClose::Close(close) => Ok(Some(close)),
-        ExceptionDailyClose::NotGoverned => latest_close_for_trade_date(context, day, kind, None),
+        ExceptionDailyClose::NotGoverned => {
+            context.require_answerable(day)?;
+            latest_close_for_trade_date(context, day, kind, None)
+        }
     }
 }
 
@@ -124,26 +109,25 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
 /// final close of `kind`.
 ///
 /// The question differs from [`daily_close_for_trade_date`], whose absence
-/// answers the session walks, in one gate: the **classification** refuses on a
+/// answers the session walks: the **classification** refuses on a
 /// one-flank bridged date (issue #296, the 2026-10-07 ruling). There the
 /// identity's week is sourced and the date's session questions answer, but no
 /// audited window brackets the span from below, so nothing witnesses the
 /// holiday layer and a "not closed" answer would be fabricated from the
-/// normal week; the refusal is the enriched `CalendarQueryError::
-/// UnresolvedGap`, whose `normal_week_baseline()` names the sourced week the
+/// normal week; the refusal reports [`crate::CalendarQueryErrorKind::UnresolvedGap`] and
+/// its `normal_week_baseline()` names the sourced week the
 /// date sits inside. A two-flank bridged date keeps answering beside the
 /// disclosed residual — two flanks bracket the span, one does not.
 ///
 /// A caller-supplied exception record answers before every gate, exactly as
 /// it does in [`daily_close_for_trade_date`]: the record states the day
 /// itself (the #107 overlay contract), so an overlaid calendar keeps its
-/// observable on a refused date too. The derivation beneath the gate is
-/// [`latest_close_for_trade_date`], whose own `require_answerable` gate keeps
-/// refusing the dates the date-level facts refuse — above the last window on a
-/// default calendar, a carried week, a withheld `Unsourced` row — unchanged.
+/// observable on a refused date too. After the date's coverage gates, an
+/// effective built-in closure answers from the date itself. Other dates use
+/// [`latest_close_for_trade_date`] to determine the effective session.
 pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
+    day: Date,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     match replacement::daily_close(context, day, kind) {
@@ -152,14 +136,20 @@ pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
         ExceptionDailyClose::NotGoverned => {}
     }
     context.require_holiday_classification(day)?;
+    context.require_answerable(day)?;
+    if context.is_builtin_closed(day) {
+        // The row removes every session assigned to this trade date, even
+        // when its usual opening lands on a withheld neighbouring date.
+        return Ok(true);
+    }
     Ok(latest_close_for_trade_date(context, day, kind, None)?.is_none())
 }
 
 pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, G::Error> {
+) -> Result<Option<Timestamp>, G::Error> {
     Ok(
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
             .map(|(_day, close)| close),
@@ -170,7 +160,7 @@ pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
 /// `CLOSE_LOOKAHEAD_DAYS` days.
 ///
 /// Running out of window is
-/// [`CalendarQueryError::SearchExhausted`](crate::calendar::coverage::CalendarQueryError::SearchExhausted)
+/// [`crate::CalendarQueryErrorKind::SearchExhausted`]
 /// for an identity-backed source, reported against the day the walk stopped on: it is
 /// a different answer from a day the identity refuses, which the per-day gate
 /// below raises instead (LAW-COVERAGE). A **detached fixed snapshot** has no
@@ -178,12 +168,12 @@ pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
 /// its exhaustive `None` absence.
 fn next_daily_close_and_trade_date_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Result<Option<(NaiveDate, DateTime<Utc>)>, G::Error> {
+) -> Result<Option<(Date, Timestamp)>, G::Error> {
     let tz = context.tz();
-    let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
-    let mut day = local_day.pred_opt().unwrap_or(local_day);
+    let local_day = tz.to_datetime(instant).date();
+    let mut day = local_day.yesterday().ok().unwrap_or(local_day);
     // The walk starts one local day back because a close can still be assigned
     // to the day before the instant's own: SET Thailand's convention dates an
     // after-midnight night phase to its prior local opening date
@@ -209,7 +199,7 @@ fn next_daily_close_and_trade_date_after_with<G: SourceGate>(
         {
             return Ok(Some((day, close)));
         }
-        let Some(next) = day.succ_opt() else {
+        let Some(next) = day.tomorrow().ok() else {
             return Ok(None);
         };
         day = next;
@@ -223,10 +213,10 @@ fn next_daily_close_and_trade_date_after_with<G: SourceGate>(
 
 pub(in crate::calendar) fn trade_date_for_daily_close<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    close: DateTime<Utc>,
+    close: Timestamp,
     kind: SessionKind,
-) -> Result<Option<NaiveDate>, G::Error> {
-    let Some(probe) = close.checked_sub_signed(Duration::nanoseconds(1)) else {
+) -> Result<Option<Date>, G::Error> {
+    let Some(probe) = close.checked_sub(SignedDuration::from_nanos(1)).ok() else {
         return Ok(None);
     };
     let Some((open, resolved_close)) = containing_session_with(context, probe, kind)? else {
@@ -237,17 +227,17 @@ pub(in crate::calendar) fn trade_date_for_daily_close<G: SourceGate>(
 
 pub(in crate::calendar) fn next_weekly_close_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, G::Error> {
+) -> Result<Option<Timestamp>, G::Error> {
     let Some((mut trade_date, mut close)) =
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
     else {
         return Ok(None);
     };
     loop {
-        let week = trade_date.iso_week();
-        let Some(probe) = close.checked_add_signed(Duration::nanoseconds(1)) else {
+        let week = super::civil::iso_week(trade_date);
+        let Some(probe) = close.checked_add(SignedDuration::from_nanos(1)).ok() else {
             return Ok(Some(close));
         };
         let Some((next_trade_date, next)) =
@@ -255,7 +245,7 @@ pub(in crate::calendar) fn next_weekly_close_after_with<G: SourceGate>(
         else {
             return Ok(Some(close));
         };
-        if next_trade_date.iso_week() != week {
+        if super::civil::iso_week(next_trade_date) != week {
             return Ok(Some(close));
         }
         trade_date = next_trade_date;
@@ -265,9 +255,9 @@ pub(in crate::calendar) fn next_weekly_close_after_with<G: SourceGate>(
 
 pub(in crate::calendar) fn next_monthly_close_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, G::Error> {
+) -> Result<Option<Timestamp>, G::Error> {
     let Some((mut trade_date, mut close)) =
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
     else {
@@ -275,7 +265,7 @@ pub(in crate::calendar) fn next_monthly_close_after_with<G: SourceGate>(
     };
     loop {
         let month = (trade_date.year(), trade_date.month());
-        let Some(probe) = close.checked_add_signed(Duration::nanoseconds(1)) else {
+        let Some(probe) = close.checked_add(SignedDuration::from_nanos(1)).ok() else {
             return Ok(Some(close));
         };
         let Some((next_trade_date, next)) =

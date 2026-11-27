@@ -35,6 +35,11 @@ exclude = [
 [lib]
 name = "exchange_hours"
 
+[features]
+# Parse caller-supplied TZif bytes. Network and filesystem access belong to
+# the optional exchange-hours-tzdb companion.
+runtime-tzdb = ["jiff/alloc"]
+
 # Gates, in the same shape the consuming platform uses. CI promotes every
 # warning to an error with `-D warnings`, so `warn` here means "fails CI".
 [lints.rust]
@@ -62,16 +67,17 @@ disallowed_types = "deny"
 disallowed_macros = "deny"
 
 [dependencies]
-# `default-features = false`: the crate never reads a clock (LAW-DETERMINISM,
-# see AGENTS.md) — disabling the default `clock` feature makes `Utc::now()` a
-# compile error here.
-# No `chrono` type is (de)serialized, so its `serde` feature is not needed.
-chrono = { version = "0.4.45", default-features = false, features = ["std"] }
-# 0.10.4 carries the fix for tz transitions specified in UTC and mid-2025 tzdb.
-chrono-tz = "0.10.4"
+# Compile the built-in zones into the binary without host lookup or wall time.
+jiff = { version = "=1.0.3", default-features = false, features = ["static", "tz-fat", "perf-inline"] }
 serde = { version = "1.0.229", features = ["derive"] }
 
+[build-dependencies]
+# jiff-static obtains its embedded IANA data from this package. Pin it even
+# when a consuming application resolves dependencies without our lockfile.
+jiff-tzdb = { workspace = true }
+
 [dev-dependencies]
+jiff-tzdb = { workspace = true }
 criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
 # Test-only: the Documents digest fence recomputes each artifact's sha256 from
 # the research store's bytes. Never linked into the library, so
@@ -89,9 +95,9 @@ harness = false
 name = "session_invariants"
 path = "tests/contract/session_invariants.rs"
 
-# Repository tooling rides in the workspace so every `cargo` command CI runs
-# (`fmt`, `clippy --all-targets`, `nextest --all-targets`, `cargo deny`, the
-# MSRV check) covers it too. It is never published (`publish = false` in its
-# own manifest) and the library package above is unchanged for consumers.
 [workspace]
-members = ["xtask"]
+members = ["xtask", "tzdb-runtime"]
+
+[workspace.dependencies]
+exchange-hours = { path = ".", version = "1.4.0" }
+jiff-tzdb = "=1.0.0"

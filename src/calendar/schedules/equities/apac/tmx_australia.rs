@@ -2,7 +2,7 @@
 
 //! TMX Australia cash equities.
 
-use chrono_tz::Australia;
+use crate::calendar::time_zones::{Australia, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -141,7 +141,7 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, CURRENT.tz),
         &TMX_AU_PROFILE_CLOSED,

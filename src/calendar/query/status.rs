@@ -2,8 +2,8 @@
 
 //! Open-state, maintenance-gap, and closed-day queries.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
+use jiff::{SignedDuration, Timestamp, civil::Date};
 
 use super::gate::SourceGate;
 use super::periods::next_daily_close_after_with;
@@ -13,23 +13,21 @@ use super::sessions::{
     previous_session_before_with,
 };
 use crate::calendar::SessionState;
-use crate::calendar::local_time::{bounded_utc, mk_local_open};
+use crate::calendar::local_time::local_day_windows;
 use crate::calendar::rule::SessionKind;
 
-const MAX_MAINTENANCE_GAP: Duration = Duration::hours(4);
+const MAX_MAINTENANCE_GAP: SignedDuration = SignedDuration::from_hours(4);
 
 pub(in crate::calendar) fn is_open_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     // The venue-local day is resolved once and shared: the containment probe
     // and the floor check below are both facts about this one day, and
     // resolving it twice put a second timezone walk on the crate's hottest
     // query (issue #125).
-    let day = bounded_utc(instant, context.tz())
-        .with_timezone(&context.tz())
-        .date_naive();
+    let day = context.tz().to_datetime(instant).date();
     // An in-range instant whose session opened before the floor is still
     // answered whole (the plan permits retaining earlier context), so the
     // containment probe runs first. A **negative** answer then has to pass the
@@ -43,7 +41,7 @@ pub(in crate::calendar) fn is_open_with<G: SourceGate>(
 
 pub(in crate::calendar) fn is_order_entry_only<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<bool, G::Error> {
     Ok(!is_open_with(context, instant, SessionKind::Both)?
         && context.contains_order_entry(instant)?)
@@ -51,7 +49,7 @@ pub(in crate::calendar) fn is_order_entry_only<G: SourceGate>(
 
 pub(in crate::calendar) fn is_accepting_orders<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<bool, G::Error> {
     Ok(is_open_with(context, instant, SessionKind::Both)?
         || context.contains_order_entry(instant)?)
@@ -59,15 +57,15 @@ pub(in crate::calendar) fn is_accepting_orders<G: SourceGate>(
 
 pub(in crate::calendar) fn is_maintenance<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<bool, G::Error> {
     Ok(session_state(context, instant)? == SessionState::Maintenance)
 }
 
 pub(in crate::calendar) fn trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
-) -> Result<Option<NaiveDate>, G::Error> {
+    instant: Timestamp,
+) -> Result<Option<Date>, G::Error> {
     // Resolve first, then judge -- and judge on **every** exit, including the
     // early one. A containing session answers the instant, but its trade date is
     // still a date an identity must have a sourced answer for: reporting
@@ -106,8 +104,8 @@ pub(in crate::calendar) fn trade_date<G: SourceGate>(
 /// the next session rather than reporting absence.
 fn resolve_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
-) -> Result<Option<NaiveDate>, G::Error> {
+    instant: Timestamp,
+) -> Result<Option<Date>, G::Error> {
     if let Some((open, _session_close)) =
         containing_session_with(context, instant, SessionKind::Both)?
     {
@@ -132,7 +130,7 @@ fn resolve_trade_date<G: SourceGate>(
 
 pub(in crate::calendar) fn session_state<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
+    instant: Timestamp,
 ) -> Result<SessionState, G::Error> {
     context.require_floor_at(instant)?;
     if is_open_with(context, instant, SessionKind::Regular)? {
@@ -165,7 +163,10 @@ pub(in crate::calendar) fn session_state<G: SourceGate>(
         // profile capability; do not infer this exception from rule shapes.
         return Ok(SessionState::Maintenance);
     }
-    let Some(previous_probe) = previous_close.checked_sub_signed(Duration::nanoseconds(1)) else {
+    let Some(previous_probe) = previous_close
+        .checked_sub(SignedDuration::from_nanos(1))
+        .ok()
+    else {
         return Ok(SessionState::Closed);
     };
     let (Some(previous_trade_date), Some(next_trade_date)) = (
@@ -183,7 +184,8 @@ pub(in crate::calendar) fn session_state<G: SourceGate>(
         // maintenance (#264).
         return Ok(SessionState::Closed);
     }
-    let same_week = previous_trade_date.iso_week() == next_trade_date.iso_week();
+    let same_week =
+        super::civil::iso_week(previous_trade_date) == super::civil::iso_week(next_trade_date);
     if same_week && gap <= MAX_MAINTENANCE_GAP {
         Ok(SessionState::Maintenance)
     } else {
@@ -193,7 +195,7 @@ pub(in crate::calendar) fn session_state<G: SourceGate>(
 
 pub(in crate::calendar) fn is_closed_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
+    day: Date,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     context.require_floor(day)?;
@@ -205,33 +207,32 @@ pub(in crate::calendar) fn is_closed_trade_date<G: SourceGate>(
 
 pub(in crate::calendar) fn is_closed_all_day_in_calendar<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    day: NaiveDate,
-    calendar_tz: Tz,
+    day: Date,
+    calendar_tz: &TimeZone,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     context.require_floor(day)?;
-    let start = mk_local_open(calendar_tz, day, 0).with_timezone(&Utc);
-    let end = day.succ_opt().map_or(DateTime::<Utc>::MAX_UTC, |next| {
-        mk_local_open(calendar_tz, next, 0).with_timezone(&Utc)
-    });
-    if start >= end {
+    let Ok(windows) = local_day_windows(calendar_tz, day) else {
+        context.require_answerable(day)?;
         return Ok(true);
+    };
+    for (start, end) in windows {
+        if is_open_with(context, start, kind)?
+            || next_session_after_with(context, start, kind)?
+                .is_some_and(|(next_open, _close)| next_open < end)
+        {
+            return Ok(false);
+        }
     }
-    if is_open_with(context, start, kind)? {
-        return Ok(false);
-    }
-    Ok(next_session_after_with(context, start, kind)?
-        .is_none_or(|(next_open, _close)| next_open >= end))
+    Ok(true)
 }
 
 pub(in crate::calendar) fn is_closed_all_day_at<G: SourceGate>(
     context: &QueryContext<'_, G>,
-    instant: DateTime<Utc>,
-    calendar_tz: Tz,
+    instant: Timestamp,
+    calendar_tz: &TimeZone,
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
-    let day = bounded_utc(instant, calendar_tz)
-        .with_timezone(&calendar_tz)
-        .date_naive();
+    let day = calendar_tz.to_datetime(instant).date();
     is_closed_all_day_in_calendar(context, day, calendar_tz, kind)
 }

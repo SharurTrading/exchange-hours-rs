@@ -2,7 +2,7 @@
 
 //! Euronext Milan principal shares and the predecessor Borsa Italiana MTA.
 
-use chrono_tz::Europe;
+use crate::calendar::time_zones::{Europe, SelectionInstant};
 
 use super::super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -178,6 +178,6 @@ static REVISIONS: &[Revision] = revisions![
     ),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, Europe::Rome), &BASE_PROFILE, REVISIONS)
 }

@@ -3,6 +3,8 @@
 //! SGX and CFE session boundaries.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // SGX Three-Month SORA Futures
@@ -13,10 +15,7 @@ use super::prelude::*;
 
 #[test]
 fn sgx_day_session() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 20), (10, 0, 0));
     assert!(h.is_open(t), "SGX Mon 10:00 SGT");
     assert!(h.is_open_regular(t), "10:00 is regular (day)");
@@ -24,10 +23,7 @@ fn sgx_day_session() {
 
 #[test]
 fn sgx_day_open() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     assert!(!h.is_open(sgt((2026, 4, 20), (7, 9, 59))));
     assert!(h.is_order_entry_only(sgt((2026, 4, 20), (7, 10, 0))));
     assert!(!h.is_open_regular(sgt((2026, 4, 20), (7, 24, 59))));
@@ -36,10 +32,7 @@ fn sgx_day_open() {
 
 #[test]
 fn sgx_day_close() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     assert!(h.is_open_regular(sgt((2026, 4, 20), (17, 54, 59))));
     assert!(!h.is_open_regular(sgt((2026, 4, 20), (17, 55, 0))));
     assert!(h.is_open_extended(sgt((2026, 4, 20), (17, 55, 0))));
@@ -49,10 +42,7 @@ fn sgx_day_close() {
 
 #[test]
 fn sgx_t1_wrap() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 20), (22, 0, 0));
     assert!(h.is_open(t), "SGX T+1 wrap Mon 22:00 SGT");
     assert!(
@@ -63,30 +53,21 @@ fn sgx_t1_wrap() {
 
 #[test]
 fn sgx_t1_wrap_into_tuesday() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 21), (3, 0, 0));
     assert!(h.is_open(t), "SGX T+1 wrap Tue 03:00 SGT");
 }
 
 #[test]
 fn sgx_t1_wrap_close() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 21), (5, 15, 0));
     assert!(!h.is_open(t), "SGX T+1 closes 05:15 SGT (end-exclusive)");
 }
 
 #[test]
 fn sgx_gap_before_day() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 21), (6, 0, 0));
     assert!(!h.is_open(t), "SGX gap between 05:15 and 07:10 SGT");
 }
@@ -94,7 +75,7 @@ fn sgx_gap_before_day() {
 #[test]
 fn sgx_sora_is_closed_before_its_sourced_launch() {
     let cutover = sgt((2024, 7, 29), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Sgx, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Sgx, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Sgx, cutover);
 
     assert!(before.regular.is_empty());
@@ -106,10 +87,7 @@ fn sgx_sora_is_closed_before_its_sourced_launch() {
 
 #[test]
 fn sgx_friday_t1_wrap_into_saturday() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 25), (3, 0, 0));
     assert!(
         h.is_open(t),
@@ -119,20 +97,14 @@ fn sgx_friday_t1_wrap_into_saturday() {
 
 #[test]
 fn sgx_saturday_after_t1_close() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     let t = sgt((2026, 4, 25), (6, 0, 0));
     assert!(!h.is_open(t), "SGX closed Sat after 05:15 SGT");
 }
 
 #[test]
 fn sgx_sunday_closed() {
-    let h = hours_for_exchange(
-        Exchange::Sgx,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Sgx, PROFILE_INSTANT);
     assert!(
         !h.is_open(sgt((2026, 4, 26), (10, 0, 0))),
         "SGX closed Sunday"
@@ -149,10 +121,7 @@ fn sgx_sunday_closed() {
 
 #[test]
 fn cfe_sunday_overnight() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     let t = ct((2026, 4, 19), (17, 0, 0));
     assert!(h.is_open(t), "CFE overnight trading starts Sun 17:00 CT");
 }
@@ -163,14 +132,8 @@ fn cfe_pre_open_queues_are_extended() {
     // starts are randomized through six seconds after 16:00 / 16:45.
     // https://cdn.cboe.com/resources/regulation/rule_filings/pending/2021/21-028-VX-VXM-and-AMERIBOR-Trading-Hours.pdf
     for h in [
-        hours_for_exchange(
-            Exchange::Cfe,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        ),
-        hours_for_market_hours_key(
-            MarketHoursKey::CfeVix,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        ),
+        hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT),
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, PROFILE_INSTANT),
     ] {
         assert!(!h.is_open(ct((2026, 4, 19), (16, 0, 5))));
         assert!(h.is_order_entry_only(ct((2026, 4, 19), (16, 0, 6))));
@@ -182,10 +145,7 @@ fn cfe_pre_open_queues_are_extended() {
 
 #[test]
 fn cfe_rth() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (10, 0, 0));
     assert!(h.is_open(t), "CFE RTH Mon 10:00 CT");
     assert!(h.is_open_regular(t), "10:00 is RTH");
@@ -193,10 +153,7 @@ fn cfe_rth() {
 
 #[test]
 fn cfe_rth_close() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     assert!(
         !h.is_open_regular(ct((2026, 4, 20), (15, 0, 0))),
         "CFE RTH ends 15:00 CT (end-exclusive) since 2021-12-06"
@@ -209,10 +166,7 @@ fn cfe_rth_close() {
 
 #[test]
 fn cfe_post_settlement_window() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (15, 45, 0));
     assert!(h.is_open(t), "CFE post-settlement ETH 15:00–16:00 CT");
     assert!(h.is_open_extended(t), "post-settlement is extended");
@@ -220,20 +174,14 @@ fn cfe_post_settlement_window() {
 
 #[test]
 fn cfe_daily_maintenance() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (16, 30, 0));
     assert!(!h.is_open(t), "CFE suspension 16:00–16:45 CT");
 }
 
 #[test]
 fn cfe_friday_close() {
-    let h = hours_for_exchange(
-        Exchange::Cfe,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cfe, PROFILE_INSTANT);
     assert!(
         !h.is_open(ct((2026, 4, 24), (16, 0, 0))),
         "CFE closes Fri 16:00 CT"
@@ -250,7 +198,7 @@ fn cfe_friday_close() {
 #[test]
 fn cfe_morning_extension_began_on_2010_12_10() {
     let cutover = ct((2010, 12, 10), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
 
     assert!(!before.is_open(ct((2010, 12, 10), (7, 20, 0))));
@@ -285,7 +233,7 @@ fn cfe_morning_extension_began_on_2010_12_10() {
 #[test]
 fn cfe_morning_extension_moved_to_0700_on_2011_09_26() {
     let cutover = ct((2011, 9, 26), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
 
     assert!(!before.is_open(ct((2011, 9, 26), (7, 0, 0))));
@@ -323,7 +271,7 @@ fn cfe_morning_extension_moved_to_0700_on_2011_09_26() {
 #[test]
 fn cfe_afternoon_extension_launched_on_2013_10_28() {
     let cutover = ct((2013, 10, 28), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
 
     assert!(before.is_open_extended(ct((2013, 10, 28), (7, 0, 0))));
@@ -369,7 +317,7 @@ fn cfe_afternoon_extension_launched_on_2013_10_28() {
 #[test]
 fn cfe_morning_extension_launched_on_2013_11_04() {
     let cutover = ct((2013, 11, 4), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
 
     assert!(!before.is_open(ct((2013, 11, 4), (2, 0, 0))));
@@ -413,7 +361,7 @@ fn cfe_morning_extension_launched_on_2013_11_04() {
 #[test]
 fn cfe_nearly_24_hour_week_launched_on_2014_06_22() {
     let cutover = ct((2014, 6, 22), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
 
     assert!(before.is_open_extended(ct((2014, 6, 20), (2, 0, 0))));
@@ -469,7 +417,7 @@ fn cfe_nearly_24_hour_week_launched_on_2014_06_22() {
 #[test]
 fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
     let cutover = ct((2018, 2, 25), (0, 0, 0));
-    let before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let after = hours_for_exchange(Exchange::Cfe, cutover);
     let monday = (2018, 2, 26);
 
@@ -527,11 +475,11 @@ fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
 #[test]
 fn cfe_queue_envelope_widened_on_2018_08_12() {
     let cutover = ct((2018, 8, 12), (0, 0, 0));
-    let exchange_before = hours_for_exchange(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let exchange_before = hours_for_exchange(Exchange::Cfe, cutover - SignedDuration::from_secs(1));
     let exchange_after = hours_for_exchange(Exchange::Cfe, cutover);
     let key_before = hours_for_market_hours_key(
         MarketHoursKey::CfeVix,
-        cutover - chrono::Duration::seconds(1),
+        cutover - SignedDuration::from_secs(1),
     );
     let key_after = hours_for_market_hours_key(MarketHoursKey::CfeVix, cutover);
 

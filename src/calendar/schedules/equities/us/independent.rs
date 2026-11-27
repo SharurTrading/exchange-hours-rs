@@ -2,8 +2,7 @@
 
 //! Independent US cash-equity exchange profiles and launch history.
 
-use chrono::{DateTime, Utc};
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::StaticHoursProfile;
 use super::equities::equity_profile;
@@ -34,7 +33,7 @@ pub(crate) static LTSE_PROFILE: StaticHoursProfile = equity_profile(LTSE_EXTENDE
 // Evidence: docs/evidence/ltse.md
 static LTSE_REVISIONS: &[Revision] = revisions![(2020, 8, 28, &LTSE_PROFILE, "SEC 34-89766"),];
 
-pub(crate) fn ltse_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn ltse_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -66,7 +65,7 @@ pub(crate) static TWENTY_FOUR_X_PROFILE: StaticHoursProfile =
 static TWENTY_FOUR_X_REVISIONS: &[Revision] =
     revisions![(2025, 10, 14, &TWENTY_FOUR_X_PROFILE, "SEC 34-106061"),];
 
-pub(crate) fn twenty_four_x_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn twenty_four_x_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,
@@ -98,7 +97,7 @@ pub(crate) static TXSE_PROFILE: StaticHoursProfile = equity_profile(TXSE_EXTENDE
 static TXSE_REVISIONS: &[Revision] =
     revisions![(2026, 7, 10, &TXSE_PROFILE, "TXSE production launch alert"),];
 
-pub(crate) fn txse_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn txse_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
         &CLOSED_NEW_YORK,

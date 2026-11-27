@@ -15,14 +15,19 @@
 //! 2026-10-04), so those queries answer rather than refuse. A caller's `DayPolicy` can only tighten
 //! a day — it never licenses a date the identity does not answer.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
-use chrono_tz::{America, Asia, US};
+mod support;
+
+use crate::support::zones::{BANGKOK, NEW_YORK, SINGAPORE, US_CENTRAL, UTC};
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
-    DayPolicy, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR,
-    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, CalendarSource,
+    CoverageGapReason, DateCoverage, DayAdjustment, DayAdjustmentError, DayPolicy,
+    DayPolicyOutcome, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy,
+    SUPPORT_FLOOR, SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
     hours_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 /// Asserts an identity-backed query returns exactly `expected`, the coverage
 /// error the shipped data declares. The variant, identity and date are all part
@@ -30,14 +35,15 @@ use exchange_hours::{
 /// answer.
 fn assert_refusal<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
+    expected: CalendarQueryErrorKind,
     label: &str,
 ) {
     let error = answer.expect_err(&format!(
         "{label}: expected the coverage refusal {expected:?}"
     ));
     assert_eq!(
-        error, expected,
+        error.kind(),
+        expected,
         "{label}: the query must state the refusal its identity declares"
     );
 }
@@ -47,12 +53,12 @@ fn assert_refusal<T: std::fmt::Debug>(
 fn assert_outside_coverage<T: std::fmt::Debug>(
     answer: Result<T, CalendarQueryError>,
     source: CalendarSource,
-    date: NaiveDate,
+    date: Date,
     label: &str,
 ) {
     assert_refusal(
         answer,
-        CalendarQueryError::OutsideCoveredRange { source, date },
+        CalendarQueryErrorKind::OutsideCoveredRange { source, date },
         label,
     );
 }
@@ -68,7 +74,7 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
 /// per-date verdict — a bounded walk ran out — so it is checked for the identity
 /// and for the documented shape of its report (`date` is the day the walk
 /// stopped on, and `bound` equals it).
-fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+fn assert_published_refusal(error: &CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
     assert_eq!(
         error.source(),
         calendar.source(),
@@ -91,15 +97,15 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
         "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
     );
     let declared = match verdict {
-        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryErrorKind::OutsideCoveredRange {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+        DateCoverage::UnresolvedGap => Some(CalendarQueryErrorKind::UnresolvedGap {
             source: calendar.source(),
             date,
         }),
-        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryErrorKind::BeforeSupportFloor {
             source: calendar.source(),
             date,
         }),
@@ -107,88 +113,64 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     };
     match declared {
         Some(expected) => assert_eq!(
-            error, expected,
+            error.kind(),
+            expected,
             "{label}: the query must state the coverage verdict its identity publishes"
         ),
         None => assert!(
             matches!(
-                error,
-                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+                error.kind(),
+                CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. } if stopped == bound
             ),
             "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
         ),
     }
 }
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid CT instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be a valid CT instant")
 }
 
-fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    America::New_York
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid ET instant")
-        .with_timezone(&Utc)
+fn et(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&NEW_YORK, date, time).expect("fixture must be a valid ET instant")
 }
 
-fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Asia::Singapore
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid SGT instant")
-        .with_timezone(&Utc)
+fn sgt(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&SINGAPORE, date, time).expect("fixture must be a valid SGT instant")
 }
 
-fn bangkok(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    Asia::Bangkok
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be a valid Bangkok instant")
-        .with_timezone(&Utc)
+fn bangkok(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&BANGKOK, date, time).expect("fixture must be a valid Bangkok instant")
 }
 
-fn day(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 struct TestPolicy<'a> {
-    closed: &'a [NaiveDate],
-    early: Option<(NaiveDate, u32)>,
-    late: Option<(NaiveDate, u32)>,
+    closed: &'a [Date],
+    adjustment: Option<(Date, DayAdjustment)>,
 }
 
 impl DayPolicy for TestPolicy<'_> {
-    fn is_closed(&self, trade_date: NaiveDate) -> bool {
-        self.closed.contains(&trade_date)
-    }
-
-    fn early_close_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
-        self.early
-            .filter(|(date, _ssm)| *date == trade_date)
-            .map(|(_date, ssm)| ssm)
-    }
-
-    fn late_open_ssm(&self, trade_date: NaiveDate) -> Option<u32> {
-        self.late
-            .filter(|(date, _ssm)| *date == trade_date)
-            .map(|(_date, ssm)| ssm)
+    fn outcome_on(&self, trade_date: Date) -> DayPolicyOutcome {
+        if self.closed.contains(&trade_date) {
+            return DayPolicyOutcome::Closed;
+        }
+        match self.adjustment {
+            Some((date, adjustment)) if date == trade_date => {
+                DayPolicyOutcome::Adjusted(adjustment)
+            }
+            _ => DayPolicyOutcome::Normal,
+        }
     }
 }
 
 struct Closed;
 
 impl DayPolicy for Closed {
-    fn is_closed(&self, _trade_date: NaiveDate) -> bool {
-        true
-    }
-
-    fn early_close_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
-        None
+    fn outcome_on(&self, _trade_date: Date) -> DayPolicyOutcome {
+        DayPolicyOutcome::Closed
     }
 }
 
@@ -255,8 +237,7 @@ fn closed_trade_date_removes_the_prior_evening_but_not_the_next_trade_date() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     let calendar = base.with_day_policy(&policy);
@@ -303,8 +284,7 @@ fn a_closed_friday_scan_falls_forward_to_sunday() {
     let closed = [friday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -323,8 +303,7 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
         .with_day_policy(&policy);
@@ -420,8 +399,7 @@ fn closed_set_trade_date_removes_its_day_and_after_midnight_tail() {
     let closed = [wednesday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar = calendar_for_exchange(Exchange::SetThailand).with_day_policy(&policy);
 
@@ -487,8 +465,10 @@ fn early_close_clamps_sessions_candles_and_state() {
     let monday = day(2026, 4, 20);
     let policy = TestPolicy {
         closed: &[],
-        early: Some((monday, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            monday,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -535,8 +515,10 @@ fn early_close_on_the_last_trade_date_clamps_weekly_and_monthly_bars() {
     let friday = day(2026, 5, 29);
     let policy = TestPolicy {
         closed: &[],
-        early: Some((friday, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            friday,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -567,8 +549,7 @@ fn cme_good_friday_closed_reference_case_uses_caller_data() {
     let closed = [good_friday];
     let policy = TestPolicy {
         closed: &closed,
-        early: None,
-        late: None,
+        adjustment: None,
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -626,8 +607,10 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     let post_thanksgiving = day(2015, 11, 27);
     let thanksgiving_policy = TestPolicy {
         closed: &[],
-        early: Some((post_thanksgiving, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            post_thanksgiving,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let thanksgiving = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&thanksgiving_policy);
@@ -654,8 +637,10 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     let christmas_closed = [christmas_day];
     let christmas_policy = TestPolicy {
         closed: &christmas_closed,
-        early: Some((christmas_eve, 12 * 3_600 + 15 * 60)),
-        late: None,
+        adjustment: Some((
+            christmas_eve,
+            DayAdjustment::early_close(12 * 3_600 + 15 * 60).unwrap(),
+        )),
     };
     let christmas = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&christmas_policy);
@@ -690,13 +675,12 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
     for holiday in [day(2026, 1, 19), day(2026, 2, 16)] {
         let policy = TestPolicy {
             closed: &[],
-            early: Some((holiday, 12 * 3_600)),
-            late: None,
+            adjustment: Some((holiday, DayAdjustment::early_close(12 * 3_600).unwrap())),
         };
         let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
             .with_day_policy(&policy);
         let previous_day = holiday
-            .pred_opt()
+            .yesterday()
             .expect("holiday fixture has a predecessor");
 
         // The daily candle ends at the **trade date's** final close, and since
@@ -705,7 +689,7 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
         // following business day. A `DayPolicy` is keyed by trade date too, so
         // the caller's `early` above — which names the holiday — correctly clips
         // nothing here; the holiday's own noon close is now built in.
-        let trade_date = holiday.succ_opt().expect("holiday fixture has a successor");
+        let trade_date = holiday.tomorrow().expect("holiday fixture has a successor");
 
         assert_eq!(
             calendar
@@ -764,8 +748,10 @@ fn late_open_clips_every_earlier_phase_of_the_trade_date() {
     let monday = day(2026, 4, 20);
     let policy = TestPolicy {
         closed: &[],
-        early: None,
-        late: Some((monday, 9 * 3_600 + 30 * 60)),
+        adjustment: Some((
+            monday,
+            DayAdjustment::late_open(9 * 3_600 + 30 * 60).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
@@ -819,8 +805,10 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
     let closed = [monday];
     let policy = TestPolicy {
         closed: &closed,
-        early: Some((monday, 12 * 3_600)),
-        late: Some((monday, 9 * 3_600)),
+        adjustment: Some((
+            monday,
+            DayAdjustment::late_open_and_early_close(9 * 3_600, 12 * 3_600).unwrap(),
+        )),
     };
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::AlwaysOpen).with_day_policy(&policy);
@@ -847,8 +835,8 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
         let answer = calendar.trade_date(instant);
         assert!(
             matches!(
-                answer,
-                Err(CalendarQueryError::SearchExhausted { date: stopped, bound, .. })
+                answer.as_ref().map_err(CalendarQueryError::kind),
+                Err(CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. })
                     if stopped == bound
             ),
             "an always-open profile must not invent a trade date, got {answer:?}"
@@ -867,38 +855,55 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
 }
 
 #[test]
-fn invalid_policy_seconds_fail_closed_for_that_trade_date() {
+fn invalid_policy_input_preserves_the_previous_adjustment() {
     let monday = day(2026, 4, 20);
-    let invalid_early = TestPolicy {
+    let accepted = DayAdjustment::early_close(12 * 3_600).unwrap();
+    let mut policy = TestPolicy {
         closed: &[],
-        early: Some((monday, 86_401)),
-        late: None,
+        adjustment: Some((monday, accepted)),
     };
-    let invalid_late = TestPolicy {
-        closed: &[],
-        early: None,
-        late: Some((monday, 86_400)),
+    let mut apply_input = |input: Result<DayAdjustment, DayAdjustmentError>| {
+        policy.adjustment = Some((monday, input?));
+        Ok(())
     };
-    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    assert_eq!(
+        apply_input(DayAdjustment::early_close(86_401)),
+        Err(DayAdjustmentError::EarlyCloseOutOfRange {
+            early_close_ssm: 86_401
+        })
+    );
+    assert_eq!(
+        apply_input(DayAdjustment::late_open(86_400)),
+        Err(DayAdjustmentError::LateOpenOutOfRange {
+            late_open_ssm: 86_400
+        })
+    );
+    assert_eq!(
+        policy.outcome_on(monday),
+        DayPolicyOutcome::Adjusted(accepted)
+    );
 
-    for policy in [&invalid_early, &invalid_late] {
-        let calendar = base.with_day_policy(policy);
-        assert!(
-            !calendar
-                .is_open(ct((2026, 4, 19), (18, 0, 0)))
-                .expect("the coverage contract must answer a covered date")
-        );
-        assert!(
-            !calendar
-                .is_open(ct((2026, 4, 20), (10, 0, 0)))
-                .expect("the coverage contract must answer a covered date")
-        );
-        assert!(
-            calendar
-                .is_closed_trade_date(monday, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date")
-        );
-    }
+    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let open = ct((2026, 4, 20), (10, 0, 0));
+    let cutoff = ct((2026, 4, 20), (12, 0, 0));
+    let calendar = base.with_day_policy(&policy);
+    assert_eq!(calendar.is_open(open), Ok(true));
+    assert_eq!(calendar.is_open(cutoff), Ok(false));
+    assert_eq!(
+        calendar.is_closed_trade_date(monday, SessionKind::Both),
+        Ok(false)
+    );
+
+    let directly_closed = TestPolicy {
+        closed: &[monday],
+        adjustment: None,
+    };
+    let calendar = base.with_day_policy(&directly_closed);
+    assert_eq!(calendar.is_open(open), Ok(false));
+    assert_eq!(
+        calendar.is_closed_trade_date(monday, SessionKind::Both),
+        Ok(true)
+    );
 }
 
 #[test]
@@ -1066,11 +1071,9 @@ fn trade_dates_and_states_cover_the_globex_day() {
 
 #[test]
 fn session_state_and_trade_date_are_consistent_for_every_key() {
-    let mut instant = Utc
-        .with_ymd_and_hms(2026, 4, 19, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid start");
-    let end = instant + Duration::days(7);
+    let mut instant =
+        local_opt(&UTC, (2026, 4, 19), (0, 0, 0)).expect("fixture must have a valid start");
+    let end = instant + elapsed_days(7);
 
     while instant < end {
         for &key in MarketHoursKey::ALL {
@@ -1086,7 +1089,7 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
             let state = match calendar.session_state(instant) {
                 Ok(state) => state,
                 Err(error) => {
-                    assert_published_refusal(error, calendar, &label);
+                    assert_published_refusal(&error, calendar, &label);
                     continue;
                 }
             };
@@ -1104,8 +1107,8 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 let answer = calendar.trade_date(instant);
                 assert!(
                     matches!(
-                        answer,
-                        Err(CalendarQueryError::SearchExhausted { date: stopped, bound, .. })
+                        answer.as_ref().map_err(CalendarQueryError::kind),
+                        Err(CalendarQueryErrorKind::SearchExhausted { date: stopped, bound, .. })
                             if stopped == bound
                     ),
                     "{label}: an always-open profile must not invent a trade date, got {answer:?}"
@@ -1177,20 +1180,15 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 _ => panic!("unhandled SessionState variant at {instant} for {key}"),
             }
         }
-        instant += Duration::hours(1);
+        instant += SignedDuration::from_hours(1);
     }
 }
 
 #[test]
 fn all_key_calendars_match_dated_snapshots_over_two_years() {
-    let instant = Utc
-        .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid start");
-    let end = Utc
-        .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
-        .single()
-        .expect("fixture must have a valid end");
+    let instant =
+        local_opt(&UTC, (2022, 1, 1), (0, 0, 0)).expect("fixture must have a valid start");
+    let end = local_opt(&UTC, (2024, 1, 1), (0, 0, 0)).expect("fixture must have a valid end");
 
     // At the 2010 floor the 2022-2023 window answers again, so the hourly
     // sweep asserts the coverage contract itself: no probe may read as a
@@ -1204,7 +1202,7 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
     while instant < end {
         for &key in MarketHoursKey::ALL {
             let calendar = calendar_for_market_hours_key(key);
-            let local = instant.with_timezone(&calendar.tz()).date_naive();
+            let local = instant.to_zoned_datetime(calendar.tz()).date();
             let label = format!("{key} at {instant}");
             assert_ne!(
                 calendar.coverage().coverage_on(local),
@@ -1279,9 +1277,9 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                         open.is_ok()
                             || (open_named_other
                                 && matches!(
-                                    open,
-                                    Err(CalendarQueryError::UnresolvedGap { .. }
-                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                    open.as_ref().map_err(CalendarQueryError::kind),
+                                    Err(CalendarQueryErrorKind::UnresolvedGap { .. }
+                                        | CalendarQueryErrorKind::OutsideCoveredRange { .. })
                                 )),
                         "{label}: a covered day answers, or refuses naming a neighbour it needed"
                     );
@@ -1289,9 +1287,9 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                         candle.is_ok()
                             || (candle_named_other
                                 && matches!(
-                                    candle,
-                                    Err(CalendarQueryError::UnresolvedGap { .. }
-                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                    candle.as_ref().map_err(CalendarQueryError::kind),
+                                    Err(CalendarQueryErrorKind::UnresolvedGap { .. }
+                                        | CalendarQueryErrorKind::OutsideCoveredRange { .. })
                                 )),
                         "{label}: a covered day answers the candle, or refuses naming a                          neighbour it needed"
                     );
@@ -1299,8 +1297,8 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                 Some(DateCoverage::UnresolvedGap) => {
                     assert!(
                         calendar.is_open(instant).is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::UnresolvedGap { .. }
+                            error.kind(),
+                            CalendarQueryErrorKind::UnresolvedGap { .. }
                         )),
                         "{label}: a withheld day is refused as UnresolvedGap"
                     );
@@ -1308,8 +1306,8 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                 Some(DateCoverage::OutsideCoveredRange) => {
                     assert!(
                         calendar.is_open(instant).is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::OutsideCoveredRange { .. }
+                            error.kind(),
+                            CalendarQueryErrorKind::OutsideCoveredRange { .. }
                         )),
                         "{label}: a carried or unaudited day is refused as OutsideCoveredRange"
                     );
@@ -1326,7 +1324,7 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
             );
             probes += 1;
         }
-        instant += Duration::hours(1);
+        instant += SignedDuration::from_hours(1);
     }
 
     assert!(probes > 0, "the sweep must have probed the window");

@@ -4,6 +4,62 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** use Jiff 1.x throughout the calendar API. Pass `jiff::Timestamp`
+  for UTC instants and `jiff::civil::Date` for trade dates, coverage dates, and
+  policy and exception tables. The normal-week baseline uses
+  `jiff::civil::Weekday`. Custom snapshots take an owned `jiff::tz::TimeZone`
+  and civil-day queries borrow caller-supplied zones. The validated static
+  policy and exception table constructors now run at runtime. Session bounds
+  require both endpoints to fit Jiff's timestamp range. See
+  [Migrating from 1.x](README.md#migrating-from-1x).
+- Implement `DayPolicy::outcome_on` to return one validated decision for
+  a trade date. Early-close and late-open constructors reject out-of-range
+  input when building a policy record.
+- Match coverage refusals through `error.kind()` and `CalendarQueryErrorKind`.
+  Refusals retain their original time-zone rules for display and normal-week
+  diagnostics across a live database refresh.
+- `SessionRule` validates deserialized rules and exposes read-only weekday
+  and boundary accessors. Valid records retain their original wire format.
+- Built-in calendars default to compile-time IANA 2026f time zones. A repeated local
+  interval resolves to the earlier instant for opens and the later instant for
+  closes. A wall time inside a gap resolves to the first instant after it.
+  Winnipeg's updated UTC offset can change the civil date attached to a refusal
+  for the retired ICE Canada calendar. See the
+  [IANA time zone database releases](https://www.iana.org/time-zones/releases).
+- Remove Chrono and chrono-tz and their unmaintained dependency exceptions
+  ([#403](https://github.com/SharurTrading/exchange-hours-rs/issues/403)).
+- Speed up built-in holiday lookup with a compile-time date index and skip
+  replacement-session searches on days no replacement can reach.
+
+### Added
+
+- The optional `exchange-hours-tzdb` companion loads IANA's latest stable
+  release at startup, verifies the signed data and checks hourly for updates.
+  The calendar's `runtime-tzdb` feature accepts immutable snapshots for live
+  operations and reproducible backtests. CI fails when the embedded release
+  differs from IANA's current stable release.
+
+### Fixed
+
+- A published full closure answers the trade-date closure query even when
+  the adjacent day has unpublished hours. An explicit caller replacement
+  still takes precedence.
+- Restore the December 26, 2018 CME equity-index and dollar Nikkei 225
+  trading day, including the December 25 evening open. CME's Christmas
+  schedule identifies 15:30 CT on December 26 as an afternoon reopening.
+- Restore the ICE Cotton No. 2 Sunday 19:30 New York pre-open and 21:00
+  matching session for Monday's trade date. The Fridays after Thanksgiving
+  in 2025 and 2026 close at 13:30, then accept orders for Monday from 14:00
+  until 15:30 New York time.
+- Session searches include overnight rules whose effective opening was
+  delayed past midnight, including the November 27, 2026 ICE US Cotton
+  session. [#409](https://github.com/SharurTrading/exchange-hours-rs/issues/409)
+- Civil-date closure queries include every instant belonging to the requested
+  date when a backward clock change crosses midnight.
+  [#407](https://github.com/SharurTrading/exchange-hours-rs/issues/407)
+
 ## [1.4.0] - 2026-11-18
 
 ### Added

@@ -15,7 +15,7 @@
 
 use std::collections::BTreeMap;
 
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 use super::{Exchange, MarketHours, hours_for_exchange};
 
@@ -97,7 +97,7 @@ const GLOBAL_EQUITY_EXCHANGES: &[Exchange] = &[
 /// Builds the [`MarketHours`] in effect at `as_of` for each exchange,
 /// preserving input order.
 #[must_use]
-pub fn hours_for_all(exchanges: &[Exchange], as_of: DateTime<Utc>) -> Vec<MarketHours> {
+pub fn hours_for_all(exchanges: &[Exchange], as_of: Timestamp) -> Vec<MarketHours> {
     exchanges
         .iter()
         .map(|&e| hours_for_exchange(e, as_of))
@@ -107,7 +107,7 @@ pub fn hours_for_all(exchanges: &[Exchange], as_of: DateTime<Utc>) -> Vec<Market
 /// Builds the [`MarketHours`] in effect at `as_of` for the built-in
 /// US-equities exchange set.
 #[must_use]
-pub fn hours_for_us_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+pub fn hours_for_us_equities(as_of: Timestamp) -> Vec<MarketHours> {
     hours_for_all(US_EQUITY_EXCHANGES, as_of)
 }
 
@@ -118,14 +118,14 @@ pub fn hours_for_us_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
 /// [`calendar_for_exchange`](super::calendar_for_exchange) for its recurring
 /// third-Friday settlement grid.
 #[must_use]
-pub fn hours_for_eu_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+pub fn hours_for_eu_equities(as_of: Timestamp) -> Vec<MarketHours> {
     hours_for_all(EU_EQUITY_EXCHANGES, as_of)
 }
 
 /// Builds the [`MarketHours`] in effect at `as_of` for the built-in
 /// Asia-Pacific equities set.
 #[must_use]
-pub fn hours_for_apac_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+pub fn hours_for_apac_equities(as_of: Timestamp) -> Vec<MarketHours> {
     hours_for_all(APAC_EQUITY_EXCHANGES, as_of)
 }
 
@@ -136,7 +136,7 @@ pub fn hours_for_apac_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
 /// [`calendar_for_exchange`](super::calendar_for_exchange) when scanning them
 /// across dates.
 #[must_use]
-pub fn hours_for_global_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+pub fn hours_for_global_equities(as_of: Timestamp) -> Vec<MarketHours> {
     hours_for_all(GLOBAL_EQUITY_EXCHANGES, as_of)
 }
 
@@ -146,10 +146,7 @@ pub fn hours_for_global_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
 /// Backed by a [`BTreeMap`] so iteration order is the [`Exchange`] `Ord` order,
 /// not insertion order.
 #[must_use]
-pub fn hours_map_for(
-    exchanges: &[Exchange],
-    as_of: DateTime<Utc>,
-) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_for(exchanges: &[Exchange], as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
     let mut m = BTreeMap::new();
     for &e in exchanges {
         m.insert(e, hours_for_exchange(e, as_of));
@@ -160,7 +157,7 @@ pub fn hours_map_for(
 /// Builds an [`Exchange`]-keyed [`BTreeMap`] at `as_of` for the built-in
 /// US-equities set.
 #[must_use]
-pub fn hours_map_us_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_us_equities(as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(US_EQUITY_EXCHANGES, as_of)
 }
 
@@ -170,14 +167,14 @@ pub fn hours_map_us_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketH
 /// Vienna's entry has the same recurring-grid caveat as
 /// [`hours_for_eu_equities`].
 #[must_use]
-pub fn hours_map_eu_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_eu_equities(as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(EU_EQUITY_EXCHANGES, as_of)
 }
 
 /// Builds an [`Exchange`]-keyed map at `as_of` for the Asia-Pacific equities
 /// set.
 #[must_use]
-pub fn hours_map_apac_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_apac_equities(as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(APAC_EQUITY_EXCHANGES, as_of)
 }
 
@@ -187,6 +184,79 @@ pub fn hours_map_apac_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, Marke
 /// B3/BMV entries have the same date-dependent caveat as
 /// [`hours_for_global_equities`].
 #[must_use]
-pub fn hours_map_global_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_global_equities(as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(GLOBAL_EQUITY_EXCHANGES, as_of)
+}
+
+#[cfg(feature = "runtime-tzdb")]
+impl super::TimeZoneSnapshot {
+    /// Resolves the exchanges in input order using this snapshot.
+    #[must_use]
+    pub fn hours_for_all(&self, exchanges: &[Exchange], as_of: Timestamp) -> Vec<MarketHours> {
+        exchanges
+            .iter()
+            .map(|&exchange| self.hours_for_exchange(exchange, as_of))
+            .collect()
+    }
+
+    /// Resolves the exchanges into an ordered map using this snapshot.
+    #[must_use]
+    pub fn hours_map_for(
+        &self,
+        exchanges: &[Exchange],
+        as_of: Timestamp,
+    ) -> BTreeMap<Exchange, MarketHours> {
+        exchanges
+            .iter()
+            .map(|&exchange| (exchange, self.hours_for_exchange(exchange, as_of)))
+            .collect()
+    }
+
+    /// Resolves the venues in [`hours_for_us_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_for_us_equities(&self, as_of: Timestamp) -> Vec<MarketHours> {
+        self.hours_for_all(US_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_map_us_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_map_us_equities(&self, as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
+        self.hours_map_for(US_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_for_eu_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_for_eu_equities(&self, as_of: Timestamp) -> Vec<MarketHours> {
+        self.hours_for_all(EU_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_map_eu_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_map_eu_equities(&self, as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
+        self.hours_map_for(EU_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_for_apac_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_for_apac_equities(&self, as_of: Timestamp) -> Vec<MarketHours> {
+        self.hours_for_all(APAC_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_map_apac_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_map_apac_equities(&self, as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
+        self.hours_map_for(APAC_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_for_global_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_for_global_equities(&self, as_of: Timestamp) -> Vec<MarketHours> {
+        self.hours_for_all(GLOBAL_EQUITY_EXCHANGES, as_of)
+    }
+
+    /// Resolves the venues in [`hours_map_global_equities`] using this snapshot.
+    #[must_use]
+    pub fn hours_map_global_equities(&self, as_of: Timestamp) -> BTreeMap<Exchange, MarketHours> {
+        self.hours_map_for(GLOBAL_EQUITY_EXCHANGES, as_of)
+    }
 }

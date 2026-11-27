@@ -10,58 +10,50 @@
 //! `Unsourced`, an identity with no holiday table, and the scopes whose own
 //! definition has no holidays at all.
 
-use chrono::{DateTime, Datelike as _, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::{Asia, Australia, Europe, Pacific, US};
+mod support;
+
+use crate::support::zones::{AUCKLAND, PARIS, SYDNEY, TOKYO, US_CENTRAL, UTC};
+use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason,
+    CalendarCoverage, CalendarQueryErrorKind, CalendarSource, CoverageGap, CoverageGapReason,
     DateCoverage, DateRange, Exchange, ExchangeCalendar, HolidayContract, MarketHoursKey,
     SUPPORT_FLOOR, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use jiff::Timestamp;
+use jiff::civil::Date;
 
 /// The last date the per-identity date-by-date cross-check walks.
 ///
 /// Every shipped holiday window ends by 2028-01-03, so this reaches past all
 /// audited data while staying bounded for an open-ended span.
-const CHECK_HORIZON: NaiveDate = match NaiveDate::from_ymd_opt(2028, 12, 31) {
-    Some(date) => date,
-    None => NaiveDate::MAX,
-};
+const CHECK_HORIZON: Date = Date::constant(2028, 12, 31);
 
 /// A venue-local fixture date.
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+fn date(year: i16, month: i8, day: i8) -> Date {
+    date_opt(year, month, day).expect("fixture must be a valid date")
 }
 
 /// A Sydney fixture instant, as UTC.
-fn sydney(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
-    Australia::Sydney
-        .with_ymd_and_hms(year, month, day, hour, min, sec)
-        .single()
+fn sydney(year: i16, month: i8, day: i8, hour: u32, min: u32, sec: u32) -> Timestamp {
+    local_opt(&SYDNEY, (year, month, day), (hour, min, sec))
         .expect("fixture must be an unambiguous Sydney instant")
-        .with_timezone(&Utc)
 }
 
 /// An Auckland fixture instant, as UTC.
-fn auckland(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
-    Pacific::Auckland
-        .with_ymd_and_hms(year, month, day, hour, min, sec)
-        .single()
+fn auckland(year: i16, month: i8, day: i8, hour: u32, min: u32, sec: u32) -> Timestamp {
+    local_opt(&AUCKLAND, (year, month, day), (hour, min, sec))
         .expect("fixture must be an unambiguous Auckland instant")
-        .with_timezone(&Utc)
 }
 
 /// A Paris fixture instant, as UTC.
-fn paris_time(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
-    Europe::Paris
-        .with_ymd_and_hms(year, month, day, hour, min, sec)
-        .single()
+fn paris_time(year: i16, month: i8, day: i8, hour: u32, min: u32, sec: u32) -> Timestamp {
+    local_opt(&PARIS, (year, month, day), (hour, min, sec))
         .expect("fixture must be an unambiguous Paris instant")
-        .with_timezone(&Utc)
 }
 
 /// The open-ended span the crate uses for "no known end".
-fn unbounded(first: NaiveDate) -> DateRange {
-    DateRange::new(first, NaiveDate::MAX).expect("an open-ended span is ascending")
+fn unbounded(first: Date) -> DateRange {
+    DateRange::new(first, Date::MAX).expect("an open-ended span is ascending")
 }
 
 /// The metadata a venue calendar reports.
@@ -75,7 +67,7 @@ fn key_coverage(key: MarketHoursKey) -> CalendarCoverage {
 }
 
 /// The reason `day` is incomplete, taken from the reported gap spans.
-fn gap_reason_on(coverage: CalendarCoverage, day: NaiveDate) -> Option<CoverageGapReason> {
+fn gap_reason_on(coverage: CalendarCoverage, day: Date) -> Option<CoverageGapReason> {
     coverage
         .gaps()
         .find(|gap| gap.range().contains(day))
@@ -83,12 +75,12 @@ fn gap_reason_on(coverage: CalendarCoverage, day: NaiveDate) -> Option<CoverageG
 }
 
 /// Every date from the floor through `last`, for a bounded walk.
-fn days_from_floor(last: NaiveDate) -> Vec<NaiveDate> {
+fn days_from_floor(last: Date) -> Vec<Date> {
     let mut days = Vec::new();
     let mut day = SUPPORT_FLOOR;
     while day <= last {
         days.push(day);
-        match day.succ_opt() {
+        match day.tomorrow().ok() {
             Some(next) => day = next,
             None => break,
         }
@@ -201,8 +193,8 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
     // when their 2025 rows landed on 2026-09-26 UTC, and `iceus` — the last
     // served scope whose window opened after the floor — left it the same day
     // when its 2025 rows landed. `iceus_2025_holiday_rows_report_covered` below
-    // is what holds it to the opposite claim, and `iceus` is asserted there to
-    // withhold fourteen 2025 dates rather than to answer 2025 completely.
+    // is what holds it to the opposite claim, including the venue’s withheld
+    // January 2 trade date and the surrounding resolution edges.
     //
     // The claim is kept as a loop over every served exchange so a scope that
     // regresses to a post-floor window fails here rather than passing by
@@ -237,47 +229,55 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
     }
 }
 
-/// The reverse claim for the scope that left the list above.
-///
-/// A served market with no 2025 answer was the whole defect, so this asserts
-/// the public metadata now answers 2025 — through the venue and through the
-/// routed keys — and cannot silently fall back out of its window. The 2025
-/// interval is **not** complete: fourteen of its dates are withheld as
-/// `Unsourced`, which is what the inventory row's `**incomplete**` verdict and
-/// its withheld count record.
+/// The venue and all seven routed families audit the same holiday window.
+/// Cotton's January 2 queue belongs to its own replacement row. The venue
+/// withholds the family disagreement, which also affects the surrounding dates.
 #[test]
 fn iceus_2025_holiday_rows_report_covered() {
+    let venue = calendar_for_exchange(Exchange::Iceus);
     let day = date(2025, 6, 2);
-    for calendar in [
-        calendar_for_exchange(Exchange::Iceus),
-        calendar_for_market_hours_key(MarketHoursKey::IceUs),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsSugar),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsOrangeJuice),
-        calendar_for_market_hours_key(MarketHoursKey::IceUsDollarIndex),
-    ] {
+    let first = date(2025, 1, 1);
+    let calendars = [
+        MarketHoursKey::IceUs,
+        MarketHoursKey::IceUsCoffee,
+        MarketHoursKey::IceUsCocoa,
+        MarketHoursKey::IceUsCotton,
+        MarketHoursKey::IceUsSugar,
+        MarketHoursKey::IceUsOrangeJuice,
+        MarketHoursKey::IceUsDollarIndex,
+    ]
+    .map(|key| (calendar_for_market_hours_key(key), first));
+    for (calendar, first_complete) in calendars.into_iter().chain([(venue, date(2025, 1, 5))]) {
         let coverage = calendar.coverage();
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
-        // The window's own first day is complete since the 2026-10-07
-        // bridged-residual ruling (#296): its backward reach reads
-        // 2024-12-31, a one-flank bridged date whose session facts answer, so
-        // the reach stays inside answered land and the span opens on the
-        // window's own first day.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2025, 1, 1)),
-            "the audited window opens at the 2025 floor, and the first complete              date is the window's own first day"
+            Some(first_complete),
+            "{:?}: first date whose resolution stays within answered dates",
+            calendar.source()
         );
         assert!(
-            coverage
-                .holiday_contract()
-                .coverage()
-                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
-                    && windows.last() == date(2028, 1, 3)),
-            "iceus must audit the 2025 floor through the 2027 calendar's last entry"
+            coverage.holiday_contract().coverage().is_some_and(
+                |windows| windows.first() == first && windows.last() == date(2028, 1, 3)
+            ),
+            "ICE audits the 2025 window through the 2027 calendar's last entry"
         );
     }
+    // January 1 needs the withheld January 2 on its forward walk. January
+    // 3–4 have no Friday or Saturday opening on the venue's FANG+ clock,
+    // so their backward walk reaches that same withheld date. Sunday opens.
+    for day in [1, 3, 4] {
+        assert_eq!(
+            gap_reason_on(venue.coverage(), date(2025, 1, day)),
+            Some(CoverageGapReason::ResolutionEdge)
+        );
+    }
+    assert_eq!(
+        gap_reason_on(venue.coverage(), date(2025, 1, 2)),
+        Some(CoverageGapReason::WithheldDate)
+    );
     // The dates the venue withholds inside that window: Juneteenth 2025 is one
     // (the softs close while the index families shorten), and it is the reason
     // the interval cannot read complete.
@@ -345,60 +345,34 @@ fn cfe_2025_holiday_rows_report_covered() {
 
 #[test]
 fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
-    // `cme` is deliberately absent: it now declares the Sunday quarter-hour
-    // phase-level gap (#79), which is checked before the date-level facts, so
-    // inside the dated era its per-date verdict for a withheld date is
-    // `OutsideCoveredRange` rather than `UnresolvedGap`. From 2026-08-22 the
-    // declaration is retired and 13 of its 32 withheld dates again answer
-    // `UnresolvedGap`; neither is the plain shape this intersection shows.
-    // `cbot` is absent since 2026-10-15 (UTC): its one withheld date, the
-    // clock family's own 2023-01-16 marker, was confirmed with market data and
-    // encoded as the grain closure, so the venue answers `Covered` there.
-    // The `neighbour` is the first answered day after the withheld date, and
-    // the resolution-edge rule (#151) means it is not complete either: every
-    // query on it reaches the withheld day, so its verdict is
-    // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
-    // complete date after the withheld one is the day past the zone. Iceus
-    // trades the whole span and its zone ends two days out.
-    let fixtures = [(
-        Exchange::Iceus,
-        date(2026, 1, 19),
-        date(2026, 1, 20),
-        date(2026, 1, 21),
-    )];
-    for (exchange, withheld, neighbour, complete_again) in fixtures {
-        let coverage = exchange_coverage(exchange);
-        assert_eq!(
-            coverage.coverage_on(withheld),
-            DateCoverage::UnresolvedGap,
-            "{exchange:?} withholds {withheld} as Unsourced"
-        );
+    let coverage = exchange_coverage(Exchange::Iceus);
+    // On MLK Day the softs close and FANG+ closes early. On Tuesday Cotton
+    // carries the prior Friday's post-close queue while the other families
+    // follow their ordinary schedules. Both disagreements are venue rows.
+    for withheld in [date(2026, 1, 19), date(2026, 1, 20)] {
+        assert_eq!(coverage.coverage_on(withheld), DateCoverage::UnresolvedGap);
         assert_eq!(
             gap_reason_on(coverage, withheld),
-            Some(CoverageGapReason::WithheldDate),
-            "{exchange:?}"
-        );
-        assert_eq!(
-            coverage.coverage_on(neighbour),
-            DateCoverage::OutsideCoveredRange,
-            "{exchange:?}: answering {neighbour} completely would consult the              withheld {withheld}"
-        );
-        assert_eq!(
-            gap_reason_on(coverage, neighbour),
-            Some(CoverageGapReason::ResolutionEdge),
-            "{exchange:?}"
-        );
-        assert!(
-            coverage.is_complete_on(complete_again),
-            "{exchange:?} answers {complete_again} completely"
+            Some(CoverageGapReason::WithheldDate)
         );
         assert!(
             coverage
                 .complete_ranges()
-                .all(|range| !range.contains(withheld)),
-            "{exchange:?} must exclude a withheld date from its complete ranges"
+                .all(|range| !range.contains(withheld))
         );
     }
+    // Wednesday's backward lookup reaches Tuesday. Thursday's predecessor
+    // and successor are both answerable.
+    let wednesday = date(2026, 1, 21);
+    assert_eq!(
+        coverage.coverage_on(wednesday),
+        DateCoverage::OutsideCoveredRange
+    );
+    assert_eq!(
+        gap_reason_on(coverage, wednesday),
+        Some(CoverageGapReason::ResolutionEdge)
+    );
+    assert!(coverage.is_complete_on(date(2026, 1, 22)));
 }
 
 #[test]
@@ -629,8 +603,7 @@ fn the_no_changes_sweep_retired_the_cme_side_carried_eras() {
     let energy = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
     // 2010-01-03 23:00 CT (2010-01-04 05:00 UTC): the floor era's first Sunday
     // evening open of the 17:00-16:15 CT wrapped grid.
-    let sunday_open =
-        DateTime::<Utc>::from_timestamp(1_262_581_200, 0).expect("a representable instant");
+    let sunday_open = Timestamp::new(1_262_581_200, 0).expect("a representable instant");
     assert!(
         energy
             .is_open(sunday_open)
@@ -645,8 +618,7 @@ fn the_no_changes_sweep_retired_the_cme_side_carried_eras() {
     let grains = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
     // 2010-01-04 10:00 CT (16:00 UTC): inside the grain day session the
     // 2009-07-01 dated grid states, on a Monday the carried span covered.
-    let day_session =
-        DateTime::<Utc>::from_timestamp(1_262_620_800, 0).expect("a representable instant");
+    let day_session = Timestamp::new(1_262_620_800, 0).expect("a representable instant");
     assert!(
         grains
             .is_open(day_session)
@@ -811,12 +783,9 @@ fn a_date_before_the_floor_is_before_floor_for_every_identity() {
 
 #[test]
 fn the_floor_is_a_local_date_not_a_utc_instant() {
-    let instant = Utc
-        .with_ymd_and_hms(2010, 1, 1, 0, 0, 0)
-        .single()
-        .expect("a valid instant");
-    let tokyo_day = instant.with_timezone(&Asia::Tokyo).date_naive();
-    let chicago_day = instant.with_timezone(&US::Central).date_naive();
+    let instant = local_opt(&UTC, (2010, 1, 1), (0, 0, 0)).expect("a valid instant");
+    let tokyo_day = instant.to_zoned_datetime(TOKYO).date();
+    let chicago_day = instant.to_zoned_datetime(US_CENTRAL).date();
     assert_eq!(tokyo_day, date(2010, 1, 1));
     assert_eq!(chicago_day, date(2009, 12, 31));
 
@@ -835,49 +804,41 @@ fn the_floor_is_a_local_date_not_a_utc_instant() {
 
 #[test]
 fn calendar_query_errors_are_distinguishable_by_a_caller() {
-    let source = CalendarSource::Exchange(Exchange::Cme);
-    let bound = date(2025, 6, 16);
-    let errors = [
-        CalendarQueryError::BeforeSupportFloor {
-            source,
-            date: date(2009, 12, 31),
-        },
-        CalendarQueryError::OutsideCoveredRange {
-            source,
-            date: date(2025, 6, 2),
-        },
-        CalendarQueryError::UnresolvedGap {
-            source,
-            date: date(2025, 1, 2),
-        },
-        CalendarQueryError::SearchExhausted {
-            source,
-            date: date(2025, 6, 2),
-            bound,
-        },
-    ];
+    let cme = calendar_for_exchange(Exchange::Cme);
+    let floor = cme
+        .is_open("2009-12-31T18:00:00Z".parse().unwrap())
+        .unwrap_err();
+    let outside = cme
+        .is_open("2099-06-02T18:00:00Z".parse().unwrap())
+        .unwrap_err();
+    let withheld = calendar_for_exchange(Exchange::NseIndia)
+        .is_closed_trade_date(date(2014, 10, 23), exchange_hours::SessionKind::Both)
+        .unwrap_err();
+    let exhausted = calendar_for_market_hours_key(MarketHoursKey::AlwaysOpen)
+        .trade_date("2026-04-20T18:00:00Z".parse().unwrap())
+        .unwrap_err();
 
-    for error in errors {
-        assert_eq!(error.source(), source);
-    }
-    assert_eq!(errors[0].date(), date(2009, 12, 31));
-    match errors[3] {
-        CalendarQueryError::SearchExhausted { bound: hit, .. } => assert_eq!(hit, bound),
-        other => panic!("expected an exhausted search, got {other:?}"),
-    }
-
-    // Unsupported coverage and bounded search exhaustion stay separable, which
-    // is the distinction the release plan requires.
+    assert_eq!(floor.source(), cme.source());
+    assert_eq!(floor.date(), date(2009, 12, 31));
     assert!(matches!(
-        errors[1],
-        CalendarQueryError::OutsideCoveredRange { .. }
+        floor.kind(),
+        CalendarQueryErrorKind::BeforeSupportFloor { .. }
     ));
     assert!(matches!(
-        errors[3],
-        CalendarQueryError::SearchExhausted { .. }
+        outside.kind(),
+        CalendarQueryErrorKind::OutsideCoveredRange { .. }
     ));
-
+    assert!(matches!(
+        withheld.kind(),
+        CalendarQueryErrorKind::UnresolvedGap { .. }
+    ));
+    assert!(
+        matches!(exhausted.kind(), CalendarQueryErrorKind::SearchExhausted { bound, .. } if bound == exhausted.date())
+    );
+    let errors = [&floor, &outside, &withheld, &exhausted];
     for (index, first) in errors.iter().enumerate() {
+        assert!(first.uses_embedded_tzdb());
+        assert_eq!(first.tzdb_release(), exchange_hours::EMBEDDED_TZDB_VERSION);
         for second in &errors[index + 1..] {
             assert_ne!(first, second);
             assert_ne!(
@@ -887,8 +848,7 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
             );
         }
     }
-
-    let boxed: Box<dyn std::error::Error> = Box::new(errors[0]);
+    let boxed: Box<dyn std::error::Error> = Box::new(floor);
     let rendered = boxed.to_string();
     assert!(rendered.contains("cme"), "{rendered}");
     assert!(rendered.contains("2009-12-31"), "{rendered}");
@@ -951,14 +911,14 @@ fn check_declarations(
             .coverage()
             .is_some_and(|audited| {
                 audited.windows().iter().all(|(first, last)| {
-                    let mut spans: Vec<(NaiveDate, NaiveDate)> = coverage
+                    let mut spans: Vec<(Date, Date)> = coverage
                         .phase_gaps()
                         .iter()
                         .map(|gap| {
                             (
                                 gap.applies_since().unwrap_or(*first),
                                 gap.applies_until()
-                                    .and_then(|until| until.pred_opt())
+                                    .and_then(|until| until.yesterday().ok())
                                     .unwrap_or(*last),
                             )
                         })
@@ -970,7 +930,7 @@ fn check_declarations(
                             return false;
                         }
                         if end >= cursor
-                            && let Some(next) = end.succ_opt()
+                            && let Some(next) = end.tomorrow().ok()
                         {
                             cursor = next;
                         }
@@ -1067,7 +1027,7 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     // answer for carry it.
     check_declarations(coverage, &complete, &gaps, identity);
 
-    // The two walks partition [floor, NaiveDate::MAX]: no hole, no overlap. A
+    // The two walks partition [floor, Date::MAX]: no hole, no overlap. A
     // declaration record is one of the gap records, so no extra span enters the
     // partition and no deduplication is needed.
     let mut runs: Vec<(DateRange, bool)> = complete
@@ -1080,18 +1040,15 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     for (index, (range, _)) in runs.iter().enumerate() {
         assert_eq!(range.first(), next, "a hole or overlap for {identity:?}");
         assert!(range.last() >= range.first(), "{identity:?}");
-        if range.last() == NaiveDate::MAX {
+        if range.last() == Date::MAX {
             assert_eq!(index, runs.len() - 1, "{identity:?} ended before its tail");
             break;
         }
-        next = range
-            .last()
-            .succ_opt()
-            .expect("only NaiveDate::MAX is final");
+        next = range.last().tomorrow().expect("only Date::MAX is final");
     }
     assert_eq!(
         runs.last().map(|(range, _)| range.last()),
-        Some(NaiveDate::MAX),
+        Some(Date::MAX),
         "{identity:?} covers the domain through its tail"
     );
 
@@ -1114,7 +1071,7 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
                 "{identity:?} reports {verdict:?} for {day} inside a span it calls {}",
                 if *is_gap { "incomplete" } else { "complete" }
             );
-            match day.succ_opt() {
+            match day.tomorrow().ok() {
                 Some(next) => day = next,
                 None => break,
             }
@@ -1217,15 +1174,16 @@ fn the_quarter_hour_residual_serves_the_intersection_on_every_bracket_era_sunday
     // served intersection's closed verdict, the sourced queue accepts after
     // it, and a Sunday whose evening leg a holiday removes answers closed.
     let fx = calendar_for_market_hours_key(MarketHoursKey::GlobexFx);
-    let at = |day: NaiveDate, hour: u32, minute: u32| {
-        US::Central
-            .from_local_datetime(
-                &day.and_hms_opt(hour, minute, 0)
-                    .expect("a valid local time"),
-            )
-            .single()
+    let at = |day: Date, hour: u32, minute: u32| {
+        US_CENTRAL
+            .to_ambiguous_timestamp(day.at(
+                i8::try_from(hour).expect("valid hour"),
+                i8::try_from(minute).expect("valid minute"),
+                0,
+                0,
+            ))
+            .unambiguous()
             .expect("a single local instant")
-            .with_timezone(&Utc)
     };
     assert_eq!(
         fx.is_accepting_orders(at(sample, 10, 0)),
@@ -1338,15 +1296,16 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
         "the regime's dated neighbours answer: 2012-05-13 is before it and served"
     );
     let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
-    let at = |day: NaiveDate, hour: u32, minute: u32| {
-        US::Central
-            .from_local_datetime(
-                &day.and_hms_opt(hour, minute, 0)
-                    .expect("a valid local time"),
-            )
-            .single()
+    let at = |day: Date, hour: u32, minute: u32| {
+        US_CENTRAL
+            .to_ambiguous_timestamp(day.at(
+                i8::try_from(hour).expect("valid hour"),
+                i8::try_from(minute).expect("valid minute"),
+                0,
+                0,
+            ))
+            .unambiguous()
             .expect("a single local instant")
-            .with_timezone(&Utc)
     };
     // A regime Sunday: accepting from the captured 16:00 onset — the instant
     // inside the onset bracket's disputed quarter-hour included, which is what
@@ -1435,11 +1394,8 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
     // The post-close queue and both of its verdicts are answered on every date
     // that carries it, under the charter convention the fence in
     // `tests/futures_family_boundaries/` pins instant by instant.
-    let queue_instant = US::Central
-        .with_ymd_and_hms(2021, 3, 16, 15, 0, 0)
-        .single()
-        .expect("a single 15:00 CT instant")
-        .with_timezone(&Utc);
+    let queue_instant =
+        local_opt(&US_CENTRAL, (2021, 3, 16), (15, 0, 0)).expect("a single 15:00 CT instant");
     assert_eq!(
         grains_cal.is_accepting_orders(queue_instant),
         Ok(true),
@@ -1509,15 +1465,16 @@ fn the_five_day_era_answers_from_the_queue_absent_grid() {
     // before the 17:00 CT open is closed, matching opens at 17:30, and the
     // 24/7 era serves its published queues.
     let cal = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
-    let at = |day: NaiveDate, hour: u32, minute: u32| {
-        US::Central
-            .from_local_datetime(
-                &day.and_hms_opt(hour, minute, 0)
-                    .expect("a valid local time"),
-            )
-            .single()
+    let at = |day: Date, hour: u32, minute: u32| {
+        US_CENTRAL
+            .to_ambiguous_timestamp(day.at(
+                i8::try_from(hour).expect("valid hour"),
+                i8::try_from(minute).expect("valid minute"),
+                0,
+                0,
+            ))
+            .unambiguous()
             .expect("a single local instant")
-            .with_timezone(&Utc)
     };
     assert_eq!(
         cal.is_accepting_orders(at(date(2019, 6, 9), 16, 30)),
@@ -1669,24 +1626,18 @@ fn detaching_the_holiday_table_neither_hides_nor_manufactures_a_phase_gap() {
 /// The inspection interval the #172 regression probe walks: the 1,095 days
 /// 2025-01-01..2027-12-31 over which the whole-domain declarations once
 /// answered zero complete days for three served identities.
-const REGRESSION_FIRST: NaiveDate = match NaiveDate::from_ymd_opt(2025, 1, 1) {
-    Some(date) => date,
-    None => NaiveDate::MAX,
-};
-const REGRESSION_LAST: NaiveDate = match NaiveDate::from_ymd_opt(2027, 12, 31) {
-    Some(date) => date,
-    None => NaiveDate::MAX,
-};
+const REGRESSION_FIRST: Date = Date::constant(2025, 1, 1);
+const REGRESSION_LAST: Date = Date::constant(2027, 12, 31);
 
 /// The 15:00 CT instant of `day`, the middle of the post-close queue window
 /// the #152 label gap is about.
-fn post_close_instant(day: NaiveDate) -> DateTime<Utc> {
-    use chrono_tz::US;
-    US::Central
-        .with_ymd_and_hms(day.year(), day.month(), day.day(), 15, 0, 0)
-        .single()
-        .expect("15:00 CT is never ambiguous")
-        .with_timezone(&Utc)
+fn post_close_instant(day: Date) -> Timestamp {
+    local_opt(
+        &US_CENTRAL,
+        (day.year(), day.month(), day.day()),
+        (15, 0, 0),
+    )
+    .expect("15:00 CT is never ambiguous")
 }
 
 /// Walks the interval and returns the number of `Covered` days.
@@ -1696,7 +1647,7 @@ fn complete_days(coverage: CalendarCoverage) -> usize {
     while day <= REGRESSION_LAST {
         days += usize::from(coverage.coverage_on(day) == DateCoverage::Covered);
         day = day
-            .succ_opt()
+            .tomorrow()
             .expect("the walk stays inside the year range");
     }
     days
@@ -1747,7 +1698,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     let livestock_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
     let mut day = REGRESSION_FIRST;
     let mut livestock_queue_days = 0_usize;
-    let mut livestock_refused: Vec<NaiveDate> = Vec::new();
+    let mut livestock_refused: Vec<Date> = Vec::new();
     while day <= REGRESSION_LAST {
         let verdict = livestock.coverage_on(day);
         let accepts = livestock_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
@@ -1765,7 +1716,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
             livestock_refused.push(day);
         }
         day = day
-            .succ_opt()
+            .tomorrow()
             .expect("the walk stays inside the year range");
     }
     assert_eq!(
@@ -1774,7 +1725,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     );
     assert_eq!(
         livestock_refused,
-        Vec::<NaiveDate>::new(),
+        Vec::<Date>::new(),
         "no day in 2025-2027 refuses livestock now: the window extends into 2028 (#151)"
     );
 
@@ -1786,7 +1737,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
     // fences by name.
     let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
     let mut grains_queue_days = 0_usize;
-    let mut grains_refused: Vec<NaiveDate> = Vec::new();
+    let mut grains_refused: Vec<Date> = Vec::new();
     day = REGRESSION_FIRST;
     while day <= REGRESSION_LAST {
         let verdict = grains.coverage_on(day);
@@ -1803,12 +1754,12 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
             grains_queue_days += 1;
         }
         day = day
-            .succ_opt()
+            .tomorrow()
             .expect("the walk stays inside the year range");
     }
     assert_eq!(
         grains_refused,
-        Vec::<NaiveDate>::new(),
+        Vec::<Date>::new(),
         "no day in 2025-2027 refuses grains now: the window extends into 2028 (#151)"
     );
     assert_eq!(
@@ -1843,7 +1794,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
         unpublished.is_empty(),
         "the #157 declaration is retired, so no UnpublishedClosureDates record remains"
     );
-    let refused: Vec<NaiveDate> = {
+    let refused: Vec<Date> = {
         let mut day = REGRESSION_FIRST;
         let mut refused = Vec::new();
         while day <= REGRESSION_LAST {
@@ -1851,7 +1802,7 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
                 refused.push(day);
             }
             day = day
-                .succ_opt()
+                .tomorrow()
                 .expect("the walk stays inside the year range");
         }
         refused
@@ -1881,15 +1832,13 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
 /// walked from the 2010 floor, where their dense markers live.
 #[test]
 fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
-    fn assert_agreement(calendar: ExchangeCalendar, first: NaiveDate, last: NaiveDate) {
+    fn assert_agreement(calendar: ExchangeCalendar, first: Date, last: Date) {
         let coverage = calendar.coverage();
         let label = format!("{:?}", calendar.source());
         let mut day = first;
         while day <= last {
             if coverage.coverage_on(day) == DateCoverage::Covered {
-                let instant = Utc
-                    .with_ymd_and_hms(day.year(), day.month(), day.day(), 14, 7, 0)
-                    .single()
+                let instant = local_opt(&UTC, (day.year(), day.month(), day.day()), (14, 7, 0))
                     .expect("14:07Z falls once on every date");
                 for (family, error) in [
                     ("is_open", calendar.is_open(instant).err()),
@@ -1913,7 +1862,7 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     // a date-level verdict, so only the three date-shaped
                     // errors promise anything about the named date.
                     let Some(error) = error else { continue };
-                    if matches!(error, CalendarQueryError::SearchExhausted { .. }) {
+                    if matches!(error.kind(), CalendarQueryErrorKind::SearchExhausted { .. }) {
                         continue;
                     }
                     let named = error.date();
@@ -1929,17 +1878,19 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     // -date divergence issue #128 recorded now removed.
                     let published = match coverage.coverage_on(named) {
                         DateCoverage::OutsideCoveredRange => {
-                            Some(CalendarQueryError::OutsideCoveredRange {
+                            Some(CalendarQueryErrorKind::OutsideCoveredRange {
                                 source: calendar.source(),
                                 date: named,
                             })
                         }
-                        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
-                            source: calendar.source(),
-                            date: named,
-                        }),
+                        DateCoverage::UnresolvedGap => {
+                            Some(CalendarQueryErrorKind::UnresolvedGap {
+                                source: calendar.source(),
+                                date: named,
+                            })
+                        }
                         DateCoverage::BeforeSupportFloor => {
-                            Some(CalendarQueryError::BeforeSupportFloor {
+                            Some(CalendarQueryErrorKind::BeforeSupportFloor {
                                 source: calendar.source(),
                                 date: named,
                             })
@@ -1948,14 +1899,15 @@ fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
                     };
                     if let Some(expected) = published {
                         assert_eq!(
-                            error, expected,
+                            error.kind(),
+                            expected,
                             "{label}: {family} at 14:07Z on {day} refuses {named} \
                              with a variant the metadata does not publish for it"
                         );
                     }
                 }
             }
-            day = day.succ_opt().unwrap_or(last);
+            day = day.tomorrow().ok().unwrap_or(last);
             if day > last {
                 break;
             }

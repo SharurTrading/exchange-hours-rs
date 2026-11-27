@@ -21,7 +21,7 @@
 //! ## The three things that decide every answer
 //!
 //! **Time semantics.** All public helpers take and return
-//! `chrono::DateTime<Utc>`. The exchange's local zone is used only internally —
+//! `Timestamp`. The exchange's local zone is used only internally —
 //! to interpret a rule's seconds-since-local-midnight (SSM) and to define "the
 //! day". Weekdays are indexed Monday = 0 through Sunday = 6 throughout.
 //!
@@ -68,6 +68,7 @@ mod rule;
 mod schedules;
 mod session;
 mod state;
+mod time_zones;
 
 pub use bulk::{
     hours_for_all, hours_for_apac_equities, hours_for_eu_equities, hours_for_global_equities,
@@ -76,9 +77,10 @@ pub use bulk::{
 };
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
 pub use coverage::{
-    CalendarCoverage, CalendarQueryError, CompleteRanges, CoverageGap, CoverageGapReason,
-    CoverageGaps, DateCoverage, DateRange, HolidayContract, NormalWeekBaseline, PhaseGap,
-    PhaseGapShape, SUPPORT_FLOOR,
+    CalendarCoverage, CalendarQueryError, CalendarQueryErrorKind, CompleteRanges, CoverageGap,
+    CoverageGapReason, CoverageGaps, DateCoverage, DateRange, HolidayContract, NormalWeekBaseline,
+    PhaseGap, PhaseGapShape, SUPPORT_FLOOR, ZonedCalendarCoverage, ZonedCompleteRanges,
+    ZonedCoverageGaps,
 };
 pub use exceptions::{
     DateException, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, ExceptionScopeError,
@@ -87,15 +89,17 @@ pub use exceptions::{
 };
 pub use exchange::{Exchange, ParseExchangeError};
 pub use exchange_calendar::{
-    CalendarSource, ExchangeCalendar, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarSource, ExchangeCalendar, ZonedExchangeCalendar, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
 pub use futures_profile::{
-    FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, hours_for_market_hours_key,
-    session_profile,
+    FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, ZonedFuturesSessionProfile,
+    hours_for_market_hours_key, session_profile,
 };
 pub use hours::MarketHours;
 pub use policy::{
-    DayOverride, DayPolicy, NoPolicy, PolicyCalendar, StaticDayPolicy, StaticDayPolicyError,
+    DayAdjustment, DayAdjustmentError, DayOverride, DayPolicy, DayPolicyOutcome, NoPolicy,
+    PolicyCalendar, StaticDayPolicy, StaticDayPolicyError, ZonedPolicyCalendar,
 };
 pub use presets::hours_for_exchange;
 pub use resolution::CalendarResolution;
@@ -106,3 +110,9 @@ pub use session::{
     session_bounds_with,
 };
 pub use state::SessionState;
+
+#[cfg(feature = "runtime-tzdb")]
+pub use time_zones::{TimeZoneSnapshot, TimeZoneSnapshotError};
+
+/// The IANA release compiled into the default calendars.
+pub const EMBEDDED_TZDB_VERSION: &str = env!("EXCHANGE_HOURS_EMBEDDED_TZDB");

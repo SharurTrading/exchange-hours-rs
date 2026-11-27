@@ -4,14 +4,13 @@
 //! order-entry gaps, the carried-back Sunday pre-open, and the livestock queue.
 
 use super::prelude::*;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{PROFILE_INSTANT, date_opt, local_opt};
 use exchange_hours::{calendar_for_market_hours_key, session_profile};
+use jiff::{SignedDuration, Timestamp};
 
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    chrono_tz::US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture is an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture is an unambiguous Central instant")
 }
 
 /// Every new key must expose a current snapshot without panicking, and the
@@ -20,10 +19,7 @@ fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
 fn current_snapshots_agree_with_dated_selectors_today() {
     let now = utc(2026, 6, 17, 12, 0);
     for key in MarketHoursKey::ALL {
-        let snapshot = hours_for_market_hours_key(
-            *key,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        );
+        let snapshot = hours_for_market_hours_key(*key, PROFILE_INSTANT);
         let dated = hours_for_market_hours_key(*key, now);
         assert_eq!(
             snapshot.is_open(now),
@@ -47,10 +43,7 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
     // 2026-04-20 is a Monday; Berlin is CEST (+02:00), Singapore is SGT (+08:00).
     let dated =
         hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome, utc(2026, 4, 20, 12, 0));
-    let snapshot = hours_for_market_hours_key(
-        MarketHoursKey::EurexFixedIncome,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let snapshot = hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome, PROFILE_INSTANT);
     for hours in [&dated, &snapshot] {
         // 22:02 CEST Monday: post-trading accepts orders, nothing matches.
         assert_eq!(
@@ -77,10 +70,7 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
     // 07:10 SGT Monday (23:10 UTC Sunday): SORA's T pre-opening window runs
     // 07:10-07:25, so the market accepts orders but nothing matches.
     for hours in [
-        hours_for_market_hours_key(
-            MarketHoursKey::Sgx,
-            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-        ),
+        hours_for_market_hours_key(MarketHoursKey::Sgx, PROFILE_INSTANT),
         hours_for_market_hours_key(MarketHoursKey::Sgx, utc(2026, 4, 20, 12, 0)),
     ] {
         assert_eq!(
@@ -91,10 +81,7 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
 
     // 07:20 SGT Monday: the Japan grid's pre-opening window runs 07:15-07:30
     // ahead of its 07:30 T session.
-    let japan = hours_for_market_hours_key(
-        MarketHoursKey::SgxEquityIndexJapan,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let japan = hours_for_market_hours_key(MarketHoursKey::SgxEquityIndexJapan, PROFILE_INSTANT);
     assert_eq!(
         japan.session_state(utc(2026, 4, 19, 23, 20)),
         SessionState::OrderEntry
@@ -124,7 +111,7 @@ fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
     // 2012-05-28..2016-01-02 (2015), and a Sunday after the 2016-01-03
     // market-data witness (2025), whose 16:00:00 CT onsets the archive
     // states for every Sunday it holds (2026-10-16 UTC).
-    const SUNDAYS: [((i32, u32, u32), SessionState); 4] = [
+    const SUNDAYS: [((i16, i8, i8), SessionState); 4] = [
         ((2010, 6, 6), SessionState::Closed),
         ((2011, 6, 5), SessionState::Closed),
         ((2015, 6, 7), SessionState::Closed),
@@ -229,7 +216,7 @@ fn the_floor_week_answers_from_the_sourced_grid() {
 
     // The metadata agrees: the floor day is inside the sourced normal week
     // for all three identities, not a carried refusal.
-    let floor_day = chrono::NaiveDate::from_ymd_opt(2010, 1, 4).expect("a valid floor-week day");
+    let floor_day = date_opt(2010, 1, 4).expect("a valid floor-week day");
     for (name, coverage) in [
         ("cme", calendar_for_exchange(Exchange::Cme).coverage()),
         (
@@ -339,10 +326,10 @@ fn extended_crypto_saturday_queues_do_not_start_trading_bars() {
         let queue = ct(date, preopen);
         let matching = ct(date, reopen);
         assert_eq!(
-            calendar.is_order_entry_only(queue - chrono::Duration::seconds(1)),
+            calendar.is_order_entry_only(queue - SignedDuration::from_secs(1)),
             Ok(false)
         );
-        for instant in [queue, matching - chrono::Duration::seconds(1)] {
+        for instant in [queue, matching - SignedDuration::from_secs(1)] {
             assert_eq!(calendar.is_order_entry_only(instant), Ok(true));
             assert_eq!(calendar.is_accepting_orders(instant), Ok(true));
             assert_eq!(calendar.is_open(instant), Ok(false));
@@ -352,7 +339,7 @@ fn extended_crypto_saturday_queues_do_not_start_trading_bars() {
             );
             assert_eq!(
                 calendar.candle_end(instant, exchange_hours::CalendarResolution::Minutes(1)),
-                Ok(Some(matching + chrono::Duration::minutes(1)))
+                Ok(Some(matching + SignedDuration::from_mins(1)))
             );
         }
         assert_eq!(calendar.is_order_entry_only(matching), Ok(false));

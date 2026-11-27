@@ -2,7 +2,7 @@
 
 //! B3 cash-equity grids, including its New York reference-zone regime.
 
-use chrono_tz::America;
+use crate::calendar::time_zones::{America, SelectionInstant};
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -162,10 +162,10 @@ static EXPLICIT_REVISIONS: &[Revision] = revisions![
     (2013, 7, 8, &B3_PROFILE_SHORT, "B3 OC 042/2013-DP"),
 ];
 
-const REFERENCE_GRID: chrono::NaiveDate = effective_date(2015, 12, 21);
+const REFERENCE_GRID: jiff::civil::Date = effective_date(2015, 12, 21);
 
 /// Resolves B3's explicit old grids and its published recurring offset regime.
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Sao_Paulo);
     if day < REFERENCE_GRID {
         return select_revision(day, &B3_PROFILE_OLD_LONG, EXPLICIT_REVISIONS);

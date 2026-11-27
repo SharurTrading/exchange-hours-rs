@@ -6,9 +6,10 @@
 //! Narrative evidence, sources and residual risks: `docs/evidence/oanda*.md`
 //! (LAW-EVIDENCE-FILES).
 
-use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::America::New_York;
-use chrono_tz::Europe::{Berlin, London};
+use crate::calendar::time_zones::America::New_York;
+use crate::calendar::time_zones::Europe::{Berlin, London};
+use crate::calendar::time_zones::SelectionInstant;
+use jiff::civil::Date;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU, TUE_FRI};
@@ -17,7 +18,7 @@ use crate::calendar::schedules::timeline::{effective_date, local_date};
 
 // 2024-02-11 — T2 — MARKET-DATA — FX/metals first current opening day; docs/evidence/oanda_fx.md.
 
-const FX_METALS_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 11);
+const FX_METALS_CURRENT_FIRST_OPEN_DAY: Date = effective_date(2024, 2, 11);
 
 /// Selects the witnessed normal-week era for a New York-anchored book:
 /// opening days before `first_current` answer from the earlier grid and
@@ -26,8 +27,8 @@ const FX_METALS_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 11);
 /// session straddling the horizon resolves complete bounds while its trade
 /// dates refuse through the coverage gate.
 fn new_york_era_select(
-    day: NaiveDate,
-    first_current: NaiveDate,
+    day: Date,
+    first_current: Date,
     legacy: &'static StaticHoursProfile,
     current: &'static StaticHoursProfile,
 ) -> &'static StaticHoursProfile {
@@ -42,9 +43,9 @@ fn new_york_era_select(
 /// for the books whose changeover day carries no distinguishing witness
 /// (the charter's 2026-10-04 rule).
 fn new_york_era_select_intersected(
-    day: NaiveDate,
-    first_intersection: NaiveDate,
-    first_current: NaiveDate,
+    day: Date,
+    first_intersection: Date,
+    first_current: Date,
     legacy: &'static StaticHoursProfile,
     intersection: &'static StaticHoursProfile,
     current: &'static StaticHoursProfile,
@@ -60,8 +61,8 @@ fn new_york_era_select_intersected(
 
 // 2023-06-05 / 2024-02-20 — T1 — OANDA-UK-HOURS-2023-JUN-WAYBACK / OANDA-UK-HOURS-2024-WAYBACK — observation bounds; docs/evidence/oanda_us_index_cfd.md.
 
-const US_INTERSECTION_FIRST_OPEN_DAY: NaiveDate = effective_date(2023, 6, 5);
-const US_CURRENT_FIRST_OPEN_DAY: NaiveDate = effective_date(2024, 2, 20);
+const US_INTERSECTION_FIRST_OPEN_DAY: Date = effective_date(2023, 6, 5);
+const US_CURRENT_FIRST_OPEN_DAY: Date = effective_date(2024, 2, 20);
 
 // Evidence: docs/evidence/oanda_fx.md
 pub(crate) static OANDA_FX_REGULAR: &[SessionRule] = &[SessionRule {
@@ -225,7 +226,7 @@ static OANDA_BRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-pub(crate) fn oanda_fx_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_fx_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select(
         day,
@@ -235,11 +236,11 @@ pub(crate) fn oanda_fx_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursP
     )
 }
 
-pub(crate) fn oanda_try_fx_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_try_fx_profile_at(_as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     &OANDA_TRY_FX
 }
 
-pub(crate) fn oanda_metals_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_metals_profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select(
         day,
@@ -249,7 +250,9 @@ pub(crate) fn oanda_metals_profile_at(as_of: DateTime<Utc>) -> &'static StaticHo
     )
 }
 
-pub(crate) fn oanda_us_index_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_us_index_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     // The current grid nests inside the legacy one, so the undated span's
     // sourced intersection is the current profile itself; the span is dated
@@ -264,7 +267,9 @@ pub(crate) fn oanda_us_index_profile_at(as_of: DateTime<Utc>) -> &'static Static
     )
 }
 
-pub(crate) fn oanda_us_commodity_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_us_commodity_profile_at(
+    as_of: SelectionInstant<'_>,
+) -> &'static StaticHoursProfile {
     let day = local_date(as_of, New_York);
     new_york_era_select_intersected(
         day,
@@ -276,6 +281,6 @@ pub(crate) fn oanda_us_commodity_profile_at(as_of: DateTime<Utc>) -> &'static St
     )
 }
 
-pub(crate) fn oanda_brent_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn oanda_brent_profile_at(_as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     &OANDA_BRENT
 }

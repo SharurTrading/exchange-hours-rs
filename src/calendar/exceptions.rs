@@ -33,7 +33,7 @@ pub use static_table::{
 
 pub(crate) use validation::{BlockViolation, first_block_violation};
 
-use chrono::NaiveDate;
+use jiff::civil::Date;
 
 use super::exchange_calendar::CalendarSource;
 
@@ -210,32 +210,32 @@ pub enum DateException<'a> {
 /// The inclusive venue-local trade-date window a provider claims to have audited.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ExceptionCoverage {
-    first: NaiveDate,
-    last: NaiveDate,
+    first: Date,
+    last: Date,
 }
 
 impl ExceptionCoverage {
     /// Builds a coverage window, or `None` when `last` precedes `first`.
     #[must_use]
-    pub fn new(first: NaiveDate, last: NaiveDate) -> Option<Self> {
+    pub fn new(first: Date, last: Date) -> Option<Self> {
         (first <= last).then_some(Self { first, last })
     }
 
     /// Returns the first audited trade date.
     #[must_use]
-    pub const fn first(self) -> NaiveDate {
+    pub const fn first(self) -> Date {
         self.first
     }
 
     /// Returns the last audited trade date.
     #[must_use]
-    pub const fn last(self) -> NaiveDate {
+    pub const fn last(self) -> Date {
         self.last
     }
 
     /// Returns whether `trade_date` falls inside the audited window.
     #[must_use]
-    pub fn contains(self, trade_date: NaiveDate) -> bool {
+    pub fn contains(self, trade_date: Date) -> bool {
         self.first <= trade_date && trade_date <= self.last
     }
 }
@@ -263,7 +263,7 @@ pub trait SessionExceptionSource: Send + Sync {
     ///
     /// Dates inside [`Self::coverage`] with no recorded exception return
     /// [`DateException::KnownNormal`].
-    fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_>;
+    fn exception_on(&self, trade_date: Date) -> DateException<'_>;
 
     /// Returns whether this provider holds any record keyed inside the
     /// inclusive window `first..=last`.
@@ -288,7 +288,7 @@ pub trait SessionExceptionSource: Send + Sync {
     /// audited-normal provider a true no-op (issue #127): a coverage window
     /// states where records may lie, and a window alone can never change an
     /// answer.
-    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+    fn may_affect(&self, first: Date, last: Date) -> bool {
         let _ = (first, last);
         true
     }

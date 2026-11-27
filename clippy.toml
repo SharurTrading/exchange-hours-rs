@@ -36,14 +36,19 @@ allow-dbg-in-tests = true
 # 150-line test function fails the lint again rather than passing silently.
 too-many-lines-threshold = 160
 
-# LAW-DETERMINISM — this crate never reads a clock. `chrono`'s `clock` feature
-# is off, so `Utc::now` does not exist to call; the entries below are the guard
-# that makes re-enabling it a lint failure rather than a silent regression.
+# LAW-DETERMINISM — Jiff's system clock and host database features are off.
+# Guard these APIs even when a consumer unifies in additional features.
 disallowed-methods = [
     { path = "std::time::SystemTime::now", reason = "LAW-DETERMINISM: the caller supplies the instant" },
     { path = "std::time::Instant::now", reason = "LAW-DETERMINISM: the caller supplies the instant" },
-    { path = "chrono::Utc::now", reason = "LAW-DETERMINISM: the caller supplies the instant", allow-invalid = true },
-    { path = "chrono::Local::now", reason = "LAW-DETERMINISM / UTC-only: no clock, no local time", allow-invalid = true },
+    { path = "jiff::Timestamp::now", reason = "LAW-DETERMINISM: the caller supplies the instant", allow-invalid = true },
+    { path = "jiff::ZonedDateTime::now", reason = "LAW-DETERMINISM: the caller supplies the instant", allow-invalid = true },
+    { path = "jiff::tz::TimeZone::system", reason = "LAW-DETERMINISM: use the calendar's selected zone rules", allow-invalid = true },
+    { path = "jiff::tz::TimeZone::get", reason = "LAW-DETERMINISM: use the calendar's selected zone rules" },
+    { path = "jiff::tz::db", reason = "LAW-DETERMINISM: no ambient time zone database" },
+    { path = "jiff::tz::TimeZoneDatabase::from_env", reason = "LAW-DETERMINISM: no ambient time zone database", allow-invalid = true },
+    { path = "jiff::tz::TimeZoneDatabase::from_dir", reason = "LAW-DETERMINISM: no filesystem lookup", allow-invalid = true },
+    { path = "jiff::tz::TimeZoneDatabase::from_concatenated_path", reason = "LAW-DETERMINISM: no filesystem lookup", allow-invalid = true },
 ]
 
 disallowed-types = []

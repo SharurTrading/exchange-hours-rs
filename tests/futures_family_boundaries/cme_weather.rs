@@ -11,31 +11,29 @@
 //! the fixed snapshot answer identically there. 2025-04-13 is the Sunday on
 //! which CME SER-9519 takes effect, for trade date Monday 2025-04-14.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::US;
+use crate::support::zones::US_CENTRAL;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
     CalendarResolution, DayOverride, MarketHoursKey, SessionState, StaticDayPolicy,
     calendar_for_market_hours_key, hours_for_market_hours_key, session_profile,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 const WEATHER: MarketHoursKey = MarketHoursKey::GlobexWeather;
 const FX: MarketHoursKey = MarketHoursKey::GlobexFx;
 const ENERGY: MarketHoursKey = MarketHoursKey::GlobexEnergy;
 
 /// A probe instant stated in the venue's own wall clock.
-fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    US::Central
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous Central instant")
-        .with_timezone(&Utc)
+fn ct(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&US_CENTRAL, date, time).expect("fixture must be an unambiguous Central instant")
 }
 
-fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
+fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
 }
 
-fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
+fn hours_at(date: (i16, i8, i8)) -> exchange_hours::MarketHours {
     hours_for_market_hours_key(WEATHER, ct(date, (0, 0, 0)))
 }
 
@@ -49,7 +47,7 @@ fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
 /// below keep their force through that surface;
 /// `the_dormant_weather_identity_refuses_the_date_aware_surface` asserts the
 /// refusal separately.
-fn state_at(instant: DateTime<Utc>) -> SessionState {
+fn state_at(instant: Timestamp) -> SessionState {
     hours_for_market_hours_key(WEATHER, instant).session_state(instant)
 }
 
@@ -352,9 +350,9 @@ fn envelope_match_is_not_family_identity() {
             (20, 0),
         ] {
             let instant = ct((2026, 9, 13), (0, 0, 0))
-                + chrono::Duration::days(day_offset)
-                + chrono::Duration::hours(hour)
-                + chrono::Duration::minutes(minute);
+                + elapsed_days(day_offset)
+                + SignedDuration::from_hours(hour)
+                + SignedDuration::from_mins(minute);
             let weather = hours_for_market_hours_key(WEATHER, instant);
             for (label, other) in [
                 ("globex_fx", hours_for_market_hours_key(FX, instant)),
@@ -412,7 +410,8 @@ fn an_overlay_cannot_lend_coverage_to_a_dormant_identity() {
     let early_wednesday = day((2026, 9, 16));
     let records = [
         DayOverride::closed(closed_tuesday),
-        DayOverride::early_close(early_wednesday, 12 * 3_600),
+        DayOverride::early_close(early_wednesday, 12 * 3_600)
+            .expect("the fixture boundary must be valid"),
     ];
     let policy = StaticDayPolicy::new(&records).expect("the fixture records must be valid");
     let overlaid = calendar_for_market_hours_key(WEATHER).with_day_policy(&policy);

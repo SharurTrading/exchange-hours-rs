@@ -3,6 +3,9 @@
 //! Eurex and ICE normal-week sessions and maintenance gaps.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use crate::support::zones::{NEW_YORK, WINNIPEG};
+use jiff::SignedDuration;
 
 // ---------------------------------------------------------------------------
 // EUREX (Index / IR)
@@ -114,10 +117,7 @@ fn eurex_had_no_asian_session_before_2018_12_10() {
 
 #[test]
 fn iceus_sunday_open() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     assert!(!h.is_open(et((2026, 4, 19), (17, 29, 59))));
     assert!(
         h.is_order_entry_only(et((2026, 4, 19), (17, 30, 0))),
@@ -128,30 +128,21 @@ fn iceus_sunday_open() {
 
 #[test]
 fn iceus_overnight_wrap() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 20), (10, 0, 0));
     assert!(h.is_open(t), "ICEUS Mon 10:00 ET (in wrap)");
 }
 
 #[test]
 fn iceus_daily_close() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 20), (18, 0, 0));
     assert!(!h.is_open(t), "ICEUS closes Mon 18:00 ET (end-exclusive)");
 }
 
 #[test]
 fn iceus_daily_break() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 20), (19, 0, 0));
     assert!(!h.is_open(t), "ICEUS in 18:00–20:00 ET break");
     assert!(
@@ -164,10 +155,7 @@ fn iceus_daily_break() {
 fn maintenance_covers_the_whole_break_not_just_its_tail() {
     // Maintenance is classified by the full close-to-reopen span, so the
     // front of a qualifying break counts too.
-    let ice = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let ice = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 20), (18, 5, 0));
     assert!(!ice.is_open(t), "ICEUS 18:05 ET is closed");
     assert!(
@@ -175,10 +163,7 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
         "the start of ICE's two-hour break is maintenance"
     );
 
-    let eurex = hours_for_exchange(
-        Exchange::Eurex,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let eurex = hours_for_exchange(Exchange::Eurex, PROFILE_INSTANT);
     let t = cet((2026, 4, 20), (22, 30, 0));
     // The matching gap runs 22:00 → 02:10 CEST, because the 02:00-02:10
     // pre-trading phase accepts orders but matches nothing. At four hours ten
@@ -193,10 +178,7 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
         "Eurex's current-summer 22:00→02:00 daily gap admits no trading end to end"
     );
 
-    let cbot = hours_for_exchange(
-        Exchange::Cbot,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let cbot = hours_for_exchange(Exchange::Cbot, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (14, 0, 0));
     assert!(!cbot.is_open(t), "CBOT 14:00 CT is closed");
     assert!(!cbot.is_maintenance(t));
@@ -210,10 +192,7 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
 fn maintenance_starts_at_the_close_instant() {
     // Closes are end-exclusive, so the close instant itself is the break's
     // first closed instant.
-    let h = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     assert!(
         h.is_maintenance(ct((2026, 4, 20), (16, 0, 0))),
         "16:00 CT (the daily close) is the first instant of the break"
@@ -230,10 +209,7 @@ fn pre_open_and_overnight_windows_are_not_maintenance() {
     // Closed-but-reopening-soon is not maintenance when the enclosing gap is
     // overnight- or weekend-long. Until 0.2.0 the 90-minute heuristic flagged
     // all of these.
-    let cme = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let cme = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     assert!(cme.is_order_entry_only(ct((2026, 4, 19), (16, 30, 0))));
     assert!(!cme.is_maintenance(ct((2026, 4, 19), (16, 30, 0))));
     assert!(
@@ -245,10 +221,7 @@ fn pre_open_and_overnight_windows_are_not_maintenance() {
         "Saturday is a weekend closure"
     );
 
-    let nasdaq = hours_for_exchange(
-        Exchange::Nasdaq,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let nasdaq = hours_for_exchange(Exchange::Nasdaq, PROFILE_INSTANT);
     assert!(
         !nasdaq.is_maintenance(et((2026, 4, 21), (3, 30, 0))),
         "Tuesday 03:30 ET sits in the eight-hour equity overnight, not a break"
@@ -257,10 +230,7 @@ fn pre_open_and_overnight_windows_are_not_maintenance() {
 
 #[test]
 fn iceus_friday_close() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     let t = et((2026, 4, 24), (18, 0, 0));
     assert!(!h.is_open(t), "ICEUS closes Fri 18:00 ET");
     assert!(
@@ -271,10 +241,7 @@ fn iceus_friday_close() {
 
 #[test]
 fn iceus_weekend_closed() {
-    let h = hours_for_exchange(
-        Exchange::Iceus,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceus, PROFILE_INSTANT);
     assert!(
         !h.is_open(et((2026, 4, 25), (10, 0, 0))),
         "ICEUS closed Saturday"
@@ -288,7 +255,7 @@ fn iceus_weekend_closed() {
 #[test]
 fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
     let launch_eve = et((2017, 11, 7), (0, 0, 0));
-    let closed = hours_for_exchange(Exchange::Iceus, launch_eve - chrono::Duration::seconds(1));
+    let closed = hours_for_exchange(Exchange::Iceus, launch_eve - SignedDuration::from_secs(1));
     let first_evening = hours_for_exchange(Exchange::Iceus, launch_eve);
 
     assert!(!closed.is_open(et((2017, 11, 6), (12, 0, 0))));
@@ -338,7 +305,7 @@ fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
 #[test]
 fn ice_canada_canola_january_2010_baseline() {
     let baseline = hours_for_exchange(Exchange::IceCanada, ct((2010, 1, 10), (12, 0, 0)));
-    assert_eq!(baseline.tz, America::Winnipeg);
+    assert_eq!(baseline.tz, WINNIPEG);
     assert!(!baseline.is_open(ct((2010, 1, 10), (18, 59, 59))));
     assert!(baseline.is_order_entry_only(ct((2010, 1, 10), (19, 0, 0))));
     assert!(baseline.is_order_entry_only(ct((2010, 1, 10), (19, 59, 59))));
@@ -473,24 +440,21 @@ fn ice_canada_canola_2016_close_extension_and_2018_transfer() {
     let transfer_opening = ct((2018, 7, 29), (0, 0, 0));
     let legacy = hours_for_exchange(
         Exchange::IceCanada,
-        transfer_opening - chrono::Duration::seconds(1),
+        transfer_opening - SignedDuration::from_secs(1),
     );
     assert!(legacy.is_open_regular(ct((2018, 7, 27), (13, 19, 59))));
 
     let closed = hours_for_exchange(Exchange::IceCanada, transfer_opening);
     assert!(closed.regular.is_empty());
     assert!(closed.extended.is_empty());
-    assert_eq!(closed.tz, America::Winnipeg);
+    assert_eq!(closed.tz, WINNIPEG);
     assert_refuses_before_floor(
         calendar.is_open(ct((2018, 7, 29), (19, 0, 0))),
         calendar,
         ct((2018, 7, 29), (19, 0, 0)),
     );
 
-    let current = hours_for_exchange(
-        Exchange::IceCanada,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let current = hours_for_exchange(Exchange::IceCanada, PROFILE_INSTANT);
     assert!(current.regular.is_empty());
     assert!(current.extended.is_empty());
 }
@@ -501,11 +465,8 @@ fn ice_canada_canola_2016_close_extension_and_2018_transfer() {
 
 #[test]
 fn iceeu_monday_open() {
-    let h = hours_for_exchange(
-        Exchange::Iceeu,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    assert_eq!(h.tz, America::New_York);
+    let h = hours_for_exchange(Exchange::Iceeu, PROFILE_INSTANT);
+    assert_eq!(h.tz, NEW_YORK);
     assert!(!h.is_open(et((2026, 4, 19), (16, 59, 59))));
     assert!(h.is_order_entry_only(et((2026, 4, 19), (17, 0, 0))));
     assert!(h.is_open_regular(et((2026, 4, 19), (18, 0, 0))));
@@ -513,10 +474,7 @@ fn iceeu_monday_open() {
 
 #[test]
 fn iceeu_trading_hours() {
-    let h = hours_for_exchange(
-        Exchange::Iceeu,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceeu, PROFILE_INSTANT);
     assert!(
         h.is_open(lon((2026, 4, 20), (12, 0, 0))),
         "ICEEU Mon 12:00 London"
@@ -525,20 +483,14 @@ fn iceeu_trading_hours() {
 
 #[test]
 fn iceeu_close() {
-    let h = hours_for_exchange(
-        Exchange::Iceeu,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceeu, PROFILE_INSTANT);
     assert!(h.is_open_regular(et((2026, 4, 20), (17, 59, 59))));
     assert!(!h.is_open(et((2026, 4, 20), (18, 0, 0))));
 }
 
 #[test]
 fn iceeu_before_open() {
-    let h = hours_for_exchange(
-        Exchange::Iceeu,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceeu, PROFILE_INSTANT);
     assert!(!h.is_open(et((2026, 4, 20), (19, 44, 59))));
     assert!(h.is_order_entry_only(et((2026, 4, 20), (19, 45, 0))));
     assert!(h.is_open_regular(et((2026, 4, 20), (20, 0, 0))));
@@ -546,10 +498,7 @@ fn iceeu_before_open() {
 
 #[test]
 fn iceeu_weekend_closed() {
-    let h = hours_for_exchange(
-        Exchange::Iceeu,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Iceeu, PROFILE_INSTANT);
     assert!(
         !h.is_open(lon((2026, 4, 25), (12, 0, 0))),
         "ICEEU closed Saturday"

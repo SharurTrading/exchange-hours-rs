@@ -2,12 +2,9 @@
 
 //! Eurex fixed income futures (`FGBL`, `FGBM`, `FGBS`, `FGBX`) schedules.
 //!
-//! Euro-Bund, Euro-Bobl, Euro-Schatz and Euro-Buxl Futures share one grid,
-//! verified row by row in Annex C of the Eurex Contract Specifications (as of
-//! 17.08.2026) and on all four product pages, so the four contracts are
-//! modelled as a single family here.
+//! Evidence: `docs/evidence/eurex_fixed_income.md`.
 
-use chrono_tz::{Europe, UTC};
+use crate::calendar::time_zones::{Europe, SelectionInstant, UTC};
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
@@ -227,7 +224,7 @@ const BERLIN_SUMMER_DELTA_SECONDS: i32 = -2 * 3600;
 /// a Sunday, which is not a Eurex trading day, so the two never disagree about
 /// a day that has a session.
 pub(crate) fn eurex_fixed_income_profile_at(
-    as_of: chrono::DateTime<chrono::Utc>,
+    as_of: SelectionInstant<'_>,
 ) -> &'static StaticHoursProfile {
     let revisions =
         if reference_delta_seconds(as_of, Europe::Berlin, UTC) == BERLIN_SUMMER_DELTA_SECONDS {

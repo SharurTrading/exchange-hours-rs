@@ -2,20 +2,21 @@
 
 //! Shared imports and fixture helpers for this suite.
 
-pub(super) use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
-pub(super) use chrono_tz::{America, Asia, Europe, US};
+use crate::support::date_opt;
 pub(super) use exchange_hours::{
-    CalendarQueryError, CalendarResolution, Exchange, ExchangeCalendar, MarketHours,
+    CalendarQueryErrorKind, CalendarResolution, Exchange, ExchangeCalendar, MarketHours,
     MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key, candle_end,
     candle_end_with, candle_start, candle_start_with, hours_for_exchange,
     hours_for_market_hours_key, next_session_after, next_session_after_with, session_bounds,
     session_bounds_with, time_end_of_day,
 };
+pub(super) use jiff::Timestamp;
+pub(super) use jiff::civil::Date;
 
 pub(super) use crate::support::local;
 
-pub(super) fn day(date: (i32, u32, u32)) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("valid date fixture")
+pub(super) fn day(date: (i16, i8, i8)) -> Date {
+    date_opt(date.0, date.1, date.2).expect("valid date fixture")
 }
 
 pub(super) fn regular_window(hours: &MarketHours) -> (u32, u32) {
@@ -23,10 +24,10 @@ pub(super) fn regular_window(hours: &MarketHours) -> (u32, u32) {
         .regular
         .first()
         .expect("cash venue has a regular rule");
-    (rule.open_ssm, rule.close_ssm)
+    (rule.open_ssm(), rule.close_ssm())
 }
 
-pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: DateTime<Utc>) {
+pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: Timestamp) {
     let calendar = calendar_for_exchange(exchange);
     let fixed = hours_for_exchange(exchange, instant);
 
@@ -34,7 +35,7 @@ pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: DateTime
     // (Stage 2B). Where it does, the parity claim is unavailable and the
     // refusal is what must be asserted; where it does not, every answer must
     // still equal the fixed snapshot's own.
-    let venue_day = instant.with_timezone(&calendar.tz()).date_naive();
+    let venue_day = instant.to_zoned_datetime(calendar.tz()).date();
 
     // Whether a given query answers or refuses is a **per-query** fact, not
     // a property of the date: an instant-addressed session query reads only
@@ -63,11 +64,11 @@ pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: DateTime
                 Ok(answer) => assert_eq!(answer, $snapshot, "{}", $label),
                 Err(error) => assert!(
                     matches!(
-                        error,
-                        CalendarQueryError::BeforeSupportFloor { .. }
-                            | CalendarQueryError::OutsideCoveredRange { .. }
-                            | CalendarQueryError::UnresolvedGap { .. }
-                            | CalendarQueryError::SearchExhausted { .. }
+                        error.kind(),
+                        CalendarQueryErrorKind::BeforeSupportFloor { .. }
+                            | CalendarQueryErrorKind::OutsideCoveredRange { .. }
+                            | CalendarQueryErrorKind::UnresolvedGap { .. }
+                            | CalendarQueryErrorKind::SearchExhausted { .. }
                     ),
                     "{}: only a coverage refusal may stand in for the fixed \
                          snapshot's answer, got {error:?}",

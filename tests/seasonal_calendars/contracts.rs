@@ -3,6 +3,12 @@
 //! Fixed/date-aware compatibility and cross-query contracts.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
+use crate::support::local_opt;
+use crate::support::utc_datetime;
+use crate::support::zones::TORONTO;
+use crate::support::zones::US_CENTRAL;
+use crate::support::zones::UTC;
 
 #[test]
 fn fixed_venue_calendars_match_market_hours_queries() {
@@ -11,13 +17,10 @@ fn fixed_venue_calendars_match_market_hours_queries() {
     // opens on a sourced closure (August 2026's Civic Holiday) legitimately
     // diverges at its monthly edge, because the fixed snapshot remains
     // exactly its supplied rules.
-    assert_fixed_calendar_parity(
-        Exchange::Tsx,
-        local(America::Toronto, (2026, 3, 19), (10, 12, 0)),
-    );
+    assert_fixed_calendar_parity(Exchange::Tsx, local(&TORONTO, (2026, 3, 19), (10, 12, 0)));
     assert_fixed_calendar_parity(
         Exchange::Cme,
-        local(US::Central, (2026, 4, 20), (16, 30, 0)),
+        local(&US_CENTRAL, (2026, 4, 20), (16, 30, 0)),
     );
 }
 
@@ -26,15 +29,9 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
     // A future reference day is deliberately beyond every recorded cutover,
     // so fixed venues must have converged on their default current snapshot.
     let instants = [
-        Utc.with_ymd_and_hms(2100, 8, 19, 2, 0, 0)
-            .single()
-            .expect("valid fixture"),
-        Utc.with_ymd_and_hms(2100, 8, 19, 12, 0, 0)
-            .single()
-            .expect("valid fixture"),
-        Utc.with_ymd_and_hms(2100, 8, 19, 18, 0, 0)
-            .single()
-            .expect("valid fixture"),
+        local_opt(&UTC, (2100, 8, 19), (2, 0, 0)).expect("valid fixture"),
+        local_opt(&UTC, (2100, 8, 19), (12, 0, 0)).expect("valid fixture"),
+        local_opt(&UTC, (2100, 8, 19), (18, 0, 0)).expect("valid fixture"),
     ];
 
     for &exchange in Exchange::ALL {
@@ -105,11 +102,7 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
             if !current_snapshot_may_differ {
                 assert_eq!(
                     hours_for_exchange(exchange, instant),
-                    hours_for_exchange(
-                        exchange,
-                        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                            + chrono::Duration::seconds(1_787_400_000)
-                    ),
+                    hours_for_exchange(exchange, PROFILE_INSTANT),
                     "{exchange:?}: current and as-of snapshots diverge at {instant}"
                 );
             }
@@ -128,12 +121,7 @@ fn historical_profiles_preserve_each_venue_timezone() {
     let expected_zones: Vec<_> = Exchange::ALL
         .iter()
         .map(|&exchange| {
-            let expected = hours_for_exchange(
-                exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000),
-            )
-            .tz;
+            let expected = hours_for_exchange(exchange, PROFILE_INSTANT).tz;
             assert_eq!(
                 calendar_for_exchange(exchange).tz(),
                 expected,
@@ -144,19 +132,15 @@ fn historical_profiles_preserve_each_venue_timezone() {
         .collect();
 
     while date < end {
-        let instant = Utc.from_utc_datetime(
-            &date
-                .and_hms_opt(12, 0, 0)
-                .expect("daily UTC-noon fixture is representable"),
-        );
-        for &(exchange, expected) in &expected_zones {
+        let instant = utc_datetime(date.at(12, 0, 0, 0));
+        for &(exchange, ref expected) in &expected_zones {
             assert_eq!(
-                hours_for_exchange(exchange, instant).tz,
+                &hours_for_exchange(exchange, instant).tz,
                 expected,
                 "{exchange:?}: historical profile changed venue zone at {instant}"
             );
         }
-        date = date.succ_opt().expect("the bounded history scan advances");
+        date = date.tomorrow().expect("the bounded history scan advances");
     }
 }
 
@@ -184,15 +168,9 @@ fn seasonal_exchange_names_have_stable_serde_forms() {
 #[test]
 fn date_aware_cross_query_fence_holds_for_every_exchange() {
     let instants = [
-        Utc.with_ymd_and_hms(2016, 3, 14, 12, 0, 0)
-            .single()
-            .expect("valid fixture"),
-        Utc.with_ymd_and_hms(2023, 3, 13, 18, 0, 0)
-            .single()
-            .expect("valid fixture"),
-        Utc.with_ymd_and_hms(2026, 11, 2, 18, 0, 0)
-            .single()
-            .expect("valid fixture"),
+        local_opt(&UTC, (2016, 3, 14), (12, 0, 0)).expect("valid fixture"),
+        local_opt(&UTC, (2023, 3, 13), (18, 0, 0)).expect("valid fixture"),
+        local_opt(&UTC, (2026, 11, 2), (18, 0, 0)).expect("valid fixture"),
     ];
     for &exchange in Exchange::ALL {
         let calendar = calendar_for_exchange(exchange);

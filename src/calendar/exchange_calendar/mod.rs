@@ -11,6 +11,7 @@ mod week;
 
 pub(in crate::calendar) use calendar::HolidayView;
 pub use calendar::{
-    ExchangeCalendar, SessionWindow, calendar_for_exchange, calendar_for_market_hours_key,
+    ExchangeCalendar, SessionWindow, ZonedExchangeCalendar, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
 pub use source::CalendarSource;

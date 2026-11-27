@@ -3,22 +3,18 @@
 //! Built-in holiday rows for ICE Futures U.S. — the seven product-family keys
 //! and the `iceus` venue — 2025 through the 2027 calendar's last entry.
 //!
-//! Three tables serve the five softs (Sugar, Coffee and Cocoa share one, FCOJ
-//! and Cotton each differ by one row), and the two index families and the
-//! venue have one each. The late-open branch exercised here is the one whose
-//! wall clock falls **on** the trade date; no ICE row in this window states a
-//! late open at or after a family's own first open, so the preceding-local-date
-//! branch has nothing to exercise and this block says so rather than inventing
-//! a row. The 2025 rows include two London-bank-holiday late opens the annual
-//! calendar does not list, and the eve and holiday instants the Independence
-//! Day and Christmas notices state.
+//! Tests cover the families’ published matching and order-entry phases and the
+//! broad venue’s intersection where their arrangements differ.
 
-use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
-use chrono_tz::America;
+use crate::support::zones::NEW_YORK;
+use crate::support::{date_opt, elapsed_days, local_opt};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
-    HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarQueryErrorKind, CalendarResolution, DateCoverage, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 
 fn key(key: MarketHoursKey) -> ExchangeCalendar {
     calendar_for_market_hours_key(key)
@@ -51,16 +47,16 @@ fn assert_declared_refusal<T: core::fmt::Debug>(
     );
     assert!(
         matches!(
-            (expected, error),
+            (expected, error.kind()),
             (
                 DateCoverage::BeforeSupportFloor,
-                CalendarQueryError::BeforeSupportFloor { .. }
+                CalendarQueryErrorKind::BeforeSupportFloor { .. }
             ) | (
                 DateCoverage::OutsideCoveredRange,
-                CalendarQueryError::OutsideCoveredRange { .. }
+                CalendarQueryErrorKind::OutsideCoveredRange { .. }
             ) | (
                 DateCoverage::UnresolvedGap,
-                CalendarQueryError::UnresolvedGap { .. }
+                CalendarQueryErrorKind::UnresolvedGap { .. }
             )
         ),
         "{claim}: {date} is {expected:?}, so the query must refuse it with the matching \
@@ -68,16 +64,12 @@ fn assert_declared_refusal<T: core::fmt::Debug>(
     );
 }
 
-fn ny(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-    America::New_York
-        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-        .single()
-        .expect("fixture must be an unambiguous New York instant")
-        .with_timezone(&Utc)
+fn ny(date: (i16, i8, i8), time: (u32, u32, u32)) -> Timestamp {
+    local_opt(&NEW_YORK, date, time).expect("fixture must be an unambiguous New York instant")
 }
 
-fn day(year: i32, month: u32, date: u32) -> NaiveDate {
-    NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+fn day(year: i16, month: i8, date: i8) -> Date {
+    date_opt(year, month, date).expect("fixture must be a valid date")
 }
 
 /// Every ICE identity that ships a table, for the coverage fence.
@@ -155,7 +147,7 @@ fn easter_monday_moves_the_sugar_coffee_and_cocoa_open_to_0730_new_york() {
         );
         assert!(
             !calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -178,17 +170,18 @@ fn easter_monday_moves_the_sugar_coffee_and_cocoa_open_to_0730_new_york() {
 
 #[test]
 fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
-    for which in [
-        MarketHoursKey::IceUsOrangeJuice,
-        MarketHoursKey::IceUsCotton,
-    ] {
-        let calendar = key(which);
-        assert_eq!(
-            calendar.holiday_on(day(2026, 4, 6)),
-            None,
-            "{which:?}: ICE gives the late open to Sugar, Coffee and Cocoa only"
-        );
-    }
+    assert_eq!(
+        key(MarketHoursKey::IceUsOrangeJuice).holiday_on(day(2026, 4, 6)),
+        None
+    );
+    let cotton = key(MarketHoursKey::IceUsCotton);
+    assert_eq!(
+        cotton.session_bounds(ny((2026, 4, 6), (7, 0, 0))),
+        Ok(Some((
+            ny((2026, 4, 5), (21, 0, 0)),
+            ny((2026, 4, 6), (14, 20, 0))
+        )))
+    );
     // FCOJ's own regular open is untouched that day.
     assert!(
         key(MarketHoursKey::IceUsOrangeJuice)
@@ -208,13 +201,10 @@ fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
 fn the_2026_thanksgiving_notice_states_each_familys_instants() {
     // Cotton Friday: late open 08:00 NY, early close 13:30 NY.
     let cotton = key(MarketHoursKey::IceUsCotton);
-    assert_eq!(
+    assert!(matches!(
         cotton.holiday_on(day(2026, 11, 27)).map(Holiday::kind),
-        Some(HolidayKind::LateOpenAndEarlyClose {
-            open_ssm: 8 * 3_600,
-            close_ssm: 13 * 3_600 + 30 * 60
-        })
-    );
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
     assert!(
         !cotton
             .is_open(ny((2026, 11, 27), (7, 59, 59)))
@@ -382,7 +372,7 @@ fn the_2026_dst_end_week_opens_the_softs_late_at_three_instants() {
             );
             assert!(
                 !calendar
-                    .is_open(cutoff - TimeDelta::nanoseconds(1))
+                    .is_open(cutoff - SignedDuration::from_nanos(1))
                     .expect("the coverage contract must answer a covered date"),
                 "{which:?} stays shut the minute before its delayed open on 2026-10-{date}"
             );
@@ -456,53 +446,28 @@ fn the_2026_dst_end_week_opens_the_softs_late_at_three_instants() {
 }
 
 #[test]
-fn cotton_carries_its_own_monday_late_open_row() {
-    let cotton = key(MarketHoursKey::IceUsCotton);
-
-    assert_eq!(
-        cotton.holiday_on(day(2026, 7, 6)).map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 8 * 3_600
-        })
-    );
-    // Cotton's modelled grid opens for trade date D at 21:00 on D-1 and names
-    // no Sunday, so the crate has no trade date 2026-07-06 for the row to clip.
-    // The row records ICE's statement; the Monday-evening leg of trade date
-    // 2026-07-07 is unaffected, which is the answer that would break first if
-    // the row were mis-keyed.
-    assert!(
-        cotton
-            .is_open(ny((2026, 7, 6), (21, 30, 0)))
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert_eq!(
-        cotton
-            .trade_date(ny((2026, 7, 6), (21, 30, 0)))
-            .expect("the coverage contract must answer a covered date"),
-        Some(day(2026, 7, 7))
-    );
-    // Answer-neutrality, against the detached calendar: over the whole span
-    // around the row, every instant answers exactly as it would with no table.
-    let bare = cotton.without_holidays();
-    let mut probe = ny((2026, 7, 5), (12, 0, 0));
-    while probe <= ny((2026, 7, 7), (18, 0, 0)) {
+fn cotton_independence_reopens_on_monday_morning() {
+    let c = key(MarketHoursKey::IceUsCotton);
+    for (y, m) in [(2025, 7), (2026, 6)] {
+        let sunday = (y, 7, m - 1);
+        let monday = (y, 7, m);
+        let tuesday = day(y, 7, m + 1);
+        let open = ny(monday, (8, 0, 0));
+        let close = ny(monday, (14, 20, 0));
+        assert_eq!(c.is_accepting_orders(ny(sunday, (19, 30, 0))), Ok(false));
         assert_eq!(
-            cotton
-                .is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            bare.is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}"
+            c.without_holidays().is_open(ny(sunday, (21, 0, 0))),
+            Ok(true)
         );
+        assert_eq!(c.is_open(ny(sunday, (21, 0, 0))), Ok(false));
         assert_eq!(
-            cotton
-                .trade_date(probe)
-                .expect("the coverage contract must answer a covered date"),
-            bare.trade_date(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}"
+            c.next_session_after(ny(sunday, (21, 0, 0))),
+            Ok(Some((open, close)))
         );
-        probe += TimeDelta::minutes(30);
+        assert_eq!(c.is_open(open - SignedDuration::from_nanos(1)), Ok(false));
+        assert_eq!(c.session_bounds(open), Ok(Some((open, close))));
+        assert_eq!(c.is_open(close), Ok(false));
+        assert_eq!(c.trade_date(ny(monday, (21, 0, 0))), Ok(Some(tuesday)));
     }
 }
 
@@ -538,7 +503,7 @@ fn good_friday_gives_the_index_families_a_late_open_and_an_early_close() {
         );
         assert!(
             !calendar
-                .is_open(open_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(open_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -550,7 +515,7 @@ fn good_friday_gives_the_index_families_a_late_open_and_an_early_close() {
         );
         assert!(
             calendar
-                .is_open(close_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(close_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{which:?}"
         );
@@ -586,7 +551,7 @@ fn the_index_families_take_their_own_early_close_instants() {
         let fang_cutoff = ny(date, (13, 0, 0));
         let usdx_cutoff = ny(date, (14, 30, 0));
         assert!(
-            fang.is_open(fang_cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(fang_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -597,7 +562,7 @@ fn the_index_families_take_their_own_early_close_instants() {
             "{date:?}"
         );
         assert!(
-            usdx.is_open(usdx_cutoff - TimeDelta::nanoseconds(1))
+            usdx.is_open(usdx_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -687,45 +652,27 @@ fn an_unsourced_row_is_reported_and_changes_no_answer() {
 fn the_venue_ships_only_the_dates_every_family_agrees_on() {
     let venue = calendar_for_exchange(Exchange::Iceus);
 
-    // The seven dates on which every modelled family prints `closed`. The
-    // trade-date deletion answers from the date's own day, except where it
-    // depends on a day the table withholds: 2025-12-25's opening day is the
-    // withheld 2025-12-24.
-    // 2025-01-01's trade-date derivation reads the opening day 2024-12-31, a
-    // one-flank bridged date whose session facts answer since the 2026-10-07
-    // ruling (#296), so it answers; the other closures' opening days are
-    // audited (2025-12-25 additionally depends on the withheld 2025-12-24).
-    for (date, withheld_by) in [
-        (day(2025, 1, 1), None),
-        (day(2025, 4, 18), None),
-        (day(2025, 12, 25), Some(DateCoverage::UnresolvedGap)),
-        (day(2026, 1, 1), None),
-        // Since the 2026 Christmas notice made 2026-12-24 a withheld disagreement
-        // date, 2026-12-25's deletion depends on it exactly as 2025-12-25 depends
-        // on the withheld 2025-12-24.
-        (day(2026, 12, 25), Some(DateCoverage::UnresolvedGap)),
-        (day(2027, 1, 1), None),
-        (day(2027, 12, 24), None),
+    // All seven unanimous closures answer from the queried trade date's row,
+    // including when a neighbouring trade date is withheld.
+    for date in [
+        day(2025, 1, 1),
+        day(2025, 4, 18),
+        day(2025, 12, 25),
+        day(2026, 1, 1),
+        day(2026, 12, 25),
+        day(2027, 1, 1),
+        day(2027, 12, 24),
     ] {
         assert_eq!(
             venue.holiday_on(date).map(Holiday::kind),
             Some(HolidayKind::Closed),
             "{date}: every modelled ICE family is closed"
         );
-        let closed = venue.is_closed_trade_date(date, SessionKind::Both);
-        if let Some(verdict) = withheld_by {
-            assert_declared_refusal(
-                closed,
-                verdict,
-                venue,
-                "the trade date's deletion depends on a day the table withholds",
-            );
-        } else {
-            assert!(
-                closed.expect("the trade date's own day is inside the audited window"),
-                "{date}"
-            );
-        }
+        assert_eq!(
+            venue.is_closed_trade_date(date, SessionKind::Both),
+            Ok(true),
+            "{date}"
+        );
     }
     // The bridged 2024-12-31 itself: its session questions answer from the
     // sourced normal week and its classification refuses typed (the
@@ -737,18 +684,20 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
          one-flank bridged residual"
     );
     assert!(matches!(
-        venue.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-        Err(CalendarQueryError::UnresolvedGap { .. })
+        venue
+            .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+            .map_err(|error| error.kind()),
+        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
-    // 2025-01-01's noon probe rides the wrap opened that sourced evening and
-    // answers shut from its own Closed row.
+    // A Good Friday noon probe answers from the sourced overnight session's
+    // deletion. Instant queries still require coverage for the days they use.
     assert_eq!(
-        venue.is_open(ny((2025, 1, 1), (12, 0, 0))),
+        venue.is_open(ny((2025, 4, 18), (12, 0, 0))),
         Ok(false),
-        "the closure's day answers from its own row beside the sourced wrap"
+        "the Closed row removes the sourced wrap"
     );
     assert_eq!(
-        venue.trade_date(ny((2025, 1, 1), (12, 0, 0))),
+        venue.trade_date(ny((2025, 4, 18), (12, 0, 0))),
         Ok(None),
         "the Closed row removes the wrapped leg, so noon is in no session and \
          no queue"
@@ -854,7 +803,7 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
             calendar.holiday_on(
                 coverage
                     .first()
-                    .checked_sub_days(Days::new(1))
+                    .checked_sub(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -864,7 +813,7 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
             calendar.holiday_on(
                 coverage
                     .last()
-                    .checked_add_days(Days::new(1))
+                    .checked_add(elapsed_days(1))
                     .expect("a representable date")
             ),
             None,
@@ -890,8 +839,10 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
     );
     assert!(
         matches!(
-            sugar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-            Err(CalendarQueryError::UnresolvedGap { .. })
+            sugar
+                .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+                .map_err(|error| error.kind()),
+            Err(CalendarQueryErrorKind::UnresolvedGap { .. })
         ),
         "the 2024-12-31 classification refuses: nothing witnesses the holiday layer"
     );
@@ -973,8 +924,10 @@ fn the_2025_softs_closures_remove_the_whole_trading_day() {
             if (year, month, date) == (2025, 1, 1) {
                 assert!(
                     matches!(
-                        calendar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
-                        Err(CalendarQueryError::UnresolvedGap { .. })
+                        calendar
+                            .is_closed_trade_date(day(2024, 12, 31), SessionKind::Both)
+                            .map_err(|error| error.kind()),
+                        Err(CalendarQueryErrorKind::UnresolvedGap { .. })
                     ),
                     "{which:?}: the bridged eve's classification refuses typed"
                 );
@@ -1040,7 +993,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
             "{date:?}"
         );
         assert!(
-            fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -1063,7 +1016,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1084,7 +1037,7 @@ fn the_2025_index_early_closes_take_their_own_instants() {
         })
     );
     assert!(
-        usdx.is_open(cutoff - TimeDelta::nanoseconds(1))
+        usdx.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1147,7 +1100,7 @@ fn the_2025_mourning_notice_closes_fang_at_0930_and_the_venue_withholds_the_date
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date"),
         "09:29:59 NY is inside the shortened session"
     );
@@ -1234,7 +1187,7 @@ fn the_2025_london_bank_holidays_delay_the_three_softs_opens() {
             );
             assert!(
                 !calendar
-                    .is_open(open - TimeDelta::nanoseconds(1))
+                    .is_open(open - SignedDuration::from_nanos(1))
                     .expect("the coverage contract must answer a covered date"),
                 "{name} {date:?}"
             );
@@ -1254,9 +1207,11 @@ fn the_2025_london_bank_holidays_delay_the_three_softs_opens() {
             );
         }
         // The notice's own words: "All other Exchange products will follow
-        // their regular trading schedules". FCOJ's regular open is 08:00, and
-        // the date is not a Cotton trade date at all — 2025-05-05 and
-        // 2025-08-25 are Mondays, which that grid's opening days exclude.
+        // their regular trading schedules". Cotton trades through Monday morning.
+        assert_eq!(
+            key(MarketHoursKey::IceUsCotton).is_open(ny(date, (7, 0, 0))),
+            Ok(true)
+        );
         let usdx = key(MarketHoursKey::IceUsDollarIndex);
         assert_eq!(usdx.holiday_on(day(date.0, date.1, date.2)), None);
         assert_eq!(
@@ -1304,13 +1259,10 @@ fn the_2025_thanksgiving_friday_states_each_softs_family_separately() {
     );
     // Cotton opens late at 08:00 NY and closes early at 13:30 NY.
     let cotton = key(MarketHoursKey::IceUsCotton);
-    assert_eq!(
+    assert!(matches!(
         cotton.holiday_on(friday).map(Holiday::kind),
-        Some(HolidayKind::LateOpenAndEarlyClose {
-            open_ssm: 8 * 3_600,
-            close_ssm: 13 * 3_600 + 30 * 60
-        })
-    );
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
     for (name, calendar) in [("FCOJ", fcoj), ("Cotton", cotton)] {
         assert!(
             calendar
@@ -1374,7 +1326,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         Some("IFUS-NOTICE-2025-INDEPENDENCE")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1398,7 +1350,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1425,7 +1377,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         Some("IFUS-NOTICE-2025-CHRISTMAS")
     );
     assert!(
-        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+        fang.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1441,7 +1393,7 @@ fn the_retrieved_2025_notices_state_the_eve_instants() {
         })
     );
     assert!(
-        usdx.is_open(cutoff - TimeDelta::nanoseconds(1))
+        usdx.is_open(cutoff - SignedDuration::from_nanos(1))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -1491,7 +1443,7 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
             "{date:?}"
         );
         assert!(
-            fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            fang.is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{date:?}"
         );
@@ -1533,7 +1485,7 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         );
         assert!(
             calendar
-                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .is_open(cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1557,16 +1509,23 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         ("cotton", MarketHoursKey::IceUsCotton),
     ] {
         let calendar = key(which);
-        assert_eq!(
-            calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
-            Some(HolidayKind::LateOpen {
-                open_ssm: 7 * 3_600 + 30 * 60
-            }),
-            "{name}"
-        );
+        if which == MarketHoursKey::IceUsCotton {
+            assert!(matches!(
+                calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+        } else {
+            assert_eq!(
+                calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
+                Some(HolidayKind::LateOpen {
+                    open_ssm: 7 * 3_600 + 30 * 60
+                }),
+                "{name}"
+            );
+        }
         assert!(
             !calendar
-                .is_open(open - TimeDelta::nanoseconds(1))
+                .is_open(open - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1581,16 +1540,6 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         key(MarketHoursKey::IceUsOrangeJuice).holiday_on(day(2025, 12, 26)),
         None,
         "FCOJ opens regular on Boxing Day"
-    );
-
-    // The Independence Day notice also gives Cotton its own Monday late open.
-    assert_eq!(
-        key(MarketHoursKey::IceUsCotton)
-            .holiday_on(day(2025, 7, 7))
-            .map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 8 * 3_600
-        })
     );
 }
 
@@ -1657,7 +1606,7 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
         );
         assert!(
             calendar
-                .is_open(index_cutoff - TimeDelta::nanoseconds(1))
+                .is_open(index_cutoff - SignedDuration::from_nanos(1))
                 .expect("the coverage contract must answer a covered date"),
             "{name}"
         );
@@ -1694,20 +1643,18 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
             Some("IFUS-NOTICE-2026-CHRISTMAS"),
             "{name}"
         );
-        if which != MarketHoursKey::IceUsCotton {
-            assert!(
-                !calendar
-                    .is_open(open - TimeDelta::nanoseconds(1))
-                    .expect("the coverage contract must answer a covered date"),
-                "{name}"
-            );
-            assert!(
-                calendar
-                    .is_open(open)
-                    .expect("the coverage contract must answer a covered date"),
-                "{name}"
-            );
-        }
+        assert!(
+            !calendar
+                .is_open(open - SignedDuration::from_nanos(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .is_open(open)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
     }
     // The complete replacement now states Cotton's Monday daytime session.
     // Its following Monday-evening leg must still feed Tuesday unchanged.
@@ -1860,7 +1807,7 @@ fn the_venue_table_is_the_intersection_of_the_five_tables_its_keys_select() {
             "{date}: every family that answers must agree, or the venue withholds the date"
         );
         date = date
-            .checked_add_days(Days::new(1))
+            .checked_add(elapsed_days(1))
             .expect("the scan stays inside the representable calendar");
     }
 }
@@ -1911,14 +1858,16 @@ fn the_2026_christmas_notice_shortens_queues_and_states_the_monday_reopen() {
         let calendar = key(which);
         let close = ny((2026, 12, 24), eve_close);
         assert!(
-            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            calendar
+                .is_open(close - SignedDuration::from_secs(1))
+                .unwrap(),
             "{which:?}"
         );
         assert!(!calendar.is_open(close).unwrap(), "{which:?}");
         let queue = ny((2026, 12, 24), queue_open);
         assert!(
             !calendar
-                .is_accepting_orders(queue - TimeDelta::seconds(1))
+                .is_accepting_orders(queue - SignedDuration::from_secs(1))
                 .unwrap(),
             "{which:?}"
         );
@@ -1957,7 +1906,9 @@ fn the_2026_christmas_notice_shortens_queues_and_states_the_monday_reopen() {
         );
         let close = ny((2026, 12, 28), monday_close);
         assert!(
-            calendar.is_open(close - TimeDelta::seconds(1)).unwrap(),
+            calendar
+                .is_open(close - SignedDuration::from_secs(1))
+                .unwrap(),
             "{which:?}"
         );
         assert!(!calendar.is_open(close).unwrap(), "{which:?}");

@@ -2,7 +2,7 @@
 
 //! COMEX 100-Ounce Silver futures (`SIL`, Globex security group 4S).
 
-use chrono_tz::US;
+use crate::calendar::time_zones::{SelectionInstant, US};
 
 use super::energy_metals::{
     ENERGY_METALS_AT_2010_FLOOR, ENERGY_METALS_DATED_CURRENT, ENERGY_METALS_PROFILE_2016_01_03,
@@ -209,7 +209,7 @@ static REVISIONS: &[Revision] = revisions![
     (2026, 11, 1, &SILVER_24_7, "CME Globex notice 20261005"),
 ];
 
-pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+pub(crate) fn profile_at(as_of: SelectionInstant<'_>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, US::Central),
         &ENERGY_METALS_AT_2010_FLOOR,

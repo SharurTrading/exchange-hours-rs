@@ -3,6 +3,7 @@
 //! Boundary-query fixtures and stable serde forms.
 
 use super::prelude::*;
+use crate::support::PROFILE_INSTANT;
 
 // ---------------------------------------------------------------------------
 // Session bounds sanity checks
@@ -10,10 +11,7 @@ use super::prelude::*;
 
 #[test]
 fn cme_session_bounds_monday_rth() {
-    let h = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (10, 0, 0));
     let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(
@@ -30,10 +28,7 @@ fn cme_session_bounds_monday_rth() {
 
 #[test]
 fn cme_next_session_after_friday_close() {
-    let h = hours_for_exchange(
-        Exchange::Cme,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cme, PROFILE_INSTANT);
     let t = ct((2026, 4, 24), (16, 30, 0));
     let (open, _close) = next_session_after(&h, t).expect("the next session exists");
     assert_eq!(
@@ -45,10 +40,7 @@ fn cme_next_session_after_friday_close() {
 
 #[test]
 fn cbot_session_bounds_day_session() {
-    let h = hours_for_exchange(
-        Exchange::Cbot,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
+    let h = hours_for_exchange(Exchange::Cbot, PROFILE_INSTANT);
     let t = ct((2026, 4, 20), (10, 0, 0));
     let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(open, ct((2026, 4, 20), (8, 30, 0)));

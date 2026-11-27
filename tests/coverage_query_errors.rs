@@ -18,10 +18,10 @@ mod support;
 use crate::support::zones::{TOKYO, US_CENTRAL};
 use crate::support::{date_opt, local_opt};
 use exchange_hours::{
-    CalendarQueryErrorKind, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
-    MarketHours, MarketHoursKey, SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, SessionState,
-    StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
-    hours_for_exchange, session_profile,
+    CalendarQueryErrorKind, CalendarResolution, DateCoverage, ExceptionBlock, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHours, MarketHoursKey, SUPPORT_FLOOR,
+    SessionExceptionRecord, SessionKind, SessionState, StaticDayPolicy, StaticSessionExceptions,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange, session_profile,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -314,6 +314,58 @@ fn without_holidays_answers_the_normal_week_it_claims() {
 }
 
 // ------------------------------------------------------- overlays and policy
+
+#[test]
+fn a_sourced_closed_trade_date_does_not_require_its_withheld_neighbour() {
+    let venue = calendar_for_exchange(Exchange::Iceus);
+    let eve = date(2025, 12, 24);
+    let christmas = date(2025, 12, 25);
+    let kind = SessionKind::Both;
+
+    assert_eq!(
+        venue.holiday_on(eve).map(Holiday::kind),
+        Some(HolidayKind::Unsourced)
+    );
+    assert_eq!(
+        venue.holiday_on(christmas).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    let withheld_eve = CalendarQueryErrorKind::UnresolvedGap {
+        source: venue.source(),
+        date: eve,
+    };
+    assert_eq!(
+        venue.is_closed_trade_date(eve, kind).unwrap_err().kind(),
+        withheld_eve
+    );
+    assert_eq!(venue.is_closed_trade_date(christmas, kind), Ok(true));
+    assert_eq!(
+        venue
+            .is_closed_all_day_on(christmas, kind)
+            .unwrap_err()
+            .kind(),
+        withheld_eve
+    );
+    assert_eq!(
+        venue
+            .with_last_known_week()
+            .is_closed_trade_date(christmas, kind),
+        Ok(true)
+    );
+    assert_eq!(
+        venue
+            .without_holidays()
+            .is_closed_trade_date(christmas, kind),
+        Ok(false)
+    );
+
+    let blocks = [ExceptionBlock::regular(0, 9 * 3_600, 10 * 3_600)];
+    let records = [SessionExceptionRecord::replace_sessions(christmas, &blocks)];
+    let replacements =
+        StaticSessionExceptions::new(venue.source(), christmas, christmas, &records).unwrap();
+    let replaced = venue.with_session_exceptions(&replacements).unwrap();
+    assert_eq!(replaced.is_closed_trade_date(christmas, kind), Ok(false));
+}
 
 #[test]
 fn a_caller_policy_cannot_bypass_the_identity_floor() {

@@ -38,11 +38,6 @@ fn latest_close_for_trade_date<G: SourceGate>(
     kind: SessionKind,
     ceiling: Option<Timestamp>,
 ) -> Result<Option<Timestamp>, G::Error> {
-    // This scan describes `day` from the identity's own tables, so a date
-    // those tables withhold refuses instead of being described (LAW-COVERAGE;
-    // see `daily_close_for_trade_date` for why the gate sits below the
-    // caller-record path).
-    context.require_answerable(day)?;
     let weekday = usize::from(day.weekday().to_monday_zero_offset().cast_unsigned());
     let today = context.profile_for_open_day(day);
     let mut latest = None;
@@ -91,20 +86,9 @@ fn latest_close_for_trade_date<G: SourceGate>(
 /// one-day-either-side window cannot reach a block that opens several local
 /// days before its trade date.
 ///
-/// The day is gated at [`latest_close_for_trade_date`], the normal-week
-/// derivation, not here: a caller record for a withheld date states the day
-/// itself, and the overlay contracts keep that observable — the composed
-/// daily bar over a replaced `Unsourced` date answers from the record
-/// (`a_day_policy_clips_a_replaced_trading_day`). The derivation, by
-/// contrast, describes the date from the identity's own tables, so a date
-/// those tables withhold must refuse rather than let the neighbour scan
-/// describe its normal week (LAW-COVERAGE). That refusal used to be an
-/// accident of the derivation's containment probes reaching the day; the
-/// per-occurrence gate window (issue #107) legitimately stopped most
-/// resolves from consulting it, which would have let `is_closed_trade_date`
-/// answer a withheld Muhurat Sunday from its normal week — an unsourced gap
-/// reported as a plain closure is precisely the failure LAW-COVERAGE exists
-/// to prevent.
+/// A caller record for a withheld date supplies that day's arrangement. The
+/// neighbour scan describes the date from the identity's own tables and
+/// requires coverage for that date first (LAW-COVERAGE).
 pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
     context: &QueryContext<'_, G>,
     day: Date,
@@ -113,7 +97,10 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
     match replacement::daily_close(context, day, kind) {
         ExceptionDailyClose::NoSession => Ok(None),
         ExceptionDailyClose::Close(close) => Ok(Some(close)),
-        ExceptionDailyClose::NotGoverned => latest_close_for_trade_date(context, day, kind, None),
+        ExceptionDailyClose::NotGoverned => {
+            context.require_answerable(day)?;
+            latest_close_for_trade_date(context, day, kind, None)
+        }
     }
 }
 
@@ -122,7 +109,7 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
 /// final close of `kind`.
 ///
 /// The question differs from [`daily_close_for_trade_date`], whose absence
-/// answers the session walks, in one gate: the **classification** refuses on a
+/// answers the session walks: the **classification** refuses on a
 /// one-flank bridged date (issue #296, the 2026-10-07 ruling). There the
 /// identity's week is sourced and the date's session questions answer, but no
 /// audited window brackets the span from below, so nothing witnesses the
@@ -135,10 +122,9 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
 /// A caller-supplied exception record answers before every gate, exactly as
 /// it does in [`daily_close_for_trade_date`]: the record states the day
 /// itself (the #107 overlay contract), so an overlaid calendar keeps its
-/// observable on a refused date too. The derivation beneath the gate is
-/// [`latest_close_for_trade_date`], whose own `require_answerable` gate keeps
-/// refusing the dates the date-level facts refuse — above the last window on a
-/// default calendar, a carried week, a withheld `Unsourced` row — unchanged.
+/// observable on a refused date too. After the date's coverage gates, an
+/// effective built-in closure answers from the date itself. Other dates use
+/// [`latest_close_for_trade_date`] to determine the effective session.
 pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
     context: &QueryContext<'_, G>,
     day: Date,
@@ -150,6 +136,12 @@ pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
         ExceptionDailyClose::NotGoverned => {}
     }
     context.require_holiday_classification(day)?;
+    context.require_answerable(day)?;
+    if context.is_builtin_closed(day) {
+        // The row removes every session assigned to this trade date, even
+        // when its usual opening lands on a withheld neighbouring date.
+        return Ok(true);
+    }
     Ok(latest_close_for_trade_date(context, day, kind, None)?.is_none())
 }
 

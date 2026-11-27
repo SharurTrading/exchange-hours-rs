@@ -347,6 +347,11 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         self.holidays.and_then(|table| table.holiday_on(trade_date))
     }
 
+    /// Returns whether the enabled built-in table closes the date after caller overrides.
+    pub(super) fn is_builtin_closed(self, trade_date: Date) -> bool {
+        self.builtin_clip(trade_date).closed
+    }
+
     /// Returns the built-in clip for `trade_date`, if it is not suppressed.
     ///
     /// An explicit caller record wins outright (D12): a `Closed` or
@@ -579,7 +584,7 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// session leaves the date's assignment alone.
     pub(super) fn business_date_policy(self, trade_date: Date) -> DayPolicyOutcome {
         if matches!(self.exception_on(trade_date), DateException::Closed)
-            || self.builtin_clip(trade_date).closed
+            || self.is_builtin_closed(trade_date)
         {
             return DayPolicyOutcome::Closed;
         }

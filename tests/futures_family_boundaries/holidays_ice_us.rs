@@ -652,45 +652,27 @@ fn an_unsourced_row_is_reported_and_changes_no_answer() {
 fn the_venue_ships_only_the_dates_every_family_agrees_on() {
     let venue = calendar_for_exchange(Exchange::Iceus);
 
-    // The seven dates on which every modelled family prints `closed`. The
-    // trade-date deletion answers from the date's own day, except where it
-    // depends on a day the table withholds: 2025-12-25's opening day is the
-    // withheld 2025-12-24.
-    // 2025-01-01's trade-date derivation reads the opening day 2024-12-31, a
-    // one-flank bridged date whose session facts answer since the 2026-10-07
-    // ruling (#296), so it answers; the other closures' opening days are
-    // audited (2025-12-25 additionally depends on the withheld 2025-12-24).
-    for (date, withheld_by) in [
-        (day(2025, 1, 1), None),
-        (day(2025, 4, 18), None),
-        (day(2025, 12, 25), Some(DateCoverage::UnresolvedGap)),
-        (day(2026, 1, 1), None),
-        // Since the 2026 Christmas notice made 2026-12-24 a withheld disagreement
-        // date, 2026-12-25's deletion depends on it exactly as 2025-12-25 depends
-        // on the withheld 2025-12-24.
-        (day(2026, 12, 25), Some(DateCoverage::UnresolvedGap)),
-        (day(2027, 1, 1), None),
-        (day(2027, 12, 24), None),
+    // All seven unanimous closures answer from the queried trade date's row,
+    // including when a neighbouring trade date is withheld.
+    for date in [
+        day(2025, 1, 1),
+        day(2025, 4, 18),
+        day(2025, 12, 25),
+        day(2026, 1, 1),
+        day(2026, 12, 25),
+        day(2027, 1, 1),
+        day(2027, 12, 24),
     ] {
         assert_eq!(
             venue.holiday_on(date).map(Holiday::kind),
             Some(HolidayKind::Closed),
             "{date}: every modelled ICE family is closed"
         );
-        let closed = venue.is_closed_trade_date(date, SessionKind::Both);
-        if let Some(verdict) = withheld_by {
-            assert_declared_refusal(
-                closed,
-                verdict,
-                venue,
-                "the trade date's deletion depends on a day the table withholds",
-            );
-        } else {
-            assert!(
-                closed.expect("the trade date's own day is inside the audited window"),
-                "{date}"
-            );
-        }
+        assert_eq!(
+            venue.is_closed_trade_date(date, SessionKind::Both),
+            Ok(true),
+            "{date}"
+        );
     }
     // The bridged 2024-12-31 itself: its session questions answer from the
     // sourced normal week and its classification refuses typed (the
@@ -707,15 +689,15 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
             .map_err(|error| error.kind()),
         Err(CalendarQueryErrorKind::UnresolvedGap { .. })
     ));
-    // 2025-01-01's noon probe rides the wrap opened that sourced evening and
-    // answers shut from its own Closed row.
+    // A Good Friday noon probe answers from the sourced overnight session's
+    // deletion. Instant queries still require coverage for the days they use.
     assert_eq!(
-        venue.is_open(ny((2025, 1, 1), (12, 0, 0))),
+        venue.is_open(ny((2025, 4, 18), (12, 0, 0))),
         Ok(false),
-        "the closure's day answers from its own row beside the sourced wrap"
+        "the Closed row removes the sourced wrap"
     );
     assert_eq!(
-        venue.trade_date(ny((2025, 1, 1), (12, 0, 0))),
+        venue.trade_date(ny((2025, 4, 18), (12, 0, 0))),
         Ok(None),
         "the Closed row removes the wrapped leg, so noon is in no session and \
          no queue"

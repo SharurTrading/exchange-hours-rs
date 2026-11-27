@@ -14,6 +14,12 @@
   policy and exception table constructors now run at runtime. Session bounds
   require both endpoints to fit Jiff's timestamp range. See
   [Migrating from 1.x](README.md#migrating-from-1x).
+- Implement `DayPolicy::outcome_on` to return one validated decision for
+  a trade date. Early-close and late-open constructors reject out-of-range
+  input when building a policy record.
+- Match coverage refusals through `error.kind()` and `CalendarQueryErrorKind`.
+  Refusals retain their original time-zone rules for display and normal-week
+  diagnostics across a live database refresh.
 - `SessionRule` validates deserialized rules and exposes read-only weekday
   and boundary accessors. Valid records retain their original wire format.
 - Built-in calendars default to compile-time IANA 2026f time zones. A repeated local
@@ -34,6 +40,15 @@
   The calendar's `runtime-tzdb` feature accepts immutable snapshots for live
   operations and reproducible backtests. CI fails when the embedded release
   differs from IANA's current stable release.
+
+### Fixed
+
+- Session searches include overnight rules whose effective opening was
+  delayed past midnight, including the November 27, 2026 ICE US Cotton
+  session. [#409](https://github.com/SharurTrading/exchange-hours-rs/issues/409)
+- Civil-date closure queries include every instant belonging to the requested
+  date when a backward clock change crosses midnight.
+  [#407](https://github.com/SharurTrading/exchange-hours-rs/issues/407)
 
 ## [1.4.0] - 2026-11-18
 

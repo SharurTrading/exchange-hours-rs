@@ -114,8 +114,9 @@ run, record the crate version and `snapshot.release()` and retain the exact
 zone data used. Supply that snapshot during replay. A run keeps its snapshot
 across background updates. An unsuccessful refresh is
 visible through `updater.status()?.last_error`, and live queries can continue
-using the last verified release. Use `error.display_in(&snapshot)` when
-rendering a coverage refusal from that operation. Startup requires network access and the
+using the last verified release. A coverage error retains the snapshot that
+produced it. Formatting the error or reading `error.normal_week_baseline()`
+uses that release even after an update. Startup requires network access and the
 `curl`, `gpgv` and `zic` tools. See the
 [companion setup and snapshot API](https://github.com/SharurTrading/exchange-hours-rs/tree/main/tzdb-runtime).
 
@@ -128,6 +129,13 @@ rendering a coverage refusal from that operation. Startup requires network acces
   date arguments to `DayPolicy` and `SessionExceptionSource` implementations.
   Use `jiff::civil::Weekday` for the weekday returned by
   `NormalWeekBaseline::weekday`.
+- Match `CalendarQueryError` through `error.kind()`. The variants on
+  `CalendarQueryErrorKind` carry the same identity, date and search-bound
+  fields. A runtime error owns a reference to the time-zone data that produced it.
+- Implement `DayPolicy::outcome_on(date)` to return `DayPolicyOutcome::Normal`,
+  `Closed` or `Adjusted`. Build adjustments when ingesting caller data with
+  `DayAdjustment::early_close`, `late_open` or `late_open_and_early_close`.
+  The corresponding `DayOverride` constructors also return a `Result`.
 - Read `SessionRule` through `days()`, `open_ssm()` and `close_ssm()`.
   Construct an updated rule with `SessionRule::new`. Deserialization accepts
   existing valid records and rejects invalid boundaries or an empty weekday mask.
@@ -635,7 +643,7 @@ identity's coverage from the next week it knows. It changes nothing inside or
 after coverage, and with both views no date refuses.
 
 ```rust
-use exchange_hours::{CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, SessionKind};
+use exchange_hours::{CalendarQueryErrorKind, DateCoverage, Exchange, ExchangeCalendar, SessionKind};
 use jiff::{Timestamp, civil::date};
 
 let utc = |text: &str| text.parse::<Timestamp>().expect("valid RFC 3339 instant");
@@ -643,10 +651,8 @@ let nyse = ExchangeCalendar::new(Exchange::Nyse);
 let thanksgiving_2005 = utc("2005-11-24T16:00:00Z");
 
 // The default calendar refuses a date below the support floor.
-assert!(matches!(
-    nyse.is_open(thanksgiving_2005),
-    Err(CalendarQueryError::BeforeSupportFloor { .. })
-));
+let refusal = nyse.is_open(thanksgiving_2005).unwrap_err();
+assert!(matches!(refusal.kind(), CalendarQueryErrorKind::BeforeSupportFloor { .. }));
 
 // The view reads it from the next week it knows, so that Thanksgiving reads as
 // open, and the next day keeps the normal 16:00 New York close.
@@ -696,14 +702,16 @@ use exchange_hours::{
 use jiff::civil::date;
 
 let closed_date = date(2026, 4, 20);
-let overrides = [DayOverride::closed(closed_date)];
-let policy = StaticDayPolicy::new(&overrides).expect("records are sorted and valid");
+let early_date = date(2026, 4, 21);
+let early_close = DayOverride::early_close(early_date, 13 * 3600).expect("valid close");
+let overrides = [DayOverride::closed(closed_date), early_close];
+let policy = StaticDayPolicy::new(&overrides).expect("dates are unique and sorted");
 let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
     .with_day_policy(&policy);
 ```
 
-The date above is an API example, not bundled operator data; callers remain
-responsible for the source and exact family/venue scope of every record.
+These dates illustrate a caller-owned policy. Callers supply the source and
+exact family or venue scope of every record.
 
 Boundary clipping is not a complete holiday-session model. It cannot insert an
 intraday pause/reopen or close only regular trading while an extended phase

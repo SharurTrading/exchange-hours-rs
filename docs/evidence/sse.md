@@ -444,7 +444,8 @@ January 2 and 3 fall on Saturday and Sunday under the same SSE rule,
 so the normal week supplies their closures. The 2027 SSE annual notice
 and a separate 2027 New Year notice were absent from the exchange's
 closure index on 2026-11-27 UTC. January 4 and later remain outside the
-audited holiday window pending #402. The civil calendar's adjusted days
+audited holiday window pending #402. Reconfirm the January 1 closure by
+2026-12-31 UTC under #402. The civil calendar's adjusted days
 off and working weekends do not themselves establish SSE arrangements.
 
 ### Documents

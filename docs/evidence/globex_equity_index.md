@@ -184,9 +184,9 @@ row names the window each half comes from.
 | `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-09-05&toEventDate=2027-09-07> | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
 | `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-11-24&toEventDate=2027-11-26> | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
 | `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-12-22&toEventDate=2027-12-25> | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
-| `CME-SVC-2028-01-15` | 2028-01-15 .. 2028-01-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-01-15&toEventDate=2028-01-19> | retrieved 2026-11-03 UTC | T2 | `f74454cec296f0dd7055091093e7d02fa993bb27963be968dc84082249074d96` |
-| `CME-SVC-2028-02-18` | 2028-02-18 .. 2028-02-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-02-18&toEventDate=2028-02-23> | retrieved 2026-11-03 UTC | T2 | `bdd7dd926a84cebd48c702af978b6836b998723f1af86818cc93fc50da557b28` |
-| `CME-SVC-2028-04-12` | 2028-04-12 .. 2028-04-18 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-04-12&toEventDate=2028-04-18> | retrieved 2026-11-03 UTC | T2 | `71a6b95a487deee4fd2ad9fe10853ef2e95230fcd7ffa96e6708b54054939ec3` |
+| `CME-SVC-2028-01-15` | 2028-01-15 .. 2028-01-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-01-15&toEventDate=2028-01-19> | retrieved 2026-11-27 UTC | T2 | `08fbfea910fb210cc8b24c3da1e6a5d507f42f454be7774404a459843efb0ed1` |
+| `CME-SVC-2028-02-18` | 2028-02-18 .. 2028-02-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-02-18&toEventDate=2028-02-23> | retrieved 2026-11-27 UTC | T2 | `319ad5f7f606d928ac4750ab0eae7404e0a649f23875626f88bb0975cdc2bf98` |
+| `CME-SVC-2028-04-12` | 2028-04-12 .. 2028-04-18 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2028-04-12&toEventDate=2028-04-18> | retrieved 2026-11-27 UTC | T2 | `3447a4581e561780fc35336004f0fc7e37132205c80add47ebac3f31b6a2192c` |
 
 ## Holidays
 
@@ -812,7 +812,15 @@ On 2026-06-19 and 2026-07-03 the `12:00 closed` event carries trade date 2026-06
 - **coverage edge, superseded by the 2028 capture.** At this window's capture CME's published future ran to 2028-01-01 and the table stopped at 2027-12-31. The 2026-11-03 capture added the three 2028 split windows (2028-01-17..18, 2028-02-21..22, 2028-04-13..14), so coverage now runs to 2028-04-14; trade date 2028-01-03 - the first trading day of 2028 - still lies in the unaudited span before the first 2028 window, so the crate has no holiday answer for it and the span refuses as a covered gap. 2028-01-01 itself is a Saturday on which CME publishes nothing, which is the ordinary Saturday answer.
 - **no T1 rendering.** No per-asset-class T1 rendering could be driven out of the operator page for any holiday in this window except Thanksgiving 2026, which was used to validate the service group by group. Every row here is T2.
 
-The byte-exact recapture of these relay captures is tracked in #385.
+CME's trading-hours service supplied direct HTTPS response bodies for all ten
+2026-11-03 relay requests on 2026-11-27 UTC, resolving
+[#385](https://github.com/SharurTrading/exchange-hours-rs/issues/385). The
+research store keeps the direct bodies under
+`cme-forward-2026-11-27/service/` and the original relay bodies under
+`cme-forward-2026-11-03/service/`. The five `CME-SVC-B` bodies match byte
+for byte. The five `CME-SVC` bodies have different digests. All ten parsed
+responses match after sorting the product array by product ID,
+including the original order and content of each product's session events.
 
 ### 2028
 

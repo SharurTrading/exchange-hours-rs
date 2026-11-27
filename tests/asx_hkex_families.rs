@@ -309,6 +309,45 @@ fn asx_holiday_rows_clip_and_delete_across_the_arrangements() {
 }
 
 #[test]
+fn asx_2027_new_year_reopens_with_the_monday_day_session() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::AsxSpi200);
+    let monday = date_opt(2027, 1, 4).expect("fixture");
+    assert!(matches!(
+        calendar.holiday_on(monday).map(Holiday::kind),
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
+    for instant in [
+        sydney(2027, 1, 3, 17, 5),
+        sydney(2027, 1, 3, 18, 0),
+        sydney(2027, 1, 4, 6, 0),
+        sydney(2027, 1, 4, 9, 39),
+    ] {
+        assert_eq!(
+            calendar.session_state(instant).expect("covered"),
+            SessionState::Closed
+        );
+    }
+    assert_eq!(
+        calendar
+            .session_state(sydney(2027, 1, 4, 9, 40))
+            .expect("queue"),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        calendar
+            .session_bounds(sydney(2027, 1, 4, 9, 50))
+            .expect("covered"),
+        Some((sydney(2027, 1, 4, 9, 50), sydney(2027, 1, 4, 16, 30)))
+    );
+    assert_eq!(
+        calendar
+            .trade_date(sydney(2027, 1, 4, 17, 10))
+            .expect("covered"),
+        Some(date_opt(2027, 1, 5).expect("fixture"))
+    );
+}
+
+#[test]
 fn asx_t24_2028_rows_answer_and_the_withheld_eves_refuse() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::AsxSpi200);
     let day = |month: u32, date: u32| date_opt(2028, month, date).expect("fixture");

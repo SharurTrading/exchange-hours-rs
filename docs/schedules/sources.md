@@ -295,7 +295,7 @@ per-record review before any exception can drive runtime.
 
 - **Official current/rulebook:** [ASX cash-market hours](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours) and ASX Operating Rules Procedures Appendix 4013.
 - **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [cash-market trading calendar](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar) page, whose per-year sheets govern the built-in rows for each year; re-checked monthly per LAW-WATCH.
-- **Notices/evidence:** [Service Release 15 notice](https://www.asxonline.com/public/notices/2025/may/0473.25.05.html) and its [marked procedure amendments](https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf).
+- **Notices/evidence:** [2026 ASX Trade year-end notice](https://www.asxonline.com/content/asxonline/public/notices/2026/october/1245.26.10.html), [Service Release 15 notice](https://www.asxonline.com/public/notices/2025/may/0473.25.05.html), and its [marked procedure amendments](https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf).
 
 <a id="apac-asx-24-derivatives"></a>
 
@@ -303,7 +303,7 @@ per-record review before any exception can drive runtime.
 
 - **Official current/rulebook:** the ASX [index-derivatives trading-hours page](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/index-derivatives) and the SPI 200 contract specification, whose two-column US-daylight grid and pre-open footnote state the family's normal week.
 - **Holiday calendar (watch list entry, added 2026-10-14 UTC):** the operator's [ASX 24 trading calendar](https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar) page, whose per-year tables govern the built-in rows for each year; re-checked monthly per LAW-WATCH.
-- **Notices/evidence:** the [SYCOM trading-hours PDF](https://web.archive.org/web/20101120044224/https://www.asx.com.au/products/derivatives/trading-hours-sycom.htm) and the captured calendar states 2010-2026 in the research store (`holidays/raw/asx24-2010-2027/`, `normal-weeks/asx-spi-2026-10-11/`).
+- **Notices/evidence:** [2026/2027 ASX 24 year-end notice](https://www.asxonline.com/content/asxonline/public/notices/2026/october/1246.26.10.html), the [SYCOM trading-hours PDF](https://web.archive.org/web/20101120044224/https://www.asx.com.au/products/derivatives/trading-hours-sycom.htm) and the captured calendar states 2010-2026 in the research store (`holidays/raw/asx24-2010-2027/`, `normal-weeks/asx-spi-2026-10-11/`).
 
 <a id="apac-tmx-australia"></a>
 

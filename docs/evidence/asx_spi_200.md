@@ -155,6 +155,25 @@ carry replacement blocks with the 17:00 open — and is never a revision.
 date inside the window was audited from its year's calendar, and a date
 without a row is audited normal)
 
+### 2026/2027 ASX 24 year-end reopening
+
+ASX 24 notice 1246.26.10 was published on 2026-10-30. Its attachment
+names the Australian ASX 24 market and all products for the 2027-01-04
+reopen at the commencement of the day session, expressly for trade date
+January 4. This omits the usual Sunday night session on 2027-01-03 and
+its queue and Monday morning tail. The day session retains its normal
+09:40–09:50 queue and 09:50–16:30 matching hours. Monday evening opens
+for trade date 2027-01-05.
+
+The attachment confirms the 14:30 cessation for index products on both
+2026-12-24 and 2026-12-31, the 2026-12-25, 2026-12-28 and 2027-01-01
+closures, and the 2026-12-29 day-session reopening. The live calendar's
+2026 and 2027 tables matched the October capture cell for cell on
+2026-11-27 UTC. The 2028 T24 PDF was byte-identical to the 2026-11-03
+capture. The notice and attachment were rechecked against ASX’s
+publication on 2026-11-27 UTC, before the 2027-01-03 confirm-by date. The captured bytes are under
+`holidays/raw/asx-year-end-2026-11-27/`.
+
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -175,6 +194,8 @@ without a row is audited normal)
 | `ASX24-LIVE-2023-12` | live calendar (2024 + 2023 tables) | <https://web.archive.org/web/20231211225115id_/https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | 2023-12-11T22:51:15Z | T1 | `2817e96d912def34697a37f29389c163a5ce9ef6efe3a04bd791326f21d6929a` |
 | `ASX24-LIVE-2025-03` | live calendar (2025 table) | <https://web.archive.org/web/20250316225953id_/https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | 2025-03-16T22:59:53Z | T1 | `464ac2136830bd8100b6b2713f75ce751ff5a652f86838cab441ad5ef6a5a1ba` |
 | `ASX24-LIVE-2026-10` | live calendar (2026 + 2027 tables) | <https://www.asx.com.au/markets/market-resources/asx-24-trading-calendar> | retrieved 2026-10-11 UTC | T1 | `2baa937bd806874d1618c65f07848d178bb9c1a51216c62090493b79d3d1832a` |
+| `ASX24-XMAS-NOTICE-2026` | 2026/2027 holiday notice | <https://www.asxonline.com/content/asxonline/public/notices/2026/october/1246.26.10.html> | published 2026-10-30, retrieved 2026-11-27 UTC | T1 | `99206bbbad5014acd2ef05a5da2e29192e255fae9162717c406960bbcf801d76` |
+| `ASX24-XMAS-2026` | 2026/2027 holiday timetable | <https://www.asxonline.com/content/dam/asxonline/public/notices/2026/october/asx-24-xmas-attachment.pdf> | published 2026-10-30, retrieved 2026-11-27 UTC | T1 | `39232b660bb66f208000eae3f958e1d1edd83557bba4b83687ca56d128af04d2` |
 | `ASX24-T24-2028` | T24 trading calendar 2028 | <https://www.asx.com.au/content/dam/asx/markets/market-resources/t24-trading-calendars/T24-trading-calendar2028.pdf> | retrieved 2026-11-03 UTC | T1 | `e21cdd745476dac2ee2b947ad07ae734ef9160b21bd3c6b4d85c6b26e547cd3a` |
 | `ASX-SYCOM-HOURS-2010` | SYCOM trading hours (night/day grid + pre-open footnote) | <https://web.archive.org/web/20101120044224id_/https://www.asx.com.au/products/derivatives/trading-hours-sycom.htm> | 2010-11-20T04:42:24Z | T1 | `de2497f634bcab792514d49e4518727b45ccd6c9d8f5f4378220b565b4d94e1c` |
 | `ASX-TRADE24-HOURS-2012` | ASX Trade24 trading hours (same two-column selector) | <https://web.archive.org/web/20120413123746id_/https://www.asx.com.au/products/derivatives/asx-trade24-trading-hours.htm> | 2012-04-13T12:37:46Z | T1 | `60a870279d22505199b4a2b104e1eefcaef149381f7bf34a4d99fe7fa90ddb89` |
@@ -527,6 +548,7 @@ diffs live beside the artifacts in the research store
 
 | 2027-01-01 | closed | — | `ASX24-LIVE-2026-10` | T1 | operator Closed/Non Trading Day (day and night sessions) |
 | 2027-01-02 | closed | — | `ASX24-LIVE-2026-10` | T1 | the operator closed the Friday evening's night session, whose trade date is the Saturday |
+| 2027-01-04 | replacement blocks | Order entry 09:40–09:50; Regular 09:50–16:30 | `ASX24-XMAS-2026` | T1 | Australian ASX 24 reopens at the start of its day session on trade date January 4 |
 | 2027-01-26 | early close | 08:00 | `ASX24-LIVE-2026-10` | T1 | Day Session Closed / Night Session to open at 5:10pm: the day session is removed and the morning night leg ends at its normal 08:00 close |
 | 2027-03-26 | replacement blocks | blocks orderentry(-1, 61200, 61800); regular(-1, 61800, 0) | `ASX24-LIVE-2026-10` | T1 | Day Before Good Friday: the night session opening on the eve ceased at midnight Sydney (operator row) and Good Friday itself is Closed/Non Trading Day, so the trade date runs that shortened evening leg and no day session |
 | 2027-03-27 | closed | — | `ASX24-LIVE-2026-10` | T1 | the operator closed the Friday evening's night session, whose trade date is the Saturday |

@@ -2408,6 +2408,54 @@ mod asx {
     }
 
     #[test]
+    fn year_end_2026_keeps_the_closing_auction_and_post_close_matching() {
+        use exchange_hours::SessionState;
+
+        let calendar = asx();
+        for date in [(2026, 12, 24), (2026, 12, 31)] {
+            let trade_date = day(date.0, date.1, date.2);
+            assert!(matches!(
+                calendar.holiday_on(trade_date).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+            for (time, expected) in [
+                ((7, 0, 0), SessionState::OpenExtended),
+                ((10, 0, 0), SessionState::OpenRegular),
+                ((13, 59, 59), SessionState::OpenRegular),
+                ((14, 0, 0), SessionState::OrderEntry),
+                ((14, 9, 59), SessionState::OrderEntry),
+                ((14, 10, 0), SessionState::OpenExtended),
+                ((14, 11, 0), SessionState::OpenExtended),
+                ((14, 21, 29), SessionState::OpenExtended),
+                ((14, 21, 30), SessionState::Closed),
+            ] {
+                assert_eq!(
+                    calendar.session_state(syd(date, time)).expect("covered"),
+                    expected,
+                    "{date:?} {time:?}"
+                );
+            }
+            assert_eq!(
+                calendar
+                    .session_bounds(syd(date, (14, 15, 0)))
+                    .expect("covered"),
+                Some((syd(date, (14, 10, 0)), syd(date, (14, 21, 30))))
+            );
+            assert_eq!(
+                calendar
+                    .trade_date(syd(date, (14, 21, 29)))
+                    .expect("covered"),
+                Some(trade_date)
+            );
+            assert!(
+                !calendar
+                    .is_accepting_orders(syd(date, (14, 21, 30)))
+                    .expect("covered")
+            );
+        }
+    }
+
+    #[test]
     fn an_ordinary_weekday_answers_and_closes_end_exclusively() {
         let calendar = asx();
         assert_eq!(calendar.holiday_on(day(2025, 7, 15)), None);
@@ -2473,8 +2521,8 @@ mod asx {
         assert_eq!(
             rows.len(),
             174,
-            "121 pre-2025 closures + 24 pre-2025 14:10 early closes, 23 closures \
-             and six 14:10 early closes across 2025-2027"
+            "121 pre-2025 closures + 24 pre-2025 early closes, 23 closures and \
+             six half days across 2025-2027"
         );
         // 2010-2024, read off each year's own operator sheet.
         assert_eq!(tally(&rows, 2010), (8, 2, 0), "2010");
@@ -2527,8 +2575,8 @@ mod asx {
         );
         assert_eq!(
             tally(&rows, 2026),
-            (8, 2, 0),
-            "2026: eight closures (the Saturday ANZAC included), two half days"
+            (8, 0, 2),
+            "2026: eight closures (including Saturday ANZAC), two replacement half days"
         );
         assert_eq!(
             tally(&rows, 2027),
@@ -2559,7 +2607,6 @@ mod asx {
                                 | 2021
                                 | 2024
                                 | 2025
-                                | 2026
                                 | 2027,
                             12,
                             24 | 31

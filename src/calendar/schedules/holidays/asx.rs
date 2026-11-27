@@ -1,56 +1,23 @@
 // SPDX-License-Identifier: MIT-0
 
-//! ASX cash-market holiday rows, 2010-2024 backfilled alongside the
-//! operator's published 2025-2027 sheets.
-//!
-//! Keyed by the crate's venue-local trade date in `Australia/Sydney` (design
-//! memo D1). ASX sessions do not wrap past local midnight, so every holiday
-//! row lands on its own civil date. The operator has published one annual
-//! `Trading calendar` sheet per year across the whole window, so every row is
-//! read from that year's own operator sheet, per era:
-//!
-//! - **2010-2011**, the operator's `trading_calendar/asx/<year>` pages;
-//! - **2012**, the operator's `trading_services/asx-trading-calendar-2012`
-//!   page (the operator's only surviving capture of the 2012 sheet, published
-//!   in-year in advance);
-//! - **2013-2019**, the operator's `about/asx-trading-calendar-<year>` pages;
-//! - **2020-2022**, the operator's `www2.asx.com.au` cash-market
-//!   `trading-calendar` page, whose year selector server-renders each sheet;
-//! - **2023-2027**, the same page on `www.asx.com.au` (the 2023 and 2024
-//!   rows) and the live page (2025-2027).
-//!
-//! Every pre-2025 artifact is a Wayback `id_` replay of the operator's own
-//! page — verbatim bytes of an operator statement, so T1
-//! (LAW-PUBLIC-SOURCES). The per-row derivation is recorded in
-//! [`docs/evidence/asx.md`](../../../../../docs/evidence/asx.md).
-//!
-//! The sheets' `Trading Day` column is the venue's own answer, and only its
-//! `CLOSED` and `CLOSE EARLY` rows ship: a row that closes individual states
-//! while printing `OPEN` (the Tasmanian cups, the WA and QLD March and
-//! October days, the Melbourne Cup) is a settlement fact, not a market
-//! closure. `CLOSE EARLY` states its own instant through the sheet's
-//! footnote, `Normal trading ceases at 14:10 (Sydney time)`, so the row
-//! clips the envelope at 14:10 and the 16:10-16:21:30 Post Close block is
-//! gone with it. Three sheets print no early close at all — 2017 has no
-//! `Last Business Day` rows, and the 2022 and 2023 sheets print both
-//! year-end rows `OPEN` — so those years ship none, rather than carrying the
-//! neighbouring years' pattern. Weekend `ANZAC Day` rows (2015 Saturday,
-//! 2020 Saturday, 2021 Sunday) restate closures the Mon-Fri normal week has
-//! already made and are shipped as printed, like the 2026 Saturday row.
+//! ASX cash-market holiday rows, audited 2010-01-01 through 2027-12-31.
+//! Evidence: `docs/evidence/asx.md`.
+
+use crate::calendar::ExceptionBlock;
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
 
-/// ASX's built-in holiday rows and the window they were audited over.
-///
-/// Every date inside the window with no row is audited normal: each sheet
-/// names every closure and half day it observes for its year, the `OPEN`
-/// rows it prints ship no row, and every printed date ships. 2010-2024 rows
-/// cite that year's own operator sheet; 2025 rows cite the operator's page
-/// as replayed 2025-04-16 (`ASX-CAL-2025`); 2026 and 2027 rows cite the live
-/// page (`ASX-CAL-LIVE`), which renders both years' sheets.
+static YEAR_END_2026: [ExceptionBlock; 5] = [
+    ExceptionBlock::extended(0, 7 * 3_600, 9 * 3_600 + 59 * 60),
+    ExceptionBlock::extended(0, 9 * 3_600 + 59 * 60, 10 * 3_600),
+    ExceptionBlock::regular(0, 10 * 3_600, 14 * 3_600),
+    ExceptionBlock::order_entry(0, 14 * 3_600, 14 * 3_600 + 10 * 60),
+    ExceptionBlock::extended(0, 14 * 3_600 + 10 * 60, 14 * 3_600 + 21 * 60 + 30),
+];
+
 // Evidence: docs/evidence/asx.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
@@ -467,17 +434,15 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 4, 25, Closed, T1, "ASX-CAL-LIVE"),
         // 2026-06-08 - T1 - ASX-CAL-LIVE - King's Birthday, `CLOSED`.
         (2026, 6, 8, Closed, T1, "ASX-CAL-LIVE"),
-        // 2026-12-24 - T1 - ASX-CAL-LIVE - Last Business day before Christmas
-        // Day, `CLOSE EARLY` at 14:10.
-        (2026, 12, 24, early_close(14 * 3_600 + 10 * 60), T1, "ASX-CAL-LIVE"),
+        // 2026-12-24 - T1 - ASX-TRADE-XMAS-2026 - abbreviated Christmas Eve phases
+        (2026, 12, 24, ReplacementBlocks(&YEAR_END_2026), T1, "ASX-TRADE-XMAS-2026"),
         // 2026-12-25 - T1 - ASX-CAL-LIVE - Christmas Day, `CLOSED`.
         (2026, 12, 25, Closed, T1, "ASX-CAL-LIVE"),
         // 2026-12-28 - T1 - ASX-CAL-LIVE - Boxing Day, `CLOSED` (Monday, the
         // sheet's own date for the Saturday 26 December holiday).
         (2026, 12, 28, Closed, T1, "ASX-CAL-LIVE"),
-        // 2026-12-31 - T1 - ASX-CAL-LIVE - Last Business day of the Year,
-        // `CLOSE EARLY` at 14:10.
-        (2026, 12, 31, early_close(14 * 3_600 + 10 * 60), T1, "ASX-CAL-LIVE"),
+        // 2026-12-31 - T1 - ASX-TRADE-XMAS-2026 - abbreviated New Year's Eve phases
+        (2026, 12, 31, ReplacementBlocks(&YEAR_END_2026), T1, "ASX-TRADE-XMAS-2026"),
         // 2027-01-01 - T1 - ASX-CAL-LIVE - New Year's Day, `CLOSED`.
         (2027, 1, 1, Closed, T1, "ASX-CAL-LIVE"),
         // 2027-01-26 - T1 - ASX-CAL-LIVE - Australia Day, `CLOSED`.

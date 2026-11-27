@@ -24,6 +24,10 @@
 - Apply BME’s published 2026 cash-market half-day phases on December 24 and 31,
   including Trading-at-Last until 14:10 Madrid time.
 
+- Keep ASX cash closing auctions and post-close matching on the 2026
+  year-end half days. ASX SPI 200 reopens with its day session on
+  trade date 2027-01-04.
+
 ## [2.0.0] - 2026-11-27
 
 ### Changed

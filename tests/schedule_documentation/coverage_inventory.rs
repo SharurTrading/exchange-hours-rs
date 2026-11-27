@@ -559,7 +559,7 @@ fn the_ice_us_module_shape_prose_derives_from_the_shipped_tables() {
     );
     assert!(
         note.contains(&format!(
-            "{module_rows} rows where the served identity answers for {venue_rows} dates"
+            "{module_rows} rows where the served identity has {venue_rows} holiday rows"
         )),
         "the routed-table note must state the module total ({module_rows}) and the served \
          identity's own count ({venue_rows})"
@@ -876,7 +876,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // 43 since the 2026-10-23 Christmas notice (42 at HEAD): the notice
         // resolved the 2026-12-28 `open1` withholding onto family rows and
         // shipped 2026-12-24 as one new disagreement date to the intersection.
-        ("iceus", 44),
+        ("iceus", 70),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.

@@ -13,6 +13,46 @@ use super::{
     HolidayTable, holidays,
 };
 
+// ICE PCPO notice 20180920 — prior business day's queue, then ordinary pre-open and matching.
+static COTTON_HOLIDAY_WEEKEND_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::order_entry(-4, 14 * 3_600 + 50 * 60, 18 * 3_600),
+    ExceptionBlock::order_entry(-1, 19 * 3_600 + 30 * 60, 21 * 3_600),
+    ExceptionBlock::regular(-1, 21 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
+// ICE PCPO notice 20180920 — one midweek holiday between the queue and its trade date.
+static COTTON_MIDWEEK_REOPEN_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::order_entry(-2, 14 * 3_600 + 50 * 60, 18 * 3_600),
+    ExceptionBlock::order_entry(-1, 19 * 3_600 + 30 * 60, 21 * 3_600),
+    ExceptionBlock::regular(-1, 21 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
+// IFUS-NOTICE-2025-INDEPENDENCE / IFUS-NOTICE-2026-INDEPENDENCE — Monday late open.
+static COTTON_INDEPENDENCE_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-4, 14 * 3_600 + 50 * 60, 18 * 3_600),
+    ExceptionBlock::regular(0, 8 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
+// IFUS-NOTICE-2025-THANKSGIVING / IFUS-NOTICE-2026-THANKSGIVING — Friday matching.
+static COTTON_THANKSGIVING_FRIDAY: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-2, 14 * 3_600 + 50 * 60, 18 * 3_600),
+    ExceptionBlock::regular(0, 8 * 3_600, 13 * 3_600 + 30 * 60),
+];
+
+// IFUS-NOTICE-2025-CHRISTMAS — Wednesday’s shortened queue feeds Friday matching.
+static COTTON_CHRISTMAS_2025_REOPEN: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-2, 13 * 3_600 + 35 * 60, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 7 * 3_600 + 30 * 60, 14 * 3_600 + 20 * 60),
+];
+
+// Thanksgiving 2025 and 2026 — the Friday PCPO and Sunday regular pre-open feed Monday.
+// Evidence: docs/evidence/ice_us_cotton.md
+static COTTON_AFTER_THANKSGIVING_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::order_entry(-3, 14 * 3_600, 15 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(-1, 19 * 3_600 + 30 * 60, 21 * 3_600),
+    ExceptionBlock::regular(-1, 21 * 3_600, 14 * 3_600 + 20 * 60),
+];
+
 // 2026-12-28 — T1 — IFUS-NOTICE-2026-CHRISTMAS — the shortened Christmas-eve
 // post-close queues feed the following open session on Monday. Each block set
 // states that queue and the complete Monday matching session.
@@ -32,15 +72,6 @@ static COFFEE_COCOA_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
 static COTTON_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 2] = [
     ExceptionBlock::order_entry(-4, 13 * 3_600 + 35 * 60, 15 * 3_600 + 30 * 60),
     ExceptionBlock::regular(0, 8 * 3_600, 14 * 3_600 + 20 * 60),
-];
-
-// 2026-12-29 — T1 — IFUS-NOTICE-2026-CHRISTMAS — restate the next normal
-// Cotton day so its raw Friday queue cannot survive the Christmas closure.
-// Evidence: docs/evidence/ice_us_cotton.md
-static COTTON_AFTER_CHRISTMAS_REOPEN_BLOCKS: [ExceptionBlock; 3] = [
-    ExceptionBlock::order_entry(-1, 14 * 3_600 + 50 * 60, 18 * 3_600),
-    ExceptionBlock::order_entry(-1, 19 * 3_600 + 30 * 60, 21 * 3_600),
-    ExceptionBlock::regular(-1, 21 * 3_600, 14 * 3_600 + 20 * 60),
 ];
 
 // Evidence: docs/evidence/ice_us_orange_juice.md
@@ -462,35 +493,50 @@ pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
     ],
 };
 
-/// Cotton No. 2: the softs calendar group, plus its own 2026-07-06 late open.
+/// Cotton No. 2 holiday matching sessions and prior-business-day order-entry queues.
 // Evidence: docs/evidence/ice_us_cotton.md
 pub(crate) static COTTON: &HolidayTable = holidays! {
     coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day.
         (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-02 - T1 - IFUS-NOTICE-2025-NEWYEAR - prior business day’s post-close queue.
+        (2025, 1, 2, ReplacementBlocks(&COTTON_MIDWEEK_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2025-NEWYEAR"),
         // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - Martin Luther King Day.
         (2025, 1, 20, Closed, T1, "IFUS-NOTICE-2025-MLK"),
+        // 2025-01-21 - T1 - IFUS-NOTICE-2025-MLK - prior business day’s post-close queue.
+        (2025, 1, 21, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2025-MLK"),
         // 2025-02-17 - T1 - IFUS-NOTICE-2025-PRESIDENTS - Presidents Day.
         (2025, 2, 17, Closed, T1, "IFUS-NOTICE-2025-PRESIDENTS"),
+        // 2025-02-18 - T1 - IFUS-NOTICE-2025-PRESIDENTS - prior business day’s post-close queue.
+        (2025, 2, 18, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2025-PRESIDENTS"),
         // 2025-04-18 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Good Friday.
         (2025, 4, 18, Closed, T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
+        // 2025-04-21 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - prior business day’s post-close queue.
+        (2025, 4, 21, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
         // 2025-05-26 - T1 - IFUS-NOTICE-2025-MEMORIAL - Memorial Day.
         (2025, 5, 26, Closed, T1, "IFUS-NOTICE-2025-MEMORIAL"),
+        // 2025-05-27 - T1 - IFUS-NOTICE-2025-MEMORIAL - prior business day’s post-close queue.
+        (2025, 5, 27, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2025-MEMORIAL"),
         // 2025-06-19 - T1 - IFUS-NOTICE-2025-JUNETEENTH - Juneteenth.
         (2025, 6, 19, Closed, T1, "IFUS-NOTICE-2025-JUNETEENTH"),
+        // 2025-06-20 - T1 - IFUS-NOTICE-2025-JUNETEENTH - prior business day’s post-close queue.
+        (2025, 6, 20, ReplacementBlocks(&COTTON_MIDWEEK_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2025-JUNETEENTH"),
         // 2025-07-04 - T1 - IFUS-CAL-2025 - Independence Day.
         (2025, 7, 4, Closed, T1, "IFUS-CAL-2025"),
-        // 2025-07-07 - T1 - IFUS-NOTICE-2025-INDEPENDENCE - late open at 08:00
-        // NY for Cotton only; regular open times for every other contract.
-        (2025, 7, 7, late_open(8 * 3_600), T1, "IFUS-NOTICE-2025-INDEPENDENCE"),
+        // 2025-07-07 - T1 - IFUS-NOTICE-2025-INDEPENDENCE - prior business day’s post-close queue.
+        (2025, 7, 7, ReplacementBlocks(&COTTON_INDEPENDENCE_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2025-INDEPENDENCE"),
         // 2025-09-01 - T1 - IFUS-NOTICE-2025-LABORDAY - Labor Day.
         (2025, 9, 1, Closed, T1, "IFUS-NOTICE-2025-LABORDAY"),
+        // 2025-09-02 - T1 - IFUS-NOTICE-2025-LABORDAY - prior business day’s post-close queue.
+        (2025, 9, 2, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2025-LABORDAY"),
         // 2025-11-27 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Thanksgiving Day.
         (2025, 11, 27, Closed, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
         // 2025-11-28 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Cotton late open
         // at 08:00 NY and early close at 13:30 NY.
-        (2025, 11, 28, late_open_and_early_close(8 * 3_600, 13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-THANKSGIVING"),
+        (2025, 11, 28, ReplacementBlocks(&COTTON_THANKSGIVING_FRIDAY), T1, "IFUS-NOTICE-2025-THANKSGIVING"),
+        // 2025-12-01 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Friday post-close queue for Monday.
+        (2025, 12, 1, ReplacementBlocks(&COTTON_AFTER_THANKSGIVING_BLOCKS), T1, "IFUS-NOTICE-2025-THANKSGIVING"),
         // 2025-12-24 - T1 - IFUS-NOTICE-2025-CHRISTMAS - early close at 1:05
         // pm NY; the notice also starts this eve's Post-Close Pre-Open 30
         // minutes after the close and ends it at 3:30 pm, an order-entry
@@ -500,33 +546,48 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
         (2025, 12, 25, Closed, T1, "IFUS-CAL-2025"),
         // 2025-12-26 - T1 - IFUS-NOTICE-2025-CHRISTMAS - late open at 7:30 am
         // NY; regular close times for all products.
-        (2025, 12, 26, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-CHRISTMAS"),
+        (2025, 12, 26, ReplacementBlocks(&COTTON_CHRISTMAS_2025_REOPEN), T1, "IFUS-NOTICE-2025-CHRISTMAS"),
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-01-02 - T1 - IFUS-NOTICE-2026-NEWYEAR - prior business day’s post-close queue.
+        (2026, 1, 2, ReplacementBlocks(&COTTON_MIDWEEK_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-NEWYEAR"),
         // 2026-01-19 - T1 - IFUS-CAL-2026 - Martin Luther King Day.
         (2026, 1, 19, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-01-20 - T1 - IFUS-NOTICE-2026-MLK - prior business day’s post-close queue.
+        (2026, 1, 20, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-MLK"),
         // 2026-02-16 - T1 - IFUS-CAL-2026 - Presidents Day.
         (2026, 2, 16, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-02-17 - T1 - IFUS-NOTICE-2026-PRESIDENTS - prior business day’s post-close queue.
+        (2026, 2, 17, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-PRESIDENTS"),
         // 2026-04-03 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - Good Friday.
         (2026, 4, 3, Closed, T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
+        // 2026-04-06 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - prior business day’s post-close queue.
+        (2026, 4, 6, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
         // 2026-05-25 - T1 - IFUS-NOTICE-2026-MEMORIAL - Memorial Day.
         (2026, 5, 25, Closed, T1, "IFUS-NOTICE-2026-MEMORIAL"),
+        // 2026-05-26 - T1 - IFUS-NOTICE-2026-MEMORIAL - prior business day’s post-close queue.
+        (2026, 5, 26, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-MEMORIAL"),
         // 2026-06-19 - T1 - IFUS-NOTICE-2026-JUNETEENTH - Juneteenth.
         (2026, 6, 19, Closed, T1, "IFUS-NOTICE-2026-JUNETEENTH"),
+        // 2026-06-22 - T1 - IFUS-NOTICE-2026-JUNETEENTH - prior business day’s post-close queue.
+        (2026, 6, 22, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-JUNETEENTH"),
         // 2026-07-03 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - Independence Day observed.
         (2026, 7, 3, Closed, T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
-        // 2026-07-06 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - late open at 08:00
-        // NY for Cotton only; regular open times for every other contract.
-        (2026, 7, 6, late_open(8 * 3_600), T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
+        // 2026-07-06 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - prior business day’s post-close queue.
+        (2026, 7, 6, ReplacementBlocks(&COTTON_INDEPENDENCE_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
         // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - Labor Day.
         (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
+        // 2026-09-08 - T1 - IFUS-NOTICE-2026-LABORDAY - prior business day’s post-close queue.
+        (2026, 9, 8, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-NOTICE-2026-LABORDAY"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
         // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - late open at
         // 08:00 NY and early close at 13:30 NY; the notice also ends this
         // Friday's post-close pre-open at 15:30 NY, an order-entry instant
         // the evidence file records beside this row.
-        (2026, 11, 27, late_open_and_early_close(8 * 3_600, 13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        (2026, 11, 27, ReplacementBlocks(&COTTON_THANKSGIVING_FRIDAY), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-11-30 - T1 - IFUS-NOTICE-2026-THANKSGIVING - Friday post-close queue for Monday.
+        (2026, 11, 30, ReplacementBlocks(&COTTON_AFTER_THANKSGIVING_BLOCKS), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - early close at
         // 1:05 pm NY, shared with Coffee, Cocoa and FCOJ; the notice also
         // starts this eve's Post-Close Pre-Open 30 minutes after the close
@@ -538,29 +599,54 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
         // 2026-12-28 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Monday matching and
         // the shortened Thursday queue, dated by the following session it feeds.
         (2026, 12, 28, ReplacementBlocks(&COTTON_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
-        // 2026-12-29 - T1 - IFUS-NOTICE-2026-CHRISTMAS - ordinary Tuesday
-        // blocks remove the raw Christmas-Friday queue without losing Monday's wrap.
-        (2026, 12, 29, ReplacementBlocks(&COTTON_AFTER_CHRISTMAS_REOPEN_BLOCKS), T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-04 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 1, 4, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
         (2027, 1, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-19 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 1, 19, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-02-15 - T1 - IFUS-CAL-2027 - Presidents Day.
         (2027, 2, 15, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-02-16 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 2, 16, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-03-26 - T1 - IFUS-CAL-2027 - Good Friday.
         (2027, 3, 26, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-03-29 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 3, 29, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-05-31 - T1 - IFUS-CAL-2027 - Memorial Day.
         (2027, 5, 31, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-06-01 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 6, 1, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-06-18 - T1 - IFUS-CAL-2027 - Juneteenth.
         (2027, 6, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-06-21 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 6, 21, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-07-05 - T1 - IFUS-CAL-2027 - Independence Day observed.
         (2027, 7, 5, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-07-06 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 7, 6, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
         // 2027-09-06 - T1 - IFUS-CAL-2027 - Labor Day.
         (2027, 9, 6, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-09-07 - T1 - IFUS-CAL-2027 - prior business day’s post-close queue.
+        (2027, 9, 7, ReplacementBlocks(&COTTON_HOLIDAY_WEEKEND_BLOCKS), T1, "IFUS-CAL-2027"),
+        // 2027-11-24 - T1 - IFUS-CAL-2027 - Thanksgiving post-close queue timetable pending.
+        (2027, 11, 24, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-11-25 - T1 - IFUS-CAL-2027 - Thanksgiving Day.
         (2027, 11, 25, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-11-26 - T1 - IFUS-CAL-2027 - Thanksgiving Friday timetable pending.
+        (2027, 11, 26, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-11-29 - T1 - IFUS-CAL-2027 - prior Cotton post-close queue timetable pending.
+        (2027, 11, 29, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-12-23 - T1 - IFUS-CAL-2027 - Christmas post-close queue timetable pending.
+        (2027, 12, 23, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-12-24 - T1 - IFUS-CAL-2027 - Christmas Day observed.
         (2027, 12, 24, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-12-27 - T1 - IFUS-CAL-2027 - Boxing Day reopening time pending.
+        (2027, 12, 27, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-12-28 - T1 - IFUS-CAL-2027 - prior Cotton post-close queue timetable pending.
+        (2027, 12, 28, Unsourced, T1, "IFUS-CAL-2027"),
     ],
 };
 
@@ -788,6 +874,8 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
     rows: [
         // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day, every family closed.
         (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-02 - T1 - IFUS-NOTICE-2025-NEWYEAR - prior business day’s post-close queue.
+        (2025, 1, 2, Unsourced, T1, "IFUS-NOTICE-2025-NEWYEAR"),
         // 2025-01-09 - T1 - IFUS-NOTICE-2025-MOMENT-OF-SILENCE - FANG+ ends at
         // 09:30 NY, the softs and the dollar index keep regular hours, so the
         // venue states no instant.
@@ -795,18 +883,26 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - softs closed, FANG+ early,
         // the dollar index regular.
         (2025, 1, 20, Unsourced, T1, "IFUS-NOTICE-2025-MLK"),
+        // 2025-01-21 - T1 - IFUS-NOTICE-2025-MLK - Cotton carries its prior business day’s queue.
+        (2025, 1, 21, Unsourced, T1, "IFUS-NOTICE-2025-MLK"),
         // 2025-02-17 - T1 - IFUS-NOTICE-2025-PRESIDENTS - softs closed, FANG+ early, the dollar index regular.
         (2025, 2, 17, Unsourced, T1, "IFUS-NOTICE-2025-PRESIDENTS"),
+        // 2025-02-18 - T1 - IFUS-NOTICE-2025-PRESIDENTS - Cotton carries its prior business day’s queue.
+        (2025, 2, 18, Unsourced, T1, "IFUS-NOTICE-2025-PRESIDENTS"),
         // 2025-04-18 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Good Friday, every family closed.
         (2025, 4, 18, Closed, T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
-        // 2025-04-21 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - three softs late, the rest regular.
+        // 2025-04-21 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - three softs late; Cotton carries Thursday’s queue.
         (2025, 4, 21, Unsourced, T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
         // 2025-05-05 - T1 - IFUS-NOTICE-2025-LBMA-MAY05 - three softs late, the rest regular.
         (2025, 5, 5, Unsourced, T1, "IFUS-NOTICE-2025-LBMA-MAY05"),
         // 2025-05-26 - T1 - IFUS-NOTICE-2025-MEMORIAL - softs closed, FANG+ early, the dollar index regular.
         (2025, 5, 26, Unsourced, T1, "IFUS-NOTICE-2025-MEMORIAL"),
+        // 2025-05-27 - T1 - IFUS-NOTICE-2025-MEMORIAL - Cotton carries its prior business day’s queue.
+        (2025, 5, 27, Unsourced, T1, "IFUS-NOTICE-2025-MEMORIAL"),
         // 2025-06-19 - T1 - IFUS-NOTICE-2025-JUNETEENTH - softs closed, FANG+ early, the dollar index regular.
         (2025, 6, 19, Unsourced, T1, "IFUS-NOTICE-2025-JUNETEENTH"),
+        // 2025-06-20 - T1 - IFUS-NOTICE-2025-JUNETEENTH - prior business day’s post-close queue.
+        (2025, 6, 20, Unsourced, T1, "IFUS-NOTICE-2025-JUNETEENTH"),
         // 2025-07-03 - T1 - IFUS-NOTICE-2025-INDEPENDENCE - FANG+ early 13:15,
         // every other family regular.
         (2025, 7, 3, Unsourced, T1, "IFUS-NOTICE-2025-INDEPENDENCE"),
@@ -821,12 +917,16 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // 2025-09-01 - T1 - IFUS-NOTICE-2025-LABORDAY - softs closed, FANG+ early,
         // the dollar index regular.
         (2025, 9, 1, Unsourced, T1, "IFUS-NOTICE-2025-LABORDAY"),
+        // 2025-09-02 - T1 - IFUS-NOTICE-2025-LABORDAY - Cotton carries its prior business day’s queue.
+        (2025, 9, 2, Unsourced, T1, "IFUS-NOTICE-2025-LABORDAY"),
         // 2025-11-27 - T1 - IFUS-NOTICE-2025-THANKSGIVING - softs closed, FANG+ 13:00,
         // the dollar index 13:15.
         (2025, 11, 27, Unsourced, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
         // 2025-11-28 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Cotton late and early,
         // FCOJ early, the index families early at their own instants.
         (2025, 11, 28, Unsourced, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
+        // 2025-12-01 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Friday post-close queue for Monday.
+        (2025, 12, 1, Unsourced, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
         // 2025-12-24 - T1 - IFUS-NOTICE-2025-CHRISTMAS - Cotton, Coffee, Cocoa
         // and FCOJ early at 13:05, Sugar 11/16 regular, FANG+ 13:15, the
         // dollar index 13:45.
@@ -839,21 +939,31 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         (2025, 12, 26, Unsourced, T1, "IFUS-NOTICE-2025-CHRISTMAS"),
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day, every family closed.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-01-02 - T1 - IFUS-NOTICE-2026-NEWYEAR - prior business day’s post-close queue.
+        (2026, 1, 2, Unsourced, T1, "IFUS-NOTICE-2026-NEWYEAR"),
         // 2026-01-19 - T1 - IFUS-NOTICE-2026-MLK - softs closed, FANG+ early
         // 13:00, the dollar index regular.
         (2026, 1, 19, Unsourced, T1, "IFUS-NOTICE-2026-MLK"),
+        // 2026-01-20 - T1 - IFUS-NOTICE-2026-MLK - Cotton carries its prior business day’s queue.
+        (2026, 1, 20, Unsourced, T1, "IFUS-NOTICE-2026-MLK"),
         // 2026-02-16 - T1 - IFUS-NOTICE-2026-PRESIDENTS - softs and Canola
         // closed, FANG+ early 13:00, the dollar index regular.
         (2026, 2, 16, Unsourced, T1, "IFUS-NOTICE-2026-PRESIDENTS"),
+        // 2026-02-17 - T1 - IFUS-NOTICE-2026-PRESIDENTS - Cotton carries its prior business day’s queue.
+        (2026, 2, 17, Unsourced, T1, "IFUS-NOTICE-2026-PRESIDENTS"),
         // 2026-04-03 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - softs closed, index
         // families on a late open and an early close.
         (2026, 4, 3, Unsourced, T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
-        // 2026-04-06 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - three softs late, the rest regular.
+        // 2026-04-06 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - three softs late; Cotton carries Thursday’s queue.
         (2026, 4, 6, Unsourced, T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
         // 2026-05-25 - T1 - IFUS-NOTICE-2026-MEMORIAL - softs closed, index families early.
         (2026, 5, 25, Unsourced, T1, "IFUS-NOTICE-2026-MEMORIAL"),
+        // 2026-05-26 - T1 - IFUS-NOTICE-2026-MEMORIAL - Cotton carries its prior business day’s queue.
+        (2026, 5, 26, Unsourced, T1, "IFUS-NOTICE-2026-MEMORIAL"),
         // 2026-06-19 - T1 - IFUS-NOTICE-2026-JUNETEENTH - softs closed, index families early.
         (2026, 6, 19, Unsourced, T1, "IFUS-NOTICE-2026-JUNETEENTH"),
+        // 2026-06-22 - T1 - IFUS-NOTICE-2026-JUNETEENTH - Cotton carries its prior business day’s queue.
+        (2026, 6, 22, Unsourced, T1, "IFUS-NOTICE-2026-JUNETEENTH"),
         // 2026-07-03 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - softs closed, index families early.
         (2026, 7, 3, Unsourced, T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
         // 2026-07-06 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - Cotton late, the rest regular.
@@ -861,6 +971,8 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - softs closed, FANG+ early,
         // the dollar index regular.
         (2026, 9, 7, Unsourced, T1, "IFUS-NOTICE-2026-LABORDAY"),
+        // 2026-09-08 - T1 - IFUS-NOTICE-2026-LABORDAY - Cotton carries its prior business day’s queue.
+        (2026, 9, 8, Unsourced, T1, "IFUS-NOTICE-2026-LABORDAY"),
         // 2026-10-26 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open
         // late at three different instants, the rest regular.
         (2026, 10, 26, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
@@ -879,6 +991,8 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // early, FCOJ early, the softs regular, the index families early at
         // their own instants.
         (2026, 11, 27, Unsourced, T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-11-30 - T1 - IFUS-NOTICE-2026-THANKSGIVING - Friday post-close queue for Monday.
+        (2026, 11, 30, Unsourced, T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-24 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Coffee, Cotton,
         // Cocoa and FCOJ early at 13:05, Sugar 11/16 regular, FANG+ and the
         // dollar index early at 13:15.
@@ -889,30 +1003,53 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // Cotton and Sugar 11 open late at 08:00, FCOJ, Sugar 16 and the
         // index families regular.
         (2026, 12, 28, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
-        // 2026-12-29 - T1 - IFUS-NOTICE-2026-CHRISTMAS - Cotton carries the
-        // replacement removing its raw Christmas-Friday queue; other families do not.
-        (2026, 12, 29, Unsourced, T1, "IFUS-NOTICE-2026-CHRISTMAS"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day, every family closed.
         (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-04 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 1, 4, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-01-18 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 1, 18, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-01-19 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 1, 19, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-02-15 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 2, 15, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-02-16 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 2, 16, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-03-26 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 3, 26, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-03-29 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 3, 29, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-05-31 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 5, 31, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-06-01 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 6, 1, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-06-18 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 6, 18, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-06-21 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 6, 21, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-07-05 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 7, 5, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-07-06 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 7, 6, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-09-06 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 9, 6, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-09-07 - T1 - IFUS-CAL-2027 - Cotton carries its prior business day’s queue.
+        (2027, 9, 7, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-11-24 - T1 - IFUS-CAL-2027 - Thanksgiving post-close queue timetable pending.
+        (2027, 11, 24, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-11-25 - T1 - IFUS-CAL-2027 - softs closed, index families `open1`.
         (2027, 11, 25, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-11-26 - T1 - IFUS-CAL-2027 - Thanksgiving Friday timetable pending.
+        (2027, 11, 26, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-11-29 - T1 - IFUS-CAL-2027 - prior Cotton post-close queue timetable pending.
+        (2027, 11, 29, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-12-23 - T1 - IFUS-CAL-2027 - Christmas post-close queue timetable pending.
+        (2027, 12, 23, Unsourced, T1, "IFUS-CAL-2027"),
         // 2027-12-24 - T1 - IFUS-CAL-2027 - Christmas observed, every family closed.
         (2027, 12, 24, Closed, T1, "IFUS-CAL-2027"),
         // 2027-12-27 - T1 - IFUS-CAL-2027 - softs regular, index families `open1`.
         (2027, 12, 27, Unsourced, T1, "IFUS-CAL-2027"),
+        // 2027-12-28 - T1 - IFUS-CAL-2027 - prior Cotton post-close queue timetable pending.
+        (2027, 12, 28, Unsourced, T1, "IFUS-CAL-2027"),
     ],
 };

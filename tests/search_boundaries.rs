@@ -224,15 +224,15 @@ fn a_proven_midnight_open_does_not_read_the_following_unaudited_opening_day() {
 #[test]
 fn a_late_open_masked_by_an_explicit_closure_cannot_refuse_the_forward_search() {
     let calendar = ExchangeCalendar::new(Exchange::Iceus);
-    let trade_date = date(2025, 1, 22);
+    let trade_date = date(2025, 1, 23);
     let records = [SessionExceptionRecord::closed(trade_date)];
     let exceptions =
         StaticSessionExceptions::new(calendar.source(), trade_date, trade_date, &records).unwrap();
     let overrides = [DayOverride::late_open(trade_date, 8 * 3_600).unwrap()];
     let policy = StaticDayPolicy::new(&overrides).unwrap();
     let closed = calendar.with_session_exceptions(&exceptions).unwrap();
-    let instant = at("2025-01-22T05:00Z");
-    let expected = Ok(Some((at("2025-01-23T01:00Z"), at("2025-01-23T23:00Z"))));
+    let instant = at("2025-01-23T05:00Z");
+    let expected = Ok(Some((at("2025-01-24T01:00Z"), at("2025-01-24T23:00Z"))));
 
     assert_eq!(closed.next_session_after(instant), expected);
     assert_eq!(
@@ -264,16 +264,16 @@ fn an_evening_late_open_does_not_require_the_withheld_preceding_holiday() {
 #[test]
 fn an_actual_morning_shift_still_requires_its_withheld_history() {
     let calendar = ExchangeCalendar::new(Exchange::Iceus);
-    let day = date(2025, 1, 22);
+    let day = date(2025, 1, 23);
     let records = [DayOverride::late_open(day, 8 * 3_600).unwrap()];
     let policy = StaticDayPolicy::new(&records).unwrap();
-    let instant = at("2025-01-22T05:00Z");
+    let instant = at("2025-01-23T05:00Z");
     assert!(matches!(
         calendar.with_day_policy(&policy).next_session_after(instant),
         Err(error) if matches!(
             error.kind(),
             exchange_hours::CalendarQueryErrorKind::UnresolvedGap { date: refused, .. }
-                if refused == date(2025, 1, 20)
+                if refused == date(2025, 1, 21)
         )
     ));
     assert_eq!(
@@ -281,6 +281,6 @@ fn an_actual_morning_shift_still_requires_its_withheld_history() {
             .with_last_known_week()
             .with_day_policy(&policy)
             .next_session_after(instant),
-        Ok(Some((at("2025-01-22T13:00Z"), at("2025-01-22T23:00Z"))))
+        Ok(Some((at("2025-01-23T13:00Z"), at("2025-01-23T23:00Z"))))
     );
 }

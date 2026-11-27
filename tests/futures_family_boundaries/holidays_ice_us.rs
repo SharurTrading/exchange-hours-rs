@@ -3,15 +3,8 @@
 //! Built-in holiday rows for ICE Futures U.S. — the seven product-family keys
 //! and the `iceus` venue — 2025 through the 2027 calendar's last entry.
 //!
-//! Three tables serve the five softs (Sugar, Coffee and Cocoa share one, FCOJ
-//! and Cotton each differ by one row), and the two index families and the
-//! venue have one each. The late-open branch exercised here is the one whose
-//! wall clock falls **on** the trade date; no ICE row in this window states a
-//! late open at or after a family's own first open, so the preceding-local-date
-//! branch has nothing to exercise and this block says so rather than inventing
-//! a row. The 2025 rows include two London-bank-holiday late opens the annual
-//! calendar does not list, and the eve and holiday instants the Independence
-//! Day and Christmas notices state.
+//! Tests cover the families’ published matching and order-entry phases and the
+//! broad venue’s intersection where their arrangements differ.
 
 use crate::support::zones::NEW_YORK;
 use crate::support::{date_opt, elapsed_days, local_opt};
@@ -177,17 +170,18 @@ fn easter_monday_moves_the_sugar_coffee_and_cocoa_open_to_0730_new_york() {
 
 #[test]
 fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
-    for which in [
-        MarketHoursKey::IceUsOrangeJuice,
-        MarketHoursKey::IceUsCotton,
-    ] {
-        let calendar = key(which);
-        assert_eq!(
-            calendar.holiday_on(day(2026, 4, 6)),
-            None,
-            "{which:?}: ICE gives the late open to Sugar, Coffee and Cocoa only"
-        );
-    }
+    assert_eq!(
+        key(MarketHoursKey::IceUsOrangeJuice).holiday_on(day(2026, 4, 6)),
+        None
+    );
+    let cotton = key(MarketHoursKey::IceUsCotton);
+    assert_eq!(
+        cotton.session_bounds(ny((2026, 4, 6), (7, 0, 0))),
+        Ok(Some((
+            ny((2026, 4, 5), (21, 0, 0)),
+            ny((2026, 4, 6), (14, 20, 0))
+        )))
+    );
     // FCOJ's own regular open is untouched that day.
     assert!(
         key(MarketHoursKey::IceUsOrangeJuice)
@@ -207,13 +201,10 @@ fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
 fn the_2026_thanksgiving_notice_states_each_familys_instants() {
     // Cotton Friday: late open 08:00 NY, early close 13:30 NY.
     let cotton = key(MarketHoursKey::IceUsCotton);
-    assert_eq!(
+    assert!(matches!(
         cotton.holiday_on(day(2026, 11, 27)).map(Holiday::kind),
-        Some(HolidayKind::LateOpenAndEarlyClose {
-            open_ssm: 8 * 3_600,
-            close_ssm: 13 * 3_600 + 30 * 60
-        })
-    );
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
     assert!(
         !cotton
             .is_open(ny((2026, 11, 27), (7, 59, 59)))
@@ -455,53 +446,28 @@ fn the_2026_dst_end_week_opens_the_softs_late_at_three_instants() {
 }
 
 #[test]
-fn cotton_carries_its_own_monday_late_open_row() {
-    let cotton = key(MarketHoursKey::IceUsCotton);
-
-    assert_eq!(
-        cotton.holiday_on(day(2026, 7, 6)).map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 8 * 3_600
-        })
-    );
-    // Cotton's modelled grid opens for trade date D at 21:00 on D-1 and names
-    // no Sunday, so the crate has no trade date 2026-07-06 for the row to clip.
-    // The row records ICE's statement; the Monday-evening leg of trade date
-    // 2026-07-07 is unaffected, which is the answer that would break first if
-    // the row were mis-keyed.
-    assert!(
-        cotton
-            .is_open(ny((2026, 7, 6), (21, 30, 0)))
-            .expect("the coverage contract must answer a covered date")
-    );
-    assert_eq!(
-        cotton
-            .trade_date(ny((2026, 7, 6), (21, 30, 0)))
-            .expect("the coverage contract must answer a covered date"),
-        Some(day(2026, 7, 7))
-    );
-    // Answer-neutrality, against the detached calendar: over the whole span
-    // around the row, every instant answers exactly as it would with no table.
-    let bare = cotton.without_holidays();
-    let mut probe = ny((2026, 7, 5), (12, 0, 0));
-    while probe <= ny((2026, 7, 7), (18, 0, 0)) {
+fn cotton_independence_reopens_on_monday_morning() {
+    let c = key(MarketHoursKey::IceUsCotton);
+    for (y, m) in [(2025, 7), (2026, 6)] {
+        let sunday = (y, 7, m - 1);
+        let monday = (y, 7, m);
+        let tuesday = day(y, 7, m + 1);
+        let open = ny(monday, (8, 0, 0));
+        let close = ny(monday, (14, 20, 0));
+        assert_eq!(c.is_accepting_orders(ny(sunday, (19, 30, 0))), Ok(false));
         assert_eq!(
-            cotton
-                .is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            bare.is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}"
+            c.without_holidays().is_open(ny(sunday, (21, 0, 0))),
+            Ok(true)
         );
+        assert_eq!(c.is_open(ny(sunday, (21, 0, 0))), Ok(false));
         assert_eq!(
-            cotton
-                .trade_date(probe)
-                .expect("the coverage contract must answer a covered date"),
-            bare.trade_date(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}"
+            c.next_session_after(ny(sunday, (21, 0, 0))),
+            Ok(Some((open, close)))
         );
-        probe += SignedDuration::from_mins(30);
+        assert_eq!(c.is_open(open - SignedDuration::from_nanos(1)), Ok(false));
+        assert_eq!(c.session_bounds(open), Ok(Some((open, close))));
+        assert_eq!(c.is_open(close), Ok(false));
+        assert_eq!(c.trade_date(ny(monday, (21, 0, 0))), Ok(Some(tuesday)));
     }
 }
 
@@ -1259,9 +1225,11 @@ fn the_2025_london_bank_holidays_delay_the_three_softs_opens() {
             );
         }
         // The notice's own words: "All other Exchange products will follow
-        // their regular trading schedules". FCOJ's regular open is 08:00, and
-        // the date is not a Cotton trade date at all — 2025-05-05 and
-        // 2025-08-25 are Mondays, which that grid's opening days exclude.
+        // their regular trading schedules". Cotton trades through Monday morning.
+        assert_eq!(
+            key(MarketHoursKey::IceUsCotton).is_open(ny(date, (7, 0, 0))),
+            Ok(true)
+        );
         let usdx = key(MarketHoursKey::IceUsDollarIndex);
         assert_eq!(usdx.holiday_on(day(date.0, date.1, date.2)), None);
         assert_eq!(
@@ -1309,13 +1277,10 @@ fn the_2025_thanksgiving_friday_states_each_softs_family_separately() {
     );
     // Cotton opens late at 08:00 NY and closes early at 13:30 NY.
     let cotton = key(MarketHoursKey::IceUsCotton);
-    assert_eq!(
+    assert!(matches!(
         cotton.holiday_on(friday).map(Holiday::kind),
-        Some(HolidayKind::LateOpenAndEarlyClose {
-            open_ssm: 8 * 3_600,
-            close_ssm: 13 * 3_600 + 30 * 60
-        })
-    );
+        Some(HolidayKind::ReplacementBlocks(_))
+    ));
     for (name, calendar) in [("FCOJ", fcoj), ("Cotton", cotton)] {
         assert!(
             calendar
@@ -1562,13 +1527,20 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         ("cotton", MarketHoursKey::IceUsCotton),
     ] {
         let calendar = key(which);
-        assert_eq!(
-            calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
-            Some(HolidayKind::LateOpen {
-                open_ssm: 7 * 3_600 + 30 * 60
-            }),
-            "{name}"
-        );
+        if which == MarketHoursKey::IceUsCotton {
+            assert!(matches!(
+                calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ));
+        } else {
+            assert_eq!(
+                calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
+                Some(HolidayKind::LateOpen {
+                    open_ssm: 7 * 3_600 + 30 * 60
+                }),
+                "{name}"
+            );
+        }
         assert!(
             !calendar
                 .is_open(open - SignedDuration::from_nanos(1))
@@ -1586,16 +1558,6 @@ fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
         key(MarketHoursKey::IceUsOrangeJuice).holiday_on(day(2025, 12, 26)),
         None,
         "FCOJ opens regular on Boxing Day"
-    );
-
-    // The Independence Day notice also gives Cotton its own Monday late open.
-    assert_eq!(
-        key(MarketHoursKey::IceUsCotton)
-            .holiday_on(day(2025, 7, 7))
-            .map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 8 * 3_600
-        })
     );
 }
 
@@ -1699,20 +1661,18 @@ fn the_retrieved_2026_christmas_notice_states_the_eve_and_boxing_day() {
             Some("IFUS-NOTICE-2026-CHRISTMAS"),
             "{name}"
         );
-        if which != MarketHoursKey::IceUsCotton {
-            assert!(
-                !calendar
-                    .is_open(open - SignedDuration::from_nanos(1))
-                    .expect("the coverage contract must answer a covered date"),
-                "{name}"
-            );
-            assert!(
-                calendar
-                    .is_open(open)
-                    .expect("the coverage contract must answer a covered date"),
-                "{name}"
-            );
-        }
+        assert!(
+            !calendar
+                .is_open(open - SignedDuration::from_nanos(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .is_open(open)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
     }
     // The complete replacement now states Cotton's Monday daytime session.
     // Its following Monday-evening leg must still feed Tuesday unchanged.

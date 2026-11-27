@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-27
+
 ### Changed
 
 - **Breaking:** use Jiff 1.x throughout the calendar API. Pass `jiff::Timestamp`
@@ -631,3 +633,6 @@
 ## 1.0.0 — 2026-10-08
 
 Initial release.
+
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v1.4.0...v2.0.0

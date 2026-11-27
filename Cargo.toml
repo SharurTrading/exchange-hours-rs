@@ -2,7 +2,7 @@
 
 [package]
 name = "exchange-hours"
-version = "1.4.0"
+version = "2.0.0"
 edition = "2024"
 # Deliberately conservative: the language floor is 1.88 (the `let`-chains this
 # crate uses) but 1.95 is what consumers are expected to be on. Verified by the
@@ -99,5 +99,5 @@ path = "tests/contract/session_invariants.rs"
 members = ["xtask", "tzdb-runtime"]
 
 [workspace.dependencies]
-exchange-hours = { path = ".", version = "1.4.0" }
+exchange-hours = { path = ".", version = "2.0.0" }
 jiff-tzdb = "=1.0.0"

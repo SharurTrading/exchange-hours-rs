@@ -61,8 +61,8 @@ certify those gaps as ordinary trading.
 - **Caller-supplied exception sessions** — a trade date that pauses and
   reopens, ends regular trading while extended continues, or spans several
   civil dates is replaced outright by an ordered `ExceptionBlock` set.
-  `StaticSessionExceptions` is the validated table format; the crate ships
-  **zero** exception data.
+  `StaticSessionExceptions` validates caller tables. Built-in holiday tables
+  also use replacement blocks for published special sessions.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
   never the later Pre-Open or matching restart), and daily/weekly/monthly bars close at
@@ -72,8 +72,8 @@ certify those gaps as ordinary trading.
 
 ## Installation
 
-The Jiff API requires a 2.0.0 release. For that release, use Rust 1.95 or
-newer and enable compile-time Jiff time zones to run the Quick start:
+Version 2 uses Jiff 1.x and requires Rust 1.95 or newer. Enable Jiff’s
+compile-time time zones to run the Quick start.
 
 ```toml
 [dependencies]
@@ -91,7 +91,7 @@ jiff = { version = "1", default-features = false, features = ["static"] }
   startup. It verifies the initial release before returning and checks hourly,
   so a government clock change can reach a running application without a rebuild.
 
-For the 2.0 release, add `exchange-hours-tzdb = "0.1"` alongside
+Add `exchange-hours-tzdb = "0.1"` alongside
 `exchange-hours = "2"` for live use. The companion enables the calendar's
 `runtime-tzdb` feature.
 

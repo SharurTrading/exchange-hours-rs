@@ -966,6 +966,16 @@ impl<'z> ZonedCalendarCoverage<'z> {
         }
     }
 
+    /// Coverage for proving how the published normal week places a cutoff.
+    /// This view is never used to return a session or assume a carried week.
+    pub(in crate::calendar) const fn sourced_normal_week_for_feasibility(mut self) -> Self {
+        self.holidays = HolidayContract::NormalWeekOnly;
+        self.table = None;
+        self.last_known_week = false;
+        self.next_known_week = false;
+        self
+    }
+
     /// Pins this coverage decision to the same clock as its query.
     pub(in crate::calendar) fn refusal(self, kind: CalendarQueryErrorKind) -> CalendarQueryError {
         CalendarQueryError::new(kind, self.zones)

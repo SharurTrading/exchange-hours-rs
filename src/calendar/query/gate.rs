@@ -74,6 +74,10 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// The error a query over this state can produce.
     type Error;
 
+    /// Coverage of the sourced normal week without holiday arrangements.
+    /// Only a feasibility probe may use it to eliminate an irrelevant date.
+    fn normal_week_coverage(coverage: Self::Coverage<'_>) -> Self::Coverage<'_>;
+
     /// Returns the schedule identity behind the source, or `None` for a
     /// detached fixed snapshot.
     fn identity(source: Self::Source<'_>) -> Option<CalendarSource>;
@@ -231,6 +235,8 @@ impl SourceGate for FixedSnapshot {
     type Coverage<'a> = ();
     type Error = Infallible;
 
+    fn normal_week_coverage(_coverage: Self::Coverage<'_>) -> Self::Coverage<'_> {}
+
     fn identity(_source: &MarketHours) -> Option<CalendarSource> {
         None
     }
@@ -296,6 +302,10 @@ impl SourceGate for Identified {
     type Source<'a> = ZonedExchangeCalendar<'a>;
     type Coverage<'a> = ZonedCalendarCoverage<'a>;
     type Error = CalendarQueryError;
+
+    fn normal_week_coverage(coverage: Self::Coverage<'_>) -> Self::Coverage<'_> {
+        coverage.sourced_normal_week_for_feasibility()
+    }
 
     fn identity(source: ZonedExchangeCalendar<'_>) -> Option<CalendarSource> {
         Some(source.source())

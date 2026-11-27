@@ -237,7 +237,30 @@ pub(in crate::calendar) fn next_session_after_with<G: SourceGate>(
             // A wrapping rule can be clipped into the queried civil day while
             // remaining owned by yesterday's profile. Compare its actual
             // opening with candidates from today before choosing either.
-            consider_next_on_day(context, previous, instant, kind, true, &mut best)?;
+            let mut prior = None;
+            if let Err(error) =
+                consider_next_on_day(context, previous, instant, kind, true, &mut prior)
+            {
+                let mut possible = None;
+                let retry = consider_next_on_day(
+                    &context.with_sourced_week_anchors(),
+                    previous,
+                    instant,
+                    kind,
+                    true,
+                    &mut possible,
+                );
+                // The retry can only eliminate a candidate: the sourced
+                // normal week fixes where its cutoff falls, independent of
+                // an unrelated holiday refusal inside the raw anchor walk.
+                if retry.is_err() || possible.is_some() {
+                    return Err(error);
+                }
+            } else if let Some(candidate) = prior
+                && best.is_none_or(|current| candidate.0 < current.0)
+            {
+                best = prior;
+            }
         }
         let Ok(tomorrow) = day.tomorrow() else {
             break;

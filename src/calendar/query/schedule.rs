@@ -88,6 +88,7 @@ pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
     /// pay a `holiday_on` binary search per occurrence to discover that its
     /// table has nothing to add.
     builtin_blocks: bool,
+    sourced_week_anchors: bool,
 }
 
 /// The scalar trade-date clip one layer contributes.
@@ -184,6 +185,7 @@ impl<'a> QueryContext<'a, FixedSnapshot> {
             coverage: (),
             replacement_layer: false,
             builtin_blocks: false,
+            sourced_week_anchors: false,
         }
     }
 }
@@ -201,6 +203,7 @@ impl<'a> QueryContext<'a, Identified> {
             coverage: calendar.coverage(),
             replacement_layer: builtin_blocks,
             builtin_blocks,
+            sourced_week_anchors: false,
         }
     }
 
@@ -220,11 +223,19 @@ impl<'a> QueryContext<'a, Identified> {
             coverage: calendar.coverage(),
             replacement_layer: exceptions.is_some() || builtin_blocks,
             builtin_blocks,
+            sourced_week_anchors: false,
         }
     }
 }
 
 impl<'a, G: SourceGate> QueryContext<'a, G> {
+    /// Uses sourced normal-week coverage only for raw cutoff anchoring.
+    /// The opening day's own coverage and the effective layers stay attached.
+    pub(super) const fn with_sourced_week_anchors(mut self) -> Self {
+        self.sourced_week_anchors = true;
+        self
+    }
+
     /// Drops every day-level layer, leaving the sourced normal week.
     ///
     /// The overlay paths resolve a normal trading day first and then modify it,
@@ -233,22 +244,27 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// two layers: it is a day-level modification of that normal week, and a
     /// baseline that kept it would recurse.
     ///
-    /// The coverage metadata is **not** dropped: it describes the source state
-    /// rather than a day-level layer, and the days a baseline walk touches are
-    /// the same days the enclosing query already had to answer for.
-    pub(super) const fn baseline(self) -> Self {
+    /// Ordinary queries keep their attached coverage. The prior-day forward
+    /// search can retry the anchors with sourced normal-week coverage to prove
+    /// an apparent dependency on a withheld holiday cannot affect its answer.
+    pub(super) fn baseline(self) -> Self {
         Self {
             source: self.source,
             tz: self.tz,
             holidays: None,
             policy: None,
             exceptions: None,
-            coverage: self.coverage,
+            coverage: if self.sourced_week_anchors {
+                G::normal_week_coverage(self.coverage)
+            } else {
+                self.coverage
+            },
             // The baseline drops every layer that could supply a replacement, so
             // the gate must drop with them or a baseline walk would re-enter the
             // layer it exists to avoid.
             replacement_layer: false,
             builtin_blocks: false,
+            sourced_week_anchors: false,
         }
     }
 

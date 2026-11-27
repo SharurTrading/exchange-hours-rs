@@ -240,3 +240,47 @@ fn a_late_open_masked_by_an_explicit_closure_cannot_refuse_the_forward_search() 
         expected
     );
 }
+
+#[test]
+fn an_evening_late_open_does_not_require_the_withheld_preceding_holiday() {
+    let calendar = ExchangeCalendar::for_market_hours_key(MarketHoursKey::OandaUsBondCfd);
+    let next = Some((at("2024-12-26T23:01Z"), at("2024-12-27T21:59Z")));
+    let after = Some((at("2024-12-29T23:01Z"), at("2024-12-30T21:59Z")));
+    for calendar in [calendar, calendar.with_last_known_week()] {
+        for instant in [at("2024-12-26T05:00Z"), at("2024-12-26T22:59:59Z")] {
+            assert_eq!(calendar.next_session_after(instant), Ok(next));
+            assert_eq!(
+                calendar.next_session_after_with(instant, SessionKind::Regular),
+                Ok(next)
+            );
+        }
+        assert_eq!(
+            calendar.next_session_after(at("2024-12-26T23:04Z")),
+            Ok(after)
+        );
+    }
+}
+
+#[test]
+fn an_actual_morning_shift_still_requires_its_withheld_history() {
+    let calendar = ExchangeCalendar::new(Exchange::Iceus);
+    let day = date(2025, 1, 22);
+    let records = [DayOverride::late_open(day, 8 * 3_600).unwrap()];
+    let policy = StaticDayPolicy::new(&records).unwrap();
+    let instant = at("2025-01-22T05:00Z");
+    assert!(matches!(
+        calendar.with_day_policy(&policy).next_session_after(instant),
+        Err(error) if matches!(
+            error.kind(),
+            exchange_hours::CalendarQueryErrorKind::UnresolvedGap { date: refused, .. }
+                if refused == date(2025, 1, 20)
+        )
+    ));
+    assert_eq!(
+        calendar
+            .with_last_known_week()
+            .with_day_policy(&policy)
+            .next_session_after(instant),
+        Ok(Some((at("2025-01-22T13:00Z"), at("2025-01-22T23:00Z"))))
+    );
+}

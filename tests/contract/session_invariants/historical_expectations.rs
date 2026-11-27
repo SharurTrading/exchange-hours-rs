@@ -59,6 +59,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, TimeZone)] = &[
     (Exchange::Sgx, (2024, 7, 29), SINGAPORE),
     (Exchange::Lse, (2012, 4, 30), LONDON),
     (Exchange::Lse, (2016, 3, 21), LONDON),
+    (Exchange::Lse, (2020, 9, 21), LONDON),
     (Exchange::Xetra, (2020, 11, 24), BERLIN),
     (Exchange::Xetra, (2025, 12, 1), BERLIN),
     (Exchange::EuronextParis, (2023, 3, 20), PARIS),

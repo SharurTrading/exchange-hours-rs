@@ -390,10 +390,8 @@ twse | extended | MoTuWeThFr---- | 08:00:00-08:30:00
 twse | extended | MoTuWeThFr---- | 09:00:00-17:00:00
 twse | order-en | MoTuWeThFr---- | 08:30:00-09:00:00
 lse | tz Europe/London | week_open_seconds 159000
-lse | regular  | MoTuWeThFr---- | 08:00:30-12:00:00
-lse | regular  | MoTuWeThFr---- | 12:02:30-16:30:00
+lse | regular  | MoTuWeThFr---- | 08:00:30-16:30:00
 lse | extended | MoTuWeThFr---- | 07:50:00-08:00:30
-lse | extended | MoTuWeThFr---- | 12:00:00-12:02:30
 lse | extended | MoTuWeThFr---- | 16:30:00-16:35:30
 lse | extended | MoTuWeThFr---- | 16:35:30-16:40:00
 lse | order-en | MoTuWeThFr---- | 07:00:00-07:50:00

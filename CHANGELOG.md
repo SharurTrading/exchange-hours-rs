@@ -33,6 +33,8 @@
 
 - Model the London Stock Exchange SETS half-day auction and closing-price
   crossing phases through 12:40 London time on six published year-end dates.
+- End the ordinary LSE SETS noon auction from its operator-dated withdrawal
+  on 2020-09-21.
 
 ## [2.0.0] - 2026-11-27
 
